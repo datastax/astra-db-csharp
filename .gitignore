@@ -1,0 +1,7 @@
+.vscode
+src/DataStax.AstraDB.DataAPI/bin
+src/DataStax.AstraDB.DataAPI/obj
+test/DataStax.AstraDB.DataAPI.IntegrationTests/bin
+test/DataStax.AstraDB.DataAPI.IntegrationTests/obj
+test/DataStax.AstraDB.DataAPI.Tests/bin
+test/DataStax.AstraDB.DataAPI.Tests/obj
