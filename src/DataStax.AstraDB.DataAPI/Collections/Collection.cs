@@ -68,7 +68,7 @@ public class Collection<T> where T : class
         Guard.NotNull(options, nameof(options));
 
         var command = CreateCommand("insertOne").WithDocument(document);
-        var response = await command.RunAsync<InsertDocumentsCommandResponse>(runSynchronous);
+        var response = await command.RunAsync<InsertDocumentsCommandResponse>(runSynchronous).ConfigureAwait(false);
         if (response == null)
         {
             //TODO: handle error

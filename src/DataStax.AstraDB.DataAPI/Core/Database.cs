@@ -47,7 +47,7 @@ public class Database
         {
             name = collectionName
         });
-        var response = await command.RunAsync();
+        var response = await command.RunAsync().ConfigureAwait(false);
         //TODO: check for valid response (or part of the runasync)
         // and return error as appropriate
         return GetCollection<Document>(collectionName);

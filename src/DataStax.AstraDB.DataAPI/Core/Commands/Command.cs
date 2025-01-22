@@ -62,7 +62,7 @@ public class Command
 
     internal async Task<ApiResponse<ApiResponseDictionary>> RunAsync(bool runSynchronous = false)
     {
-        return await RunAsync<ApiResponseDictionary>(runSynchronous);
+        return await RunAsync<ApiResponseDictionary>(runSynchronous).ConfigureAwait(false);
     }
 
     internal async Task<ApiResponse<T>> RunAsync<T>(bool runSynchronous = false)
@@ -70,7 +70,7 @@ public class Command
         var content = new StringContent(JsonSerializer.Serialize(BuildContent()), Encoding.UTF8, "application/json");
         var url = BuildUrl();
 
-        await MaybeLogRequestDebug(url, content, runSynchronous);
+        await MaybeLogRequestDebug(url, content, runSynchronous).ConfigureAwait(false);
 
         var httpClient = Database.Client.HttpClientFactory.CreateClient();
         var request = new HttpRequestMessage()
@@ -91,7 +91,9 @@ public class Command
         {
 #if NET5_0_OR_GREATER
             response = httpClient.Send(request);
-            responseContent = response.Content.ReadAsStringAsync().Result;
+            var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
+            contentTask.Wait();
+            responseContent = contentTask.Result;
 #else
             var requestTask = Task.Run(() => httpClient.SendAsync(request));
             requestTask.Wait();
@@ -103,8 +105,8 @@ public class Command
         }
         else
         {
-            response = await httpClient.SendAsync(request);
-            responseContent = await response.Content.ReadAsStringAsync();
+            response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         }
 
         MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
@@ -149,7 +151,7 @@ public class Command
             }
             else
             {
-                data = await content.ReadAsStringAsync();
+                data = await content.ReadAsStringAsync().ConfigureAwait(false);
             }
             _logger.LogInformation("Data: {Data}", data);
         }
