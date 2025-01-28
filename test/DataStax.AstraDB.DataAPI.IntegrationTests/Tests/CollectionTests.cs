@@ -1,12 +1,28 @@
-using DataStax.AstraDB.DataAPI;
-using DataStax.AstraDB.DataAPI.Core;
-using DataStax.AstraDB.DataAPI.Collections;
+using DataStax.AstraDB.DataApi;
+using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Collections;
+using Xunit;
 
-namespace DataStax.AstraDB.DataAPI.IntegrationTests.Tests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests.Tests;
 
+[CollectionDefinition("Collection Collection")]
+public class DatabaseCollection : ICollectionFixture<ClientFixture>
+{
+
+}
+
+[Collection("Collection Collection")]
 public class CollectionTests
 {
-    public static async Task InsertDocumentAsync(Database database)
+    ClientFixture fixture;
+
+    public CollectionTests(ClientFixture fixture)
+    {
+        this.fixture = fixture;
+    }
+
+    [Fact]
+    public async Task InsertDocumentAsync()
     {
         try
         {
@@ -23,16 +39,15 @@ public class CollectionTests
                 },
                 Borough = "Manhattan",
             };
-            await database.CreateCollectionAsync("restaurants");
-            var collection = database.GetCollection<Restaurant>("restaurants");
+            await fixture.Database.CreateCollectionAsync("restaurants");
+            var collection = fixture.Database.GetCollection<Restaurant>("restaurants");
             var result = await collection.InsertOneAsync(newRestaurant);
             var newId = result.InsertedId;
-            Console.WriteLine("Insertion Succeeded: " + newId);
+            Assert.NotNull(newId);
         }
         catch (Exception e)
         {
-            //TODO switch to test framework and fail test
-            Console.WriteLine("Unable to insert due to an error: " + e);
+            Assert.Fail(e.Message);
         }
     }
 
@@ -40,26 +55,27 @@ public class CollectionTests
 
 public class Restaurant
 {
+    public Restaurant() { }
     public Guid Id { get; set; }
-    public required string Name { get; set; }
-    public required string RestaurantId { get; set; }
-    public required string Cuisine { get; set; }
-    public required Address Address { get; set; }
-    public required string Borough { get; set; }
-    public List<GradeEntry>? Grades { get; set; }
+    public string Name { get; set; }
+    public string RestaurantId { get; set; }
+    public string Cuisine { get; set; }
+    public Address Address { get; set; }
+    public string Borough { get; set; }
+    public List<GradeEntry> Grades { get; set; }
 }
 
 public class Address
 {
-    public string? Building { get; set; }
-    public double[]? Coordinates { get; set; }
-    public required string Street { get; set; }
-    public required string ZipCode { get; set; }
+    public string Building { get; set; }
+    public double[] Coordinates { get; set; }
+    public string Street { get; set; }
+    public string ZipCode { get; set; }
 }
 
 public class GradeEntry
 {
     public DateTime Date { get; set; }
-    public string? Grade { get; set; }
+    public string Grade { get; set; }
     public float? Score { get; set; }
 }

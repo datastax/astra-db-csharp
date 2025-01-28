@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataAPI.Utils;
+using DataStax.AstraDB.DataApi.Utils;
 
-namespace DataStax.AstraDB.DataAPI.Core;
+namespace DataStax.AstraDB.DataApi.Core;
 
 public class DatabaseOptions
 {
+    //TODO: move to common area for defaults if used other than directly related to DatabaseOptions.
     public const string DefaultKeyspace = "default_keyspace";
 
     private string _currentKeyspace;

@@ -16,7 +16,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataAPI.Core;
+namespace DataStax.AstraDB.DataApi.Core;
 
 internal class ApiResponse<TResponse>
 {

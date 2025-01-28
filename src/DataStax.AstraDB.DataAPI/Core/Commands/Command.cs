@@ -20,23 +20,34 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace DataStax.AstraDB.DataAPI.Core.Commands;
+namespace DataStax.AstraDB.DataApi.Core.Commands;
 
 public class Command
 {
     private readonly ILogger _logger;
+    private readonly CommandOptions _commandOptions;
+    private readonly DataApiClient _client;
+    private readonly CommandUrlBuilder _urlBuilder;
+    private readonly string _name;
+    private List<String> _urlPaths = new();
 
-    internal string Name { get; set; }
     internal object Payload { get; set; }
-    internal Database Database { get; set; }
     internal string UrlPostfix { get; set; }
 
-    public Command(Database database, string urlPostfix, string name)
+
+    internal Command(DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
-        Database = database;
-        UrlPostfix = urlPostfix;
-        Name = name;
-        _logger = database.Client.Logger;
+
+    }
+
+    internal Command(string name, DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder)
+    {
+        //TODO include database-specific options (and maybe collection-specific as well)
+        _commandOptions = CommandOptions.Merge(options);
+        _client = client;
+        _name = name;
+        _logger = client.Logger;
+        _urlBuilder = urlBuilder;
     }
 
     public Command WithDocument(object document)
@@ -51,43 +62,73 @@ public class Command
         return this;
     }
 
+    public Command AddUrlPath(string path)
+    {
+        _urlPaths.Add(path);
+        return this;
+    }
+
     public object BuildContent()
     {
+        if (string.IsNullOrEmpty(_name))
+        {
+            return Payload;
+        }
         var dictionary = new Dictionary<string, object>
         {
-            { Name, Payload }
+            { _name, Payload }
         };
         return dictionary;
     }
 
-    internal async Task<ApiResponse<ApiResponseDictionary>> RunAsync(bool runSynchronous = false)
+    internal async Task<ApiResponse<ApiResponseDictionary>> RunAsync(bool runSynchronously)
     {
-        return await RunAsync<ApiResponseDictionary>(runSynchronous).ConfigureAwait(false);
+        return await RunAsync<ApiResponseDictionary>(runSynchronously).ConfigureAwait(false);
     }
 
-    internal async Task<ApiResponse<T>> RunAsync<T>(bool runSynchronous = false)
+    internal async Task<ApiResponse<TStatus>> RunAsync<TStatus>(bool runSynchronously)
+    {
+        return await RunCommandAsync<ApiResponse<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+    }
+
+    internal async Task<T> RunAsyncRaw<T>(bool runSynchronously)
+    {
+        return await RunAsyncRaw<T>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+    }
+
+    internal async Task<T> RunAsyncRaw<T>(HttpMethod httpMethod, bool runSynchronously)
+    {
+        return await RunCommandAsync<T>(httpMethod, runSynchronously).ConfigureAwait(false);
+    }
+
+    private async Task<T> RunCommandAsync<T>(HttpMethod method, bool runSynchronously)
     {
         var content = new StringContent(JsonSerializer.Serialize(BuildContent()), Encoding.UTF8, "application/json");
-        var url = BuildUrl();
+        var url = _urlBuilder.BuildUrl();
+        if (_urlPaths.Any())
+        {
+            url += "/" + string.Join("/", _urlPaths);
+        }
 
-        await MaybeLogRequestDebug(url, content, runSynchronous).ConfigureAwait(false);
+        await MaybeLogRequestDebug(url, content, runSynchronously).ConfigureAwait(false);
 
-        var httpClient = Database.Client.HttpClientFactory.CreateClient();
+        var httpClient = _client.HttpClientFactory.CreateClient();
         var request = new HttpRequestMessage()
         {
-            Method = HttpMethod.Post,
+            Method = method,
             RequestUri = new Uri(url),
-            Content = content
+            Content = method == HttpMethod.Get ? null : content,
         };
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Database.Client.Token);
-        request.Headers.Add("Token", Database.Client.Token);
+        //TODO: add Database-level options (and Collection, etc.);
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _commandOptions.Token);
+        request.Headers.Add("Token", _commandOptions.Token);
 
         string responseContent = null;
         HttpResponseMessage response = null;
 
         //TODO implement rest of options (timeout, dbenvironment, etc.)
-        if (runSynchronous)
+        if (runSynchronously)
         {
 #if NET5_0_OR_GREATER
             response = httpClient.Send(request);
@@ -113,37 +154,25 @@ public class Command
         MaybeLogDebugMessage("Content: {Content}", responseContent);
 
         //TODO try/catch
-        return JsonSerializer.Deserialize<ApiResponse<T>>(responseContent);
-    }
-
-    private string BuildUrl()
-    {
-        var url = $"{Database.ApiEndpoint}/api/json/{Database.Client.ClientOptions.ApiVersion.ToUrlString()}" +
-            $"/{Database.DatabaseOptions.CurrentKeyspace}/{UrlPostfix}";
-        return url;
+        return JsonSerializer.Deserialize<T>(responseContent);
     }
 
     private void MaybeLogDebugMessage(string message, params object[] args)
     {
-        if (Database.Client.ClientOptions.RunMode == RunMode.Debug)
+        if (_client.ClientOptions.RunMode == RunMode.Debug)
         {
             _logger.LogInformation(message, args);
         }
     }
 
-    private async Task MaybeLogRequestDebug(string url, StringContent content, bool runSynchronous)
+    private async Task MaybeLogRequestDebug(string url, StringContent content, bool runSynchronously)
     {
-        if (Database.Client.ClientOptions.RunMode == RunMode.Debug)
+        if (_client.ClientOptions.RunMode == RunMode.Debug)
         {
             _logger.LogInformation("Url: {Url}", url);
             _logger.LogInformation("Additional Headers:");
-            foreach (var header in Database.Client.ClientOptions.AdditionalHeaders)
-            {
-                _logger.LogInformation("  {Key}: {Value}", header.Key, string.Join(", ", header.Value));
-            }
-            _logger.LogInformation("Method: POST");
             string data;
-            if (runSynchronous)
+            if (runSynchronously)
             {
                 var task = Task.Run(() => content.ReadAsStringAsync());
                 task.Wait();

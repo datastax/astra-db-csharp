@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataAPI.Collections;
+using DataStax.AstraDB.DataApi.Collections;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataAPI.Core;
+namespace DataStax.AstraDB.DataApi.Core;
 
 //TODO: placeholder
 internal class ApiData

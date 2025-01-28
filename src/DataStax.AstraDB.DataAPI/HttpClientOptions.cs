@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataAPI;
+namespace DataStax.AstraDB.DataApi;
 
 public class HttpClientOptions
 {

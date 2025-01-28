@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataAPI.Core;
-using DataStax.AstraDB.DataAPI.Core.Commands;
-using DataStax.AstraDB.DataAPI.Utils;
+using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Utils;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataAPI.Collections;
+namespace DataStax.AstraDB.DataApi.Collections;
 
 public class Collection : Collection<Document>
 {
@@ -49,7 +49,7 @@ public class Collection<T> where T : class
 
     public CollectionInsertOneResult InsertOne(T document, CollectionInsertOneOptions options)
     {
-        return InsertOneAsync(document, options, runSynchronous: true).GetAwaiter().GetResult();
+        return InsertOneAsync(document, options, runSynchronously: true).ResultSync();
     }
 
     public Task<CollectionInsertOneResult> InsertOneAsync(T document)
@@ -59,16 +59,16 @@ public class Collection<T> where T : class
 
     public Task<CollectionInsertOneResult> InsertOneAsync(T document, CollectionInsertOneOptions options)
     {
-        return InsertOneAsync(document, options, runSynchronous: false);
+        return InsertOneAsync(document, options, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertOneResult> InsertOneAsync(T document, CollectionInsertOneOptions options, bool runSynchronous)
+    private async Task<CollectionInsertOneResult> InsertOneAsync(T document, CollectionInsertOneOptions options, bool runSynchronously)
     {
         Guard.NotNull(document, nameof(document));
         Guard.NotNull(options, nameof(options));
 
         var command = CreateCommand("insertOne").WithDocument(document);
-        var response = await command.RunAsync<InsertDocumentsCommandResponse>(runSynchronous).ConfigureAwait(false);
+        var response = await command.RunAsync<InsertDocumentsCommandResponse>(runSynchronously).ConfigureAwait(false);
         if (response == null)
         {
             //TODO: handle error
@@ -80,7 +80,7 @@ public class Collection<T> where T : class
 
     internal Command CreateCommand(string name)
     {
-        return new Command(_database, _collectionName, name);
+        return new Command(name, _database.Client, _database.OptionsTree, new DatabaseCommandUrlBuilder(_database, _database.OptionsTree, _collectionName));
     }
 }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataAPI.Core;
+namespace DataStax.AstraDB.DataApi.Core;
 
 internal enum DBEnvironment
 {

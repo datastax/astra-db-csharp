@@ -14,58 +14,71 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataAPI.Core;
-using DataStax.AstraDB.DataAPI.Utils;
+using DataStax.AstraDB.DataApi.Admin;
+using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Http;
 using System.Net.Http;
 
-namespace DataStax.AstraDB.DataAPI;
+namespace DataStax.AstraDB.DataApi;
 
-public class DataAPIClient
+public class DataApiClient
 {
-    private readonly DataAPIClientOptions _options;
-    private readonly string _token;
+    private readonly CommandOptions _options;
     private readonly ServiceProvider _serviceProvider;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger _logger;
 
-    internal DataAPIClientOptions ClientOptions => _options;
-    internal string Token => _token;
+    internal CommandOptions ClientOptions => _options;
     internal ServiceProvider ServiceProvider => _serviceProvider;
     internal IHttpClientFactory HttpClientFactory => _httpClientFactory;
     internal ILogger Logger => _logger;
 
-    public DataAPIClient(string token)
-        : this(token, new DataAPIClientOptions())
+    public DataApiClient(string token)
+        : this(token, new CommandOptions())
     {
     }
 
-    public DataAPIClient(string token, ILogger logger)
-        : this(token, new DataAPIClientOptions(), logger)
+    public DataApiClient(CommandOptions options)
+        : this(null, options)
     {
     }
 
-    public DataAPIClient(string token, DataAPIClientOptions options, ILogger logger = null)
+    public DataApiClient(string token, CommandOptions options, ILogger logger = null)
     {
-        Guard.NotNullOrEmpty(token, nameof(token));
+        options.Token = token;
         Guard.NotNull(options, nameof(options));
-        _token = token;
         _options = options;
-        _options = options;
-        _logger = logger;
-        if (logger == null)
-        {
-            _logger = NullLogger.Instance;
-        }
+        _logger = logger ?? NullLogger.Instance;
 
         var services = new ServiceCollection();
         services.AddHttpClient();
         _serviceProvider = services.BuildServiceProvider();
 
         _httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>()!;
+    }
 
+    public AstraDatabasesAdmin GetAstraAdmin(CommandOptions adminOptions)
+    {
+        var applicableOptions = CommandOptions.Merge(_options, adminOptions);
+        var applicableDestination = applicableOptions.Destination;
+        Guard.Equals(applicableDestination, DataApiDestination.ASTRA, "Destinations other than ASTRA cannot be used with GetAstraAdmin. Please check your Destination settings for the DataApiClient or the overload with adminOptions");
+        var applicableToken = applicableOptions.Token;
+        Guard.NotNullOrEmpty(applicableToken, nameof(adminOptions.Token), "Token must be provided to the DataApiClient constructor or to a GetAstraAdmin() overload.");
+        return new AstraDatabasesAdmin(this, adminOptions);
+    }
+
+    public AstraDatabasesAdmin GetAstraAdmin()
+    {
+        return GetAstraAdmin(new CommandOptions());
+    }
+
+    public AstraDatabasesAdmin GetAstraAdmin(string superAdminToken)
+    {
+        return GetAstraAdmin(new CommandOptions() { Token = superAdminToken });
     }
 
     public Database GetDatabase(string apiEndpoint)
@@ -79,8 +92,55 @@ public class DataAPIClient
         return GetDatabase(apiEndpoint, dbOptions);
     }
 
-    private Database GetDatabase(string apiEndpoint, DatabaseOptions dbOptions)
+    public Database GetDatabase(string apiEndpoint, DatabaseOptions dbOptions)
     {
-        return new Database(apiEndpoint, dbOptions, this);
+        return new Database(apiEndpoint, this, new CommandOptions(), dbOptions);
+    }
+
+    public Database GetDatabase(Guid databaseId)
+    {
+        return GetDatabase(databaseId, new DatabaseOptions());
+    }
+
+    public Database GetDatabase(Guid databaseId, string keyspace)
+    {
+        var dbOptions = new DatabaseOptions(keyspace);
+        return GetDatabase(databaseId, dbOptions);
+    }
+
+    public Database GetDatabase(Guid databaseId, DatabaseOptions dbOptions)
+    {
+        return GetDatabaseAsync(databaseId, dbOptions, true).ResultSync();
+    }
+
+    public async Task<Database> GetDatabaseAsync(Guid databaseId)
+    {
+        return await GetDatabaseAsync(databaseId, new DatabaseOptions(), false).ConfigureAwait(false);
+    }
+
+    public async Task<Database> GetDatabaseAsync(Guid databaseId, string keyspace)
+    {
+        var dbOptions = new DatabaseOptions(keyspace);
+        return await GetDatabaseAsync(databaseId, dbOptions, false).ConfigureAwait(false);
+    }
+
+    public async Task<Database> GetDatabaseAsync(Guid databaseId, DatabaseOptions dbOptions)
+    {
+        return await GetDatabaseAsync(databaseId, dbOptions, false).ConfigureAwait(false);
+    }
+
+    private async Task<Database> GetDatabaseAsync(Guid databaseId, DatabaseOptions dbOptions, bool runSynchronously)
+    {
+        DatabaseInfo dbInfo;
+        if (runSynchronously)
+        {
+            dbInfo = GetAstraAdmin().GetDatabaseInfoAsync(databaseId, runSynchronously).ResultSync();
+        }
+        else
+        {
+            dbInfo = await GetAstraAdmin().GetDatabaseInfoAsync(databaseId).ConfigureAwait(false);
+        }
+        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Info.Region}.apps.astra.datastax.com";
+        return GetDatabase(apiEndpoint, dbOptions);
     }
 }

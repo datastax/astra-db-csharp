@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;net472;net48;netstandard2.1;net8.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.1;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <LangVersion>10.0</LangVersion>
@@ -14,7 +14,10 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>DataStax.AstraDB.DataAPI.IntegrationTests</_Parameter1>
+      <_Parameter1>DataStax.AstraDB.DataApi.IntegrationTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DataStax.AstraDB.DataApi.UnitTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 

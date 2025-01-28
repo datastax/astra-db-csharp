@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataAPI.Core;
+namespace DataStax.AstraDB.DataApi.Core;
 
 public static class CoreExtensions
 {
@@ -26,5 +26,10 @@ public static class CoreExtensions
             ApiVersion.V1 => "v1",
             _ => "v1",
         };
+    }
+
+    public static TResult ResultSync<TResult>(this Task<TResult> task)
+    {
+        return task.GetAwaiter().GetResult();
     }
 }

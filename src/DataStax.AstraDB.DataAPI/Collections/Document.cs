@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataAPI.Collections;
+namespace DataStax.AstraDB.DataApi.Collections;
 
 public class Document
 {

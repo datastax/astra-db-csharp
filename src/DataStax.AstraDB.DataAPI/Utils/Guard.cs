@@ -14,21 +14,37 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataAPI.Utils;
+namespace DataStax.AstraDB.DataApi.Utils;
 
 public static class Guard
 {
-    public static void NotNullOrEmpty(string value, string paramName)
+    public static void NotNullOrEmpty(string value, string paramName, string message = null)
     {
         if (string.IsNullOrEmpty(value))
         {
-            throw new ArgumentException("Value cannot be null or empty.", paramName);
+            throw new ArgumentException(message.OrIfEmpty("Value cannot be null or empty."), paramName);
+        }
+    }
+
+    public static void Equals<T>(T value, T valueTwo, string paramName, string message = null)
+    {
+        if (!value.Equals(valueTwo))
+        {
+            throw new ArgumentException(message.OrIfEmpty("Value cannot be null or empty."), paramName);
         }
     }
 
     public static T NotNull<T>(T value, string paramName) where T : class
     {
         return value ?? throw new ArgumentNullException(paramName);
+    }
+
+    public static void NotEmpty(Guid value, string paramName)
+    {
+        if (value == Guid.Empty)
+        {
+            throw new ArgumentException($"Guid cannot be empty for {paramName}");
+        }
     }
 
     public static void NotDefault<T>(T value, string paramName) where T : struct

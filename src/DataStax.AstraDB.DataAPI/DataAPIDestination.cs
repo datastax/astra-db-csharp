@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataAPI;
+namespace DataStax.AstraDB.DataApi;
 
-public enum DataAPIDestination
+public enum DataApiDestination
 {
     ASTRA,
     DSE,
