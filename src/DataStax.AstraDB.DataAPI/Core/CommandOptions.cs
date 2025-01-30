@@ -31,7 +31,7 @@ public class CommandOptions
     public static CommandOptions Merge(params CommandOptions[] arr)
     {
         var list = arr.ToList();
-        list.Add(Defaults());
+        list.Insert(0, Defaults());
         var options = new CommandOptions
         {
             Token = list.Select(o => o.Token).Merge(),
