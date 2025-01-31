@@ -31,5 +31,4 @@ public class AdminTests
 		database = fixture.Client.GetDatabase(dbId);
 		Assert.NotNull(database);
 	}
-
 }
