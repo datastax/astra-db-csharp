@@ -1,0 +1,13 @@
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/bin/Debug/net8.0/DataStax.AstraDB.DataApi.deps.json
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/bin/Debug/net8.0/DataStax.AstraDB.DataApi.dll
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/bin/Debug/net8.0/DataStax.AstraDB.DataApi.pdb
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.csproj.AssemblyReference.cache
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.GeneratedMSBuildEditorConfig.editorconfig
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.AssemblyInfoInputs.cache
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.AssemblyInfo.cs
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.csproj.CoreCompileInputs.cache
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.sourcelink.json
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.dll
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/refint/DataStax.AstraDB.DataApi.dll
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/DataStax.AstraDB.DataApi.pdb
+/home/jeff/dsx/astra-db-csharp/src/DataStax.AstraDB.DataApi/obj/Debug/net8.0/ref/DataStax.AstraDB.DataApi.dll
