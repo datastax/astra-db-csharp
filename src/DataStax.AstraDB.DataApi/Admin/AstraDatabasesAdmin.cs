@@ -45,9 +45,27 @@ public class AstraDatabasesAdmin
         return ListDatabases().Select(db => db.Info.Name).ToList();
     }
 
+	public async Task<List<string>> ListDatabaseNamesAsync()
+	{
+		var databases = await ListDatabasesAsync().ConfigureAwait(false);
+		return databases.Select(db => db.Info.Name).ToList();
+	}
+
     public List<DatabaseInfo> ListDatabases()
     {
-        throw new NotImplementedException();
+        return ListDatabasesAsync(true).ResultSync();
+    }
+
+    public async Task<List<DatabaseInfo>> ListDatabasesAsync()
+    {
+        return await ListDatabasesAsync(false).ConfigureAwait(false);
+    }
+
+    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(bool runSynchronously)
+    {
+        var command = CreateCommand().AddUrlPath("databases");
+        var response = await command.RunAsyncRaw<List<DatabaseInfo>>(System.Net.Http.HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+        return response;
     }
 
     public bool DatabaseExists(string name)

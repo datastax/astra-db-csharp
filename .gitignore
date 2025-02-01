@@ -3,8 +3,6 @@ src/DataStax.AstraDB.DataApi/bin
 src/DataStax.AstraDB.DataApi/obj
 test/DataStax.AstraDB.DataApi.IntegrationTests/bin
 test/DataStax.AstraDB.DataApi.IntegrationTests/obj
-test/DataStax.AstraDB.DataApi.Tests/bin
-test/DataStax.AstraDB.DataApi.Tests/obj
-appsettings.json
+test/DataStax.AstraDB.DataAPI.IntegrationTests/appsettings.sample.json
 test/DataStax.AstraDB.DataApi.UnitTests/bin
 test/DataStax.AstraDB.DataApi.UnitTests/obj
