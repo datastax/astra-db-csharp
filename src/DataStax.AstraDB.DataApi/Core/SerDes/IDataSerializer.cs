@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
+
 namespace DataStax.AstraDB.DataApi.Core.SerDes;
 
 public interface IDataSerializer

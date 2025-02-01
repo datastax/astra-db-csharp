@@ -18,6 +18,11 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
@@ -45,11 +50,11 @@ public class AstraDatabasesAdmin
         return ListDatabases().Select(db => db.Info.Name).ToList();
     }
 
-	public async Task<List<string>> ListDatabaseNamesAsync()
-	{
-		var databases = await ListDatabasesAsync().ConfigureAwait(false);
-		return databases.Select(db => db.Info.Name).ToList();
-	}
+    public async Task<List<string>> ListDatabaseNamesAsync()
+    {
+        var databases = await ListDatabasesAsync().ConfigureAwait(false);
+        return databases.Select(db => db.Info.Name).ToList();
+    }
 
     public List<DatabaseInfo> ListDatabases()
     {
@@ -64,7 +69,7 @@ public class AstraDatabasesAdmin
     internal async Task<List<DatabaseInfo>> ListDatabasesAsync(bool runSynchronously)
     {
         var command = CreateCommand().AddUrlPath("databases");
-        var response = await command.RunAsyncRaw<List<DatabaseInfo>>(System.Net.Http.HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncRaw<List<DatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
         return response;
     }
 
@@ -157,7 +162,7 @@ public class AstraDatabasesAdmin
     {
         Guard.NotEmpty(id, nameof(id));
         var command = CreateCommand().AddUrlPath("databases").AddUrlPath(id.ToString());
-        var response = await command.RunAsyncRaw<DatabaseInfo>(System.Net.Http.HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncRaw<DatabaseInfo>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
         return response;
     }
 

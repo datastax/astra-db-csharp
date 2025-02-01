@@ -17,7 +17,9 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
+using System;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 

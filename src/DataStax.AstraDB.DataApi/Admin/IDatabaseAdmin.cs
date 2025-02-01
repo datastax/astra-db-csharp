@@ -16,6 +16,8 @@
 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Results;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 

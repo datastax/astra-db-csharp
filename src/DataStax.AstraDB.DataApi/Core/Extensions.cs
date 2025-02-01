@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+using System.Threading.Tasks;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
 public static class CoreExtensions

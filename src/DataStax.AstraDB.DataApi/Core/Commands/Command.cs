@@ -15,10 +15,14 @@
  */
 
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Commands;
 
@@ -29,7 +33,7 @@ public class Command
     private readonly DataApiClient _client;
     private readonly CommandUrlBuilder _urlBuilder;
     private readonly string _name;
-    private List<String> _urlPaths = new();
+    private List<string> _urlPaths = new();
 
     internal object Payload { get; set; }
     internal string UrlPostfix { get; set; }

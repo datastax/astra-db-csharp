@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
+
 namespace DataStax.AstraDB.DataApi.Utils;
 
 public static class Extensions

@@ -15,6 +15,7 @@
  */
 
 using DataStax.AstraDB.DataApi.Utils;
+using System.Linq;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
