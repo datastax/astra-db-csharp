@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace DataStax.AstraDB.DataApi.Utils;
 
 public static class Guard

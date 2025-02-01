@@ -15,6 +15,7 @@
  */
 
 using DataStax.AstraDB.DataApi.Collections;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;

@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
+using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core;
 

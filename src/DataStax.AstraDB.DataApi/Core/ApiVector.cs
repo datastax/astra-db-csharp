@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System;
+using System.Linq;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
 //TODO: placeholder
