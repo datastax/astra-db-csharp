@@ -139,7 +139,7 @@ public class AstraDatabasesAdmin
     {
         Guard.NotEmpty(id, nameof(id));
         var command = CreateCommand().AddUrlPath("databases").AddUrlPath(id.ToString());
-        var response = await command.RunAsyncRaw<DatabaseInfo>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncRaw<DatabaseInfo>(System.Net.Http.HttpMethod.Get, runSynchronously).ConfigureAwait(false);
         return response;
     }
 

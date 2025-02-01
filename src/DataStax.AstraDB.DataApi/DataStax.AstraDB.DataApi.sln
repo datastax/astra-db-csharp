@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStax.AstraDB.DataAPI", "DataStax.AstraDB.DataAPI.csproj", "{8D9F6877-0FAB-6D07-B52F-3C51AD59CA7B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStax.AstraDB.DataApi", "DataStax.AstraDB.DataApi.csproj", "{8D9F6877-0FAB-6D07-B52F-3C51AD59CA7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
