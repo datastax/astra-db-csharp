@@ -1,6 +1,6 @@
 using DataStax.AstraDB.DataApi;
-using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Collections;
+using DataStax.AstraDB.DataApi.Core;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Tests;
@@ -57,17 +57,19 @@ public class AdminTests
 		Console.WriteLine(string.Join(", ", list));
 	}
 
-	[Fact]
-	public async Task CheckDatabaseExistsByName()
-	{
-		var dbName = "test-1";
+	// TODO: create database first, test, then remove
+	// [Fact]
+	// public async Task CheckDatabaseExistsByName()
+	// {
+	// 	var dbName = "test-1";
 
-		var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbName);
-		Assert.True(found);
+	// 	var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbName);
+	// 	Assert.True(found);
 
-		found = fixture.Client.GetAstraAdmin().DoesDatabaseExist(dbName);
-		Assert.True(found);
-	}
+	// 	found = fixture.Client.GetAstraAdmin().DoesDatabaseExist(dbName);
+	// 	Assert.True(found);
+	// }
+
 
 	[Theory]
 	[InlineData(null)]
@@ -105,6 +107,7 @@ public class AdminTests
 	public async Task CheckDatabaseExistsById()
 	{
 		// todo: get this value from an expected named DB produced by testing CreateDatabase()
+
 		var dbId = fixture.DatabaseId;
 
 		var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbId);
