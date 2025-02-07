@@ -28,211 +28,229 @@ namespace DataStax.AstraDB.DataApi.Admin;
 
 public class AstraDatabasesAdmin
 {
-    private const int WAIT_IN_SECONDS = 600;
-    private const CloudProviderType FREE_TIER_CLOUD = CloudProviderType.GCP;
-    private const string FREE_TIER_CLOUD_REGION = "us-east1";
+	private const int WAIT_IN_SECONDS = 600;
+	private const CloudProviderType FREE_TIER_CLOUD = CloudProviderType.GCP;
+	private const string FREE_TIER_CLOUD_REGION = "us-east1";
 
-    private readonly CommandOptions _adminOptions;
-    private readonly DataApiClient _client;
+	private readonly CommandOptions _adminOptions;
+	private readonly DataApiClient _client;
 
-    private CommandOptions[] OptionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
+	private CommandOptions[] OptionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
 
-    internal AstraDatabasesAdmin(DataApiClient client, CommandOptions adminOptions)
-    {
-        Guard.NotNull(client, nameof(client));
-        _client = client;
-        Guard.NotNull(adminOptions, nameof(adminOptions));
-        _adminOptions = adminOptions;
-    }
+	internal AstraDatabasesAdmin(DataApiClient client, CommandOptions adminOptions)
+	{
+		Guard.NotNull(client, nameof(client));
+		_client = client;
+		Guard.NotNull(adminOptions, nameof(adminOptions));
+		_adminOptions = adminOptions;
+	}
 
-    public List<string> ListDatabaseNames()
-    {
-        return ListDatabases().Select(db => db.Info.Name).ToList();
-    }
+	public List<string> ListDatabaseNames()
+	{
+		return ListDatabases().Select(db => db.Info.Name).ToList();
+	}
 
-    public async Task<List<string>> ListDatabaseNamesAsync()
-    {
-        var databases = await ListDatabasesAsync().ConfigureAwait(false);
-        return databases.Select(db => db.Info.Name).ToList();
-    }
+	public async Task<List<string>> ListDatabaseNamesAsync()
+	{
+		var databases = await ListDatabasesAsync().ConfigureAwait(false);
+		return databases.Select(db => db.Info.Name).ToList();
+	}
 
-    public List<DatabaseInfo> ListDatabases()
-    {
-        return ListDatabasesAsync(true).ResultSync();
-    }
+	public List<DatabaseInfo> ListDatabases()
+	{
+		return ListDatabasesAsync(true).ResultSync();
+	}
 
-    public async Task<List<DatabaseInfo>> ListDatabasesAsync()
-    {
-        return await ListDatabasesAsync(false).ConfigureAwait(false);
-    }
+	public async Task<List<DatabaseInfo>> ListDatabasesAsync()
+	{
+		return await ListDatabasesAsync(false).ConfigureAwait(false);
+	}
 
-    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(bool runSynchronously)
-    {
-        var command = CreateCommand().AddUrlPath("databases");
-        var response = await command.RunAsyncRaw<List<DatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
-        return response;
-    }
+	internal async Task<List<DatabaseInfo>> ListDatabasesAsync(bool runSynchronously)
+	{
+		var command = CreateCommand().AddUrlPath("databases");
+		var response = await command.RunAsyncRaw<List<DatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+		return response;
+	}
 
-    public bool DatabaseExists(string name)
-    {
-        Guard.NotNullOrEmpty(name, nameof(name));
-        return ListDatabaseNames().Contains(name);
-    }
+	public bool DoesDatabaseExist(string name)
+	{
+		Guard.NotNullOrEmpty(name, nameof(name));
+		List<string> list = ListDatabaseNames();
+		return list.Contains(name);
+	}
 
-    public bool DatabaseExists(Guid id)
-    {
-        Guard.NotEmpty(id, nameof(id));
-        throw new NotImplementedException();
-    }
+	public async Task<bool> DoesDatabaseExistAsync(string name)
+	{
+		Guard.NotNullOrEmpty(name, nameof(name));
+		List<string> list = await ListDatabaseNamesAsync();
+		return list.Contains(name);
+	}
 
-    public IDatabaseAdmin CreateDatabase(string name)
-    {
-        Guard.NotNullOrEmpty(name, nameof(name));
-        throw new NotImplementedException();
-        //return CreateDatabase(name, FREE_TIER_CLOUD, FREE_TIER_CLOUD_REGION);
-    }
+	public bool DoesDatabaseExist(Guid id)
+	{
+		Guard.NotEmpty(id, nameof(id));
+		string guid = id.ToString();
+		List<DatabaseInfo> databases = ListDatabases();
+		return databases.Any(db => db.Id == guid);
+	}
 
-    public IDatabaseAdmin CreateDatabase(string name, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb = true)
-    {
-        Guard.NotNullOrEmpty(name, nameof(name));
-        Guard.NotNullOrEmpty(cloudRegion, nameof(cloudRegion));
+	public async Task<bool> DoesDatabaseExistAsync(Guid id)
+	{
+		Guard.NotEmpty(id, nameof(id));
+		string guid = id.ToString();
+		List<DatabaseInfo> databases = await ListDatabasesAsync();
+		return databases.Any(db => db.Id == guid);
+	}
 
-        var dbInfo = ListDatabases().FirstOrDefault(db => name.Equals(db.Info.Name));
-        if (dbInfo != null)
-        {
-            // switch (optDb.Status)
-            // {
-            //     case DatabaseStatusType.ACTIVE:
-            //         Console.WriteLine($"Database {AnsiUtils.Green(name)} already exists and is ACTIVE.");
-            //         return GetDatabaseAdmin(Guid.Parse(optDb.Id));
-            //     default:
-            //         throw new InvalidOperationException("Database already exists but is not in expected state.");
-            // }
-        }
+	public IDatabaseAdmin CreateDatabase(string name)
+	{
+		Guard.NotNullOrEmpty(name, nameof(name));
+		throw new NotImplementedException();
+		//return CreateDatabase(name, FREE_TIER_CLOUD, FREE_TIER_CLOUD_REGION);
+	}
 
-        // var newDbId = Guid.Parse(devopsDbClient.Create(new DatabaseCreationRequest
-        // {
-        //     Name = name,
-        //     CloudProvider = cloud,
-        //     CloudRegion = cloudRegion,
-        //     Keyspace = DataApiClientOptions.DEFAULT_KEYSPACE,
-        //     WithVector = true
-        // }));
+	public IDatabaseAdmin CreateDatabase(string name, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb = true)
+	{
+		Guard.NotNullOrEmpty(name, nameof(name));
+		Guard.NotNullOrEmpty(cloudRegion, nameof(cloudRegion));
 
-        //Console.WriteLine($"Database {name} is starting (id={newDbId}): it will take about a minute please wait...");
-        if (waitForDb)
-        {
-            //WaitForDatabase(devopsDbClient.Database(newDbId.ToString()));
-        }
-        //return GetDatabaseAdmin(newDbId);
-        throw new NotImplementedException();
-    }
+		var dbInfo = ListDatabases().FirstOrDefault(db => name.Equals(db.Info.Name));
+		if (dbInfo != null)
+		{
+			// switch (optDb.Status)
+			// {
+			//     case DatabaseStatusType.ACTIVE:
+			//         Console.WriteLine($"Database {AnsiUtils.Green(name)} already exists and is ACTIVE.");
+			//         return GetDatabaseAdmin(Guid.Parse(optDb.Id));
+			//     default:
+			//         throw new InvalidOperationException("Database already exists but is not in expected state.");
+			// }
+		}
 
-    public bool DropDatabase(Guid databaseId)
-    {
-        Guard.NotEmpty(databaseId, nameof(databaseId));
-        bool exists = DatabaseExists(databaseId);
-        throw new NotImplementedException();
-    }
+		// var newDbId = Guid.Parse(devopsDbClient.Create(new DatabaseCreationRequest
+		// {
+		//     Name = name,
+		//     CloudProvider = cloud,
+		//     CloudRegion = cloudRegion,
+		//     Keyspace = DataApiClientOptions.DEFAULT_KEYSPACE,
+		//     WithVector = true
+		// }));
 
-    public bool DropDatabase(string databaseName)
-    {
-        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-        var db = ListDatabases().FirstOrDefault(d => d.Info.Name.Equals(databaseName));
-        if (db != null)
-        {
-            throw new NotImplementedException();
-            //devopsDbClient.Database(db.Id.ToString()).Delete();
-            return true;
-        }
-        return false;
-    }
+		//Console.WriteLine($"Database {name} is starting (id={newDbId}): it will take about a minute please wait...");
+		if (waitForDb)
+		{
+			//WaitForDatabase(devopsDbClient.Database(newDbId.ToString()));
+		}
+		//return GetDatabaseAdmin(newDbId);
+		throw new NotImplementedException();
+	}
 
-    public DatabaseInfo GetDatabaseInfo(Guid id)
-    {
-        return GetDatabaseInfoAsync(id, true).ResultSync();
-    }
+	public bool DropDatabase(Guid databaseId)
+	{
+		// Guard.NotEmpty(databaseId, nameof(databaseId));
+		// bool exists = DatabaseExists(databaseId);
+		throw new NotImplementedException();
+	}
 
-    public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid id)
-    {
-        return await GetDatabaseInfoAsync(id, false).ConfigureAwait(false);
-    }
+	public bool DropDatabase(string databaseName)
+	{
+		Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
+		var db = ListDatabases().FirstOrDefault(d => d.Info.Name.Equals(databaseName));
+		if (db != null)
+		{
+			throw new NotImplementedException();
+			//devopsDbClient.Database(db.Id.ToString()).Delete();
+			//return true;
+		}
+		return false;
+	}
 
-    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid id, bool runSynchronously)
-    {
-        Guard.NotEmpty(id, nameof(id));
-        var command = CreateCommand().AddUrlPath("databases").AddUrlPath(id.ToString());
-        var response = await command.RunAsyncRaw<DatabaseInfo>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
-        return response;
-    }
+	public DatabaseInfo GetDatabaseInfo(Guid id)
+	{
+		return GetDatabaseInfoAsync(id, true).ResultSync();
+	}
 
-    private Command CreateCommand()
-    {
-        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
-    }
+	public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid id)
+	{
+		return await GetDatabaseInfoAsync(id, false).ConfigureAwait(false);
+	}
 
-    //TODO: skip, these are available via DataApiClient
-    // public Database GetDatabase(Guid databaseId, DatabaseOptions dbOptions)
-    // {
-    //     Guard.NotEmpty(databaseId, nameof(databaseId));
-    //     throw new NotImplementedException();
-    //     // if (!adminOptions.DataApiClientOptions.IsAstra)
-    //     // {
-    //     //     throw new InvalidEnvironmentException("getDatabase(id, keyspace)", adminOptions.DataApiClientOptions.Destination);
-    //     // }
+	internal async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid id, bool runSynchronously)
+	{
+		Guard.NotEmpty(id, nameof(id));
+		var command = CreateCommand().AddUrlPath("databases").AddUrlPath(id.ToString());
+		var response = await command.RunAsyncRaw<DatabaseInfo>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+		return response;
+	}
 
-    //     // var databaseRegion = devopsDbClient.FindById(databaseId.ToString()).ValueOr(() => throw new DatabaseNotFoundException(databaseId.ToString())).Info.Region;
-    //     // var astraApiEndpoint = new AstraApiEndpoint(databaseId, databaseRegion, adminOptions.DataApiClientOptions.AstraEnvironment);
+	private Command CreateCommand()
+	{
+		return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
+	}
 
-    //     // return new Database(astraApiEndpoint.ApiEndPoint, dbOptions);
-    // }
+	//TODO: skip, these are available via DataApiClient
+	// public Database GetDatabase(Guid databaseId, DatabaseOptions dbOptions)
+	// {
+	//     Guard.NotEmpty(databaseId, nameof(databaseId));
+	//     throw new NotImplementedException();
+	//     // if (!adminOptions.DataApiClientOptions.IsAstra)
+	//     // {
+	//     //     throw new InvalidEnvironmentException("getDatabase(id, keyspace)", adminOptions.DataApiClientOptions.Destination);
+	//     // }
 
-    //TODO: skip, these are available via DataApiClient
-    // public Database GetDatabase(Guid databaseId, string keyspace)
-    // {
-    //     throw new NotImplementedException();
-    //     //return GetDatabase(databaseId, new DatabaseOptions(adminOptions.Token, adminOptions.DataApiClientOptions) { Keyspace = keyspace });
-    // }
+	//     // var databaseRegion = devopsDbClient.FindById(databaseId.ToString()).ValueOr(() => throw new DatabaseNotFoundException(databaseId.ToString())).Info.Region;
+	//     // var astraApiEndpoint = new AstraApiEndpoint(databaseId, databaseRegion, adminOptions.DataApiClientOptions.AstraEnvironment);
 
-    //TODO: skip, these are available via DataApiClient
-    // public Database GetDatabase(Guid databaseId)
-    // {
-    //     return GetDatabase(databaseId, DatabaseOptions.DefaultKeyspace);
-    // }
+	//     // return new Database(astraApiEndpoint.ApiEndPoint, dbOptions);
+	// }
 
-    //TODO: is this used? I'd expect to get this from the Database itself.
-    // public IDatabaseAdmin GetDatabaseAdmin(Guid databaseId)
-    // {
-    //     Guard.NotEmpty(databaseId, nameof(databaseId));
-    //     throw new NotImplementedException();
-    //     //return new DatabaseAdminForAstra(adminOptions.Token, databaseId, adminOptions.DataApiClientOptions);
-    // }
+	//TODO: skip, these are available via DataApiClient
+	// public Database GetDatabase(Guid databaseId, string keyspace)
+	// {
+	//     throw new NotImplementedException();
+	//     //return GetDatabase(databaseId, new DatabaseOptions(adminOptions.Token, adminOptions.DataApiClientOptions) { Keyspace = keyspace });
+	// }
 
-    // private void WaitForDatabase(DbOpsClient dbc)
-    // {
-    //     var top = DateTimeOffset.UtcNow;
-    //     while (GetStatus(dbc) != DatabaseStatusType.ACTIVE && (DateTimeOffset.UtcNow - top).TotalSeconds < WAIT_IN_SECONDS)
-    //     {
-    //         try
-    //         {
-    //             Thread.Sleep(5000);
-    //             Console.WriteLine($"...waiting for database '{dbc.Get().Info.Name}' to become active...");
-    //         }
-    //         catch (ThreadInterruptedException e)
-    //         {
-    //             Console.WriteLine($"Interrupted {e.Message}");
-    //             Thread.CurrentThread.Interrupt();
-    //         }
-    //     }
-    //     if (GetStatus(dbc) != DatabaseStatusType.ACTIVE)
-    //     {
-    //         throw new InvalidOperationException($"Database is not in expected state after timeouts of {WAIT_IN_SECONDS} seconds.");
-    //     }
-    // }
+	//TODO: skip, these are available via DataApiClient
+	// public Database GetDatabase(Guid databaseId)
+	// {
+	//     return GetDatabase(databaseId, DatabaseOptions.DefaultKeyspace);
+	// }
 
-    // private DatabaseStatusType GetStatus(DbOpsClient dbc)
-    // {
-    //     return dbc.Find().ValueOr(() => throw new DatabaseNotFoundException(dbc.DatabaseId)).Status;
-    // }
+	//TODO: is this used? I'd expect to get this from the Database itself.
+	// public IDatabaseAdmin GetDatabaseAdmin(Guid databaseId)
+	// {
+	//     Guard.NotEmpty(databaseId, nameof(databaseId));
+	//     throw new NotImplementedException();
+	//     //return new DatabaseAdminForAstra(adminOptions.Token, databaseId, adminOptions.DataApiClientOptions);
+	// }
+
+	// private void WaitForDatabase(DbOpsClient dbc)
+	// {
+	//     var top = DateTimeOffset.UtcNow;
+	//     while (GetStatus(dbc) != DatabaseStatusType.ACTIVE && (DateTimeOffset.UtcNow - top).TotalSeconds < WAIT_IN_SECONDS)
+	//     {
+	//         try
+	//         {
+	//             Thread.Sleep(5000);
+	//             Console.WriteLine($"...waiting for database '{dbc.Get().Info.Name}' to become active...");
+	//         }
+	//         catch (ThreadInterruptedException e)
+	//         {
+	//             Console.WriteLine($"Interrupted {e.Message}");
+	//             Thread.CurrentThread.Interrupt();
+	//         }
+	//     }
+	//     if (GetStatus(dbc) != DatabaseStatusType.ACTIVE)
+	//     {
+	//         throw new InvalidOperationException($"Database is not in expected state after timeouts of {WAIT_IN_SECONDS} seconds.");
+	//     }
+	// }
+
+	// private DatabaseStatusType GetStatus(DbOpsClient dbc)
+	// {
+	//     return dbc.Find().ValueOr(() => throw new DatabaseNotFoundException(dbc.DatabaseId)).Status;
+	// }
 }
 
