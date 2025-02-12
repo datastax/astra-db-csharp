@@ -353,4 +353,3 @@ public class AstraDatabasesAdmin
         return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
     }
 }
-
