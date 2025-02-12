@@ -45,9 +45,6 @@ public class Command
     private Action<HttpResponseMessage> _responseHandler;
     internal Action<HttpResponseMessage> ResponseHandler { set { _responseHandler = value; } }
 
-
-
-
     internal Command(DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
 

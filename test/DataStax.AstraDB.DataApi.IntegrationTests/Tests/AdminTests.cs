@@ -2,7 +2,6 @@ using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using Xunit;
-using System.Diagnostics.CodeAnalysis;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Tests;
 
