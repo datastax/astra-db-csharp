@@ -1,7 +1,9 @@
 .vscode
-src/DataStax.AstraDB.DataAPI/bin
-src/DataStax.AstraDB.DataAPI/obj
-test/DataStax.AstraDB.DataAPI.IntegrationTests/bin
-test/DataStax.AstraDB.DataAPI.IntegrationTests/obj
-test/DataStax.AstraDB.DataAPI.Tests/bin
-test/DataStax.AstraDB.DataAPI.Tests/obj
+src/DataStax.AstraDB.DataApi/bin
+src/DataStax.AstraDB.DataApi/obj
+test/DataStax.AstraDB.DataApi.IntegrationTests/bin
+test/DataStax.AstraDB.DataApi.IntegrationTests/obj
+test/DataStax.AstraDB.DataAPI.IntegrationTests/appsettings.sample.json
+test/DataStax.AstraDB.DataApi.UnitTests/bin
+test/DataStax.AstraDB.DataApi.UnitTests/obj
+appsettings.json
