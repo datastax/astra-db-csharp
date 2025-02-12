@@ -40,6 +40,13 @@ public class Command
     internal object Payload { get; set; }
     internal string UrlPostfix { get; set; }
 
+    public readonly struct EmptyResult { }
+
+    private Action<HttpResponseMessage> _responseHandler;
+    internal Action<HttpResponseMessage> ResponseHandler { set { _responseHandler = value; } }
+
+
+
 
     internal Command(DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
@@ -205,8 +212,21 @@ public class Command
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
 
+        if (_responseHandler != null)
+        {
+            _responseHandler(response);
+        }
+
             MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
             MaybeLogDebugMessage("Content: {Content}", responseContent);
+
+        MaybeLogDebugMessage("Raw Response: {Response}", response);
+
+
+        if (string.IsNullOrEmpty(responseContent))
+        {
+            return default;
+        }
 
             return JsonSerializer.Deserialize<T>(responseContent);
         }
