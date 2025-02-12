@@ -16,89 +16,71 @@
 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.Utils;
-using System;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Collections;
-
-public class Collection : Collection<Document>
-{
-    public Collection(string collectionName, Database database) : base(collectionName, database)
-    { }
-}
 
 public class Collection<T> where T : class
 {
     private readonly string _collectionName;
     private readonly Database _database;
+    private readonly CommandOptions _commandOptions;
 
     public string CollectionName => _collectionName;
 
-    public Collection(string collectionName, Database database)
+    internal Collection(string collectionName, Database database, CommandOptions commandOptions)
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         Guard.NotNull(database, nameof(database));
         _collectionName = collectionName;
         _database = database;
+        _commandOptions = commandOptions;
     }
 
     public CollectionInsertOneResult InsertOne(T document)
     {
-        return InsertOne(document, new CollectionInsertOneOptions());
+        return InsertOne(document, null);
     }
 
-    public CollectionInsertOneResult InsertOne(T document, CollectionInsertOneOptions options)
+    public CollectionInsertOneResult InsertOne(T document, CommandOptions commandOptions)
     {
-        return InsertOneAsync(document, options, runSynchronously: true).ResultSync();
+        return InsertOneAsync(document, commandOptions, runSynchronously: true).ResultSync();
     }
 
     public Task<CollectionInsertOneResult> InsertOneAsync(T document)
     {
-        return InsertOneAsync(document, new CollectionInsertOneOptions());
+        return InsertOneAsync(document, new CommandOptions());
     }
 
-    public Task<CollectionInsertOneResult> InsertOneAsync(T document, CollectionInsertOneOptions options)
+    public Task<CollectionInsertOneResult> InsertOneAsync(T document, CommandOptions commandOptions)
     {
-        return InsertOneAsync(document, options, runSynchronously: false);
+        return InsertOneAsync(document, commandOptions, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertOneResult> InsertOneAsync(T document, CollectionInsertOneOptions options, bool runSynchronously)
+    private async Task<CollectionInsertOneResult> InsertOneAsync(T document, CommandOptions commandOptions, bool runSynchronously)
     {
         Guard.NotNull(document, nameof(document));
-        Guard.NotNull(options, nameof(options));
 
-        var command = CreateCommand("insertOne").WithDocument(document);
+        var command = CreateCommand("insertOne").WithDocument(document).AddCommandOptions(commandOptions);
         var response = await command.RunAsync<InsertDocumentsCommandResponse>(runSynchronously).ConfigureAwait(false);
-        if (response == null)
-        {
-            //TODO: handle error
-            throw new Exception();
-        }
 
-        return new CollectionInsertOneResult { InsertedId = response.Status.InsertedIds[0] };
+        return new CollectionInsertOneResult { InsertedId = response.Result.InsertedIds[0] };
+    }
+
+    public void Drop()
+    {
+        _database.DropCollection(_collectionName);
+    }
+
+    public async Task DropAsync()
+    {
+        await _database.DropCollectionAsync(_collectionName).ConfigureAwait(false);
     }
 
     internal Command CreateCommand(string name)
     {
         return new Command(name, _database.Client, _database.OptionsTree, new DatabaseCommandUrlBuilder(_database, _database.OptionsTree, _collectionName));
     }
-}
-
-//TODO move these classes
-internal class InsertDocumentsCommandResponse
-{
-    [JsonPropertyName("insertedIds")]
-    public object[] InsertedIds { get; set; }
-}
-
-public class CollectionInsertOneOptions
-{
-    //TODO implementation
-}
-
-public class CollectionInsertOneResult
-{
-    public object InsertedId { get; internal set; }
 }

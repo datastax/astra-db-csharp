@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Utils;
 using System.Linq;
+using System.Threading;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
@@ -28,6 +29,7 @@ public class CommandOptions
     public HttpClientOptions HttpClientOptions { get; set; }
     public TimeoutOptions TimeoutOptions { get; set; }
     public ApiVersion? ApiVersion { get; set; }
+    public CancellationToken? CancellationToken { get; set; }
 
     public static CommandOptions Merge(params CommandOptions[] arr)
     {
@@ -41,7 +43,8 @@ public class CommandOptions
             Destination = list.Select(o => o.Destination).Merge(),
             HttpClientOptions = list.Select(o => o.HttpClientOptions).Merge(),
             TimeoutOptions = list.Select(o => o.TimeoutOptions).Merge(),
-            ApiVersion = list.Select(o => o.ApiVersion).Merge()
+            ApiVersion = list.Select(o => o.ApiVersion).Merge(),
+            CancellationToken = list.Select(o => o.CancellationToken).Merge()
         };
         return options;
     }
@@ -53,7 +56,8 @@ public class CommandOptions
             Environment = DBEnvironment.Production,
             RunMode = Core.RunMode.Normal,
             Destination = DataApiDestination.ASTRA,
-            ApiVersion = Core.ApiVersion.V1
+            ApiVersion = Core.ApiVersion.V1,
+            HttpClientOptions = new HttpClientOptions()
         };
     }
 }

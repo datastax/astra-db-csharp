@@ -1,4 +1,3 @@
-
 /*
  * Copyright DataStax, Inc.
  *
@@ -15,28 +14,12 @@
  * limitations under the License.
  */
 
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
-public static class CoreExtensions
+public class ListCollectionsResult
 {
-    public static string ToUrlString(this ApiVersion apiVersion)
-    {
-        return apiVersion switch
-        {
-            ApiVersion.V1 => "v1",
-            _ => "v1",
-        };
-    }
-
-    public static TResult ResultSync<TResult>(this Task<TResult> task)
-    {
-        return task.GetAwaiter().GetResult();
-    }
-
-    public static void ResultSync(this Task task)
-    {
-        task.GetAwaiter().GetResult();
-    }
+    [JsonPropertyName("collections")]
+    public CollectionResult[] Collections { get; set; }
 }

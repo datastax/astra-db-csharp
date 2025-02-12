@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
+namespace DataStax.AstraDB.DataApi.Core;
 /*
  * Copyright DataStax, Inc.
  *
@@ -15,28 +18,17 @@
  * limitations under the License.
  */
 
-using System.Threading.Tasks;
-
-namespace DataStax.AstraDB.DataApi.Core;
-
-public static class CoreExtensions
+public class VectorServiceOptions
 {
-    public static string ToUrlString(this ApiVersion apiVersion)
-    {
-        return apiVersion switch
-        {
-            ApiVersion.V1 => "v1",
-            _ => "v1",
-        };
-    }
+    [JsonPropertyName("provider")]
+    public string Provider { get; set; }
 
-    public static TResult ResultSync<TResult>(this Task<TResult> task)
-    {
-        return task.GetAwaiter().GetResult();
-    }
+    [JsonPropertyName("modelName")]
+    public string ModelName { get; set; }
 
-    public static void ResultSync(this Task task)
-    {
-        task.GetAwaiter().GetResult();
-    }
+    [JsonPropertyName("authentication")]
+    public Dictionary<string, object> Authentication { get; set; }
+
+    [JsonPropertyName("parameters")]
+    public Dictionary<string, object> Parameters { get; set; }
 }

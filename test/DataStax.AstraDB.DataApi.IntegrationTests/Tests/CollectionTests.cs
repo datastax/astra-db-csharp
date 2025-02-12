@@ -1,17 +1,11 @@
 using DataStax.AstraDB.DataApi;
-using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Collections;
+using DataStax.AstraDB.DataApi.Core;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Tests;
 
-[CollectionDefinition("Collection Collection")]
-public class DatabaseCollection : ICollectionFixture<ClientFixture>
-{
-
-}
-
-[Collection("Collection Collection")]
+[Collection("DatabaseAndCollections")]
 public class CollectionTests
 {
     ClientFixture fixture;
@@ -39,9 +33,10 @@ public class CollectionTests
                 },
                 Borough = "Manhattan",
             };
-            await fixture.Database.CreateCollectionAsync("restaurants");
-            var collection = fixture.Database.GetCollection<Restaurant>("restaurants");
+            var collectionName = "restaurants";
+            var collection = await fixture.Database.CreateCollectionAsync<Restaurant>(collectionName);
             var result = await collection.InsertOneAsync(newRestaurant);
+            await fixture.Database.DropCollectionAsync(collectionName);
             var newId = result.InsertedId;
             Assert.NotNull(newId);
         }

@@ -76,7 +76,7 @@ public class AdminTests
 	[InlineData("")]
 	public void CheckDatabaseExistsByName_ExpectedError(string invalidName)
 	{
-		var ex = Assert.Throws<ArgumentException>(() => fixture.Client.GetAstraAdmin().DoesDatabaseExist(invalidName));
+		var ex = Assert.Throws<ArgumentNullException>(() => fixture.Client.GetAstraAdmin().DoesDatabaseExist(invalidName));
 		Assert.Contains("Value cannot be null or empty", ex.Message);
 	}
 
@@ -85,7 +85,7 @@ public class AdminTests
 	[InlineData("")]
 	public async Task CheckDatabaseExistsByNameAsync_ExpectedError(string invalidName)
 	{
-		var ex = await Assert.ThrowsAsync<ArgumentException>(
+		var ex = await Assert.ThrowsAsync<ArgumentNullException>(
 			() => fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(invalidName)
 		);
 		Assert.Contains("Value cannot be null or empty", ex.Message);

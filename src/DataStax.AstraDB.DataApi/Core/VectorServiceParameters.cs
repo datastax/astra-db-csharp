@@ -1,4 +1,3 @@
-
 /*
  * Copyright DataStax, Inc.
  *
@@ -15,28 +14,22 @@
  * limitations under the License.
  */
 
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-public static class CoreExtensions
+public class VectorServiceParameters
 {
-    public static string ToUrlString(this ApiVersion apiVersion)
-    {
-        return apiVersion switch
-        {
-            ApiVersion.V1 => "v1",
-            _ => "v1",
-        };
-    }
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
 
-    public static TResult ResultSync<TResult>(this Task<TResult> task)
-    {
-        return task.GetAwaiter().GetResult();
-    }
+    [JsonPropertyName("required")]
+    public bool? Required { get; set; }
 
-    public static void ResultSync(this Task task)
-    {
-        task.GetAwaiter().GetResult();
-    }
+    [JsonPropertyName("default")]
+    public object DefaultValue { get; set; }
+
+    [JsonPropertyName("help")]
+    public string Help { get; set; }
+
 }

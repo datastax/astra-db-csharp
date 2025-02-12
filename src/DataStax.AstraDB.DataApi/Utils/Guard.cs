@@ -24,7 +24,7 @@ public static class Guard
     {
         if (string.IsNullOrEmpty(value))
         {
-            throw new ArgumentException(message.OrIfEmpty("Value cannot be null or empty."), paramName);
+            throw new ArgumentNullException(message.OrIfEmpty("Value cannot be null or empty."), paramName);
         }
     }
 
