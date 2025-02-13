@@ -14,17 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -65,15 +61,15 @@ public class AstraDatabasesAdmin
         return ListDatabasesAsync(true).ResultSync();
     }
 
-    public async Task<List<DatabaseInfo>> ListDatabasesAsync()
+    public Task<List<DatabaseInfo>> ListDatabasesAsync()
     {
-        return await ListDatabasesAsync(false).ConfigureAwait(false);
+        return ListDatabasesAsync(false);
     }
 
-    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(bool runSynchronously)
+    internal Task<List<DatabaseInfo>> ListDatabasesAsync(bool runSynchronously)
     {
         var command = CreateCommand().AddUrlPath("databases");
-        var response = await command.RunAsyncRaw<List<DatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+        var response = command.RunAsyncRaw<List<DatabaseInfo>>(HttpMethod.Get, runSynchronously);
         return response;
     }
 
@@ -117,14 +113,14 @@ public class AstraDatabasesAdmin
         return CreateDatabaseAsync(dbName, cloudProviderType, cloudRegion, waitForDb, true).ResultSync();
     }
 
-    public async Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, bool waitForDb = true)
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, bool waitForDb = true)
     {
-        return await CreateDatabaseAsync(dbName, FREE_TIER_CLOUD, FREE_TIER_CLOUD_REGION, waitForDb, false).ConfigureAwait(false);
+        return CreateDatabaseAsync(dbName, FREE_TIER_CLOUD, FREE_TIER_CLOUD_REGION, waitForDb, false);
     }
 
-    public async Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb = true)
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb = true)
     {
-        return await CreateDatabaseAsync(dbName, cloudProviderType, cloudRegion, waitForDb, false).ConfigureAwait(false);
+        return CreateDatabaseAsync(dbName, cloudProviderType, cloudRegion, waitForDb, false);
     }
 
     internal async Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb, bool runSynchronously)
@@ -161,8 +157,6 @@ public class AstraDatabasesAdmin
             .AddUrlPath("databases")
             .WithPayload(requestBody);
 
-        // Astra returns the ID of the created DB in the Location header of a response with status code 201 (Created).
-        // Here we define a method called by Command.RunAsyncRaw (just before deserialization) to capture that dbId.
         Guid newDbId = Guid.Empty;
         command.ResponseHandler = response =>
         {
@@ -277,14 +271,14 @@ public class AstraDatabasesAdmin
         return DropDatabaseAsync(dbGuid, false).ResultSync();
     }
 
-    public async Task<bool> DropDatabaseAsync(string dbName)
+    public Task<bool> DropDatabaseAsync(string dbName)
     {
-        return await DropDatabaseAsync(dbName, true).ConfigureAwait(false);
+        return DropDatabaseAsync(dbName, true);
     }
 
-    public async Task<bool> DropDatabaseAsync(Guid dbGuid)
+    public Task<bool> DropDatabaseAsync(Guid dbGuid)
     {
-        return await DropDatabaseAsync(dbGuid, true).ConfigureAwait(false);
+        return DropDatabaseAsync(dbGuid, true);
     }
 
     internal async Task<bool> DropDatabaseAsync(string dbName, bool runSynchronously)
@@ -317,7 +311,7 @@ public class AstraDatabasesAdmin
                 .AddUrlPath(dbGuid.ToString())
                 .AddUrlPath("terminate");
 
-            Command.EmptyResult emptyResult = await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
+            await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
 
             return true;
         }
@@ -340,11 +334,11 @@ public class AstraDatabasesAdmin
         return await GetDatabaseInfoAsync(dbGuid, false).ConfigureAwait(false);
     }
 
-    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, bool runSynchronously)
+    internal Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, bool runSynchronously)
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
         var command = CreateCommand().AddUrlPath("databases").AddUrlPath(dbGuid.ToString());
-        var response = await command.RunAsyncRaw<DatabaseInfo>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+        var response = command.RunAsyncRaw<DatabaseInfo>(HttpMethod.Get, runSynchronously);
         return response;
     }
 
