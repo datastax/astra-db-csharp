@@ -17,7 +17,6 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -209,21 +208,20 @@ public class Command
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
 
-        if (_responseHandler != null)
-        {
-            _responseHandler(response);
-        }
+            if (_responseHandler != null)
+            {
+                _responseHandler(response);
+            }
 
             MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
             MaybeLogDebugMessage("Content: {Content}", responseContent);
 
-        MaybeLogDebugMessage("Raw Response: {Response}", response);
+            MaybeLogDebugMessage("Raw Response: {Response}", response);
 
-
-        if (string.IsNullOrEmpty(responseContent))
-        {
-            return default;
-        }
+            if (string.IsNullOrEmpty(responseContent))
+            {
+                return default;
+            }
 
             return JsonSerializer.Deserialize<T>(responseContent);
         }
