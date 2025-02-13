@@ -3,6 +3,7 @@ using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Dynamic;
 using System.Text.RegularExpressions;
 
 public class AdminFixture : IDisposable
@@ -16,7 +17,8 @@ public class AdminFixture : IDisposable
 			.Build();
 
 		var token = configuration["ADMINTOKEN"] ?? configuration["AstraDB:AdminToken"];
-		var dbUrl = configuration["URL"]; // ASTRA_DB_URL gets mapped to URL
+		var dbUrl = configuration["URL"];
+		DatabaseName = configuration["DATABASE_NAME"];
 
 		_databaseId = GetDatabaseIdFromUrl(dbUrl) ?? throw new Exception("Database ID could not be extracted from ASTRA_DB_URL.");
 
@@ -37,6 +39,7 @@ public class AdminFixture : IDisposable
 
 	private readonly Guid _databaseId;
 	public Guid DatabaseId => _databaseId;
+	public string DatabaseName { get; private set; }
 	public DataApiClient Client { get; private set; }
 
 	private static Guid? GetDatabaseIdFromUrl(string url)
@@ -46,6 +49,6 @@ public class AdminFixture : IDisposable
 
 		// Match the first UUID in the URL
 		var match = Regex.Match(url, @"([0-9a-fA-F-]{36})");
-		return match.Success? Guid.Parse(match.Value) : null;
+		return match.Success ? Guid.Parse(match.Value) : null;
 	}
 }
