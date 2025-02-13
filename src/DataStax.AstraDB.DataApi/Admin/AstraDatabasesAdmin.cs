@@ -194,7 +194,7 @@ public class AstraDatabasesAdmin
 
     private void WaitForDatabase(string dbName)
     {
-        WaitForDatabaseAsync(dbName, true);
+        WaitForDatabaseAsync(dbName, true).ResultSync();
     }
 
     private async Task WaitForDatabaseAsync(string dbName)
