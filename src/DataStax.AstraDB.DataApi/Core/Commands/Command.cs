@@ -127,7 +127,16 @@ public class Command
     private async Task<T> RunCommandAsync<T>(HttpMethod method, bool runSynchronously)
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
-        var content = new StringContent(JsonSerializer.Serialize(BuildContent()), Encoding.UTF8, "application/json");
+
+
+var jsonOptions = new JsonSerializerOptions
+{
+    Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false) }
+};
+
+var jsonPayload = JsonSerializer.Serialize(BuildContent(), jsonOptions);
+var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
         var url = _urlBuilder.BuildUrl();
         if (_urlPaths.Any())
         {

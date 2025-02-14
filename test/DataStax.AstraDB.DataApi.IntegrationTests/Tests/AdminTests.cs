@@ -1,4 +1,5 @@
 using DataStax.AstraDB.DataApi;
+using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using Xunit;
@@ -172,6 +173,30 @@ public class AdminTests
 	{
 		var dbName = "test-db-create-async-1";
 		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(dbName, false);
+
+		// todo: better test result here; for now we assume if no error, this was successful
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabaseByOptions
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public void CreateDatabaseByOptions()
+	{
+		var dbName = "test-db-create-options-1";
+		var options = new DatabaseCreationOptions();
+		options.Name = dbName;
+		var admin = fixture.Client.GetAstraAdmin().CreateDatabase(options, false);
+
+		// todo: better test result here; for now we assume if no error, this was successful
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabaseByOptionsAsync
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task CreateDatabaseByOptionsAsync()
+	{
+		var dbName = "test-db-create-options-async-1";
+		var options = new DatabaseCreationOptions();
+		options.Name = dbName;
+		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(options, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}

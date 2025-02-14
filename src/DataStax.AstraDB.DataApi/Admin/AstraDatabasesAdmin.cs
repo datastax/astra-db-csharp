@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -105,57 +106,50 @@ public class AstraDatabasesAdmin
 
     public IDatabaseAdmin CreateDatabase(string dbName, bool waitForDb = true)
     {
-        return CreateDatabaseAsync(dbName, FREE_TIER_CLOUD, FREE_TIER_CLOUD_REGION, waitForDb, true).ResultSync();
+        var options = new DatabaseCreationOptions();
+        options.Name = dbName;
+        return CreateDatabaseAsync(options, waitForDb, true).ResultSync();
     }
 
-    public IDatabaseAdmin CreateDatabase(string dbName, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb = true)
+    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options,  bool waitForDb = true)
     {
-        return CreateDatabaseAsync(dbName, cloudProviderType, cloudRegion, waitForDb, true).ResultSync();
+        return CreateDatabaseAsync(options, waitForDb, true).ResultSync();
     }
 
     public Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, bool waitForDb = true)
     {
-        return CreateDatabaseAsync(dbName, FREE_TIER_CLOUD, FREE_TIER_CLOUD_REGION, waitForDb, false);
+        var options = new DatabaseCreationOptions();
+        options.Name = dbName;
+        return CreateDatabaseAsync(options, waitForDb, false);
     }
 
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb = true)
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions options, bool waitForDb = true)
     {
-        return CreateDatabaseAsync(dbName, cloudProviderType, cloudRegion, waitForDb, false);
+        return CreateDatabaseAsync(options, waitForDb, false);
     }
 
-    internal async Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, CloudProviderType cloudProviderType, string cloudRegion, bool waitForDb, bool runSynchronously)
+    internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions options, bool waitForDb, bool runSynchronously)
     {
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
-        Guard.NotNullOrEmpty(cloudRegion, nameof(cloudRegion));
+        Guard.NotNullOrEmpty(options.Name, nameof(options.Name));
 
         List<DatabaseInfo> dbList = await ListDatabasesAsync(runSynchronously).ConfigureAwait(false);
 
-        DatabaseInfo existingDb = dbList.FirstOrDefault(item => dbName.Equals(item.Info.Name));
+        DatabaseInfo existingDb = dbList.FirstOrDefault(item => options.Name.Equals(item.Info.Name));
 
         if (existingDb != null)
         {
             if (existingDb.Status == "ACTIVE")
             {
-                Console.WriteLine($"Database {dbName} already exists and is ACTIVE.");
+                Console.WriteLine($"Database {options.Name} already exists and is ACTIVE.");
                 return GetDatabaseAdmin(Guid.Parse(existingDb.Id));
             }
 
-            throw new InvalidOperationException($"Database {dbName} already exists but is in state: {existingDb.Status}");
+            throw new InvalidOperationException($"Database {options.Name} already exists but is in state: {existingDb.Status}");
         }
-
-        var requestBody = new
-        {
-            name = dbName,
-            cloudProvider = cloudProviderType.ToString(),
-            region = cloudRegion,
-            keyspace = "default_keyspace",
-            capacityUnits = 1,
-            tier = "serverless",
-        };
 
         Command command = CreateCommand()
             .AddUrlPath("databases")
-            .WithPayload(requestBody);
+            .WithPayload(options);
 
         Guid newDbId = Guid.Empty;
         command.ResponseHandler = response =>
@@ -170,17 +164,17 @@ public class AstraDatabasesAdmin
             return Task.CompletedTask;
         };
         Command.EmptyResult emptyResult = await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
-        Console.WriteLine($"Database {dbName} (dbId: {newDbId}) is starting: please wait...");
+        Console.WriteLine($"Database {options.Name} (dbId: {newDbId}) is starting: please wait...");
 
         if (waitForDb)
         {
             if (runSynchronously)
             {
-                WaitForDatabase(dbName);
+                WaitForDatabase(options.Name);
             }
             else
             {
-                await WaitForDatabaseAsync(dbName).ConfigureAwait(false);
+                await WaitForDatabaseAsync(options.Name).ConfigureAwait(false);
             }
         }
 
