@@ -161,7 +161,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void CreateDatabase()
 	{
-		var dbName = "test-db-create-1";
+		var dbName = "test-db-create-x";
 		var admin = fixture.Client.GetAstraAdmin().CreateDatabase(dbName, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -171,7 +171,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task CreateDatabaseAsync()
 	{
-		var dbName = "test-db-create-async-1";
+		var dbName = "test-db-create-async-x";
 		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(dbName, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -181,7 +181,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void CreateDatabaseByOptions()
 	{
-		var dbName = "test-db-create-options-1";
+		var dbName = "test-db-create-options-x";
 		var options = new DatabaseCreationOptions();
 		options.Name = dbName;
 		var admin = fixture.Client.GetAstraAdmin().CreateDatabase(options, false);
@@ -193,7 +193,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task CreateDatabaseByOptionsAsync()
 	{
-		var dbName = "test-db-create-options-async-1";
+		var dbName = "test-db-create-options-async-x";
 		var options = new DatabaseCreationOptions();
 		options.Name = dbName;
 		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(options, false);
