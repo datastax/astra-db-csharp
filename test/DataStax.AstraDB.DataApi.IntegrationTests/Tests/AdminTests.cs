@@ -11,6 +11,7 @@ public class AdminCollection : ICollectionFixture<AdminFixture>
 	public const string SkipMessage = "Please read 'How to run these skipped tests'";
 }
 
+//  dotnet test --filter "FullyQualifiedName~DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests"
 [Collection("Admin Collection")]
 public class AdminTests
 {
@@ -60,15 +61,10 @@ public class AdminTests
 	[Fact]
 	public async Task CheckDatabaseExistsByName()
 	{
-		//TODO: adjust test to create db, then check for it's existence
 		var dbName = fixture.DatabaseName;
 
 		var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbName);
 		Assert.True(found);
-
-	// 	found = fixture.Client.GetAstraAdmin().DoesDatabaseExist(dbName);
-	// 	Assert.True(found);
-	// }
 
 		found = fixture.Client.GetAstraAdmin().DoesDatabaseExist(dbName);
 		Assert.True(found);
@@ -109,8 +105,6 @@ public class AdminTests
 	[Fact]
 	public async Task CheckDatabaseExistsById()
 	{
-		// todo: get this value from an expected named DB produced by testing CreateDatabase()
-
 		var dbId = fixture.DatabaseId;
 
 		var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbId);
@@ -123,7 +117,6 @@ public class AdminTests
 	[Fact]
 	public async Task CheckDatabaseStatus()
 	{
-		//TODO: adjust test to create db, then check for it's existence
 		var dbName = fixture.DatabaseName;
 
 		var status = await fixture.Client.GetAstraAdmin().GetDatabaseStatusAsync(dbName);
@@ -167,7 +160,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void CreateDatabase()
 	{
-		var dbName = "test-db-create-x";
+		var dbName = "test-db-create-1";
 		var admin = fixture.Client.GetAstraAdmin().CreateDatabase(dbName, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -177,7 +170,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task CreateDatabaseAsync()
 	{
-		var dbName = "test-db-create-async-x";
+		var dbName = "test-db-create-async-1";
 		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(dbName, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful

@@ -41,8 +41,8 @@ public class Command
 
     public readonly struct EmptyResult { }
 
-    private Action<HttpResponseMessage> _responseHandler;
-    internal Action<HttpResponseMessage> ResponseHandler { set { _responseHandler = value; } }
+    private Func<HttpResponseMessage, Task> _responseHandler;
+    internal Func<HttpResponseMessage, Task> ResponseHandler { set { _responseHandler = value; } }
 
     internal Command(DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
@@ -210,7 +210,14 @@ public class Command
 
             if (_responseHandler != null)
             {
-                _responseHandler(response);
+                if (runSynchronously)
+                {
+                    _responseHandler(response).ResultSync();
+                }
+                else
+                {
+                    await _responseHandler(response);
+                }
             }
 
             MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);

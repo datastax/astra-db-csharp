@@ -145,7 +145,7 @@ public class AstraDatabasesAdmin
 
         var requestBody = new
         {
-            dbName = dbName,
+            name = dbName,
             cloudProvider = cloudProviderType.ToString(),
             region = cloudRegion,
             keyspace = "default_keyspace",
@@ -167,6 +167,7 @@ public class AstraDatabasesAdmin
                     newDbId = parsedGuid;
                 }
             }
+            return Task.CompletedTask;
         };
         Command.EmptyResult emptyResult = await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
         Console.WriteLine($"Database {dbName} (dbId: {newDbId}) is starting: please wait...");
