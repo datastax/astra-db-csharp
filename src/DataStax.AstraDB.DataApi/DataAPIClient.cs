@@ -85,28 +85,28 @@ public class DataApiClient
 
     public Database GetDatabase(string apiEndpoint)
     {
-        return GetDatabase(apiEndpoint, new DatabaseOptions());
+        return GetDatabase(apiEndpoint, null as DatabaseOptions);
     }
 
     public Database GetDatabase(string apiEndpoint, string keyspace)
     {
-        var dbOptions = new DatabaseOptions(keyspace);
+        var dbOptions = new DatabaseOptions() { Keyspace = keyspace };
         return GetDatabase(apiEndpoint, dbOptions);
     }
 
     public Database GetDatabase(string apiEndpoint, DatabaseOptions dbOptions)
     {
-        return new Database(apiEndpoint, this, new CommandOptions(), dbOptions);
+        return new Database(apiEndpoint, this, dbOptions);
     }
 
     public Database GetDatabase(Guid databaseId)
     {
-        return GetDatabase(databaseId, new DatabaseOptions());
+        return GetDatabase(databaseId, null as DatabaseOptions);
     }
 
     public Database GetDatabase(Guid databaseId, string keyspace)
     {
-        var dbOptions = new DatabaseOptions(keyspace);
+        var dbOptions = new DatabaseOptions() { Keyspace = keyspace };
         return GetDatabase(databaseId, dbOptions);
     }
 
@@ -122,7 +122,7 @@ public class DataApiClient
 
     public async Task<Database> GetDatabaseAsync(Guid databaseId, string keyspace)
     {
-        var dbOptions = new DatabaseOptions(keyspace);
+        var dbOptions = new DatabaseOptions() { Keyspace = keyspace };
         return await GetDatabaseAsync(databaseId, dbOptions, false).ConfigureAwait(false);
     }
 

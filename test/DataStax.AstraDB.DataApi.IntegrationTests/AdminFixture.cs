@@ -2,8 +2,6 @@ using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Dynamic;
 using System.Text.RegularExpressions;
 
 public class AdminFixture : IDisposable

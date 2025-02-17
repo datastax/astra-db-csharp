@@ -17,7 +17,6 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -42,8 +41,8 @@ public class Command
 
     public readonly struct EmptyResult { }
 
-    private Action<HttpResponseMessage> _responseHandler;
-    internal Action<HttpResponseMessage> ResponseHandler { set { _responseHandler = value; } }
+    private Func<HttpResponseMessage, Task> _responseHandler;
+    internal Func<HttpResponseMessage, Task> ResponseHandler { set { _responseHandler = value; } }
 
     internal Command(DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
@@ -129,6 +128,7 @@ public class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         var content = new StringContent(JsonSerializer.Serialize(BuildContent()), Encoding.UTF8, "application/json");
+
         var url = _urlBuilder.BuildUrl();
         if (_urlPaths.Any())
         {
@@ -209,21 +209,27 @@ public class Command
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
 
-        if (_responseHandler != null)
-        {
-            _responseHandler(response);
-        }
+            if (_responseHandler != null)
+            {
+                if (runSynchronously)
+                {
+                    _responseHandler(response).ResultSync();
+                }
+                else
+                {
+                    await _responseHandler(response);
+                }
+            }
 
             MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
             MaybeLogDebugMessage("Content: {Content}", responseContent);
 
-        MaybeLogDebugMessage("Raw Response: {Response}", response);
+            MaybeLogDebugMessage("Raw Response: {Response}", response);
 
-
-        if (string.IsNullOrEmpty(responseContent))
-        {
-            return default;
-        }
+            if (string.IsNullOrEmpty(responseContent))
+            {
+                return default;
+            }
 
             return JsonSerializer.Deserialize<T>(responseContent);
         }

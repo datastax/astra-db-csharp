@@ -44,7 +44,7 @@ internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
         //TODO: Is this how we want to get the keyspace? (I think not...)
         //TODO: factor in environment
         var url = $"{_database.ApiEndpoint}/api/json/{options.ApiVersion.Value.ToUrlString()}" +
-            $"/{_database.DatabaseOptions.CurrentKeyspace}/{_urlPostfix}";
+            $"/{options.Keyspace}/{_urlPostfix}";
         return url;
     }
 }
