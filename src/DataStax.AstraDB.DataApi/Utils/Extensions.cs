@@ -14,28 +14,13 @@
  * limitations under the License.
  */
 
-<<<<<<<< HEAD:src/DataStax.AstraDB.DataApi/Utils/Extensions.cs
 using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Utils;
-========
-using DataStax.AstraDB.DataApi.Utils;
-
-namespace DataStax.AstraDB.DataApi.Core;
->>>>>>>> 2334bb53b9027422e19c36f2165408c636ddc279:src/DataStax.AstraDB.DataApi/Core/DatabaseOptions.cs
 
 public static class Extensions
 {
-<<<<<<<< HEAD:src/DataStax.AstraDB.DataApi/Utils/Extensions.cs
     internal static string OrIfEmpty(this string str, string alternate)
-========
-    //TODO: move to common area for defaults if used other than directly related to DatabaseOptions.
-    public const string DefaultKeyspace = "default_keyspace";
-
-    private string _currentKeyspace;
-
-    public string CurrentKeyspace
->>>>>>>> 2334bb53b9027422e19c36f2165408c636ddc279:src/DataStax.AstraDB.DataApi/Core/DatabaseOptions.cs
     {
         return string.IsNullOrEmpty(str) ? alternate : str;
     }
