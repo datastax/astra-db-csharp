@@ -98,18 +98,18 @@ public class AstraDatabasesAdmin
         return response;
     }
 
-    public bool DoesDatabaseExist(string dbName)
+    public bool DoesDatabaseExist(string databaseName)
     {
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
+        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
         List<string> list = ListDatabaseNames();
-        return list.Contains(dbName);
+        return list.Contains(databaseName);
     }
 
-    public async Task<bool> DoesDatabaseExistAsync(string dbName)
+    public async Task<bool> DoesDatabaseExistAsync(string databaseName)
     {
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
+        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
         List<string> list = await ListDatabaseNamesAsync();
-        return list.Contains(dbName);
+        return list.Contains(databaseName);
     }
 
     public bool DoesDatabaseExist(Guid dbGuid)
@@ -128,10 +128,9 @@ public class AstraDatabasesAdmin
         return dbList.Any(item => item.Id == guid);
     }
 
-    public IDatabaseAdmin CreateDatabase(string dbName, bool waitForDb = true)
+    public IDatabaseAdmin CreateDatabase(string databaseName, bool waitForDb = true)
     {
-        var options = new DatabaseCreationOptions();
-        options.Name = dbName;
+        var options = new DatabaseCreationOptions() { Name = databaseName };
         return CreateDatabaseAsync(options, null, waitForDb, true).ResultSync();
     }
 
@@ -145,10 +144,9 @@ public class AstraDatabasesAdmin
         return CreateDatabaseAsync(options, commandOptions, waitForDb, true).ResultSync();
     }
 
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(string dbName, bool waitForDb = true)
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(string databaseName, bool waitForDb = true)
     {
-        var options = new DatabaseCreationOptions();
-        options.Name = dbName;
+        var options = new DatabaseCreationOptions() { Name = databaseName };
         return CreateDatabaseAsync(options, null, waitForDb, false);
     }
 
@@ -157,7 +155,6 @@ public class AstraDatabasesAdmin
         return CreateDatabaseAsync(creationOptions, null, waitForDb, false);
     }
 
-
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb = true)
     {
         return CreateDatabaseAsync(creationOptions, commandOptions, waitForDb, false);
@@ -165,22 +162,22 @@ public class AstraDatabasesAdmin
 
     internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb, bool runSynchronously)
     {
-        var dbName = creationOptions.Name;
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
+        var databaseName = creationOptions.Name;
+        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
 
         List<DatabaseInfo> dbList = await ListDatabasesAsync(commandOptions, runSynchronously).ConfigureAwait(false);
 
-        DatabaseInfo existingDb = dbList.FirstOrDefault(item => dbName.Equals(item.Info.Name));
+        DatabaseInfo existingDb = dbList.FirstOrDefault(item => databaseName.Equals(item.Info.Name));
 
         if (existingDb != null)
         {
             if (existingDb.Status == "ACTIVE")
             {
-                Console.WriteLine($"Database {dbName} already exists and is ACTIVE.");
+                Console.WriteLine($"Database {databaseName} already exists and is ACTIVE.");
                 return GetDatabaseAdmin(Guid.Parse(existingDb.Id));
             }
 
-            throw new InvalidOperationException($"Database {dbName} already exists but is in state: {existingDb.Status}");
+            throw new InvalidOperationException($"Database {databaseName} already exists but is in state: {existingDb.Status}");
         }
 
         Command command = CreateCommand()
@@ -201,48 +198,48 @@ public class AstraDatabasesAdmin
             return Task.CompletedTask;
         };
         Command.EmptyResult emptyResult = await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
-        Console.WriteLine($"Database {dbName} (dbId: {newDbId}) is starting: please wait...");
+        Console.WriteLine($"Database {databaseName} (dbId: {newDbId}) is starting: please wait...");
 
         if (waitForDb)
         {
             if (runSynchronously)
             {
-                WaitForDatabase(dbName);
+                WaitForDatabase(databaseName);
             }
             else
             {
-                await WaitForDatabaseAsync(dbName).ConfigureAwait(false);
+                await WaitForDatabaseAsync(databaseName).ConfigureAwait(false);
             }
         }
 
         return GetDatabaseAdmin(newDbId);
     }
 
-    private void WaitForDatabase(string dbName)
+    private void WaitForDatabase(string databaseName)
     {
-        WaitForDatabaseAsync(dbName, true).ResultSync();
+        WaitForDatabaseAsync(databaseName, true).ResultSync();
     }
 
-    private async Task WaitForDatabaseAsync(string dbName)
+    private async Task WaitForDatabaseAsync(string databaseName)
     {
-        await WaitForDatabaseAsync(dbName, false).ConfigureAwait(false);
+        await WaitForDatabaseAsync(databaseName, false).ConfigureAwait(false);
     }
 
-    internal async Task WaitForDatabaseAsync(string dbName, bool runSynchronously)
+    internal async Task WaitForDatabaseAsync(string databaseName, bool runSynchronously)
     {
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
+        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
         if (runSynchronously)
         {
             Console.WriteLine($"Waiting {WAIT_IN_SECONDS} seconds synchronously before checking db status...");
             Thread.Sleep(WAIT_IN_SECONDS * 1000);
-            string status = GetDatabaseStatus(dbName);
+            string status = GetDatabaseStatus(databaseName);
 
             if (status != "ACTIVE")
             {
-                throw new Exception($"Database {dbName} is still {status} after {WAIT_IN_SECONDS} seconds.");
+                throw new Exception($"Database {databaseName} is still {status} after {WAIT_IN_SECONDS} seconds.");
             }
 
-            Console.WriteLine($"Database {dbName} is ready.");
+            Console.WriteLine($"Database {databaseName} is ready.");
             return;
         }
 
@@ -251,51 +248,51 @@ public class AstraDatabasesAdmin
 
         while (waiting < WAIT_IN_SECONDS * 1000)
         {
-            string status = await GetDatabaseStatusAsync(dbName).ConfigureAwait(false);
+            string status = await GetDatabaseStatusAsync(databaseName).ConfigureAwait(false);
             if (status == "ACTIVE")
             {
-                Console.WriteLine($"Database {dbName} is ready.");
+                Console.WriteLine($"Database {databaseName} is ready.");
                 return;
             }
 
-            Console.WriteLine($"Database {dbName} is {status}... retrying in {retry / 1000} seconds.");
+            Console.WriteLine($"Database {databaseName} is {status}... retrying in {retry / 1000} seconds.");
             await Task.Delay(retry).ConfigureAwait(false);
             waiting += retry;
         }
 
-        throw new Exception($"Database {dbName} did not become ready within {WAIT_IN_SECONDS} seconds.");
+        throw new Exception($"Database {databaseName} did not become ready within {WAIT_IN_SECONDS} seconds.");
     }
 
-    internal string GetDatabaseStatus(string dbName)
+    internal string GetDatabaseStatus(string databaseName)
     {
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
-        var db = ListDatabases().FirstOrDefault(item => dbName.Equals(item.Info.Name));
+        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
+        var db = ListDatabases().FirstOrDefault(item => databaseName.Equals(item.Info.Name));
 
         if (db == null)
         {
-            throw new Exception($"Database '{dbName}' not found.");
+            throw new Exception($"Database '{databaseName}' not found.");
         }
 
         return db.Status;
     }
 
-    internal async Task<string> GetDatabaseStatusAsync(string dbName)
+    internal async Task<string> GetDatabaseStatusAsync(string databaseName)
     {
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
+        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
         var dbList = await ListDatabasesAsync();
-        var db = dbList.FirstOrDefault(item => dbName.Equals(item.Info.Name));
+        var db = dbList.FirstOrDefault(item => databaseName.Equals(item.Info.Name));
 
         if (db == null)
         {
-            throw new Exception($"Database '{dbName}' not found.");
+            throw new Exception($"Database '{databaseName}' not found.");
         }
 
         return db.Status;
     }
 
-    public bool DropDatabase(string dbName)
+    public bool DropDatabase(string databaseName)
     {
-        return DropDatabaseAsync(dbName, null, false).ResultSync();
+        return DropDatabaseAsync(databaseName, null, false).ResultSync();
     }
 
     public bool DropDatabase(Guid dbGuid)
@@ -303,9 +300,9 @@ public class AstraDatabasesAdmin
         return DropDatabaseAsync(dbGuid, null, false).ResultSync();
     }
 
-    public bool DropDatabase(string dbName, CommandOptions options)
+    public bool DropDatabase(string databaseName, CommandOptions options)
     {
-        return DropDatabaseAsync(dbName, options, false).ResultSync();
+        return DropDatabaseAsync(databaseName, options, false).ResultSync();
     }
 
     public bool DropDatabase(Guid dbGuid, CommandOptions options)
@@ -313,9 +310,9 @@ public class AstraDatabasesAdmin
         return DropDatabaseAsync(dbGuid, options, false).ResultSync();
     }
 
-    public Task<bool> DropDatabaseAsync(string dbName)
+    public Task<bool> DropDatabaseAsync(string databaseName)
     {
-        return DropDatabaseAsync(dbName, null, true);
+        return DropDatabaseAsync(databaseName, null, true);
     }
 
     public Task<bool> DropDatabaseAsync(Guid dbGuid)
@@ -323,9 +320,9 @@ public class AstraDatabasesAdmin
         return DropDatabaseAsync(dbGuid, null, true);
     }
 
-    public Task<bool> DropDatabaseAsync(string dbName, CommandOptions options)
+    public Task<bool> DropDatabaseAsync(string databaseName, CommandOptions options)
     {
-        return DropDatabaseAsync(dbName, options, true);
+        return DropDatabaseAsync(databaseName, options, true);
     }
 
     public Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options)
@@ -333,12 +330,12 @@ public class AstraDatabasesAdmin
         return DropDatabaseAsync(dbGuid, options, true);
     }
 
-    internal async Task<bool> DropDatabaseAsync(string dbName, CommandOptions options, bool runSynchronously)
+    internal async Task<bool> DropDatabaseAsync(string databaseName, CommandOptions options, bool runSynchronously)
     {
-        Guard.NotNullOrEmpty(dbName, nameof(dbName));
+        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
         var dbList = await ListDatabasesAsync(options, runSynchronously).ConfigureAwait(false);
 
-        var dbInfo = dbList.FirstOrDefault(item => item.Info.Name.Equals(dbName));
+        var dbInfo = dbList.FirstOrDefault(item => item.Info.Name.Equals(databaseName));
         if (dbInfo == null)
         {
             return false;
@@ -397,8 +394,9 @@ public class AstraDatabasesAdmin
         return await GetDatabaseInfoAsync(dbGuid, options, false).ConfigureAwait(false);
     }
 
-    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, bool runSynchronously){
-         return await GetDatabaseInfoAsync(dbGuid, null, runSynchronously).ConfigureAwait(false);       
+    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, bool runSynchronously)
+    {
+        return await GetDatabaseInfoAsync(dbGuid, null, runSynchronously).ConfigureAwait(false);
     }
 
     internal Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, CommandOptions options, bool runSynchronously)

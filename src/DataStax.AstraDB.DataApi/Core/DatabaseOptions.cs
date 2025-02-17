@@ -14,34 +14,15 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Utils;
-
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class DatabaseOptions
+public class DatabaseOptions : CommandOptions
 {
-    //TODO: move to common area for defaults if used other than directly related to DatabaseOptions.
-    public const string DefaultKeyspace = "default_keyspace";
-
-    private string _currentKeyspace;
-
-    public string CurrentKeyspace
+    public new string Keyspace
     {
-        get => _currentKeyspace;
-        set
-        {
-            Guard.NotNullOrEmpty(value, nameof(value));
-            _currentKeyspace = value;
-        }
-    }
-
-    public DatabaseOptions()
-        : this(DefaultKeyspace)
-    {
-    }
-
-    public DatabaseOptions(string currentKeyspace)
-    {
-        _currentKeyspace = currentKeyspace;
+        get => base.Keyspace;
+        set => base.Keyspace = value;
     }
 }
+
+

@@ -25,33 +25,29 @@ namespace DataStax.AstraDB.DataApi.Core;
 
 public class Database
 {
+    public const string DefaultKeyspace = "default_keyspace";
+
     private readonly string _apiEndpoint;
-    private readonly DatabaseOptions _databaseOptions;
     private readonly DataApiClient _client;
     private readonly string _urlPostfix = "";
-    private readonly CommandOptions _dbCommandOptions;
+    private readonly DatabaseOptions _dbCommandOptions;
 
     public string ApiEndpoint => _apiEndpoint;
-    internal DatabaseOptions DatabaseOptions => _databaseOptions;
     internal DataApiClient Client => _client;
 
     internal CommandOptions[] OptionsTree
     {
         get
         {
-            return new CommandOptions[] { _client.ClientOptions, _dbCommandOptions };
+            return _dbCommandOptions == null ? new CommandOptions[] { _client.ClientOptions } : new CommandOptions[] { _client.ClientOptions, _dbCommandOptions };
         }
     }
 
-    //TODO: is DatabaseOptions necessary? Perhaps override CommandOptions.
-    internal Database(string apiEndpoint, DataApiClient client, CommandOptions dbCommandOptions, DatabaseOptions databaseOptions)
+    internal Database(string apiEndpoint, DataApiClient client, DatabaseOptions dbCommandOptions)
     {
         Guard.NotNullOrEmpty(apiEndpoint, nameof(apiEndpoint));
-        Guard.NotNull(databaseOptions, nameof(databaseOptions));
         Guard.NotNull(client, nameof(client));
-        Guard.NotNull(dbCommandOptions, nameof(dbCommandOptions));
         _apiEndpoint = apiEndpoint;
-        _databaseOptions = databaseOptions;
         _client = client;
         _dbCommandOptions = dbCommandOptions;
     }
