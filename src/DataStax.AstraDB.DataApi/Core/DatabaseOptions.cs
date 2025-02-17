@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Admin;
+namespace DataStax.AstraDB.DataApi.Core;
 
-public class DatabaseAdminNonAstra
+public class DatabaseOptions : CommandOptions
 {
-
+    public new string Keyspace
+    {
+        get => base.Keyspace;
+        set => base.Keyspace = value;
+    }
 }
