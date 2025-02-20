@@ -68,12 +68,6 @@ public class Command
         return this;
     }
 
-    internal Command WithDocument(object document)
-    {
-        Payload = new { document };
-        return this;
-    }
-
     internal Command WithPayload(object document)
     {
         Payload = document;

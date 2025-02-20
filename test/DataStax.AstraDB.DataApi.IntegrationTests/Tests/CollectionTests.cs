@@ -46,6 +46,71 @@ public class CollectionTests
         }
     }
 
+    [Fact]
+    public async Task InsertDocumentsNotOrderedAsync()
+    {
+        try
+        {
+            List<SimpleObject> items = new List<SimpleObject>();
+            for (var i = 0; i < 10; i++)
+            {
+                items.Add(new SimpleObject()
+                {
+                    _id = i,
+                    Name = $"Test Object {i}"
+                });
+            }
+            ;
+            var collectionName = "simpleObjects";
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
+            var result = await collection.InsertManyAsync(items);
+            await fixture.Database.DropCollectionAsync(collectionName);
+            Assert.Equal(items.Count, result.InsertedIds.Count);
+        }
+        catch (Exception e)
+        {
+            Assert.Fail(e.Message);
+        }
+    }
+
+    [Fact]
+    public async Task InsertDocumentsOrderedAsync()
+    {
+        try
+        {
+            List<SimpleObject> items = new List<SimpleObject>();
+            for (var i = 0; i < 10; i++)
+            {
+                items.Add(new SimpleObject()
+                {
+                    _id = i,
+                    Name = $"Test Object {i}"
+                });
+            }
+            ;
+            var collectionName = "simpleObjects";
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
+            var result = await collection.InsertManyAsync(items, new InsertManyOptions() { InsertInOrder = true });
+            await fixture.Database.DropCollectionAsync(collectionName);
+            Assert.Equal(items.Count, result.InsertedIds.Count);
+            for (var i = 0; i < 10; i++)
+            {
+                var id = result.InsertedIds[i];
+                Assert.Equal(i, id);
+            }
+        }
+        catch (Exception e)
+        {
+            Assert.Fail(e.Message);
+        }
+    }
+
+}
+
+public class SimpleObject
+{
+    public int _id { get; set; }
+    public string Name { get; set; }
 }
 
 public class Restaurant

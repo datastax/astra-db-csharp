@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core;
@@ -38,5 +40,13 @@ public static class CoreExtensions
     public static void ResultSync(this Task task)
     {
         task.GetAwaiter().GetResult();
+    }
+
+    public static IEnumerable<List<T>> Chunk<T>(this List<T> list, int chunkSize)
+    {
+        for (int i = 0; i < list.Count; i += chunkSize)
+        {
+            yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
+        }
     }
 }
