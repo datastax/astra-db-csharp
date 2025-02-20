@@ -44,27 +44,8 @@ internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
         //TODO: Is this how we want to get the keyspace? (I think not...)
         //TODO: factor in environment
         var url = $"{_database.ApiEndpoint}/api/json/{options.ApiVersion.Value.ToUrlString()}" +
-            $"/{_database.DatabaseOptions.CurrentKeyspace}/{_urlPostfix}";
+            $"/{options.Keyspace}/{_urlPostfix}";
         return url;
-
-        //  ADMIN URL https://api.astra.datastax.com/v2/databases/DB_ID
-        //  DB URL: https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com
-
-        //ASTRA_DB_API_ENDPOINT/api/json/v1/ASTRA_DB_KEYSPACE
-        //"https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com"
-        // PROD("https://api.astra.datastax.com/v2",
-        //     ".apps.astra.datastax.com",
-        //     ".api.streaming.datastax.com"),
-
-        // /** Development Environment. */
-        // DEV("https://api.dev.cloud.datastax.com/v2",
-        //         ".apps.astra-dev.datastax.com",
-        //         ".api.dev.streaming.datastax.com"),
-
-        // /** Test Environment. */
-        // TEST("https://api.test.cloud.datastax.com/v2",
-        //         ".apps.astra-test.datastax.com",
-        //         ".api.staging.streaming.datastax.com");
     }
 }
 

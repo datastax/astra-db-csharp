@@ -22,13 +22,14 @@ namespace DataStax.AstraDB.DataApi.Core;
 internal class ApiResponse<TResponse>
 {
     [JsonPropertyName("status")]
-    public TResponse Status { get; set; }
+    public TResponse Result { get; set; }
 
     [JsonPropertyName("errors")]
     public List<ApiError> Errors { get; set; }
 
-    [JsonPropertyName("data")]
-    public ApiData Data { get; set; }
+    // TODO: remove?
+    // [JsonPropertyName("data")]
+    // public ApiData Data { get; set; }
 }
 
 internal class ApiResponseDictionary : Dictionary<string, object>

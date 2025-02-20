@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
+using System.Text.Json.Serialization;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class DatabaseOptions : CommandOptions
+public class VectorServiceParameters
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+
+    [JsonPropertyName("required")]
+    public bool? Required { get; set; }
+
+    [JsonPropertyName("default")]
+    public object DefaultValue { get; set; }
+
+    [JsonPropertyName("help")]
+    public string Help { get; set; }
+
 }

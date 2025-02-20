@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using System.Text.Json.Serialization;
 
-public class DatabaseOptions : CommandOptions
+namespace DataStax.AstraDB.DataApi.Core.Results;
+
+internal class InsertDocumentsCommandResponse
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    [JsonPropertyName("insertedIds")]
+    public object[] InsertedIds { get; set; }
 }

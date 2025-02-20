@@ -34,4 +34,9 @@ public static class CoreExtensions
     {
         return task.GetAwaiter().GetResult();
     }
+
+    public static void ResultSync(this Task task)
+    {
+        task.GetAwaiter().GetResult();
+    }
 }

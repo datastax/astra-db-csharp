@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-public class DatabaseOptions : CommandOptions
+namespace DataStax.AstraDB.DataApi.Core.Commands;
+
+public class CommandException : Exception
 {
-    public new string Keyspace
+    public CommandException()
     {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
+    }
+
+
+    internal CommandException(List<ApiError> errors) : base(string.Join(", ", errors.Select(e => $"[{e.Code}] {e.Message}")))
+    {
     }
 }

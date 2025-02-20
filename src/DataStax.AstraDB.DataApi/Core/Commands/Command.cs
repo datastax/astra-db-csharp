@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Commands;
@@ -29,7 +30,7 @@ namespace DataStax.AstraDB.DataApi.Core.Commands;
 public class Command
 {
     private readonly ILogger _logger;
-    private readonly CommandOptions _commandOptions;
+    private readonly List<CommandOptions> _commandOptionsTree;
     private readonly DataApiClient _client;
     private readonly CommandUrlBuilder _urlBuilder;
     private readonly string _name;
@@ -38,6 +39,10 @@ public class Command
     internal object Payload { get; set; }
     internal string UrlPostfix { get; set; }
 
+    public readonly struct EmptyResult { }
+
+    private Func<HttpResponseMessage, Task> _responseHandler;
+    internal Func<HttpResponseMessage, Task> ResponseHandler { set { _responseHandler = value; } }
 
     internal Command(DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
@@ -47,32 +52,41 @@ public class Command
     internal Command(string name, DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder)
     {
         //TODO include database-specific options (and maybe collection-specific as well)
-        _commandOptions = CommandOptions.Merge(options);
+        _commandOptionsTree = options.ToList();
         _client = client;
         _name = name;
         _logger = client.Logger;
         _urlBuilder = urlBuilder;
     }
 
-    public Command WithDocument(object document)
+    internal Command AddCommandOptions(CommandOptions options)
+    {
+        if (options != null)
+        {
+            _commandOptionsTree.Add(options);
+        }
+        return this;
+    }
+
+    internal Command WithDocument(object document)
     {
         Payload = new { document };
         return this;
     }
 
-    public Command WithPayload(object document)
+    internal Command WithPayload(object document)
     {
         Payload = document;
         return this;
     }
 
-    public Command AddUrlPath(string path)
+    internal Command AddUrlPath(string path)
     {
         _urlPaths.Add(path);
         return this;
     }
 
-    public object BuildContent()
+    internal object BuildContent()
     {
         if (string.IsNullOrEmpty(_name))
         {
@@ -92,7 +106,12 @@ public class Command
 
     internal async Task<ApiResponse<TStatus>> RunAsync<TStatus>(bool runSynchronously)
     {
-        return await RunCommandAsync<ApiResponse<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        var response = await RunCommandAsync<ApiResponse<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        if (response.Errors != null && response.Errors.Count > 0)
+        {
+            throw new CommandException(response.Errors);
+        }
+        return response;
     }
 
     internal async Task<T> RunAsyncRaw<T>(bool runSynchronously)
@@ -107,7 +126,9 @@ public class Command
 
     private async Task<T> RunCommandAsync<T>(HttpMethod method, bool runSynchronously)
     {
+        var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         var content = new StringContent(JsonSerializer.Serialize(BuildContent()), Encoding.UTF8, "application/json");
+
         var url = _urlBuilder.BuildUrl();
         if (_urlPaths.Any())
         {
@@ -116,49 +137,102 @@ public class Command
 
         await MaybeLogRequestDebug(url, content, runSynchronously).ConfigureAwait(false);
 
-        var httpClient = _client.HttpClientFactory.CreateClient();
+        HttpClient httpClient;
+#if NET5_0_OR_GREATER || NETCOREAPP2_1_OR_GREATER || NET472_OR_GREATER
+        {
+            var handler = new SocketsHttpHandler()
+            {
+                AllowAutoRedirect = commandOptions.HttpClientOptions.FollowRedirects
+            };
+            if (commandOptions.TimeoutOptions != null && commandOptions.TimeoutOptions.ConnectTimeoutMillis != 0)
+            {
+                handler.ConnectTimeout = TimeSpan.FromMilliseconds(commandOptions.TimeoutOptions.ConnectTimeoutMillis);
+            }
+
+            httpClient = new HttpClient(handler);
+        }
+#else 
+        {
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = commandOptions.HttpClientOptions.FollowRedirects
+            };
+            httpClient = new HttpClient(handler);
+        }
+#endif
+
         var request = new HttpRequestMessage()
         {
             Method = method,
             RequestUri = new Uri(url),
-            Content = method == HttpMethod.Get ? null : content,
+            Content = method == HttpMethod.Get ? null : content
         };
-        //TODO: add Database-level options (and Collection, etc.);
+        if (!runSynchronously)
+        {
+            request.Version = commandOptions.HttpClientOptions.HttpVersion;
+        }
 
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _commandOptions.Token);
-        request.Headers.Add("Token", _commandOptions.Token);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commandOptions.Token);
+        request.Headers.Add("Token", commandOptions.Token);
 
         string responseContent = null;
         HttpResponseMessage response = null;
 
-        //TODO implement rest of options (timeout, dbenvironment, etc.)
-        if (runSynchronously)
+        var ctsForTimeout = new CancellationTokenSource();
+        if (commandOptions.TimeoutOptions != null && commandOptions.TimeoutOptions.RequestTimeoutMillis != 0)
         {
+            ctsForTimeout.CancelAfter(TimeSpan.FromMilliseconds(commandOptions.TimeoutOptions.RequestTimeoutMillis));
+        }
+        var cancellationTokenForTimeout = ctsForTimeout.Token;
+
+        using (var linkedCts = commandOptions.CancellationToken == null ? ctsForTimeout : CancellationTokenSource.CreateLinkedTokenSource(commandOptions.CancellationToken.Value, cancellationTokenForTimeout))
+        {
+            if (runSynchronously)
+            {
 #if NET5_0_OR_GREATER
-            response = httpClient.Send(request);
+            response = httpClient.Send(request, linkedCts.Token);
             var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
             contentTask.Wait();
             responseContent = contentTask.Result;
 #else
-            var requestTask = Task.Run(() => httpClient.SendAsync(request));
-            requestTask.Wait();
-            response = requestTask.Result;
-            var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
-            contentTask.Wait();
-            responseContent = contentTask.Result;
+                var requestTask = Task.Run(() => httpClient.SendAsync(request, linkedCts.Token));
+                requestTask.Wait();
+                response = requestTask.Result;
+                var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
+                contentTask.Wait();
+                responseContent = contentTask.Result;
 #endif
-        }
-        else
-        {
-            response = await httpClient.SendAsync(request).ConfigureAwait(false);
-            responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        }
+            }
+            else
+            {
+                response = await httpClient.SendAsync(request, linkedCts.Token).ConfigureAwait(false);
+                responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            }
 
-        MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
-        MaybeLogDebugMessage("Content: {Content}", responseContent);
+            if (_responseHandler != null)
+            {
+                if (runSynchronously)
+                {
+                    _responseHandler(response).ResultSync();
+                }
+                else
+                {
+                    await _responseHandler(response);
+                }
+            }
 
-        //TODO try/catch
-        return JsonSerializer.Deserialize<T>(responseContent);
+            MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
+            MaybeLogDebugMessage("Content: {Content}", responseContent);
+
+            MaybeLogDebugMessage("Raw Response: {Response}", response);
+
+            if (string.IsNullOrEmpty(responseContent))
+            {
+                return default;
+            }
+
+            return JsonSerializer.Deserialize<T>(responseContent);
+        }
     }
 
     private void MaybeLogDebugMessage(string message, params object[] args)

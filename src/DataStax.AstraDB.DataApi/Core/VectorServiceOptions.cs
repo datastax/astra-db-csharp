@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace DataStax.AstraDB.DataApi.Core;
 /*
  * Copyright DataStax, Inc.
  *
@@ -14,13 +18,17 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
-
-public class DatabaseOptions : CommandOptions
+public class VectorServiceOptions
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    [JsonPropertyName("provider")]
+    public string Provider { get; set; }
+
+    [JsonPropertyName("modelName")]
+    public string ModelName { get; set; }
+
+    [JsonPropertyName("authentication")]
+    public Dictionary<string, object> Authentication { get; set; }
+
+    [JsonPropertyName("parameters")]
+    public Dictionary<string, object> Parameters { get; set; }
 }

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using System.Text.Json.Serialization;
 
-public class DatabaseOptions : CommandOptions
+namespace DataStax.AstraDB.DataApi.Core.Results;
+
+public class CollectionResult
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+    [JsonPropertyName("options")]
+    public CollectionDefinition Options { get; set; }
 }

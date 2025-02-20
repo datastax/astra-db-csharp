@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
+using System.Text.Json.Serialization;
+
 namespace DataStax.AstraDB.DataApi.Admin;
 
+[JsonConverter(typeof(JsonStringEnumConverter<CloudProviderType>))]
 public enum CloudProviderType
 {
-    All,
+    [JsonStringEnumMemberName("aws")]
+    AWS,
+    [JsonStringEnumMemberName("gcp")]
     GCP,
-    GCP_MARKETPLACE,
-    Azure,
-    AWS
+    [JsonStringEnumMemberName("azure")]
+    Azure
 }

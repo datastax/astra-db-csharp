@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
+using System.Text.Json.Serialization;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class DatabaseOptions : CommandOptions
+[JsonConverter(typeof(JsonStringEnumConverter<DefaultIdType>))]
+public enum DefaultIdType
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    [JsonStringEnumMemberName("objectId")]
+    ObjectId,
+    [JsonStringEnumMemberName("uuidv6")]
+    UuidV6,
+    [JsonStringEnumMemberName("uuidv7")]
+    UuidV7,
+    [JsonStringEnumMemberName("uuid")]
+    Uuid
 }

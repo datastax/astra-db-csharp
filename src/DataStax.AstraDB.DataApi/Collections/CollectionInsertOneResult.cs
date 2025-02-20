@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Collections;
 
-public class DatabaseOptions : CommandOptions
+public class CollectionInsertOneResult
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    public object InsertedId { get; internal set; }
 }

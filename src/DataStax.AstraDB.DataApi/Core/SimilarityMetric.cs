@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
+using System.Text.Json.Serialization;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class DatabaseOptions : CommandOptions
+[JsonConverter(typeof(JsonStringEnumConverter<SimilarityMetric>))]
+public enum SimilarityMetric
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    [JsonStringEnumMemberName("cosine")]
+    Cosine,
+    [JsonStringEnumMemberName("euclidean")]
+    Euclidean,
+    [JsonStringEnumMemberName("dot_product")]
+    DotProduct
 }
+

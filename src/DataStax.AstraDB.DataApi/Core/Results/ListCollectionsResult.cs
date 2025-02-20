@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Admin;
+using System.Text.Json.Serialization;
 
-public class DatabaseAdminForAstra
+namespace DataStax.AstraDB.DataApi.Core.Results;
+
+public class ListCollectionsResult
 {
-
+    [JsonPropertyName("collections")]
+    public CollectionResult[] Collections { get; set; }
 }

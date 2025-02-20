@@ -2,9 +2,19 @@ using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
-public class ClientFixture : IDisposable
+[CollectionDefinition("DatabaseAndCollections")]
+public class DatabaseAndCollectionsCollection : ICollectionFixture<ClientFixture>
 {
+
+}
+
+public class ClientFixture : IDisposable, IAsyncLifetime
+{
+    public DataApiClient Client { get; private set; }
+    public Database Database { get; private set; }
+
     public ClientFixture()
     {
         IConfiguration configuration = new ConfigurationBuilder()
@@ -25,13 +35,21 @@ public class ClientFixture : IDisposable
         };
         Client = new DataApiClient(token, clientOptions, logger);
         Database = Client.GetDatabase(databaseUrl);
+
+    }
+
+    public async Task InitializeAsync()
+    {
+        await Database.CreateCollectionAsync(Constants.DefaultCollection);
+    }
+
+    public async Task DisposeAsync()
+    {
+        await Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
     public void Dispose()
     {
-        // ... clean up test data from the database ...
-    }
 
-    public DataApiClient Client { get; private set; }
-    public Database Database { get; private set; }
+    }
 }
