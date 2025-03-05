@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+namespace DataStax.AstraDB.DataApi.SerDes;
 
-namespace DataStax.AstraDB.DataApi.Core;
+using System;
 
-public class VectorOptions
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+public class DocumentMappingAttribute : Attribute
 {
-    [JsonPropertyName("dimension")]
-    public int? Dimension { get; set; }
+    public DocumentMappingField Field { get; }
 
-    [JsonPropertyName("metric")]
-    public SimilarityMetric Metric { get; set; }
-
-    [JsonPropertyName("service")]
-    public VectorServiceOptions Service { get; set; }
+    public DocumentMappingAttribute(DocumentMappingField field)
+    {
+        Field = field;
+    }
 }

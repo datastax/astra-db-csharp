@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.SerDes;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-internal class InsertDocumentsCommandResponse
+internal class InsertDocumentsCommandResponse<T>
 {
     [JsonPropertyName("insertedIds")]
-    public object[] InsertedIds { get; set; }
+    public List<T> InsertedIds { get; set; }
 }

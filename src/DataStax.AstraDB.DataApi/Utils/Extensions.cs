@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
@@ -34,4 +37,28 @@ public static class Extensions
         }
         return result;
     }
+
+    public static string GetMemberNameTree<T1, T2>(this Expression<Func<T1, T2>> expression)
+    {
+        if (expression.Body is MemberExpression memberExpression)
+        {
+            StringBuilder sb = new StringBuilder();
+            BuildPropertyName(memberExpression, sb);
+            return sb.ToString();
+        }
+
+        throw new ArgumentException("Invalid property expression.");
+    }
+
+    private static void BuildPropertyName(MemberExpression memberExpression, StringBuilder sb)
+    {
+        if (memberExpression.Expression is MemberExpression parentExpression)
+        {
+            BuildPropertyName(parentExpression, sb);
+            sb.Append('.');
+        }
+
+        sb.Append(memberExpression.Member.Name);
+    }
+
 }

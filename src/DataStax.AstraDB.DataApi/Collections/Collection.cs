@@ -16,7 +16,9 @@
 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
@@ -26,7 +28,13 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
-public class Collection<T> where T : class
+public class Collection<T> : Collection<T, object> where T : class
+{
+    internal Collection(string collectionName, Database database, CommandOptions commandOptions)
+        : base(collectionName, database, commandOptions) { }
+}
+
+public class Collection<T, TId> where T : class
 {
     private readonly string _collectionName;
     private readonly Database _database;
@@ -43,74 +51,75 @@ public class Collection<T> where T : class
         _commandOptions = commandOptions;
     }
 
-    public CollectionInsertOneResult InsertOne(T document)
+    public CollectionInsertOneResult<TId> InsertOne(T document)
     {
         return InsertOne(document, null);
     }
 
-    public CollectionInsertOneResult InsertOne(T document, CommandOptions commandOptions)
+    public CollectionInsertOneResult<TId> InsertOne(T document, CommandOptions commandOptions)
     {
         return InsertOneAsync(document, commandOptions, runSynchronously: true).ResultSync();
     }
 
-    public Task<CollectionInsertOneResult> InsertOneAsync(T document)
+    public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document)
     {
         return InsertOneAsync(document, new CommandOptions());
     }
 
-    public Task<CollectionInsertOneResult> InsertOneAsync(T document, CommandOptions commandOptions)
+    public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CommandOptions commandOptions)
     {
         return InsertOneAsync(document, commandOptions, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertOneResult> InsertOneAsync(T document, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CommandOptions commandOptions, bool runSynchronously)
     {
         Guard.NotNull(document, nameof(document));
         var payload = new { document };
         var command = CreateCommand("insertOne").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsync<InsertDocumentsCommandResponse>(runSynchronously).ConfigureAwait(false);
-        return new CollectionInsertOneResult { InsertedId = response.Result.InsertedIds[0] };
+        var response = await command.RunAsyncReturnStatus<InsertDocumentsCommandResponse<TId>>(runSynchronously).ConfigureAwait(false);
+        return new CollectionInsertOneResult<TId> { InsertedId = response.Result.InsertedIds[0] };
     }
 
-    public CollectionInsertManyResult InsertMany(List<T> documents)
+    public CollectionInsertManyResult<TId> InsertMany(List<T> documents)
     {
         return InsertMany(documents, null, null);
     }
 
-    public CollectionInsertManyResult InsertMany(List<T> documents, InsertManyOptions insertOptions)
+    public CollectionInsertManyResult<TId> InsertMany(List<T> documents, InsertManyOptions insertOptions)
     {
         return InsertMany(documents, insertOptions, null);
     }
 
-    public CollectionInsertManyResult InsertMany(List<T> documents, CommandOptions commandOptions)
+    public CollectionInsertManyResult<TId> InsertMany(List<T> documents, CommandOptions commandOptions)
     {
         return InsertMany(documents, null, commandOptions);
     }
 
-    public CollectionInsertManyResult InsertMany(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions)
+    public CollectionInsertManyResult<TId> InsertMany(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions)
     {
         return InsertManyAsync(documents, insertOptions, commandOptions, runSynchronously: true).ResultSync();
     }
 
-    public Task<CollectionInsertManyResult> InsertManyAsync(List<T> documents)
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents)
     {
         return InsertManyAsync(documents, new CommandOptions());
     }
 
-    public Task<CollectionInsertManyResult> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions)
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions)
     {
         return InsertManyAsync(documents, insertOptions, null, runSynchronously: false);
     }
 
-    public Task<CollectionInsertManyResult> InsertManyAsync(List<T> documents, CommandOptions commandOptions)
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, CommandOptions commandOptions)
     {
         return InsertManyAsync(documents, null, commandOptions, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertManyResult> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         Guard.NotNullOrEmpty(documents, nameof(documents));
 
+        if (insertOptions == null) insertOptions = new InsertManyOptions();
         if (insertOptions.Concurrency > 1 && insertOptions.InsertInOrder)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
@@ -122,7 +131,7 @@ public class Collection<T> where T : class
 
         var start = DateTime.Now;
 
-        var result = new CollectionInsertManyResult();
+        var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
 
@@ -152,7 +161,7 @@ public class Collection<T> where T : class
         return result;
     }
 
-    private async Task<CollectionInsertManyResult> RunInsertManyAsync(List<T> documents, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(List<T> documents, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
     {
         var payload = new
         {
@@ -162,9 +171,12 @@ public class Collection<T> where T : class
                 ordered = insertOrdered
             }
         };
+        commandOptions ??= new CommandOptions();
+        var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
+        commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
         var command = CreateCommand("insertMany").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsync<InsertDocumentsCommandResponse>(runSynchronously).ConfigureAwait(false);
-        return new CollectionInsertManyResult { InsertedIds = response.Result.InsertedIds.ToList() };
+        var response = await command.RunAsyncReturnStatus<InsertDocumentsCommandResponse<TId>>(runSynchronously).ConfigureAwait(false);
+        return new CollectionInsertManyResult<TId> { InsertedIds = response.Result.InsertedIds.ToList() };
     }
 
     public void Drop()
@@ -177,8 +189,78 @@ public class Collection<T> where T : class
         await _database.DropCollectionAsync(_collectionName).ConfigureAwait(false);
     }
 
+    public T FindOne()
+    {
+        return FindOne(null, new FindOptions<T>(), null);
+    }
+
+    public T FindOne(CommandOptions commandOptions)
+    {
+        return FindOne(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public T FindOne(Filter<T> filter)
+    {
+        return FindOne(filter, new FindOptions<T>(), null);
+    }
+
+    public T FindOne(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOne(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public T FindOne(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindOne(filter, findOptions, null);
+    }
+
+    public T FindOne(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAsync(filter, findOptions, commandOptions, true).ResultSync();
+    }
+
+    public Task<T> FindOneAsync()
+    {
+        return FindOneAsync(null, new FindOptions<T>(), null);
+    }
+
+    public Task<T> FindOneAsync(CommandOptions commandOptions)
+    {
+        return FindOneAsync(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<T> FindOneAsync(Filter<T> filter)
+    {
+        return FindOneAsync(filter, new FindOptions<T>(), null);
+    }
+
+    public Task<T> FindOneAsync(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOneAsync(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<T> FindOneAsync(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindOneAsync(filter, findOptions, null);
+    }
+
+    public Task<T> FindOneAsync(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAsync(filter, findOptions, commandOptions, false);
+    }
+
+    private async Task<T> FindOneAsync(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        //TODO: Add and handle TProjection
+        findOptions.Filter = filter;
+        var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnData<T>(runSynchronously).ConfigureAwait(false);
+        return response.Data.Document;
+    }
+
     internal Command CreateCommand(string name)
     {
-        return new Command(name, _database.Client, _database.OptionsTree, new DatabaseCommandUrlBuilder(_database, _database.OptionsTree, _collectionName));
+        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions }).ToArray();
+        return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _collectionName));
     }
 }

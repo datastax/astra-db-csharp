@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
-public class CollectionInsertManyResult
+public class CollectionInsertManyResult<T>
 {
-    public List<object> InsertedIds { get; internal set; } = new List<object>();
+    public List<T> InsertedIds { get; internal set; } = new List<T>();
 }

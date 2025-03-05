@@ -59,10 +59,9 @@ public class DatabaseTests
             }
             catch (OperationCanceledException)
             {
-                // Optionally re-throw if you want the test to fail if it's caught later.
-                throw; // Important for assertion!
+                throw;
             }
-        }, cts.Token); // Pass the token to Task.Run as well
+        }, cts.Token);
         cts.Cancel();
         Assert.Null(collection);
         var exists = await fixture.Database.DoesCollectionExistAsync(collectionName);
@@ -159,8 +158,10 @@ public class DatabaseTests
     [Fact]
     public async Task DoesCollectionExistAsync_ExistingCollection_ReturnsTrue()
     {
+        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var exists = await fixture.Database.DoesCollectionExistAsync(Constants.DefaultCollection);
         Assert.True(exists);
+        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
     [Fact]
@@ -183,71 +184,75 @@ public class DatabaseTests
     [Fact]
     public async Task ListCollectionNamesAsync_ShouldReturnCollectionNames()
     {
+        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var result = await fixture.Database.ListCollectionNamesAsync();
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result.CollectionNames);
+        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
     [Fact]
     public async Task ListCollectionNamesAsync_WithCommandOptions_ShouldReturnCollectionNames()
     {
+        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var commandOptions = new CommandOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result.CollectionNames);
+        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
-    // [Fact]
-    // public async Task CreateCollection_WithVectorizeHeader()
-    // {
-    //     var collectionName = "collectionVectorizeHeader";
-    //     var options = new CollectionDefinition
-    //     {
-    //         Vector = new VectorOptions
-    //         {
-    //             Dimension = 1536,
-    //             Metric = SimilarityMetric.DotProduct,
-    //             Service = new VectorServiceOptions
-    //             {
-    //                 Provider = "openai",
-    //                 ModelName = "text-embedding-ada-002",
-    //                 Authentication = new Dictionary<string, object>
-    //                 {
-    //                     { "openai", "OPENAI_API_KEY" }
-    //                 }
-    //             }
-    //         }
-    //     };
-    //     var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
-    //     Assert.NotNull(collection);
-    //     Assert.Equal(collectionName, collection.CollectionName);
-    //     await fixture.Database.DropCollectionAsync(collectionName);
-    // }
+    [Fact]
+    public async Task CreateCollection_WithVectorizeHeader()
+    {
+        var collectionName = "collectionVectorizeHeader";
+        var options = new CollectionDefinition
+        {
+            Vector = new VectorOptions
+            {
+                Dimension = 1536,
+                Metric = SimilarityMetric.DotProduct,
+                Service = new VectorServiceOptions
+                {
+                    Provider = "openai",
+                    ModelName = "text-embedding-ada-002",
+                    Authentication = new Dictionary<string, object>
+                    {
+                        { "providerKey", fixture.OpenAiApiKey }
+                    }
+                }
+            }
+        };
+        var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
 
-    // [Fact]
-    // public async Task CreateCollection_WithVectorizeSharedKey()
-    // {
-    //     var collectionName = "collectionVectorizeSharedKey";
-    //     var options = new CollectionDefinition
-    //     {
-    //         Vector = new VectorOptions
-    //         {
-    //             Dimension = 1536,
-    //             Metric = SimilarityMetric.DotProduct,
-    //             Service = new VectorServiceOptions
-    //             {
-    //                 Provider = "openai",
-    //                 ModelName = "text-embedding-ada-002",
-    //                 Authentication = new Dictionary<string, object>
-    //                 {
-    //                     { "openai", "OPENAI_API_KEY" }
-    //                 }
-    //             }
-    //         }
-    //     };
-    //     var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
-    //     Assert.NotNull(collection);
-    //     Assert.Equal(collectionName, collection.CollectionName);
-    //     await fixture.Database.DropCollectionAsync(collectionName);
-    // }
+    [Fact]
+    public async Task CreateCollection_WithVectorizeSharedKey()
+    {
+        var collectionName = "collectionVectorizeSharedKey";
+        var options = new CollectionDefinition
+        {
+            Vector = new VectorOptions
+            {
+                Dimension = 1536,
+                Metric = SimilarityMetric.DotProduct,
+                Service = new VectorServiceOptions
+                {
+                    Provider = "openai",
+                    ModelName = "text-embedding-ada-002",
+                    Authentication = new Dictionary<string, object>
+                    {
+                        { "providerKey", fixture.OpenAiApiKey }
+                    }
+                }
+            }
+        };
+        var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
 }

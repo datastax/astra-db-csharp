@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
+namespace DataStax.AstraDB.DataApi.SerDes;
+
 using System;
-using System.Linq;
 
-namespace DataStax.AstraDB.DataApi.Core;
-
-//TODO: placeholder
-public class ApiVector
+public enum DocumentMappingField
 {
-    private readonly float[] _vector;
-
-    public ApiVector(float[] vector)
-    {
-        _vector = vector;
-    }
-
-    public int dimension()
-    {
-        return _vector.Count();
-    }
+    /// <summary>Serializes as "$vectorize" for a string to vectorize</summary>
+    Vectorize,
+    /// <summary>Serializes as "$vector" for vector data.</summary>
+    Vector,
+    /// <summary>Serializes as "_id" for unique identifiers</summary>
+    Id,
+    /// <summary>On read operations only, serializes the similarity for vector comparisons</summary>
+    Similarity
 }

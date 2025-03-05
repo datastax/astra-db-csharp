@@ -16,16 +16,13 @@
 
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Core.Query;
 
-public class VectorOptions
+[JsonConverter(typeof(JsonStringEnumConverter<SortOrder>))]
+public enum SortOrder
 {
-    [JsonPropertyName("dimension")]
-    public int? Dimension { get; set; }
-
-    [JsonPropertyName("metric")]
-    public SimilarityMetric Metric { get; set; }
-
-    [JsonPropertyName("service")]
-    public VectorServiceOptions Service { get; set; }
+    [JsonStringEnumMemberName("ascending")]
+    Ascending,
+    [JsonStringEnumMemberName("descending")]
+    Descending
 }

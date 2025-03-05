@@ -20,13 +20,12 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-//TODO: placeholder
-internal class ApiData
+internal class ApiData<T>
 {
     [JsonPropertyName("documents")]
-    public List<Document> Documents { get; set; }
+    public List<T> Documents { get; set; }
     [JsonPropertyName("document")]
-    public Document Document { get; set; }
+    public T Document { get; set; }
     [JsonPropertyName("nextPageState")]
     public string NextPageState { get; set; }
 }

@@ -20,29 +20,23 @@ namespace DataStax.AstraDB.DataApi.Core;
 
 abstract class CommandUrlBuilder
 {
-    internal abstract string BuildUrl();
+    internal abstract string BuildUrl(CommandOptions options);
 }
 
 internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
 {
 
     private readonly Database _database;
-    private readonly CommandOptions[] _optionsTree;
     private readonly string _urlPostfix;
 
-    //TODO: refactor once we get more usages
-    internal DatabaseCommandUrlBuilder(Database database, CommandOptions[] optionsTree, string urlPostfix)
+    internal DatabaseCommandUrlBuilder(Database database, string urlPostfix)
     {
         _database = database;
-        _optionsTree = optionsTree;
         _urlPostfix = urlPostfix;
     }
 
-    internal override string BuildUrl()
+    internal override string BuildUrl(CommandOptions options)
     {
-        var options = CommandOptions.Merge(_optionsTree);
-        //TODO: Is this how we want to get the keyspace? (I think not...)
-        //TODO: factor in environment
         var url = $"{_database.ApiEndpoint}/api/json/{options.ApiVersion.Value.ToUrlString()}" +
             $"/{options.Keyspace}/{_urlPostfix}";
         return url;
@@ -51,25 +45,21 @@ internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
 
 internal class AdminCommandUrlBuilder : CommandUrlBuilder
 {
-    private readonly CommandOptions[] _optionsTree;
     private readonly string _urlPostfix;
 
     //TODO: refactor once we get more usages
-    internal AdminCommandUrlBuilder(CommandOptions[] optionsTree, string urlPostfix)
+    internal AdminCommandUrlBuilder(string urlPostfix)
     {
-        _optionsTree = optionsTree;
         _urlPostfix = urlPostfix;
     }
 
-    internal AdminCommandUrlBuilder(CommandOptions[] optionsTree) : this(optionsTree, null)
+    internal AdminCommandUrlBuilder() : this(null)
     {
 
     }
 
-    internal override string BuildUrl()
+    internal override string BuildUrl(CommandOptions options)
     {
-        var options = CommandOptions.Merge(_optionsTree);
-
         string url = null;
         switch (options.Environment)
         {

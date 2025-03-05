@@ -21,7 +21,16 @@ public class InsertManyOptions
     public const int MaxChunkSize = 50;
     public const int MaxConcurrency = int.MaxValue;
 
-    public bool InsertInOrder { get; set; } = false;
+    private bool _insertInOrder = false;
+    public bool InsertInOrder
+    {
+        get => _insertInOrder;
+        set
+        {
+            if (value) Concurrency = 1;
+            _insertInOrder = value;
+        }
+    }
     public int Concurrency { get; set; } = MaxConcurrency;
     public int ChunkSize { get; set; } = MaxChunkSize;
 }

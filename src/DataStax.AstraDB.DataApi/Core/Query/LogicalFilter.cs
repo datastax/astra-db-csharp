@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+using System.Linq;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Core.Query;
 
-public class VectorOptions
+internal class LogicalFilter<T> : Filter<T>
 {
-    [JsonPropertyName("dimension")]
-    public int? Dimension { get; set; }
-
-    [JsonPropertyName("metric")]
-    public SimilarityMetric Metric { get; set; }
-
-    [JsonPropertyName("service")]
-    public VectorServiceOptions Service { get; set; }
+    internal LogicalOperator Operator;
+    internal Filter<T>[] Filters;
+    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T>[] filters) :
+        base(logicalOperator.ToApiString(), logicalOperator == LogicalOperator.Not ? filters.FirstOrDefault() : filters)
+    {
+        Operator = logicalOperator;
+        Filters = filters;
+    }
 }

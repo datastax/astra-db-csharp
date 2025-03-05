@@ -10,10 +10,11 @@ public class DatabaseAndCollectionsCollection : ICollectionFixture<ClientFixture
 
 }
 
-public class ClientFixture : IDisposable, IAsyncLifetime
+public class ClientFixture : IDisposable //, IAsyncLifetime
 {
     public DataApiClient Client { get; private set; }
     public Database Database { get; private set; }
+    public string OpenAiApiKey { get; set; }
 
     public ClientFixture()
     {
@@ -25,8 +26,9 @@ public class ClientFixture : IDisposable, IAsyncLifetime
 
         var token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
         var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
+        OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions
@@ -38,15 +40,15 @@ public class ClientFixture : IDisposable, IAsyncLifetime
 
     }
 
-    public async Task InitializeAsync()
-    {
-        await Database.CreateCollectionAsync(Constants.DefaultCollection);
-    }
+    // public async Task InitializeAsync()
+    // {
+    //     //await Database.CreateCollectionAsync(Constants.DefaultCollection);
+    // }
 
-    public async Task DisposeAsync()
-    {
-        await Database.DropCollectionAsync(Constants.DefaultCollection);
-    }
+    // public async Task DisposeAsync()
+    // {
+    //     //await Database.DropCollectionAsync(Constants.DefaultCollection);
+    // }
 
     public void Dispose()
     {

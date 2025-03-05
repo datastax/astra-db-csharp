@@ -120,7 +120,7 @@ public class Database
             options = new { explain = includeDetails }
         };
         var command = CreateCommand("findCollections").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsync<T>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnStatus<T>(runSynchronously).ConfigureAwait(false);
         return response.Result;
     }
 
@@ -194,6 +194,36 @@ public class Database
         return CreateCollectionAsync<T>(collectionName, definition, options, false);
     }
 
+    public Collection<T, TId> CreateCollection<T, TId>(string collectionName) where T : class
+    {
+        return CreateCollection<T, TId>(collectionName, null, null);
+    }
+
+    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition) where T : class
+    {
+        return CreateCollection<T, TId>(collectionName, definition, null);
+    }
+
+    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition, CommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(collectionName, definition, options, false).ResultSync();
+    }
+
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(collectionName, null, null);
+    }
+
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(collectionName, definition, null);
+    }
+
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, CommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(collectionName, definition, options, false);
+    }
+
     private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, CommandOptions options, bool runSynchronously) where T : class
     {
         object payload = definition == null ? new
@@ -209,14 +239,24 @@ public class Database
         return GetCollection<T>(collectionName);
     }
 
+    private async Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, CommandOptions options, bool runSynchronously) where T : class
+    {
+        object payload = definition == null ? new
+        {
+            name = collectionName
+        } : new
+        {
+            name = collectionName,
+            options = definition
+        };
+        var command = CreateCommand("createCollection").WithPayload(payload).AddCommandOptions(options);
+        await command.RunAsync(runSynchronously).ConfigureAwait(false);
+        return GetCollection<T, TId>(collectionName);
+    }
+
     public Collection<Document> GetCollection(string collectionName)
     {
         return GetCollection(collectionName, new CommandOptions());
-    }
-
-    public Collection<T> GetCollection<T>(string collectionName) where T : class
-    {
-        return GetCollection<T>(collectionName, new CommandOptions());
     }
 
     public Collection<Document> GetCollection(string collectionName, CommandOptions options)
@@ -224,10 +264,26 @@ public class Database
         return GetCollection<Document>(collectionName, options);
     }
 
+    public Collection<T> GetCollection<T>(string collectionName) where T : class
+    {
+        return GetCollection<T>(collectionName, new CommandOptions());
+    }
+
     public Collection<T> GetCollection<T>(string collectionName, CommandOptions options) where T : class
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T>(collectionName, this, options);
+    }
+
+    public Collection<T, TId> GetCollection<T, TId>(string collectionName) where T : class
+    {
+        return GetCollection<T, TId>(collectionName, new CommandOptions());
+    }
+
+    public Collection<T, TId> GetCollection<T, TId>(string collectionName, CommandOptions options) where T : class
+    {
+        Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
+        return new Collection<T, TId>(collectionName, this, options);
     }
 
     public void DropCollection(string collectionName)
@@ -262,7 +318,7 @@ public class Database
 
     internal Command CreateCommand(string name)
     {
-        return new Command(name, _client, OptionsTree, new DatabaseCommandUrlBuilder(this, OptionsTree, _urlPostfix));
+        return new Command(name, _client, OptionsTree, new DatabaseCommandUrlBuilder(this, _urlPostfix));
     }
 
 }

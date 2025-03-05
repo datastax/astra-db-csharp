@@ -413,6 +413,6 @@ public class AstraDatabasesAdmin
 
     private Command CreateCommand()
     {
-        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
+        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder());
     }
 }
