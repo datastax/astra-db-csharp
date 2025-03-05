@@ -22,8 +22,9 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 public class FindOptions<T>
 {
-    [JsonIgnore]
-    internal Filter<T> Filter { get; set; }
+    [JsonInclude]
+    [JsonPropertyName("filter")]
+    internal Filter<T>? Filter { get; set; }
     [JsonIgnore]
     public List<Sort> Sort { get; set; } = new List<Sort>();
     [JsonIgnore]
@@ -39,10 +40,13 @@ public class FindOptions<T>
     [JsonIgnore]
     public string PageState { get; set; }
 
+    [JsonInclude]
     [JsonPropertyName("sort")]
-    internal Dictionary<string, object> SortMap => Sort.ToDictionary(x => x.Name, x => x.Value);
+    internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.ToDictionary(x => x.Name, x => x.Value);
+    [JsonInclude]
     [JsonPropertyName("projection")]
-    internal Dictionary<string, object> ProjectionMap => Projection.ToDictionary(x => x.Field, x => x.Value);
+    internal Dictionary<string, object> ProjectionMap => Projection == null ? null : Projection.ToDictionary(x => x.Field, x => x.Value);
+    [JsonInclude]
     [JsonPropertyName("options")]
     internal object Options => new { includeSimilarity = IncludeSimilarity, includeSortVector = IncludeSortVector }; //, skip = Skip, limit = Limit, pageState = PageState };
 }

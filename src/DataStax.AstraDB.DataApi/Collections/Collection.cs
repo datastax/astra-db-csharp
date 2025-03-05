@@ -204,6 +204,16 @@ public class Collection<T, TId> where T : class
         return FindOne(filter, new FindOptions<T>(), null);
     }
 
+    public T FindOne(FindOptions<T> findOptions)
+    {
+        return FindOne(null, findOptions, null);
+    }
+
+    public T FindOne(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOne(null, findOptions, commandOptions);
+    }
+
     public T FindOne(Filter<T> filter, CommandOptions commandOptions)
     {
         return FindOne(filter, new FindOptions<T>(), commandOptions);
@@ -227,6 +237,16 @@ public class Collection<T, TId> where T : class
     public Task<T> FindOneAsync(CommandOptions commandOptions)
     {
         return FindOneAsync(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<T> FindOneAsync(FindOptions<T> findOptions)
+    {
+        return FindOneAsync(null, findOptions, null);
+    }
+
+    public Task<T> FindOneAsync(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAsync(null, findOptions, commandOptions);
     }
 
     public Task<T> FindOneAsync(Filter<T> filter)

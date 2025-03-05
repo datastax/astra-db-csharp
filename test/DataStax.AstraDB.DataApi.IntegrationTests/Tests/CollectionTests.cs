@@ -274,7 +274,7 @@ public class CollectionTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var result = await collection.FindOneAsync(new Filter<SimpleObjectWithVector>(null, null), new FindOptions<SimpleObjectWithVector>() { Sort = new List<Sort>() { Sort.Vector(dogQueryVector) } }, null);
+            var result = await collection.FindOneAsync(new FindOptions<SimpleObjectWithVector>() { Sort = new List<Sort>() { Sort.Vector(dogQueryVector) } }, null);
             Assert.Equal("This is about a dog.", result.Name);
 
         }
@@ -324,11 +324,11 @@ public class CollectionTests
                         ModelName = "NV-Embed-QA"
                     }
                 }
-            };
+            }; 
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var result = await collection.FindOneAsync(new Filter<SimpleObjectWithVectorize>(null, null), new FindOptions<SimpleObjectWithVectorize>() { Sort = new List<Sort>() { Sort.Vectorize(dogQueryVectorString) } }, null);
+            var result = await collection.FindOneAsync(new FindOptions<SimpleObjectWithVectorize>() { Sort = new List<Sort>() { Sort.Vectorize(dogQueryVectorString) } }, null);
             Assert.Equal("This is about a dog.", result.Name);
 
         }
