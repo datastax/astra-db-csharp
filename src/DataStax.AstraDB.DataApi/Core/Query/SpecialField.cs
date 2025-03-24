@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+using DataStax.AstraDB.DataApi.Core.Commands;
+using System;
 
-namespace DataStax.AstraDB.DataApi.Core.Query;
+namespace DataStax.AstraDB.DataApi.Query;
 
-[JsonConverter(typeof(JsonStringEnumConverter<SortOrder>))]
-public enum SortOrder
+public enum SpecialField
 {
-    [JsonStringEnumMemberName("ascending")]
-    Ascending,
-    [JsonStringEnumMemberName("descending")]
-    Descending
+    Vectorize,
+    Vector,
+    Id
+}
+
+public static class SpecialFieldExtensions
+{
+    public static string ToString(this SpecialField specialField)
+    {
+        return specialField switch
+        {
+            SpecialField.Vectorize => DataApiKeywords.Vectorize,
+            SpecialField.Vector => DataApiKeywords.Vector,
+            SpecialField.Id => DataApiKeywords.Id,
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+
+    }
 }

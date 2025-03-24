@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-using System.Linq;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core.Query;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
-internal class LogicalFilter<T> : Filter<T>
+public class DocumentsResult<T>
 {
-    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T>[] filters) :
-        base(logicalOperator.ToApiString(), filters)
-    {
-    }
+    [JsonPropertyName("documents")]
+    public List<T> Documents { get; set; }
 
-    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T> filter) :
-        base(logicalOperator.ToApiString(), filter)
-    {
-    }
+    [JsonPropertyName("nextPageState")]
+    public string NextPageState { get; set; }
 }

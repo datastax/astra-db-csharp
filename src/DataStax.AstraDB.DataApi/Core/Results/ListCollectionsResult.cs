@@ -21,5 +21,5 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 public class ListCollectionsResult
 {
     [JsonPropertyName("collections")]
-    public CollectionResult[] Collections { get; set; }
+    public CollectionInfo[] Collections { get; set; }
 }

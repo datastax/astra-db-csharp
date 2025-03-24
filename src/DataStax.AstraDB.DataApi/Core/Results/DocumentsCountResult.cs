@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-using System.Linq;
+using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core.Query;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
-internal class LogicalFilter<T> : Filter<T>
+public class DocumentsCountResult
 {
-    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T>[] filters) :
-        base(logicalOperator.ToApiString(), filters)
-    {
-    }
+    [JsonPropertyName("count")]
+    public int Count { get; set; }
 
-    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T> filter) :
-        base(logicalOperator.ToApiString(), filter)
-    {
-    }
+    [JsonPropertyName("moreData")]
+    public bool MoreDocumentsExist { get; set; }
 }

@@ -23,6 +23,21 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 public class FilterBuilder<T>
 {
+    public Filter<T> And(params Filter<T>[] filters)
+    {
+        return new LogicalFilter<T>(LogicalOperator.And, filters);
+    }
+
+    public Filter<T> Or(params Filter<T>[] filters)
+    {
+        return new LogicalFilter<T>(LogicalOperator.Or, filters);
+    }
+
+    public Filter<T> Not(Filter<T> filter)
+    {
+        return new LogicalFilter<T>(LogicalOperator.Not, filter);
+    }
+
     public Filter<T> Gt(string fieldName, object value)
     {
         return new Filter<T>(fieldName, FilterOperator.GreaterThan, value);
@@ -83,9 +98,14 @@ public class FilterBuilder<T>
         return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotEqualsTo, value);
     }
 
-    public Filter<T> In(string fieldName, IEnumerable<T> values)
+    public Filter<T> In<T2>(string fieldName, T2[] values)
     {
         return new Filter<T>(fieldName, FilterOperator.In, values);
+    }
+
+    public Filter<T> In<TField>(Expression<Func<T, TField>> expression, TField[] array)
+    {
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, array);
     }
 
     public Filter<T> In<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
@@ -93,9 +113,14 @@ public class FilterBuilder<T>
         return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, array);
     }
 
-    public Filter<T> Nin(string fieldName, IEnumerable<T> values)
+    public Filter<T> Nin<T2>(string fieldName, T2[] values)
     {
         return new Filter<T>(fieldName, FilterOperator.NotIn, values);
+    }
+
+    public Filter<T> Nin<TField>(Expression<Func<T, TField>> expression, TField[] array)
+    {
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, array);
     }
 
     public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
@@ -113,7 +138,7 @@ public class FilterBuilder<T>
         return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.Exists, true);
     }
 
-    public Filter<T> All(string fieldName, object[] array)
+    public Filter<T> All<TField>(string fieldName, TField[] array)
     {
         return new Filter<T>(fieldName, FilterOperator.All, array);
     }
@@ -123,13 +148,13 @@ public class FilterBuilder<T>
         return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.All, array);
     }
 
-    public Filter<T> Size(string fieldName, object[] array)
+    public Filter<T> Size(string fieldName, int size)
     {
-        return new Filter<T>(fieldName, FilterOperator.All, array.Length);
+        return new Filter<T>(fieldName, FilterOperator.Size, size);
     }
 
-    public Filter<T> Size<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
+    public Filter<T> Size<TField>(Expression<Func<T, TField[]>> expression, int size)
     {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.All, array.Length);
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.Size, size);
     }
 }

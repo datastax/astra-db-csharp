@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-using System.Linq;
+using System.Collections.Generic;
 
-namespace DataStax.AstraDB.DataApi.Core.Query;
+namespace DataStax.AstraDB.DataApi.Core;
 
-internal class LogicalFilter<T> : Filter<T>
+internal class ApiResponseDictionary : Dictionary<string, object>
 {
-    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T>[] filters) :
-        base(logicalOperator.ToApiString(), filters)
-    {
-    }
 
-    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T> filter) :
-        base(logicalOperator.ToApiString(), filter)
-    {
-    }
 }
+
+

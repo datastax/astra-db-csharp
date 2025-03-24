@@ -93,14 +93,14 @@ public class Command
         return dictionary;
     }
 
-    internal async Task<ApiResponse<ApiResponseDictionary>> RunAsync(bool runSynchronously)
+    internal async Task<ApiResponseWithStatus<ApiResponseDictionary>> RunAsyncReturnDictionary(bool runSynchronously)
     {
         return await RunAsyncReturnStatus<ApiResponseDictionary>(runSynchronously).ConfigureAwait(false);
     }
 
-    internal async Task<ApiResponse<TStatus>> RunAsyncReturnStatus<TStatus>(bool runSynchronously)
+    internal async Task<ApiResponseWithStatus<TStatus>> RunAsyncReturnStatus<TStatus>(bool runSynchronously)
     {
-        var response = await RunCommandAsync<ApiResponse<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        var response = await RunCommandAsync<ApiResponseWithStatus<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
             throw new CommandException(response.Errors);
@@ -108,13 +108,13 @@ public class Command
         return response;
     }
 
-    internal async Task<ApiDataResponse<TData>> RunAsyncReturnData<TData>(bool runSynchronously)
+    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TDocument, TStatus>(bool runSynchronously)
     {
         _commandOptionsTree.Add(new CommandOptions()
         {
-            OutputConverter = new DocumentConverter<TData>()
+            OutputConverter = new DocumentConverter<TDocument>()
         });
-        var response = await RunCommandAsync<ApiDataResponse<TData>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
             throw new CommandException(response.Errors);
@@ -135,9 +135,14 @@ public class Command
     private async Task<T> RunCommandAsync<T>(HttpMethod method, bool runSynchronously)
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
-        var serializeOptions = commandOptions.InputConverter == null ? new JsonSerializerOptions() : new JsonSerializerOptions()
+        var serializeOptions = commandOptions.InputConverter == null ?
+        new JsonSerializerOptions()
         {
-            Converters = { commandOptions.InputConverter }
+            Converters = { new ObjectIdConverter() }
+        } :
+        new JsonSerializerOptions()
+        {
+            Converters = { commandOptions.InputConverter, new ObjectIdConverter() }
         };
 
         var content = new StringContent(JsonSerializer.Serialize(BuildContent(), serializeOptions), Encoding.UTF8, "application/json");
@@ -244,9 +249,14 @@ public class Command
                 return default;
             }
 
-            var deserializeOptions = commandOptions.OutputConverter == null ? new JsonSerializerOptions() : new JsonSerializerOptions()
+            var deserializeOptions = commandOptions.OutputConverter == null ?
+            new JsonSerializerOptions()
             {
-                Converters = { commandOptions.OutputConverter }
+                Converters = { new ObjectIdConverter() }
+            } :
+            new JsonSerializerOptions()
+            {
+                Converters = { commandOptions.OutputConverter, new ObjectIdConverter() }
             };
             return JsonSerializer.Deserialize<T>(responseContent, deserializeOptions);
         }

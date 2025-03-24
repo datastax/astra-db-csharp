@@ -16,6 +16,7 @@
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
+using DataStax.AstraDB.DataApi.Core.Commands;
 using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ public class DocumentConverter<T> : JsonConverter<T>
 {
     private static readonly Dictionary<PropertyInfo, string> FieldMappings;
     private static readonly Dictionary<string, PropertyInfo> ReverseMappings;
+    private static readonly List<string> PropertyNamesToIgnore = new();
 
     static DocumentConverter()
     {
@@ -42,14 +44,24 @@ public class DocumentConverter<T> : JsonConverter<T>
             {
                 string jsonName = attr.Field switch
                 {
-                    DocumentMappingField.Vectorize => "$vectorize",
-                    DocumentMappingField.Vector => "$vector",
-                    DocumentMappingField.Id => "_id",
-                    DocumentMappingField.Similarity => "$similarity",
+                    DocumentMappingField.Vectorize => DataApiKeywords.Vectorize,
+                    DocumentMappingField.Vector => DataApiKeywords.Vector,
+                    DocumentMappingField.Id => DataApiKeywords.Id,
+                    DocumentMappingField.Similarity => DataApiKeywords.Similarity,
                     _ => prop.Name
                 };
                 FieldMappings[prop] = jsonName;
                 ReverseMappings[jsonName] = prop;
+                PropertyNamesToIgnore.Add(prop.Name);
+            }
+            else
+            {
+                if (prop.Name == DataApiKeywords.Id)
+                {
+                    FieldMappings[prop] = DataApiKeywords.Id;
+                    ReverseMappings[DataApiKeywords.Id] = prop;
+                    PropertyNamesToIgnore.Add(prop.Name);
+                }
             }
         }
     }
@@ -97,120 +109,56 @@ public class DocumentConverter<T> : JsonConverter<T>
     {
         writer.WriteStartObject();
 
-        foreach (PropertyInfo prop in typeof(T).GetProperties())
+        foreach (var prop in typeof(T).GetProperties())
         {
-            string propertyName = FieldMappings.TryGetValue(prop, out string mappedName)
-                ? mappedName
-                : options.PropertyNamingPolicy?.ConvertName(prop.Name) ?? prop.Name;
+            if (FieldMappings.TryGetValue(prop, out string mappedName))
+            {
+                string propertyName = mappedName;
+                object propValue = prop.GetValue(value);
 
-            object propValue = prop.GetValue(value);
-            writer.WritePropertyName(propertyName);
-            if (propertyName == "_id" && propValue.GetType() == typeof(ObjectId))
-            {
-                JsonSerializer.Serialize(writer, propValue.ToString(), prop.PropertyType, options);
-            }
-            else
-            {
+                writer.WritePropertyName(propertyName);
+
+                // if (propertyName == DataApiKeywords.Id && propValue?.GetType() == typeof(ObjectId))
+                // {
+                //     JsonSerializer.Serialize(writer, propValue.ToString(), typeof(string), options);
+                // }
+                // else
+                // {
                 JsonSerializer.Serialize(writer, propValue, prop.PropertyType, options);
+                //}
+            }
+        }
+
+        // Delegate to default serialization for non-special properties
+        var defaultOptions = new JsonSerializerOptions
+        {
+            AllowTrailingCommas = options.AllowTrailingCommas,
+            DefaultBufferSize = options.DefaultBufferSize,
+            DictionaryKeyPolicy = options.DictionaryKeyPolicy,
+            Encoder = options.Encoder,
+            IgnoreReadOnlyFields = options.IgnoreReadOnlyFields,
+            IgnoreReadOnlyProperties = options.IgnoreReadOnlyProperties,
+            IncludeFields = options.IncludeFields,
+            MaxDepth = options.MaxDepth,
+            NumberHandling = options.NumberHandling,
+            PropertyNameCaseInsensitive = options.PropertyNameCaseInsensitive,
+            PropertyNamingPolicy = options.PropertyNamingPolicy,
+            ReadCommentHandling = options.ReadCommentHandling,
+            ReferenceHandler = options.ReferenceHandler,
+            UnknownTypeHandling = options.UnknownTypeHandling,
+            WriteIndented = options.WriteIndented
+        };
+        string defaultJson = JsonSerializer.Serialize(value, typeof(T), defaultOptions);
+        using var doc = JsonDocument.Parse(defaultJson);
+        foreach (var prop in doc.RootElement.EnumerateObject())
+        {
+            if (!PropertyNamesToIgnore.Contains(prop.Name))
+            {
+                writer.WritePropertyName(prop.Name);
+                prop.Value.WriteTo(writer);
             }
         }
 
         writer.WriteEndObject();
     }
-    // private readonly Dictionary<Type, string> _attributeMappings = new Dictionary<Type, string>
-    // {
-    //     { typeof(VectorizeAttribute), "$vectorize" },
-    //     { typeof(VectorAttribute), "$vector" },
-    //     { typeof(IdAttribute), "_id" },
-    //     { typeof(SimilarityAttribute), "$similarity" },
-    // };
-
-    // public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    // {
-    //     if (reader.TokenType != JsonTokenType.StartObject)
-    //     {
-    //         throw new JsonException($"Cannot deserialize {typeToConvert.Name} from {reader.TokenType}.");
-    //     }
-
-    //     var obj = Activator.CreateInstance(typeToConvert);
-
-    //     reader.Read();
-
-    //     while (reader.TokenType != JsonTokenType.EndObject)
-    //     {
-    //         if (reader.TokenType == JsonTokenType.PropertyName)
-    //         {
-    //             string propertyName = reader.GetString();
-    //             reader.Read();
-
-    //             PropertyInfo property = typeToConvert.GetProperties().FirstOrDefault(p =>
-    //             {
-    //                 var attributes = p.GetCustomAttributes();
-    //                 foreach (var attribute in attributes)
-    //                 {
-    //                     if (_attributeMappings.TryGetValue(attribute.GetType(), out string mappedName) && mappedName == propertyName)
-    //                     {
-    //                         return true;
-    //                     }
-    //                 }
-    //                 if (p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name == propertyName || p.Name == propertyName)
-    //                 {
-    //                     return true;
-    //                 }
-
-    //                 return false;
-    //             });
-
-    //             if (property != null)
-    //             {
-    //                 object value = JsonSerializer.Deserialize(ref reader, property.PropertyType, options);
-    //                 property.SetValue(obj, value);
-    //             }
-    //             else
-    //             {
-    //                 reader.Skip();
-    //             }
-    //         }
-
-    //         reader.Read();
-    //     }
-
-    //     return (T)obj;
-    // }
-
-    // public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
-    // {
-    //     if (value == null)
-    //     {
-    //         writer.WriteNullValue();
-    //         return;
-    //     }
-
-    //     Type type = value.GetType();
-    //     PropertyInfo[] properties = type.GetProperties();
-
-    //     writer.WriteStartObject();
-
-    //     foreach (PropertyInfo property in properties)
-    //     {
-    //         string propertyName = property.Name;
-    //         var attributes = property.GetCustomAttributes();
-    //         foreach (var attribute in attributes)
-    //         {
-    //             if (attribute is JsonPropertyNameAttribute jsonNameAttr)
-    //             {
-    //                 propertyName = jsonNameAttr.Name;
-    //             }
-    //             else if (_attributeMappings.TryGetValue(attribute.GetType(), out string mappedName))
-    //             {
-    //                 propertyName = mappedName;
-    //                 break;
-    //             }
-    //         }
-    //         writer.WritePropertyName(propertyName);
-    //         JsonSerializer.Serialize(writer, property.GetValue(value), property.PropertyType, options);
-    //     }
-
-    //     writer.WriteEndObject();
-    // }
 }

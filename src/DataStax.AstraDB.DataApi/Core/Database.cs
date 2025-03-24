@@ -18,7 +18,8 @@ using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.Utils;
-using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core;
@@ -73,44 +74,47 @@ public class Database
         return collectionNames.CollectionNames.Count > 0 && collectionNames.CollectionNames.Contains(collectionName);
     }
 
-    public ListCollectionNamesResult ListCollectionNames()
+    public List<string> ListCollectionNames()
     {
         return ListCollectionNames(null);
     }
 
-    public ListCollectionNamesResult ListCollectionNames(CommandOptions commandOptions)
+    public List<string> ListCollectionNames(CommandOptions commandOptions)
     {
         return ListCollectionNamesAsync(commandOptions).ResultSync();
     }
 
-    public Task<ListCollectionNamesResult> ListCollectionNamesAsync()
+    public Task<List<string>> ListCollectionNamesAsync()
     {
         return ListCollectionNamesAsync(null);
     }
 
-    public Task<ListCollectionNamesResult> ListCollectionNamesAsync(CommandOptions commandOptions)
+    public async Task<List<string>> ListCollectionNamesAsync(CommandOptions commandOptions)
     {
-        return ListCollectionsAsync<ListCollectionNamesResult>(includeDetails: false, commandOptions, runSynchronously: false);
+        var result = await ListCollectionsAsync<ListCollectionNamesResult>(includeDetails: false, commandOptions, runSynchronously: false).ConfigureAwait(false);
+        return result.CollectionNames;
     }
 
-    public ListCollectionsResult ListCollections()
+    public IEnumerable<CollectionInfo> ListCollections()
     {
         return ListCollections(null);
     }
 
-    public ListCollectionsResult ListCollections(CommandOptions commandOptions)
+    public IEnumerable<CollectionInfo> ListCollections(CommandOptions commandOptions)
     {
-        return ListCollectionsAsync<ListCollectionsResult>(includeDetails: true, commandOptions, runSynchronously: true).ResultSync();
+        var result = ListCollectionsAsync<ListCollectionsResult>(includeDetails: true, commandOptions, runSynchronously: true).ResultSync();
+        return result.Collections;
     }
 
-    public Task<ListCollectionsResult> ListCollectionsAsync()
+    public Task<IEnumerable<CollectionInfo>> ListCollectionsAsync()
     {
         return ListCollectionsAsync(null);
     }
 
-    public Task<ListCollectionsResult> ListCollectionsAsync(CommandOptions commandOptions)
+    public async Task<IEnumerable<CollectionInfo>> ListCollectionsAsync(CommandOptions commandOptions)
     {
-        return ListCollectionsAsync<ListCollectionsResult>(true, commandOptions, runSynchronously: false);
+        var result = await ListCollectionsAsync<ListCollectionsResult>(true, commandOptions, runSynchronously: false).ConfigureAwait(false);
+        return result.Collections;
     }
 
     private async Task<T> ListCollectionsAsync<T>(bool includeDetails, CommandOptions commandOptions, bool runSynchronously)
@@ -235,7 +239,7 @@ public class Database
             options = definition
         };
         var command = CreateCommand("createCollection").WithPayload(payload).AddCommandOptions(options);
-        await command.RunAsync(runSynchronously).ConfigureAwait(false);
+        await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
         return GetCollection<T>(collectionName);
     }
 
@@ -250,7 +254,7 @@ public class Database
             options = definition
         };
         var command = CreateCommand("createCollection").WithPayload(payload).AddCommandOptions(options);
-        await command.RunAsync(runSynchronously).ConfigureAwait(false);
+        await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
         return GetCollection<T, TId>(collectionName);
     }
 
@@ -313,7 +317,7 @@ public class Database
         {
             name = collectionName
         }).AddCommandOptions(options);
-        await command.RunAsync(runSynchronously).ConfigureAwait(false);
+        await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
     }
 
     internal Command CreateCommand(string name)

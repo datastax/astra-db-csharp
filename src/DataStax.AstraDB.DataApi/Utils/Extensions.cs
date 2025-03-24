@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.SerDes;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace DataStax.AstraDB.DataApi.Utils;
@@ -58,7 +61,17 @@ public static class Extensions
             sb.Append('.');
         }
 
-        sb.Append(memberExpression.Member.Name);
+        var name = memberExpression.Member.Name;
+        if (memberExpression.Member is PropertyInfo propertyInfo)
+        {
+            var attribute = propertyInfo.GetCustomAttribute<DocumentMappingAttribute>();
+            if (attribute != null && attribute.Field == DocumentMappingField.Id)
+            {
+                name = DataApiKeywords.Id;
+            }
+        }
+        sb.Append(name);
+
     }
 
 }

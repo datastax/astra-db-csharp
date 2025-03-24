@@ -3,14 +3,14 @@ using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using Xunit;
 
-namespace DataStax.AstraDB.DataApi.IntegrationTests.Tests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
 [Collection("DatabaseAndCollections")]
 public class DatabaseTests
 {
-    ClientFixture fixture;
+    CollectionsFixture fixture;
 
-    public DatabaseTests(ClientFixture fixture)
+    public DatabaseTests(CollectionsFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -182,12 +182,24 @@ public class DatabaseTests
     }
 
     [Fact]
+    public async Task Create_Drop_FlowWorks()
+    {
+        const string collectionName = "createAndDropCollection";
+        await fixture.Database.CreateCollectionAsync(collectionName);
+        var exists = await fixture.Database.DoesCollectionExistAsync(collectionName);
+        Assert.True(exists);
+        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
+        exists = await fixture.Database.DoesCollectionExistAsync(Constants.DefaultCollection);
+        Assert.False(exists);
+    }
+
+    [Fact]
     public async Task ListCollectionNamesAsync_ShouldReturnCollectionNames()
     {
         await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var result = await fixture.Database.ListCollectionNamesAsync();
         Assert.NotNull(result);
-        Assert.Contains(Constants.DefaultCollection, result.CollectionNames);
+        Assert.Contains(Constants.DefaultCollection, result);
         await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
@@ -198,7 +210,7 @@ public class DatabaseTests
         var commandOptions = new CommandOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
         Assert.NotNull(result);
-        Assert.Contains(Constants.DefaultCollection, result.CollectionNames);
+        Assert.Contains(Constants.DefaultCollection, result);
         await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
@@ -255,4 +267,42 @@ public class DatabaseTests
         Assert.Equal(collectionName, collection.CollectionName);
         await fixture.Database.DropCollectionAsync(collectionName);
     }
+
+    [Fact]
+    public async Task GetCollectionMetadata()
+    {
+        var collectionName = "collectionMetadataTest";
+        try
+        {
+            var options = new CollectionDefinition
+            {
+                Indexing = new IndexingOptions
+                {
+                    Allow = new List<string> { "metadata" }
+                },
+                Vector = new VectorOptions
+                {
+                    Dimension = 14,
+                    Metric = SimilarityMetric.DotProduct,
+                },
+                DefaultId = new DefaultIdOptions
+                {
+                    Type = DefaultIdType.ObjectId
+                }
+            };
+            await fixture.Database.CreateCollectionAsync(collectionName, options);
+            var collections = await fixture.Database.ListCollectionsAsync();
+            var collectionMetadata = collections.FirstOrDefault(c => c.Name == collectionName);
+            Assert.NotNull(collectionMetadata);
+            Assert.Equal(14, collectionMetadata.Options.Vector.Dimension);
+            Assert.Equal(SimilarityMetric.DotProduct, collectionMetadata.Options.Vector.Metric);
+            Assert.Contains("metadata", collectionMetadata.Options.Indexing.Allow);
+            Assert.Equal(DefaultIdType.ObjectId, collectionMetadata.Options.DefaultId.Type);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
 }

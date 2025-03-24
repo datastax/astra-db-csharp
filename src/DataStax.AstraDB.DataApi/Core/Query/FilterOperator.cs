@@ -28,6 +28,7 @@ public class FilterOperator
     public const string NotIn = "$nin";
     public const string Exists = "$exists";
     public const string All = "$all";
+    public const string Size = "$size";
     public const string Contains = "$contains";
     public const string ContainsKey = "$containsKey";
     public const string ContainsEntry = "$containsEntry";

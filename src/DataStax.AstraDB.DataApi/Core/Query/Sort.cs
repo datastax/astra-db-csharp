@@ -15,25 +15,46 @@
  */
 
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Utils;
+using System;
+using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 public class Sort
 {
+    internal const int SortAscending = 1;
+    internal const int SortDescending = -1;
+
+    internal string Name { get; set; }
+    internal object Value { get; set; }
+
     internal Sort(string sortKey, object value)
     {
         Name = sortKey;
         Value = value;
     }
 
-    internal string Name { get; set; }
-    internal object Value { get; set; }
+    public static Sort Ascending(string field) => new(field, SortAscending);
 
-    public static Sort Ascending(string field) => new(field, SortOrder.Ascending);
-
-    public static Sort Descending(string field) => new(field, SortOrder.Descending);
+    public static Sort Descending(string field) => new(field, SortDescending);
 
     public static Sort Vector(float[] vector) => new(DataApiKeywords.Vector, vector);
 
     public static Sort Vectorize(string valueToVectorize) => new(DataApiKeywords.Vectorize, valueToVectorize);
+}
+
+public class Sort<T> : Sort
+{
+    internal Sort(string sortKey, object value) : base(sortKey, value) { }
+
+    public static Sort Ascending<TField>(Expression<Func<T, TField>> expression)
+    {
+        return new Sort<T>(expression.GetMemberNameTree(), SortAscending);
+    }
+
+    public static Sort Descending<TField>(Expression<Func<T, TField>> expression)
+    {
+        return new Sort<T>(expression.GetMemberNameTree(), SortDescending);
+    }
 }

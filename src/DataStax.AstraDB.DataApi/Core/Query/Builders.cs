@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+namespace DataStax.AstraDB.DataApi.Core.Query;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
-
-public class CollectionResult
+public class Builders<T>
 {
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
-    [JsonPropertyName("options")]
-    public CollectionDefinition Options { get; set; }
+    public static FilterBuilder<T> Filter => new();
+    public static ProjectionBuilder<T> Projection => new();
+    public static SortBuilder<T> Sort => new();
 }

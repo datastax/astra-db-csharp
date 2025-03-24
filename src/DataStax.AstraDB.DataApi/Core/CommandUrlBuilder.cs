@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Utils;
-
 namespace DataStax.AstraDB.DataApi.Core;
 
 abstract class CommandUrlBuilder

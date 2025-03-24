@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
-
 namespace DataStax.AstraDB.DataApi.Core.Query;
+
 
 public class Projection
 {
-    public string Field { get; set; }
-    public bool Present { get; set; }
+    public string FieldName { get; set; }
+    public bool Include { get; set; }
     public int? SliceStart { get; set; }
     public int? SliceEnd { get; set; }
 
@@ -29,11 +28,6 @@ public class Projection
     {
         get
         {
-            // valid options
-            // true
-            // false
-            // { "$slice": [4, 2] }
-            // { "$slice": -2 }
             if (SliceStart.HasValue)
             {
                 if (SliceEnd.HasValue)
@@ -45,7 +39,7 @@ public class Projection
                     return SliceStart.Value;
                 }
             }
-            return Present;
+            return Include;
         }
     }
 }

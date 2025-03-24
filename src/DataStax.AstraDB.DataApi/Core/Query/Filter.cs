@@ -18,16 +18,16 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 public class Filter<T>
 {
-    public string Name { get; }
-    public object Value { get; }
+    public virtual object Name { get; }
+    public virtual object Value { get; }
 
-    public Filter(string filterName, object value)
+    internal Filter(string filterName, object value)
     {
         Name = filterName;
         Value = value;
     }
 
-    public Filter(string filterOperator, string fieldName, object value)
+    internal Filter(string filterOperator, string fieldName, object value)
     {
         Name = filterOperator;
         Value = new Filter<T>(fieldName, value);
@@ -45,7 +45,7 @@ public class Filter<T>
 
     public static Filter<T> operator !(Filter<T> notFilter)
     {
-        return new LogicalFilter<T>(LogicalOperator.Or, new[] { notFilter });
+        return new LogicalFilter<T>(LogicalOperator.Not, notFilter);
     }
 
 }

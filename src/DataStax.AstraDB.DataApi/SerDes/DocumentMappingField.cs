@@ -15,9 +15,6 @@
  */
 
 namespace DataStax.AstraDB.DataApi.SerDes;
-
-using System;
-
 public enum DocumentMappingField
 {
     /// <summary>Serializes as "$vectorize" for a string to vectorize</summary>
@@ -26,6 +23,8 @@ public enum DocumentMappingField
     Vector,
     /// <summary>Serializes as "_id" for unique identifiers</summary>
     Id,
-    /// <summary>On read operations only, serializes the similarity for vector comparisons</summary>
-    Similarity
+    /// <summary>On read operations only, serializes the similarity result for vector comparisons</summary>
+    Similarity,
+    /// <summary>On read operations only, serializes the vector used for sorting</summary>
+    SortVector
 }

@@ -226,7 +226,47 @@ public class Collection<T, TId> where T : class
 
     public T FindOne(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
     {
-        return FindOneAsync(filter, findOptions, commandOptions, true).ResultSync();
+        return FindOneAsync<T>(filter, findOptions, commandOptions, true).ResultSync();
+    }
+
+    public TResult FindOne<TResult>()
+    {
+        return FindOne<TResult>(null, new FindOptions<T>(), null);
+    }
+
+    public TResult FindOne<TResult>(CommandOptions commandOptions)
+    {
+        return FindOne<TResult>(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public TResult FindOne<TResult>(Filter<T> filter)
+    {
+        return FindOne<TResult>(filter, new FindOptions<T>(), null);
+    }
+
+    public TResult FindOne<TResult>(FindOptions<T> findOptions)
+    {
+        return FindOne<TResult>(null, findOptions, null);
+    }
+
+    public TResult FindOne<TResult>(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOne<TResult>(null, findOptions, commandOptions);
+    }
+
+    public TResult FindOne<TResult>(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOne<TResult>(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public TResult FindOne<TResult>(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindOne<TResult>(filter, findOptions, null);
+    }
+
+    public TResult FindOne<TResult>(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
     }
 
     public Task<T> FindOneAsync()
@@ -266,16 +306,334 @@ public class Collection<T, TId> where T : class
 
     public Task<T> FindOneAsync(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
     {
-        return FindOneAsync(filter, findOptions, commandOptions, false);
+        return FindOneAsync<T>(filter, findOptions, commandOptions, false);
     }
 
-    private async Task<T> FindOneAsync(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    public Task<TResult> FindOneAsync<TResult>()
     {
-        //TODO: Add and handle TProjection
+        return FindOneAsync<TResult>(null, new FindOptions<T>(), null);
+    }
+
+    public Task<TResult> FindOneAsync<TResult>(CommandOptions commandOptions)
+    {
+        return FindOneAsync<TResult>(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<TResult> FindOneAsync<TResult>(FindOptions<T> findOptions)
+    {
+        return FindOneAsync<TResult>(null, findOptions, null);
+    }
+
+    public Task<TResult> FindOneAsync<TResult>(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAsync<TResult>(null, findOptions, commandOptions);
+    }
+
+    public Task<TResult> FindOneAsync<TResult>(Filter<T> filter)
+    {
+        return FindOneAsync<TResult>(filter, new FindOptions<T>(), null);
+    }
+
+    public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOneAsync<TResult>(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindOneAsync<TResult>(filter, findOptions, null);
+    }
+
+    public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAsync<TResult>(filter, findOptions, commandOptions, false);
+    }
+
+    private async Task<TResult> FindOneAsync<TResult>(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
         findOptions.Filter = filter;
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<T>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response.Data.Document;
+    }
+
+    public FluentFind<T, TId, T> Find()
+    {
+        return new FluentFind<T, TId, T>(this, null);
+    }
+
+    public FluentFind<T, TId, T> Find(Filter<T> filter)
+    {
+        return new FluentFind<T, TId, T>(this, filter);
+    }
+
+    public FluentFind<T, TId, TResult> Find<TResult>() where TResult : class
+    {
+        return new FluentFind<T, TId, TResult>(this, null);
+    }
+
+    public FluentFind<T, TId, TResult> Find<TResult>(Filter<T> filter) where TResult : class
+    {
+        return new FluentFind<T, TId, TResult>(this, filter);
+    }
+
+    public Cursor<T> FindMany()
+    {
+        return FindMany(null, new FindOptions<T>(), null);
+    }
+
+    public Cursor<T> FindMany(CommandOptions commandOptions)
+    {
+        return FindMany(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public Cursor<T> FindMany(Filter<T> filter)
+    {
+        return FindMany(filter, new FindOptions<T>(), null);
+    }
+
+    public Cursor<T> FindMany(FindOptions<T> findOptions)
+    {
+        return FindMany(null, findOptions, null);
+    }
+
+    public Cursor<T> FindMany(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindMany(null, findOptions, commandOptions);
+    }
+
+    public Cursor<T> FindMany(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindMany(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public Cursor<T> FindMany(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindMany(filter, findOptions, null);
+    }
+
+    public Cursor<T> FindMany(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindManyAsyncCursor<T>(filter, findOptions, commandOptions, true).ResultSync();
+    }
+
+    public Cursor<TResult> FindMany<TResult>()
+    {
+        return FindManyAsyncCursor<TResult>(null, new FindOptions<T>(), null, true).ResultSync();
+    }
+
+    public Cursor<TResult> FindMany<TResult>(CommandOptions commandOptions)
+    {
+        return FindMany<TResult>(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public Cursor<TResult> FindMany<TResult>(Filter<T> filter)
+    {
+        return FindMany<TResult>(filter, new FindOptions<T>(), null);
+    }
+
+    public Cursor<TResult> FindMany<TResult>(FindOptions<T> findOptions)
+    {
+        return FindMany<TResult>(null, findOptions, null);
+    }
+
+    public Cursor<TResult> FindMany<TResult>(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindMany<TResult>(null, findOptions, commandOptions);
+    }
+
+    public Cursor<TResult> FindMany<TResult>(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindMany<TResult>(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public Cursor<TResult> FindMany<TResult>(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindMany<TResult>(filter, findOptions, null);
+    }
+
+    public Cursor<TResult> FindMany<TResult>(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindManyAsyncCursor<TResult>(filter, findOptions, commandOptions, true).ResultSync();
+    }
+
+    public Task<Cursor<T>> FindManyAsync()
+    {
+        return FindManyAsync(null, new FindOptions<T>(), null);
+    }
+
+    public Task<Cursor<T>> FindManyAsync(CommandOptions commandOptions)
+    {
+        return FindManyAsync(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<Cursor<T>> FindManyAsync(FindOptions<T> findOptions)
+    {
+        return FindManyAsync(null, findOptions, null);
+    }
+
+    public Task<Cursor<T>> FindManyAsync(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindManyAsync(null, findOptions, commandOptions);
+    }
+
+    public Task<Cursor<T>> FindManyAsync(Filter<T> filter)
+    {
+        return FindManyAsync(filter, new FindOptions<T>(), null);
+    }
+
+    public Task<Cursor<T>> FindManyAsync(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindManyAsync(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<Cursor<T>> FindManyAsync(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindManyAsync(filter, findOptions, null);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>()
+    {
+        return FindManyAsync<TResult>(null, new FindOptions<T>(), null);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>(CommandOptions commandOptions)
+    {
+        return FindManyAsync<TResult>(null, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>(FindOptions<T> findOptions)
+    {
+        return FindManyAsync<TResult>(null, findOptions, null);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>(FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindManyAsync<TResult>(null, findOptions, commandOptions);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>(Filter<T> filter)
+    {
+        return FindManyAsync<TResult>(filter, new FindOptions<T>(), null);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindManyAsync<TResult>(filter, new FindOptions<T>(), commandOptions);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>(Filter<T> filter, FindOptions<T> findOptions)
+    {
+        return FindManyAsync<TResult>(filter, findOptions, null);
+    }
+
+    public Task<Cursor<T>> FindManyAsync(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindManyAsyncCursor<T>(filter, findOptions, commandOptions, false);
+    }
+
+    public Task<Cursor<TResult>> FindManyAsync<TResult>(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindManyAsyncCursor<TResult>(filter, findOptions, commandOptions, false);
+    }
+
+    internal async Task<Cursor<TResult>> FindManyAsyncCursor<TResult>(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        findOptions.Filter = filter;
+        var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnData<DocumentsResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        return new Cursor<TResult>(response, (string pageState, bool runSynchronously) =>
+        {
+            findOptions ??= new FindOptions<T>();
+            findOptions.PageState = pageState;
+            return FindManyAsync<TResult>(filter, findOptions, commandOptions, runSynchronously);
+        });
+    }
+
+    internal async Task<ApiResponseWithData<DocumentsResult<TResult>, FindStatusResult>> FindManyAsync<TResult>(Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        findOptions.Filter = filter;
+        var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnData<DocumentsResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        return response;
+    }
+
+    public DocumentsCountResult CountDocuments()
+    {
+        return CountDocumentsAsync(null, null, true).ResultSync();
+    }
+
+    public DocumentsCountResult CountDocuments(CommandOptions commandOptions)
+    {
+        return CountDocumentsAsync(null, commandOptions, true).ResultSync();
+    }
+
+    public Task<DocumentsCountResult> CountDocumentsAsync()
+    {
+        return CountDocumentsAsync(null, null, false);
+    }
+
+    public Task<DocumentsCountResult> CountDocumentsAsync(CommandOptions commandOptions)
+    {
+        return CountDocumentsAsync(null, commandOptions, false);
+    }
+
+    public DocumentsCountResult CountDocuments(Filter<T> filter)
+    {
+        return CountDocumentsAsync(filter, null, true).ResultSync();
+    }
+
+    public DocumentsCountResult CountDocuments(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return CountDocumentsAsync(filter, commandOptions, true).ResultSync();
+    }
+
+    public Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter)
+    {
+        return CountDocumentsAsync(filter, null, false);
+    }
+
+    public Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return CountDocumentsAsync(filter, commandOptions, false);
+    }
+
+    internal async Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CommandOptions commandOptions, bool runSynchronously)
+    {
+        var findOptions = new FindOptions<T>()
+        {
+            Filter = filter,
+        };
+        var command = CreateCommand("countDocuments").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<DocumentsCountResult>(runSynchronously).ConfigureAwait(false);
+        return response.Result;
+    }
+
+    public EstimatedDocumentsCountResult EstimateDocumentCount()
+    {
+        return EstimateDocumentCountAsync(null, true).ResultSync();
+    }
+
+    public EstimatedDocumentsCountResult EstimateDocumentCount(CommandOptions commandOptions)
+    {
+        return EstimateDocumentCountAsync(commandOptions, true).ResultSync();
+    }
+
+    public Task<EstimatedDocumentsCountResult> EstimateDocumentCountAsync()
+    {
+        return EstimateDocumentCountAsync(null, false);
+    }
+
+    public Task<EstimatedDocumentsCountResult> EstimateDocumentCountAsync(CommandOptions commandOptions)
+    {
+        return EstimateDocumentCountAsync(commandOptions, false);
+    }
+
+    internal async Task<EstimatedDocumentsCountResult> EstimateDocumentCountAsync(CommandOptions commandOptions, bool runSynchronously)
+    {
+        var command = CreateCommand("estimatedDocumentCount").WithPayload(new { }).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<EstimatedDocumentsCountResult>(runSynchronously).ConfigureAwait(false);
+        return response.Result;
     }
 
     internal Command CreateCommand(string name)

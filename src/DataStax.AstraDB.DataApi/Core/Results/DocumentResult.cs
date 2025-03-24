@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Collections;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
-internal class ApiData<T>
+public class DocumentResult<T>
 {
-    [JsonPropertyName("documents")]
-    public List<T> Documents { get; set; }
     [JsonPropertyName("document")]
     public T Document { get; set; }
-    [JsonPropertyName("nextPageState")]
-    public string NextPageState { get; set; }
 }
