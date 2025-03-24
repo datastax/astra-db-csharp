@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
+namespace DataStax.AstraDB.DataApi.Core;
 
-public class ListCollectionsResult
+internal class ApiResponseDictionary : Dictionary<string, object>
 {
-    [JsonPropertyName("collections")]
-    public CollectionInfo[] Collections { get; set; }
+
 }
+
+

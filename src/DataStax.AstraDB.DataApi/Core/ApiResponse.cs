@@ -19,22 +19,25 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-internal class ApiResponse<TResponse>
+internal class ApiResponseWithStatus<T>
 {
     [JsonPropertyName("status")]
-    public TResponse Result { get; set; }
+    public T Result { get; set; }
 
     [JsonPropertyName("errors")]
     public List<ApiError> Errors { get; set; }
-
-    // TODO: remove?
-    // [JsonPropertyName("data")]
-    // public ApiData Data { get; set; }
 }
 
-internal class ApiResponseDictionary : Dictionary<string, object>
+internal class ApiResponseWithData<T, TStatus>
 {
+    [JsonPropertyName("errors")]
+    public List<ApiError> Errors { get; set; }
 
+    [JsonPropertyName("data")]
+    public T Data { get; set; }
+
+    [JsonPropertyName("status")]
+    public TStatus Status { get; set; }
 }
 
 

@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-using System;
 using System.Linq;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Core.Query;
 
-//TODO: placeholder
-public class ApiVector
+internal class LogicalFilter<T> : Filter<T>
 {
-    private readonly float[] _vector;
-
-    public ApiVector(float[] vector)
+    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T>[] filters) :
+        base(logicalOperator.ToApiString(), filters)
     {
-        _vector = vector;
     }
 
-    public int dimension()
+    internal LogicalFilter(LogicalOperator logicalOperator, Filter<T> filter) :
+        base(logicalOperator.ToApiString(), filter)
     {
-        return _vector.Count();
     }
 }

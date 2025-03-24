@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
+namespace DataStax.AstraDB.DataApi.IntegrationTests;
+
 public class AdminFixture : IDisposable
 {
 	public AdminFixture()

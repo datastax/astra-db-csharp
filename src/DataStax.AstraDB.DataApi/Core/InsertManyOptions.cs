@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+namespace DataStax.AstraDB.DataApi.Core;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
-
-public class ListCollectionsResult
+public class InsertManyOptions
 {
-    [JsonPropertyName("collections")]
-    public CollectionInfo[] Collections { get; set; }
+    public const int MaxChunkSize = 50;
+    public const int MaxConcurrency = int.MaxValue;
+
+    private bool _insertInOrder = false;
+    public bool InsertInOrder
+    {
+        get => _insertInOrder;
+        set
+        {
+            if (value) Concurrency = 1;
+            _insertInOrder = value;
+        }
+    }
+    public int Concurrency { get; set; } = MaxConcurrency;
+    public int ChunkSize { get; set; } = MaxChunkSize;
 }

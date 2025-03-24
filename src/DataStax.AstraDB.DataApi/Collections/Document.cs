@@ -17,6 +17,7 @@
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
+//TODO: flesh this out (dictionary<string,object>?)
 public class Document
 {
 

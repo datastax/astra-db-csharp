@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+namespace DataStax.AstraDB.DataApi.SerDes;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
+using System;
 
-public class ListCollectionsResult
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+public class DocumentMappingAttribute : Attribute
 {
-    [JsonPropertyName("collections")]
-    public CollectionInfo[] Collections { get; set; }
+    public DocumentMappingField Field { get; }
+
+    public DocumentMappingAttribute(DocumentMappingField field)
+    {
+        Field = field;
+    }
 }

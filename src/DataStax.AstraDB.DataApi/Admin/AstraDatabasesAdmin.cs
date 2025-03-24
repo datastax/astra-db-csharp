@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -413,6 +412,6 @@ public class AstraDatabasesAdmin
 
     private Command CreateCommand()
     {
-        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
+        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder());
     }
 }

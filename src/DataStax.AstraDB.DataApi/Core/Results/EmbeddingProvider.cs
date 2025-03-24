@@ -30,12 +30,6 @@ public class EmbeddingProvider
     public List<Parameter> Parameters { get; set; }
     public List<Model> Models { get; set; }
 
-    // public AuthenticationMethod GetSharedSecretAuthentication() =>
-    //     SupportedAuthentication.GetValueOrDefault(AuthenticationMethodSharedSecret);
-
-    // public AuthenticationMethod GetHeaderAuthentication() =>
-    //     SupportedAuthentication.GetValueOrDefault(AuthenticationMethodHeader);
-
     public class Model
     {
         public string Name { get; set; }

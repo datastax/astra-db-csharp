@@ -21,7 +21,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class VectorOptions
 {
     [JsonPropertyName("dimension")]
-    public int Dimension { get; set; }
+    public int? Dimension { get; set; }
 
     [JsonPropertyName("metric")]
     public SimilarityMetric Metric { get; set; }
