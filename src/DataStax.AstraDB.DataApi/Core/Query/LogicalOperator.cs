@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
+using System;
 
-namespace DataStax.AstraDB.DataApi.Core.SerDes;
+namespace DataStax.AstraDB.DataApi.Core.Query;
 
-public interface IDataSerializer
+public enum LogicalOperator : int
 {
-    string Serialize<T>(T obj);
+    And,
+    Or,
+    Not
+}
 
-    T Deserialize<T>(string json);
-
-    Dictionary<string, object> SerializeToMap<T>(T obj);
-
-    T DeserializeFromMap<T>(Dictionary<string, object> map);
+public static class LogicalOperatorExtensions
+{
+    public static string ToApiString(this LogicalOperator value)
+    {
+        return value switch
+        {
+            LogicalOperator.And => "$and",
+            LogicalOperator.Or => "$or",
+            LogicalOperator.Not => "$not",
+            _ => throw new ArgumentException("Invalid Logical Operator"),
+        };
+    }
 }

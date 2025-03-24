@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Collections;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
@@ -23,6 +24,14 @@ public static class Guard
     public static void NotNullOrEmpty(string value, string paramName, string message = null)
     {
         if (string.IsNullOrEmpty(value))
+        {
+            throw new ArgumentNullException(message.OrIfEmpty("Value cannot be null or empty."), paramName);
+        }
+    }
+
+    public static void NotNullOrEmpty(IList value, string paramName, string message = null)
+    {
+        if (value == null || value.Count == 0)
         {
             throw new ArgumentNullException(message.OrIfEmpty("Value cannot be null or empty."), paramName);
         }

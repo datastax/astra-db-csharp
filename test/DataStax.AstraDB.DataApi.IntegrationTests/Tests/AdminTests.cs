@@ -1,10 +1,8 @@
-using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Admin;
-using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using Xunit;
 
-namespace DataStax.AstraDB.DataApi.IntegrationTests.Tests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
 [CollectionDefinition("Admin Collection")]
 public class AdminCollection : ICollectionFixture<AdminFixture>

@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Utils;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace DataStax.AstraDB.DataApi.Core;
@@ -26,6 +27,8 @@ public class CommandOptions
     internal DBEnvironment? Environment { get; set; }
     internal RunMode? RunMode { get; set; }
     internal string Keyspace { get; set; }
+    internal JsonConverter InputConverter { get; set; }
+    internal JsonConverter OutputConverter { get; set; }
 
     public string Token { get; internal set; }
     public DataApiDestination? Destination { get; set; }
@@ -33,6 +36,12 @@ public class CommandOptions
     public TimeoutOptions TimeoutOptions { get; set; }
     public ApiVersion? ApiVersion { get; set; }
     public CancellationToken? CancellationToken { get; set; }
+
+    public void SetConvertersIfNull(JsonConverter inputConverter, JsonConverter outputConverter)
+    {
+        InputConverter ??= inputConverter;
+        OutputConverter ??= outputConverter;
+    }
 
     public static CommandOptions Merge(params CommandOptions[] arr)
     {
@@ -48,7 +57,9 @@ public class CommandOptions
             TimeoutOptions = list.Select(o => o.TimeoutOptions).Merge(),
             ApiVersion = list.Select(o => o.ApiVersion).Merge(),
             CancellationToken = list.Select(o => o.CancellationToken).Merge(),
-            Keyspace = list.Select(o => o.Keyspace).Merge()
+            Keyspace = list.Select(o => o.Keyspace).Merge(),
+            InputConverter = list.Select(o => o.InputConverter).Merge(),
+            OutputConverter = list.Select(o => o.OutputConverter).Merge(),
         };
         return options;
     }

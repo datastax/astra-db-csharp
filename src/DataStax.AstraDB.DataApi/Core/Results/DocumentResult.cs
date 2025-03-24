@@ -18,10 +18,8 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-public class CollectionResult
+public class DocumentResult<T>
 {
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
-    [JsonPropertyName("options")]
-    public CollectionDefinition Options { get; set; }
+    [JsonPropertyName("document")]
+    public T Document { get; set; }
 }

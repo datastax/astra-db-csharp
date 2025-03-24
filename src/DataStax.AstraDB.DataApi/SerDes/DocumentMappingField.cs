@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
-
-namespace DataStax.AstraDB.DataApi.Core.Results;
-
-public class ListCollectionsResult
+namespace DataStax.AstraDB.DataApi.SerDes;
+public enum DocumentMappingField
 {
-    [JsonPropertyName("collections")]
-    public CollectionInfo[] Collections { get; set; }
+    /// <summary>Serializes as "$vectorize" for a string to vectorize</summary>
+    Vectorize,
+    /// <summary>Serializes as "$vector" for vector data.</summary>
+    Vector,
+    /// <summary>Serializes as "_id" for unique identifiers</summary>
+    Id,
+    /// <summary>On read operations only, serializes the similarity result for vector comparisons</summary>
+    Similarity,
+    /// <summary>On read operations only, serializes the vector used for sorting</summary>
+    SortVector
 }

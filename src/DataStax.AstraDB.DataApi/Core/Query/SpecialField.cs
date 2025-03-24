@@ -14,12 +14,29 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+using DataStax.AstraDB.DataApi.Core.Commands;
+using System;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
+namespace DataStax.AstraDB.DataApi.Query;
 
-public class ListCollectionsResult
+public enum SpecialField
 {
-    [JsonPropertyName("collections")]
-    public CollectionInfo[] Collections { get; set; }
+    Vectorize,
+    Vector,
+    Id
+}
+
+public static class SpecialFieldExtensions
+{
+    public static string ToString(this SpecialField specialField)
+    {
+        return specialField switch
+        {
+            SpecialField.Vectorize => DataApiKeywords.Vectorize,
+            SpecialField.Vector => DataApiKeywords.Vector,
+            SpecialField.Id => DataApiKeywords.Id,
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+
+    }
 }

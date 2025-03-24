@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;

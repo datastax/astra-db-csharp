@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.SerDes;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,6 @@ public class Command
 
     internal Command(string name, DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder)
     {
-        //TODO include database-specific options (and maybe collection-specific as well)
         _commandOptionsTree = options.ToList();
         _client = client;
         _name = name;
@@ -65,12 +65,6 @@ public class Command
         {
             _commandOptionsTree.Add(options);
         }
-        return this;
-    }
-
-    internal Command WithDocument(object document)
-    {
-        Payload = new { document };
         return this;
     }
 
@@ -99,14 +93,28 @@ public class Command
         return dictionary;
     }
 
-    internal async Task<ApiResponse<ApiResponseDictionary>> RunAsync(bool runSynchronously)
+    internal async Task<ApiResponseWithStatus<ApiResponseDictionary>> RunAsyncReturnDictionary(bool runSynchronously)
     {
-        return await RunAsync<ApiResponseDictionary>(runSynchronously).ConfigureAwait(false);
+        return await RunAsyncReturnStatus<ApiResponseDictionary>(runSynchronously).ConfigureAwait(false);
     }
 
-    internal async Task<ApiResponse<TStatus>> RunAsync<TStatus>(bool runSynchronously)
+    internal async Task<ApiResponseWithStatus<TStatus>> RunAsyncReturnStatus<TStatus>(bool runSynchronously)
     {
-        var response = await RunCommandAsync<ApiResponse<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        var response = await RunCommandAsync<ApiResponseWithStatus<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        if (response.Errors != null && response.Errors.Count > 0)
+        {
+            throw new CommandException(response.Errors);
+        }
+        return response;
+    }
+
+    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TDocument, TStatus>(bool runSynchronously)
+    {
+        _commandOptionsTree.Add(new CommandOptions()
+        {
+            OutputConverter = new DocumentConverter<TDocument>()
+        });
+        var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
             throw new CommandException(response.Errors);
@@ -127,9 +135,19 @@ public class Command
     private async Task<T> RunCommandAsync<T>(HttpMethod method, bool runSynchronously)
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
-        var content = new StringContent(JsonSerializer.Serialize(BuildContent()), Encoding.UTF8, "application/json");
+        var serializeOptions = commandOptions.InputConverter == null ?
+        new JsonSerializerOptions()
+        {
+            Converters = { new ObjectIdConverter() }
+        } :
+        new JsonSerializerOptions()
+        {
+            Converters = { commandOptions.InputConverter, new ObjectIdConverter() }
+        };
 
-        var url = _urlBuilder.BuildUrl();
+        var content = new StringContent(JsonSerializer.Serialize(BuildContent(), serializeOptions), Encoding.UTF8, "application/json");
+
+        var url = _urlBuilder.BuildUrl(commandOptions);
         if (_urlPaths.Any())
         {
             url += "/" + string.Join("/", _urlPaths);
@@ -190,10 +208,10 @@ public class Command
             if (runSynchronously)
             {
 #if NET5_0_OR_GREATER
-            response = httpClient.Send(request, linkedCts.Token);
-            var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
-            contentTask.Wait();
-            responseContent = contentTask.Result;
+                response = httpClient.Send(request, linkedCts.Token);
+                var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
+                contentTask.Wait();
+                responseContent = contentTask.Result;
 #else
                 var requestTask = Task.Run(() => httpClient.SendAsync(request, linkedCts.Token));
                 requestTask.Wait();
@@ -231,7 +249,16 @@ public class Command
                 return default;
             }
 
-            return JsonSerializer.Deserialize<T>(responseContent);
+            var deserializeOptions = commandOptions.OutputConverter == null ?
+            new JsonSerializerOptions()
+            {
+                Converters = { new ObjectIdConverter() }
+            } :
+            new JsonSerializerOptions()
+            {
+                Converters = { commandOptions.OutputConverter, new ObjectIdConverter() }
+            };
+            return JsonSerializer.Deserialize<T>(responseContent, deserializeOptions);
         }
     }
 

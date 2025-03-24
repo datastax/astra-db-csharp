@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Collections;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+namespace DataStax.AstraDB.DataApi.Core.Query;
 
-namespace DataStax.AstraDB.DataApi.Core;
-
-//TODO: placeholder
-internal class ApiData
+public class Builders<T>
 {
-    [JsonPropertyName("documents")]
-    public List<Document> Documents { get; set; }
-    [JsonPropertyName("document")]
-    public Document Document { get; set; }
-    [JsonPropertyName("nextPageState")]
-    public string NextPageState { get; set; }
+    public static FilterBuilder<T> Filter => new();
+    public static ProjectionBuilder<T> Projection => new();
+    public static SortBuilder<T> Sort => new();
 }
