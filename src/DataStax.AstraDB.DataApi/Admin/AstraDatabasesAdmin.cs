@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -370,7 +371,7 @@ public class AstraDatabasesAdmin
     private IDatabaseAdmin GetDatabaseAdmin(Guid dbGuid)
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
-        return new DatabaseAdminAstra(dbGuid);
+        return new DatabaseAdminAstra(dbGuid, _client, null);
     }
 
     public DatabaseInfo GetDatabaseInfo(Guid dbGuid)
@@ -412,6 +413,6 @@ public class AstraDatabasesAdmin
 
     private Command CreateCommand()
     {
-        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder());
+        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
     }
 }

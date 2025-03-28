@@ -20,7 +20,7 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 
 public class FindEmbeddingProvidersResult
 {
-    Dictionary<string, EmbeddingProvider> EmbeddingProviders { get; set; }
+    public Dictionary<string, EmbeddingProvider> EmbeddingProviders { get; set; } = new();
 
     public FindEmbeddingProvidersResult() { }
 }

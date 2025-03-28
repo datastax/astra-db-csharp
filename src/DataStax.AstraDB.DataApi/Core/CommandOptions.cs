@@ -15,6 +15,7 @@
  */
 
 using DataStax.AstraDB.DataApi.Utils;
+using System;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -23,7 +24,6 @@ namespace DataStax.AstraDB.DataApi.Core;
 
 public class CommandOptions
 {
-
     internal DBEnvironment? Environment { get; set; }
     internal RunMode? RunMode { get; set; }
     internal string Keyspace { get; set; }
@@ -42,11 +42,16 @@ public class CommandOptions
         InputConverter ??= inputConverter;
         OutputConverter ??= outputConverter;
     }
+    public bool IncludeKeyspaceInUrl { get; set; }
 
     public static CommandOptions Merge(params CommandOptions[] arr)
     {
         var list = arr.ToList();
         list.Insert(0, Defaults());
+
+        bool? FirstNonNull(Func<CommandOptions, bool?> selector) =>
+            list.Select(selector).LastOrDefault(v => v != null);
+
         var options = new CommandOptions
         {
             Token = list.Select(o => o.Token).Merge(),
@@ -60,6 +65,7 @@ public class CommandOptions
             Keyspace = list.Select(o => o.Keyspace).Merge(),
             InputConverter = list.Select(o => o.InputConverter).Merge(),
             OutputConverter = list.Select(o => o.OutputConverter).Merge(),
+            IncludeKeyspaceInUrl = FirstNonNull(x => x.IncludeKeyspaceInUrl) ?? Defaults().IncludeKeyspaceInUrl,
         };
         return options;
     }
@@ -74,6 +80,7 @@ public class CommandOptions
             ApiVersion = Core.ApiVersion.V1,
             HttpClientOptions = new HttpClientOptions(),
             Keyspace = Database.DefaultKeyspace,
+            IncludeKeyspaceInUrl = true,
         };
     }
 }
