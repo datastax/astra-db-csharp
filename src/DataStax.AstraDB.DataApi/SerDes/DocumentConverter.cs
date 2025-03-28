@@ -116,16 +116,17 @@ public class DocumentConverter<T> : JsonConverter<T>
                 string propertyName = mappedName;
                 object propValue = prop.GetValue(value);
 
+                var jsonIgnoreAttr = prop.GetCustomAttribute<JsonIgnoreAttribute>();
+                if (jsonIgnoreAttr != null && jsonIgnoreAttr.Condition == JsonIgnoreCondition.WhenWritingNull)
+                {
+                    if (propValue == null)
+                    {
+                        continue;
+                    }
+                }
                 writer.WritePropertyName(propertyName);
 
-                // if (propertyName == DataApiKeywords.Id && propValue?.GetType() == typeof(ObjectId))
-                // {
-                //     JsonSerializer.Serialize(writer, propValue.ToString(), typeof(string), options);
-                // }
-                // else
-                // {
                 JsonSerializer.Serialize(writer, propValue, prop.PropertyType, options);
-                //}
             }
         }
 

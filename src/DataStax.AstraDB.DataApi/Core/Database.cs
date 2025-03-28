@@ -170,6 +170,8 @@ public class Database
 
     public Collection<T> CreateCollection<T>(string collectionName) where T : class
     {
+        //TODO: when creating a collection without defining the id type, we need to check the type of the id property or throw an error if it doesn't match the default
+        //ie ... currently if the id property is of type int, a guid is still created
         return CreateCollection<T>(collectionName, null, null);
     }
 

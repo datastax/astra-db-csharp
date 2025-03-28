@@ -28,6 +28,12 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
+public class Collection : Collection<Document>
+{
+    internal Collection(string collectionName, Database database, CommandOptions commandOptions)
+        : base(collectionName, database, commandOptions) { }
+}
+
 public class Collection<T> : Collection<T, object> where T : class
 {
     internal Collection(string collectionName, Database database, CommandOptions commandOptions)
@@ -123,10 +129,6 @@ public class Collection<T, TId> where T : class
         if (insertOptions.Concurrency > 1 && insertOptions.InsertInOrder)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
-        }
-        if (insertOptions.ChunkSize > InsertManyOptions.MaxChunkSize)
-        {
-            throw new ArgumentException("Chunk size cannot be greater than the max chunk size of " + InsertManyOptions.MaxChunkSize + ".");
         }
 
         var start = DateTime.Now;
@@ -556,6 +558,675 @@ public class Collection<T, TId> where T : class
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<DocumentsResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response;
+    }
+
+    public T FindOneAndUpdate(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return FindOneAndUpdate(filter, update, new FindOneAndUpdateOptions<T>(), null);
+    }
+
+    public T FindOneAndUpdate(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
+    {
+        return FindOneAndUpdate(filter, update, updateOptions, null);
+    }
+
+    public T FindOneAndUpdate(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = FindOneAndUpdateAsync<T>(filter, update, updateOptions, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<T>(), null);
+    }
+
+    public Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
+    {
+        return FindOneAndUpdateAsync(filter, update, updateOptions, null);
+    }
+
+    public async Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = await FindOneAndUpdateAsync<T>(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
+        return response;
+    }
+
+    public TResult FindOneAndUpdate<TResult>(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return FindOneAndUpdate<TResult>(filter, update, new FindOneAndUpdateOptions<T>(), null);
+    }
+
+    public TResult FindOneAndUpdate<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
+    {
+        return FindOneAndUpdate<TResult>(filter, update, updateOptions, null);
+    }
+
+    public TResult FindOneAndUpdate<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = FindOneAndUpdateAsync<TResult>(filter, update, updateOptions, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return FindOneAndUpdateAsync<TResult>(filter, update, new FindOneAndUpdateOptions<T>(), null);
+    }
+
+    public Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
+    {
+        return FindOneAndUpdateAsync<TResult>(filter, update, updateOptions, null);
+    }
+
+    public async Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = await FindOneAndUpdateAsync<TResult>(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
+        return response;
+    }
+
+    internal async Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        updateOptions.Filter = filter;
+        updateOptions.Update = update;
+        var command = CreateCommand("findOneAndUpdate").WithPayload(updateOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, T, UpdateResult>(runSynchronously).ConfigureAwait(false);
+        return response.Data.Document;
+    }
+
+    public T FindOneAndReplace(T replacement)
+    {
+        return FindOneAndReplace(replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public T FindOneAndReplace(T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplace(replacement, replaceOptions, null);
+    }
+
+    public T FindOneAndReplace(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = FindOneAndReplaceAsync<T>(null, replacement, replaceOptions, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<T> FindOneAndReplaceAsync(T replacement)
+    {
+        return FindOneAndReplaceAsync(replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplaceAsync(replacement, replaceOptions, null);
+    }
+
+    public async Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = await FindOneAndReplaceAsync<T>(null, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
+        return response;
+    }
+
+    public TResult FindOneAndReplace<TResult>(T replacement)
+    {
+        return FindOneAndReplace<TResult>(replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public TResult FindOneAndReplace<TResult>(T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplace<TResult>(replacement, replaceOptions, null);
+    }
+
+    public TResult FindOneAndReplace<TResult>(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = FindOneAndReplaceAsync<TResult>(null, replacement, replaceOptions, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement)
+    {
+        return FindOneAndReplaceAsync<TResult>(replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplaceAsync<TResult>(replacement, replaceOptions, null);
+    }
+
+    public async Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = await FindOneAndReplaceAsync<TResult>(null, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
+        return response;
+    }
+
+    public T FindOneAndReplace(Filter<T> filter, T replacement)
+    {
+        return FindOneAndReplace(filter, replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public T FindOneAndReplace(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplace(filter, replacement, replaceOptions, null);
+    }
+
+    public T FindOneAndReplace(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = FindOneAndReplaceAsync<T>(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<T> FindOneAndReplaceAsync(Filter<T> filter, T replacement)
+    {
+        return FindOneAndReplaceAsync(filter, replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public Task<T> FindOneAndReplaceAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplaceAsync(filter, replacement, replaceOptions, null);
+    }
+
+    public async Task<T> FindOneAndReplaceAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = await FindOneAndReplaceAsync<T>(filter, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
+        return response;
+    }
+
+    public TResult FindOneAndReplace<TResult>(Filter<T> filter, T replacement)
+    {
+        return FindOneAndReplace<TResult>(filter, replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public TResult FindOneAndReplace<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplace<TResult>(filter, replacement, replaceOptions, null);
+    }
+
+    public TResult FindOneAndReplace<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<TResult> FindOneAndReplaceAsync<TResult>(Filter<T> filter, T replacement)
+    {
+        return FindOneAndReplaceAsync<TResult>(filter, replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public Task<TResult> FindOneAndReplaceAsync<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, null);
+    }
+
+    public async Task<TResult> FindOneAndReplaceAsync<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = await FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
+        return response;
+    }
+
+    internal async Task<TResult> FindOneAndReplaceAsync<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        replaceOptions.Filter = filter;
+        replaceOptions.Replacement = replacement;
+        var command = CreateCommand("findOneAndReplace").WithPayload(replaceOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, T, ReplaceResult>(runSynchronously).ConfigureAwait(false);
+        return response.Data.Document;
+    }
+
+    public ReplaceResult ReplaceOne(Filter<T> filter, T replacement)
+    {
+        return ReplaceOne(filter, replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public ReplaceResult ReplaceOne(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return ReplaceOne(filter, replacement, replaceOptions, null);
+    }
+
+    public ReplaceResult ReplaceOne(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
+        return response.Result;
+    }
+
+    public Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement)
+    {
+        return ReplaceOneAsync(filter, replacement, new ReplaceOptions<T>(), null);
+    }
+
+    public Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    {
+        return ReplaceOneAsync(filter, replacement, replaceOptions, null);
+    }
+
+    public async Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    {
+        var response = await ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
+        return response.Result;
+    }
+
+    internal async Task<ApiResponseWithStatus<ReplaceResult>> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        replaceOptions.Filter = filter;
+        replaceOptions.Replacement = replacement;
+        replaceOptions.Projection = new ExclusiveProjectionBuilder<T>().Exclude("*");
+        var command = CreateCommand("findOneAndReplace").WithPayload(replaceOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<ReplaceResult>(runSynchronously).ConfigureAwait(false);
+        return response;
+    }
+
+    public T FindOneAndDelete()
+    {
+        return FindOneAndDelete(null, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public T FindOneAndDelete(CommandOptions commandOptions)
+    {
+        return FindOneAndDelete(null, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public T FindOneAndDelete(Filter<T> filter)
+    {
+        return FindOneAndDelete(filter, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public T FindOneAndDelete(FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDelete(null, findOptions, null);
+    }
+
+    public T FindOneAndDelete(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDelete(null, findOptions, commandOptions);
+    }
+
+    public T FindOneAndDelete(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOneAndDelete(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public T FindOneAndDelete(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDelete(filter, findOptions, null);
+    }
+
+    public T FindOneAndDelete(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync<T>(filter, findOptions, commandOptions, true).ResultSync();
+    }
+
+    public TResult FindOneAndDelete<TResult>()
+    {
+        return FindOneAndDelete<TResult>(null, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public TResult FindOneAndDelete<TResult>(CommandOptions commandOptions)
+    {
+        return FindOneAndDelete<TResult>(null, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public TResult FindOneAndDelete<TResult>(Filter<T> filter)
+    {
+        return FindOneAndDelete<TResult>(filter, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public TResult FindOneAndDelete<TResult>(FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDelete<TResult>(null, findOptions, null);
+    }
+
+    public TResult FindOneAndDelete<TResult>(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDelete<TResult>(null, findOptions, commandOptions);
+    }
+
+    public TResult FindOneAndDelete<TResult>(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOneAndDelete<TResult>(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public TResult FindOneAndDelete<TResult>(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDelete<TResult>(filter, findOptions, null);
+    }
+
+    public TResult FindOneAndDelete<TResult>(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
+    }
+
+    public Task<T> FindOneAndDeleteAsync()
+    {
+        return FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public Task<T> FindOneAndDeleteAsync(CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public Task<T> FindOneAndDeleteAsync(FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDeleteAsync(null, findOptions, null);
+    }
+
+    public Task<T> FindOneAndDeleteAsync(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync(null, findOptions, commandOptions);
+    }
+
+    public Task<T> FindOneAndDeleteAsync(Filter<T> filter)
+    {
+        return FindOneAndDeleteAsync(filter, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public Task<T> FindOneAndDeleteAsync(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public Task<T> FindOneAndDeleteAsync(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDeleteAsync(filter, findOptions, null);
+    }
+
+    public Task<T> FindOneAndDeleteAsync(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync<T>(filter, findOptions, commandOptions, false);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>()
+    {
+        return FindOneAndDeleteAsync<TResult>(null, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync<TResult>(null, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDeleteAsync<TResult>(null, findOptions, null);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync<TResult>(null, findOptions, commandOptions);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter)
+    {
+        return FindOneAndDeleteAsync<TResult>(filter, new FindOneAndDeleteOptions<T>(), null);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync<TResult>(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions)
+    {
+        return FindOneAndDeleteAsync<TResult>(filter, findOptions, null);
+    }
+
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOneAndDeleteAsync<TResult>(filter, findOptions, commandOptions, false);
+    }
+
+    private async Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        findOptions.Filter = filter;
+        var command = CreateCommand("findOneAndDelete").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        return response.Data.Document;
+    }
+
+    public DeleteResult DeleteOne(DeleteOptions<T> deleteOptions)
+    {
+        return DeleteOne(null, deleteOptions, null);
+    }
+
+    public DeleteResult DeleteOne(Filter<T> filter)
+    {
+        return DeleteOne(filter, new DeleteOptions<T>(), null);
+    }
+
+    public DeleteResult DeleteOne(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return DeleteOne(filter, new DeleteOptions<T>(), commandOptions);
+    }
+
+    public DeleteResult DeleteOne(DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    {
+        return DeleteOne(null, deleteOptions, commandOptions);
+    }
+
+    public DeleteResult DeleteOne(Filter<T> filter, DeleteOptions<T> deleteOptions)
+    {
+        return DeleteOne(filter, deleteOptions, null);
+    }
+
+    public DeleteResult DeleteOne(Filter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    {
+        var response = DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<DeleteResult> DeleteOneAsync(DeleteOptions<T> deleteOptions)
+    {
+        return DeleteOneAsync(null, deleteOptions, null);
+    }
+
+    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter)
+    {
+        return DeleteOneAsync(filter, new DeleteOptions<T>(), null);
+    }
+
+    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return DeleteOneAsync(filter, new DeleteOptions<T>(), commandOptions);
+    }
+
+    public Task<DeleteResult> DeleteOneAsync(DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    {
+        return DeleteOneAsync(null, deleteOptions, commandOptions);
+    }
+
+    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions)
+    {
+        return DeleteOneAsync(filter, deleteOptions, null);
+    }
+
+    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    {
+        return DeleteOneAsync(filter, deleteOptions, commandOptions, false);
+    }
+
+    internal async Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        deleteOptions.Filter = filter;
+        var command = CreateCommand("deleteOne").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
+        return response.Result;
+    }
+
+    public DeleteResult DeleteAll()
+    {
+        return DeleteAll(null);
+    }
+
+    public DeleteResult DeleteAll(CommandOptions commandOptions)
+    {
+        return DeleteMany(null, commandOptions);
+    }
+
+    public DeleteResult DeleteMany(Filter<T> filter)
+    {
+        return DeleteMany(filter, null);
+    }
+
+    public DeleteResult DeleteMany(Filter<T> filter, CommandOptions commandOptions)
+    {
+        var response = DeleteManyAsync(filter, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    public Task<DeleteResult> DeleteAllAsync()
+    {
+        return DeleteManyAsync(null, null);
+    }
+
+    public Task<DeleteResult> DeleteAllAsync(CommandOptions commandOptions)
+    {
+        return DeleteManyAsync(null, commandOptions);
+    }
+
+    public Task<DeleteResult> DeleteManyAsync(Filter<T> filter)
+    {
+        return DeleteManyAsync(filter, null);
+    }
+
+    public Task<DeleteResult> DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return DeleteManyAsync(filter, commandOptions, false);
+    }
+
+    internal async Task<DeleteResult> DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions, bool runSynchronously)
+    {
+        var deleteOptions = new DeleteManyOptions<T>
+        {
+            Filter = filter
+        };
+
+        var keepProcessing = true;
+        var deleteResult = new DeleteResult();
+        while (keepProcessing)
+        {
+            var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
+            var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
+            deleteResult.DeletedCount += response.Result.DeletedCount;
+            keepProcessing = response.Result.MoreData;
+        }
+
+        return deleteResult;
+    }
+
+    public UpdateResult UpdateOne(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
+    {
+        return UpdateOne(null, update, updateOptions, null);
+    }
+
+    public UpdateResult UpdateOne(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        return UpdateOne(null, update, updateOptions, commandOptions);
+    }
+
+    public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return UpdateOne(filter, update, new UpdateOneOptions<T>(), null);
+    }
+
+    public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
+    {
+        return UpdateOne(filter, update, updateOptions, null);
+    }
+
+    public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = UpdateOneAsync(filter, update, updateOptions, commandOptions, true).ResultSync();
+        return response.Result;
+    }
+
+    public Task<UpdateResult> UpdateOneAsync(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
+    {
+        return UpdateOneAsync(null, update, updateOptions, null);
+    }
+
+    public Task<UpdateResult> UpdateOneAsync(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        return UpdateOneAsync(null, update, updateOptions, commandOptions);
+    }
+
+    public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return UpdateOneAsync(filter, update, new UpdateOneOptions<T>(), null);
+    }
+
+    public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
+    {
+        return UpdateOneAsync(filter, update, updateOptions, null);
+    }
+
+    public async Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = await UpdateOneAsync(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
+        return response.Result;
+    }
+
+    internal async Task<ApiResponseWithStatus<UpdateResult>> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        updateOptions.Filter = filter;
+        updateOptions.Update = update;
+        var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
+        return response;
+    }
+
+    public UpdateResult UpdateMany(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return UpdateMany(filter, update, new UpdateManyOptions<T>(), null);
+    }
+
+    public UpdateResult UpdateMany(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions)
+    {
+        return UpdateMany(filter, update, updateOptions, null);
+    }
+
+    public UpdateResult UpdateMany(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = UpdateManyAsync(filter, update, updateOptions, commandOptions, false).ResultSync();
+        return response.Result;
+    }
+
+    public Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return UpdateManyAsync(filter, update, new UpdateManyOptions<T>(), null);
+    }
+
+    public Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions)
+    {
+        return UpdateManyAsync(filter, update, updateOptions, null);
+    }
+
+    public async Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
+    {
+        var response = await UpdateManyAsync(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
+        return response.Result;
+    }
+
+    internal async Task<ApiResponseWithStatus<UpdateResult>> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
+    {
+        updateOptions.Filter = filter;
+        updateOptions.Update = update;
+
+        var keepProcessing = true;
+        var updateResult = new UpdateResult();
+        string nextPageState = null;
+        while (keepProcessing)
+        {
+            updateOptions ??= new UpdateManyOptions<T>();
+            updateOptions.NextPageState = nextPageState;
+            var command = CreateCommand("updateMany").WithPayload(updateOptions).AddCommandOptions(commandOptions);
+            var response = await command.RunAsyncReturnStatus<PagedUpdateResult>(runSynchronously).ConfigureAwait(false);
+            updateResult.MatchedCount += response.Result.MatchedCount;
+            updateResult.ModifiedCount += response.Result.ModifiedCount;
+            updateResult.UpsertedId = response.Result.UpsertedId;
+            nextPageState = response.Result.NextPageState;
+            if (string.IsNullOrEmpty(nextPageState))
+            {
+                keepProcessing = false;
+            }
+        }
+        return new ApiResponseWithStatus<UpdateResult>() { Result = updateResult };
     }
 
     public DocumentsCountResult CountDocuments()

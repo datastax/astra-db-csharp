@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.SerDes;
 using Microsoft.Extensions.Logging;
 using System;
@@ -110,10 +111,14 @@ public class Command
 
     internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TDocument, TStatus>(bool runSynchronously)
     {
-        _commandOptionsTree.Add(new CommandOptions()
+        var useDocumentConverter = typeof(TDocument) != typeof(Document);
+        if (useDocumentConverter)
         {
-            OutputConverter = new DocumentConverter<TDocument>()
-        });
+            _commandOptionsTree.Add(new CommandOptions()
+            {
+                OutputConverter = new DocumentConverter<TDocument>()
+            });
+        }
         var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
