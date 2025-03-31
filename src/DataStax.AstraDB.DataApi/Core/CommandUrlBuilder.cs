@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.Linq;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
 abstract class CommandUrlBuilder
@@ -44,14 +46,16 @@ internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
 internal class AdminCommandUrlBuilder : CommandUrlBuilder
 {
     private readonly string _urlPostfix;
+    private readonly CommandOptions[] _optionsTree;
 
     //TODO: refactor once we get more usages
-    internal AdminCommandUrlBuilder(string urlPostfix)
+    internal AdminCommandUrlBuilder(CommandOptions[] optionsTree, string urlPostfix)
     {
+        _optionsTree = optionsTree;
         _urlPostfix = urlPostfix;
     }
 
-    internal AdminCommandUrlBuilder() : this(null)
+    internal AdminCommandUrlBuilder(CommandOptions[] optionsTree) : this(optionsTree, null)
     {
 
     }
@@ -71,10 +75,39 @@ internal class AdminCommandUrlBuilder : CommandUrlBuilder
                 url = "https://api.test.cloud.datastax.com/v2";
                 break;
         }
+        if (options.IncludeKeyspaceInUrl && !string.IsNullOrEmpty(options.Keyspace))
+        {
+            url = CombineUrlParts(url, options.Keyspace);
+        }
         if (!string.IsNullOrEmpty(_urlPostfix))
         {
             url += "/" + _urlPostfix;
         }
+        return url;
+    }
+
+    protected string CombineUrlParts(string baseUrl, params string[] parts)
+    {
+        var trimmedBaseUrl = baseUrl.TrimEnd('/');
+        var combinedUrl = string.Join("/", parts.Select(part => part?.Trim('/')));
+        return $"{trimmedBaseUrl}/{combinedUrl}";
+    }
+}
+
+internal class EmbeddingCommandUrlBuilder : CommandUrlBuilder
+{
+
+    private readonly Database _database;
+    private readonly string _urlPostfix;
+
+    internal EmbeddingCommandUrlBuilder(Database database)
+    {
+        _database = database;
+    }
+
+    internal override string BuildUrl(CommandOptions options)
+    {
+        var url = $"{_database.ApiEndpoint}/api/json/{options.ApiVersion.Value.ToUrlString()}";
         return url;
     }
 }

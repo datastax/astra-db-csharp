@@ -26,8 +26,7 @@ public interface IDatabaseAdmin
     IEnumerable<string> ListKeyspaceNames();
     FindEmbeddingProvidersResult FindEmbeddingProviders();
     Task<IEnumerable<string>> ListKeyspaceNamesAsync();
-    Database GetDatabase(string keyspace);
-    Database GetDatabase(string keyspace, string userToken);
+
     Database GetDatabase();
     void DropKeyspace(string keyspace);
     void DropKeyspace(string keyspace, CommandOptions options);

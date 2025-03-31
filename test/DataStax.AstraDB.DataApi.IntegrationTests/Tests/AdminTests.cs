@@ -1,5 +1,8 @@
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Results;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -125,6 +128,110 @@ public class AdminTests
 		Assert.Equal("ACTIVE", status);
 	}
 
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetDatabaseAdminAstra
+	[Fact]
+	public async Task DatabaseAdminAstra_GetDatabaseAdminAstra()
+	{
+		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var daa = fixture.CreateAdmin(database);
+
+		Assert.IsType<DatabaseAdminAstra>(daa);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetDatabase
+	[Fact]
+	public async Task DatabaseAdminAstra_GetDatabase()
+	{
+		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var daa = fixture.CreateAdmin(database);
+
+		Assert.IsType<Database>(daa.GetDatabase());
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetApiEndpoint
+	[Fact]
+	public async Task DatabaseAdminAstra_GetApiEndpoint()
+	{
+		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var daa = fixture.CreateAdmin(database);
+
+		Assert.Equal(fixture.DatabaseId, AdminFixture.GetDatabaseIdFromUrl(daa.GetApiEndpoint()));
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetKeyspacesList
+	[Fact]
+	public async Task DatabaseAdminAstra_GetKeyspacesList()
+	{
+		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var daa = fixture.CreateAdmin(database);
+
+		var names = await daa.ListKeyspaceNamesAsync();
+		Assert.NotNull(names);
+
+		names = daa.ListKeyspaceNames();
+		Assert.NotNull(names);
+
+		var list = names.ToList();
+		Console.WriteLine($"ListKeyspaces: {list.Count} items");
+		list.ForEach(Console.WriteLine);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_DoesKeyspaceExist
+	[Fact]
+	public async Task DatabaseAdminAstra_DoesKeyspaceExist()
+	{
+		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var daa = fixture.CreateAdmin(database);
+
+		var keyspaceExists = await daa.KeyspaceExistsAsync("default_keyspace");
+		Assert.True(keyspaceExists);
+
+		keyspaceExists = daa.KeyspaceExists("default_keyspace");
+		Assert.True(keyspaceExists);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_DoesKeyspaceExist_Another
+	// expects keyspace another_keyspace to have been created
+	[Fact]
+	public async Task DatabaseAdminAstra_DoesKeyspaceExist_Another()
+	{
+		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var daa = fixture.CreateAdmin(database);
+
+		var keyspaceExists = await daa.KeyspaceExistsAsync("another_keyspace");
+		Assert.True(keyspaceExists);
+
+		keyspaceExists = daa.KeyspaceExists("another_keyspace");
+		Assert.True(keyspaceExists);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_FindEmbeddingProvidersAsync
+	[Fact]
+	public async Task DatabaseAdminAstra_FindEmbeddingProvidersAsync()
+	{
+		var adminOptions = new CommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+
+		var result = await daa.FindEmbeddingProvidersAsync(adminOptions, runSynchronously: false);
+		Assert.NotNull(result);
+		if (result.EmbeddingProviders.Count == 0)
+		{
+			Console.WriteLine("No embedding providers returned.");
+		}
+		else
+		{
+			Assert.NotEmpty(result.EmbeddingProviders);
+		}
+
+		var providers = result.EmbeddingProviders;
+
+		Assert.NotNull(providers);
+		Assert.NotEmpty(providers);
+	}
+
 	/*
         From here on are ad hoc tests for creating and dropping databases. 
         You will likely need to adjust details to match your execution details.
@@ -223,7 +330,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void DropDatabaseById()
 	{
-		var dbGuid = Guid.Parse("73c7b474-2464-42f3-8338-ec10dbf693df"); // from a db created ad-hoc on astra's site
+		var dbGuid = Guid.Parse("ee1a268c-112f-47fd-971e-57ecef64a23b"); // from a db created ad-hoc on astra's site
 		var dropped = fixture.Client.GetAstraAdmin().DropDatabase(dbGuid);
 
 		Assert.True(dropped);
@@ -237,5 +344,70 @@ public class AdminTests
 		var dropped = await fixture.Client.GetAstraAdmin().DropDatabaseAsync(dbGuid);
 
 		Assert.True(dropped);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_CreateKeyspace_ExpectedError
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task DatabaseAdminAstra_CreateKeyspace_ExpectedError()
+	{
+		var databaseId = fixture.DatabaseId;
+		var database = await fixture.Client.GetDatabaseAsync(databaseId);
+		var adminOptions = new CommandOptions();
+		var daa = new DatabaseAdminAstra(database, fixture.Client, adminOptions);
+
+		var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+			() => daa.CreateKeyspaceAsync("default_keyspace")
+		);
+		Assert.Contains("Keyspace default_keyspace already exists", ex.Message);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task DatabaseAdminAstra_CreateKeyspaceAsync()
+	{
+		var keyspaceName = "drop_this_keyspace_x";
+		var adminOptions = new CommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+
+		await daa.CreateKeyspaceAsync(keyspaceName, adminOptions);
+		Console.WriteLine($"DatabaseAdminAstra_CreateKeyspaceAsync > adminOptions.Keyspace: {adminOptions.Keyspace}");
+		Assert.Null(adminOptions.Keyspace);
+		// todo: better test result here; for now we assume if no error, this was successful
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_Update
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_Update()
+	{
+		var keyspaceName = "drop_this_keyspace_x";
+		var adminOptions = new CommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+
+		await daa.CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+
+		Console.WriteLine($"DatabaseAdminAstra_CreateKeyspaceAsync_Update > adminOptions.Keyspace: {adminOptions.Keyspace}");
+		Assert.Equal(keyspaceName, adminOptions.Keyspace);
+		// todo: better test result here; for now we assume if no error, this was successful
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task DatabaseAdminAstra_DropKeyspaceAsync()
+	{
+		var keyspaceName = "drop_this_keyspace_x";
+		var adminOptions = new CommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+
+		await daa.DropKeyspaceAsync(keyspaceName, adminOptions);
+		// todo: better test result here; for now we assume if no error, this was successful
 	}
 }

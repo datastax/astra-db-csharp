@@ -1,4 +1,5 @@
 using DataStax.AstraDB.DataApi;
+using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -42,7 +43,7 @@ public class AdminFixture : IDisposable
 	public string DatabaseName { get; private set; }
 	public DataApiClient Client { get; private set; }
 
-	private static Guid? GetDatabaseIdFromUrl(string url)
+	public static Guid? GetDatabaseIdFromUrl(string url)
 	{
 		if (string.IsNullOrWhiteSpace(url))
 			return null;
@@ -51,4 +52,18 @@ public class AdminFixture : IDisposable
 		var match = Regex.Match(url, @"([0-9a-fA-F-]{36})");
 		return match.Success ? Guid.Parse(match.Value) : null;
 	}
+
+	public DatabaseAdminAstra CreateAdmin(Database database = null)
+	{
+		database ??= Client.GetDatabaseAsync(DatabaseId).GetAwaiter().GetResult();
+
+		var adminOptions = new CommandOptions
+		{
+			Token = Client.ClientOptions.Token,
+			Environment = DBEnvironment.Production // or default
+		};
+
+		return new DatabaseAdminAstra(database, Client, adminOptions);
+	}
+
 }

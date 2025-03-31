@@ -150,7 +150,8 @@ public class Command
         var url = _urlBuilder.BuildUrl(commandOptions);
         if (_urlPaths.Any())
         {
-            url += "/" + string.Join("/", _urlPaths);
+            // Join the URL parts, ensuring that no additional slashes are introduced
+            url += "/" + string.Join("/", _urlPaths.Select(part => part.Trim('/')));
         }
 
         await MaybeLogRequestDebug(url, content, runSynchronously).ConfigureAwait(false);
