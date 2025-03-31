@@ -93,7 +93,10 @@ public class DocumentConverter<T> : JsonConverter<T>
 
             if (targetProp != null && targetProp.CanWrite)
             {
-                object value = JsonSerializer.Deserialize(ref reader, targetProp.PropertyType, options);
+                var isId = propertyName == DataApiKeywords.Id;
+                object value = isId && targetProp.PropertyType == typeof(object) ?
+                    IdListConverter.ReadSingleIdValue(ref reader, targetProp.PropertyType, options) :
+                    JsonSerializer.Deserialize(ref reader, targetProp.PropertyType, options);
                 targetProp.SetValue(instance, value);
             }
             else

@@ -26,12 +26,18 @@ internal class ApiResponseWithStatus<T>
 
     [JsonPropertyName("errors")]
     public List<ApiError> Errors { get; set; }
+
+    [JsonPropertyName("warnings")]
+    public List<ApiWarning> Warnings { get; set; }
 }
 
 internal class ApiResponseWithData<T, TStatus>
 {
     [JsonPropertyName("errors")]
     public List<ApiError> Errors { get; set; }
+
+    [JsonPropertyName("warnings")]
+    public List<ApiWarning> Warnings { get; set; }
 
     [JsonPropertyName("data")]
     public T Data { get; set; }

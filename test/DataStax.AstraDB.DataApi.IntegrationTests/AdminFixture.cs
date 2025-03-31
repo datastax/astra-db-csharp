@@ -18,11 +18,12 @@ public class AdminFixture : IDisposable
 
 		var token = configuration["ADMINTOKEN"] ?? configuration["AstraDB:AdminToken"];
 		var dbUrl = configuration["URL"];
+		DatabaseUrl = dbUrl;
 		DatabaseName = configuration["DATABASE_NAME"];
 
 		_databaseId = GetDatabaseIdFromUrl(dbUrl) ?? throw new Exception("Database ID could not be extracted from ASTRA_DB_URL.");
 
-		using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+		using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../admin_tests_latest_run.log"));
 		ILogger logger = factory.CreateLogger("IntegrationTests");
 
 		var clientOptions = new CommandOptions
@@ -41,6 +42,12 @@ public class AdminFixture : IDisposable
 	public Guid DatabaseId => _databaseId;
 	public string DatabaseName { get; private set; }
 	public DataApiClient Client { get; private set; }
+	public string DatabaseUrl { get; private set; }
+
+	public Database GetDatabase()
+	{
+		return Client.GetDatabase(DatabaseUrl);
+	}
 
 	private static Guid? GetDatabaseIdFromUrl(string url)
 	{

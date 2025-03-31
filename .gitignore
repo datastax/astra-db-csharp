@@ -7,7 +7,4 @@ test/DataStax.AstraDB.DataAPI.IntegrationTests/appsettings.sample.json
 test/DataStax.AstraDB.DataApi.UnitTests/bin
 test/DataStax.AstraDB.DataApi.UnitTests/obj
 appsettings.json
-latest_run.log
-database_latest_run.log
-findandupdate_latest_run.log
-replace_and_delete_latest_run.log
+*.log

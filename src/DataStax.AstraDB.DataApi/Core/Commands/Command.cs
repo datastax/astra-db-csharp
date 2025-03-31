@@ -19,6 +19,7 @@ using DataStax.AstraDB.DataApi.SerDes;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -137,20 +138,52 @@ public class Command
         return await RunCommandAsync<T>(httpMethod, runSynchronously).ConfigureAwait(false);
     }
 
+    internal string Serialize<T>(T input, JsonSerializerOptions serializeOptions = null, bool log = false)
+    {
+        var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
+        serializeOptions ??= new JsonSerializerOptions();
+        if (commandOptions.InputConverter != null)
+        {
+            serializeOptions.Converters.Add(commandOptions.InputConverter);
+        }
+        serializeOptions.Converters.Add(new ObjectIdConverter());
+        serializeOptions.Converters.Add(new SerDes.GuidConverter());
+        serializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
+        serializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+        if (log)
+        {
+            _logger.LogInformation("Serializing {Type} with options {Options}", typeof(T).Name, serializeOptions);
+            _logger.LogInformation("Input: {Input}", input);
+        }
+        var serialized = JsonSerializer.Serialize(input, serializeOptions);
+        if (log)
+        {
+            _logger.LogInformation("Output: {Output}", serialized);
+        }
+        return serialized;
+    }
+
+    internal T Deserialize<T>(string input)
+    {
+        var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
+        var deserializeOptions = new JsonSerializerOptions();
+
+        if (commandOptions.OutputConverter != null)
+        {
+            deserializeOptions.Converters.Add(commandOptions.OutputConverter);
+        }
+        deserializeOptions.Converters.Add(new ObjectIdConverter());
+        deserializeOptions.Converters.Add(new SerDes.GuidConverter());
+        deserializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
+        deserializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+
+        return JsonSerializer.Deserialize<T>(input, deserializeOptions);
+    }
+
     private async Task<T> RunCommandAsync<T>(HttpMethod method, bool runSynchronously)
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
-        var serializeOptions = commandOptions.InputConverter == null ?
-        new JsonSerializerOptions()
-        {
-            Converters = { new ObjectIdConverter() }
-        } :
-        new JsonSerializerOptions()
-        {
-            Converters = { commandOptions.InputConverter, new ObjectIdConverter() }
-        };
-
-        var content = new StringContent(JsonSerializer.Serialize(BuildContent(), serializeOptions), Encoding.UTF8, "application/json");
+        var content = new StringContent(Serialize(BuildContent()), Encoding.UTF8, "application/json");
 
         var url = _urlBuilder.BuildUrl(commandOptions);
         if (_urlPaths.Any())
@@ -254,16 +287,7 @@ public class Command
                 return default;
             }
 
-            var deserializeOptions = commandOptions.OutputConverter == null ?
-            new JsonSerializerOptions()
-            {
-                Converters = { new ObjectIdConverter() }
-            } :
-            new JsonSerializerOptions()
-            {
-                Converters = { commandOptions.OutputConverter, new ObjectIdConverter() }
-            };
-            return JsonSerializer.Deserialize<T>(responseContent, deserializeOptions);
+            return Deserialize<T>(responseContent);
         }
     }
 

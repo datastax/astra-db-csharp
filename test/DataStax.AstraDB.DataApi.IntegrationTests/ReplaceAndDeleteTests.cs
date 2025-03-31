@@ -528,30 +528,39 @@ public class ReplaceAndDeleteTests
     [Fact]
     public async Task DeleteMany_Tests()
     {
-        var items = new List<SimpleObject>();
-        for (int i = 0; i < 100; i++)
+        var collectionName = "deleteManyTest";
+        try
         {
-            var group = i / 10;
-            items.Add(new()
+            var items = new List<SimpleObject>();
+            for (int i = 0; i < 100; i++)
             {
-                Name = $"Item{i}",
-                Properties = new Properties()
+                var group = i / 10;
+                items.Add(new()
                 {
-                    PropertyOne = $"group{group}",
-                    PropertyTwo = $"item{i}",
-                }
-            });
-        }
-        var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>("deleteManyTest");
-        await collection.InsertManyAsync(items);
+                    _id = i,
+                    Name = $"Item{i}",
+                    Properties = new Properties()
+                    {
+                        PropertyOne = $"group{group}",
+                        PropertyTwo = $"item{i}",
+                    }
+                });
+            }
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
+            await collection.InsertManyAsync(items);
 
-        var filters = Builders<SimpleObject>.Filter;
-        var filter = filters.Eq(so => so.Properties.PropertyOne, "group0") | filters.Eq(so => so.Properties.PropertyOne, "group1")
-            | filters.Eq(so => so.Properties.PropertyOne, "group2");
-        var result = await collection.DeleteManyAsync(filter);
-        Assert.Equal(30, result.DeletedCount);
-        result = await collection.DeleteAllAsync();
-        Assert.Equal(-1, result.DeletedCount);
-        Assert.Equal(0, (await collection.CountDocumentsAsync()).Count);
+            var filters = Builders<SimpleObject>.Filter;
+            var filter = filters.Eq(so => so.Properties.PropertyOne, "group0") | filters.Eq(so => so.Properties.PropertyOne, "group1")
+                | filters.Eq(so => so.Properties.PropertyOne, "group2");
+            var result = await collection.DeleteManyAsync(filter);
+            Assert.Equal(30, result.DeletedCount);
+            result = await collection.DeleteAllAsync();
+            Assert.Equal(-1, result.DeletedCount);
+            Assert.Equal(0, (await collection.CountDocumentsAsync()).Count);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
     }
 }

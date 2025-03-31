@@ -22,13 +22,13 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
-[JsonConverter(typeof(DocumentConverter))]
+[JsonConverter(typeof(DocumentDictionaryConverter))]
 public class Document : Dictionary<string, object>
 {
 
 }
 
-public class DocumentConverter : JsonConverter<Document>
+public class DocumentDictionaryConverter : JsonConverter<Document>
 {
     public override Document Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

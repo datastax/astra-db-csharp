@@ -45,18 +45,17 @@ public class UpdateTests
         Assert.Equal("DogUpdated", updatedDocument.Properties.PropertyTwo);
     }
 
-    //TODO: handle $date datatype
-    // [Fact]
-    // public async Task Update_CurrentDate()
-    // {
-    //     var collection = fixture.UpdatesCollection;
-    //     var filter = Builders<SimpleObject>.Filter.Eq(so => so._id, 5);
-    //     var update = Builders<SimpleObject>.Update.CurrentDate(so => so.Properties.DateTimeProperty);
-    //     var result = collection.UpdateOne(filter, update);
-    //     Assert.Equal(1, result.ModifiedCount);
-    //     var updatedDocument = await collection.FindOneAsync(filter);
-    //     Assert.Equal(DateTime.Now.ToString("MM/dd/yy"), updatedDocument.Properties.DateTimeProperty.ToString("MM/dd/yy"));
-    // }
+    [Fact]
+    public async Task Update_CurrentDate()
+    {
+        var collection = fixture.UpdatesCollection;
+        var filter = Builders<SimpleObject>.Filter.Eq(so => so._id, 5);
+        var update = Builders<SimpleObject>.Update.CurrentDate(so => so.Properties.DateTimeProperty);
+        var result = collection.UpdateOne(filter, update);
+        Assert.Equal(1, result.ModifiedCount);
+        var updatedDocument = await collection.FindOneAsync(filter);
+        Assert.Equal(DateTime.Now.ToUniversalTime().ToString("MM/dd/yy hh:mm"), updatedDocument.Properties.DateTimeProperty.ToUniversalTime().ToString("MM/dd/yy hh:mm"));
+    }
 
     [Fact]
     public async Task Update_Increment()
@@ -146,7 +145,7 @@ public class UpdateTests
             var update = Builders<Document>.Update.Rename("Name", "Animal");
             var result = await collection.UpdateManyAsync(null, update);
             Assert.Equal(5, result.ModifiedCount);
-            var items = (await collection.FindManyAsync()).ToList();
+            var items = collection.Find().ToList();
             Assert.True(items[0].ContainsKey("Animal"));
         }
         finally
@@ -446,7 +445,7 @@ public class UpdateTests
             var filter = Builders<SimpleObject>.Filter.Lt(so => so._id, 5);
             var result = await collection.UpdateManyAsync(filter, update);
             Assert.Equal(5, result.ModifiedCount);
-            var items = (await collection.FindManyAsync(filter)).ToList();
+            var items = collection.Find(filter).ToList();
             Assert.Equal("PropTwoUpdated", items[0].Properties.PropertyTwo);
             Assert.Null(items[0].Properties.PropertyOne);
         }
@@ -466,7 +465,7 @@ public class UpdateTests
             var update = Builders<SimpleObject>.Update.Set(so => so.Properties.PropertyTwo, "PropTwoUpdated");
             var result = await collection.UpdateManyAsync(null, update);
             Assert.Equal(31, result.ModifiedCount);
-            var items = (await collection.FindManyAsync()).ToList();
+            var items = collection.Find().ToList();
             for (var i = 0; i < items.Count; i++)
             {
                 Assert.Equal("PropTwoUpdated", items[i].Properties.PropertyTwo);

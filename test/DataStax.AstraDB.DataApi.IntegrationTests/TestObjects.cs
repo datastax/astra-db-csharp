@@ -36,7 +36,15 @@ public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
 
 public class SimpleObjectWithObjectId
 {
-    public ObjectId _id { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ObjectId? _id { get; set; }
+    public string Name { get; set; }
+}
+
+public class SimpleObjectWithGuidId
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? _id { get; set; }
     public string Name { get; set; }
 }
 
@@ -48,6 +56,13 @@ public class SimpleObject
     public Properties Properties { get; set; }
 }
 
+public class SerializationTest
+{
+    [DocumentMapping(DocumentMappingField.Id)]
+    public int TestId { get; set; }
+    public Properties NestedProperties { get; set; }
+}
+
 public class Properties
 {
     public string PropertyOne { get; set; }
@@ -56,6 +71,9 @@ public class Properties
     public string[] StringArrayProperty { get; set; }
     public bool BoolProperty { get; set; }
     public DateTime DateTimeProperty { get; set; }
+    public DateTimeOffset DateTimeOffsetProperty { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string SkipWhenNull { get; set; }
 }
 
 public class SimpleObjectSkipNulls

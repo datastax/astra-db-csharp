@@ -188,8 +188,8 @@ public class DatabaseTests
         await fixture.Database.CreateCollectionAsync(collectionName);
         var exists = await fixture.Database.DoesCollectionExistAsync(collectionName);
         Assert.True(exists);
-        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
-        exists = await fixture.Database.DoesCollectionExistAsync(Constants.DefaultCollection);
+        await fixture.Database.DropCollectionAsync(collectionName);
+        exists = await fixture.Database.DoesCollectionExistAsync(collectionName);
         Assert.False(exists);
     }
 

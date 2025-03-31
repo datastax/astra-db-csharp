@@ -32,7 +32,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
         var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../latest_run.log"));
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../collections_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions

@@ -1,4 +1,5 @@
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Query;
 using MongoDB.Bson;
 using UUIDNext;
@@ -17,15 +18,287 @@ public class CollectionTests
     }
 
     [Fact]
+    public async Task DefaultId_ObjectId()
+    {
+        var collectionName = "defaultIdObjectId";
+        try
+        {
+            var collectionDefinition = new CollectionDefinition()
+            {
+                DefaultId = new DefaultIdOptions()
+                {
+                    Type = DefaultIdType.ObjectId
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithObjectId, ObjectId>(collectionName, collectionDefinition);
+            var newObject = new SimpleObjectWithObjectId()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            var secondObject = new SimpleObjectWithObjectId()
+            {
+                Name = "Test Object 2",
+            };
+
+            result = await collection.InsertOneAsync(secondObject);
+            var newId2 = result.InsertedId;
+
+            Assert.NotEqual(newId, newId2);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultId_UUID4()
+    {
+        var collectionName = "defaultIdUUID4";
+        try
+        {
+            var collectionDefinition = new CollectionDefinition()
+            {
+                DefaultId = new DefaultIdOptions()
+                {
+                    Type = DefaultIdType.Uuid
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithGuidId, Guid>(collectionName, collectionDefinition);
+            var newObject = new SimpleObjectWithGuidId()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            var secondObject = new SimpleObjectWithGuidId()
+            {
+                Name = "Test Object 2",
+            };
+
+            result = await collection.InsertOneAsync(secondObject);
+            var newId2 = result.InsertedId;
+
+            Assert.NotEqual(newId, newId2);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultId_UUIDV6()
+    {
+        var collectionName = "defaultIdUUIDV6";
+        try
+        {
+            var collectionDefinition = new CollectionDefinition()
+            {
+                DefaultId = new DefaultIdOptions()
+                {
+                    Type = DefaultIdType.UuidV6
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithGuidId, Guid>(collectionName, collectionDefinition);
+            var newObject = new SimpleObjectWithGuidId()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            var secondObject = new SimpleObjectWithGuidId()
+            {
+                Name = "Test Object 2",
+            };
+
+            result = await collection.InsertOneAsync(secondObject);
+            var newId2 = result.InsertedId;
+
+            Assert.NotEqual(newId, newId2);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultId_UUIDV7()
+    {
+        var collectionName = "defaultIdUUIDV7";
+        try
+        {
+            var collectionDefinition = new CollectionDefinition()
+            {
+                DefaultId = new DefaultIdOptions()
+                {
+                    Type = DefaultIdType.UuidV7
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithGuidId, Guid>(collectionName, collectionDefinition);
+            var newObject = new SimpleObjectWithGuidId()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            var secondObject = new SimpleObjectWithGuidId()
+            {
+                Name = "Test Object 2",
+            };
+
+            result = await collection.InsertOneAsync(secondObject);
+            var newId2 = result.InsertedId;
+
+            Assert.NotEqual(newId, newId2);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefiningIndexing_Allow()
+    {
+        var collectionName = "definingIndexingAllow";
+        try
+        {
+            var collectionDefinition = new CollectionDefinition()
+            {
+                Indexing = new IndexingOptions()
+                {
+                    Allow = new List<string>()
+                    {
+                        "Name"
+                    }
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName, collectionDefinition);
+
+            await collection.InsertManyAsync(new List<SimpleObject>()
+            {
+                new()
+                {
+                    _id = 1,
+                    Name = "Name1",
+                    Properties = new Properties() {
+                        PropertyOne = "groupOne1",
+                        PropertyTwo = "propertyTwo1"
+                    }
+                },
+                new()
+                {
+                    _id = 2,
+                    Name = "Name2",
+                    Properties = new Properties() {
+                        PropertyOne = "groupOne2",
+                        PropertyTwo = "propertyTwo2"
+                    }
+                },
+                new()
+                {
+                    _id = 3,
+                    Name = "Name3",
+                    Properties = new Properties() {
+                        PropertyOne = "groupOne3",
+                        PropertyTwo = "propertyTwo3"
+                    }
+                },
+            });
+
+            var result = collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Name, "Name1")).ToList();
+            Assert.Single(result);
+            //Cannot filter by a non-indexed column
+            var actInvalid = () => collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Properties.PropertyOne, "groupOne1")).ToList();
+            Assert.Throws<CommandException>(actInvalid);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefiningIndexing_Deny()
+    {
+        var collectionName = "definingIndexingDeny";
+        try
+        {
+            var collectionDefinition = new CollectionDefinition()
+            {
+                Indexing = new IndexingOptions()
+                {
+                    Deny = new List<string>()
+                    {
+                        "Name"
+                    }
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName, collectionDefinition);
+
+            await collection.InsertManyAsync(new List<SimpleObject>()
+            {
+                new()
+                {
+                    _id = 1,
+                    Name = "Name1",
+                    Properties = new Properties() {
+                        PropertyOne = "groupOne1",
+                        PropertyTwo = "propertyTwo1"
+                    }
+                },
+                new()
+                {
+                    _id = 2,
+                    Name = "Name2",
+                    Properties = new Properties() {
+                        PropertyOne = "groupOne2",
+                        PropertyTwo = "propertyTwo2"
+                    }
+                },
+                new()
+                {
+                    _id = 3,
+                    Name = "Name3",
+                    Properties = new Properties() {
+                        PropertyOne = "groupOne3",
+                        PropertyTwo = "propertyTwo3"
+                    }
+                },
+            });
+
+            var result = collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Properties.PropertyOne, "groupOne1")).ToList();
+            Assert.Single(result);
+            var actInvalid = () => collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Name, "Name1")).ToList();
+            Assert.Throws<CommandException>(actInvalid);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
     public async Task InsertDocumentAsync()
     {
         var collectionName = "restaurants";
         try
         {
-            Console.WriteLine("Inserting a document...");
             Restaurant newRestaurant = new()
             {
-                Name = "Mongo's Pizza",
+                Name = "Astra's Pizza",
                 RestaurantId = "12345",
                 Cuisine = "Pizza",
                 Address = new()
@@ -47,12 +320,11 @@ public class CollectionTests
     }
 
     [Fact]
-    public async Task InsertDocument_UsingDefaultId()
+    public async Task InsertDocument_UsingDefault_ObjectId()
     {
         var collectionName = "defaultId";
         try
         {
-            Console.WriteLine("Inserting a document...");
             var options = new CollectionDefinition
             {
                 DefaultId = new DefaultIdOptions

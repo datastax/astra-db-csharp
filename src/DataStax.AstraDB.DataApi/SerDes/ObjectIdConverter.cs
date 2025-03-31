@@ -27,26 +27,45 @@ public class ObjectIdConverter : JsonConverter<ObjectId>
 {
     public override ObjectId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.String)
+        if (reader.TokenType == JsonTokenType.StartObject)
+        {
+            if (reader.Read() && reader.TokenType == JsonTokenType.PropertyName && reader.GetString() == "$objectId")
+            {
+                reader.Read();
+                if (reader.TokenType == JsonTokenType.String)
+                {
+                    string objectIdString = reader.GetString();
+                    if (ObjectId.TryParse(objectIdString, out ObjectId objectIdValue))
+                    {
+                        if (!reader.Read() || reader.TokenType != JsonTokenType.EndObject)
+                            throw new JsonException("Expected end of $objectId object.");
+                        return objectIdValue;
+                    }
+                    throw new JsonException($"Invalid ObjectId format: {objectIdString}");
+                }
+                throw new JsonException("Expected string value for $objectId property.");
+            }
+            throw new JsonException("Expected '$objectId' property.");
+        }
+        else if (reader.TokenType == JsonTokenType.String)
         {
             string objectIdString = reader.GetString();
-            if (ObjectId.TryParse(objectIdString, out ObjectId objectId))
+            if (ObjectId.TryParse(objectIdString, out ObjectId objectIdValue))
             {
-                return objectId;
+                return objectIdValue;
             }
-            else
-            {
-                throw new JsonException($"Invalid ObjectId string: {objectIdString}");
-            }
+            throw new JsonException($"Invalid ObjectId format: {objectIdString}");
         }
         else
         {
-            throw new JsonException($"Expected string for ObjectId, but found {reader.TokenType}");
+            throw new JsonException($"Unsupported token type {reader.TokenType} for ObjectId value");
         }
     }
 
     public override void Write(Utf8JsonWriter writer, ObjectId value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.ToString());
+        writer.WriteStartObject();
+        writer.WriteString("$objectId", value.ToString());
+        writer.WriteEndObject();
     }
 }

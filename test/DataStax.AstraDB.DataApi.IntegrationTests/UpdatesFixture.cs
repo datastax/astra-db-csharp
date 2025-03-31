@@ -32,7 +32,7 @@ public class UpdatesFixture : IDisposable, IAsyncLifetime
         var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../database_latest_run.log"));
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../updates_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions
