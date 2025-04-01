@@ -30,8 +30,6 @@ namespace DataStax.AstraDB.DataApi.Admin;
 public class AstraDatabasesAdmin
 {
     private const int WAIT_IN_SECONDS = 600;
-    private const CloudProviderType FREE_TIER_CLOUD = CloudProviderType.GCP;
-    private const string FREE_TIER_CLOUD_REGION = "us-east1";
 
     private readonly CommandOptions _adminOptions;
     private readonly DataApiClient _client;
