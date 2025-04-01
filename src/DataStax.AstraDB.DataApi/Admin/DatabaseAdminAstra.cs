@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using DataStax.AstraDB.DataApi.Core;
-using DataStax.AstraDB.DataApi.Core.Commands;
-using DataStax.AstraDB.DataApi.Core.Results;
-using DataStax.AstraDB.DataApi.Utils;
 
 namespace DataStax.AstraDB.DataApi.Admin
 {
@@ -143,6 +143,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         internal async Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, CommandOptions options, bool runSynchronously)
         {
+            options ??= new CommandOptions();
             options.IncludeKeyspaceInUrl = false;
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
 
