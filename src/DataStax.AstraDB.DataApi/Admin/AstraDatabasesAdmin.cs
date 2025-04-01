@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,8 +30,6 @@ namespace DataStax.AstraDB.DataApi.Admin;
 public class AstraDatabasesAdmin
 {
     private const int WAIT_IN_SECONDS = 600;
-    private const CloudProviderType FREE_TIER_CLOUD = CloudProviderType.GCP;
-    private const string FREE_TIER_CLOUD_REGION = "us-east1";
 
     private readonly CommandOptions _adminOptions;
     private readonly DataApiClient _client;
@@ -370,7 +369,7 @@ public class AstraDatabasesAdmin
     private IDatabaseAdmin GetDatabaseAdmin(Guid dbGuid)
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
-        return new DatabaseAdminAstra(dbGuid);
+        return new DatabaseAdminAstra(dbGuid, _client, null);
     }
 
     public DatabaseInfo GetDatabaseInfo(Guid dbGuid)
@@ -412,6 +411,6 @@ public class AstraDatabasesAdmin
 
     private Command CreateCommand()
     {
-        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder());
+        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
     }
 }

@@ -18,7 +18,7 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-internal class ApiError
+internal class ApiWarning
 {
     [JsonPropertyName("message")]
     public string Message { get; set; }

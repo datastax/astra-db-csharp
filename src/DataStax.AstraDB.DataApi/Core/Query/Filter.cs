@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using MongoDB.Bson;
+using System.Collections.Generic;
+
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 public class Filter<T>
@@ -48,4 +51,28 @@ public class Filter<T>
         return new LogicalFilter<T>(LogicalOperator.Not, notFilter);
     }
 
+}
+
+internal static class FilterExtensions
+{
+    internal static Dictionary<string, object> Serialize<T>(this Filter<T> filter)
+    {
+        var result = new Dictionary<string, object>();
+        if (filter.Value is Filter<T>[] filtersArray)
+        {
+            var serializedArray = new List<object>();
+            foreach (var nestedFilter in filtersArray)
+            {
+                serializedArray.Add(nestedFilter.Serialize());
+            }
+            result[filter.Name.ToString()] = serializedArray;
+        }
+        else
+        {
+            //TODO: abstract out ObjectId handling
+            result[filter.Name.ToString()] = filter.Value is Filter<T> nestedFilter ? nestedFilter.Serialize() :
+              filter.Value is ObjectId ? filter.Value.ToString() : filter.Value;
+        }
+        return result;
+    }
 }

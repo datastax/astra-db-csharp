@@ -20,6 +20,9 @@ using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.Utils;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core;
@@ -32,9 +35,14 @@ public class Database
     private readonly DataApiClient _client;
     private readonly string _urlPostfix = "";
     private readonly DatabaseOptions _dbCommandOptions;
+    private readonly Guid _id;
 
     public string ApiEndpoint => _apiEndpoint;
     internal DataApiClient Client => _client;
+
+    internal Guid DatabaseId => _id;
+
+
 
     internal CommandOptions[] OptionsTree
     {
@@ -51,6 +59,7 @@ public class Database
         _apiEndpoint = apiEndpoint;
         _client = client;
         _dbCommandOptions = dbCommandOptions;
+        _id = (Guid)GetDatabaseIdFromUrl(_apiEndpoint);
     }
 
     public bool DoesCollectionExist(string collectionName)
@@ -170,6 +179,8 @@ public class Database
 
     public Collection<T> CreateCollection<T>(string collectionName) where T : class
     {
+        //TODO: when creating a collection without defining the id type, we need to check the type of the id property or throw an error if it doesn't match the default
+        //ie ... currently if the id property is of type int, a guid is still created
         return CreateCollection<T>(collectionName, null, null);
     }
 
@@ -318,6 +329,16 @@ public class Database
             name = collectionName
         }).AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
+    }
+
+    public static Guid? GetDatabaseIdFromUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return null;
+
+        // Match the first UUID in the URL
+        var match = Regex.Match(url, @"([0-9a-fA-F-]{36})");
+        return match.Success ? Guid.Parse(match.Value) : null;
     }
 
     internal Command CreateCommand(string name)

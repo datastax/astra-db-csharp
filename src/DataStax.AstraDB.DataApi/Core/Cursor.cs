@@ -15,9 +15,10 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using DataStax.AstraDB.DataApi.Core.Results;
 
@@ -32,181 +33,115 @@ public class Cursor<T>
     {
         get
         {
-            //TODO: handle states, for example: throw exception if MoveNext() returned false (i.e. no more documents)
+            if (_currentBatch == null)
+            {
+                throw new Exception("Cursor has not been started. Please call MoveNext()");
+            }
             return _currentBatch.Documents;
         }
     }
 
-    public float[] SortVector { get; internal set; } = Array.Empty<float>();
+    public float[] SortVectors { get; internal set; } = Array.Empty<float>();
 
-    internal Cursor(ApiResponseWithData<DocumentsResult<T>, FindStatusResult> currentResult, Func<string, bool, Task<ApiResponseWithData<DocumentsResult<T>, FindStatusResult>>> fetchNextBatch)
+    internal Cursor(Func<string, bool, Task<ApiResponseWithData<DocumentsResult<T>, FindStatusResult>>> fetchNextBatch)
     {
-        _currentBatch = currentResult.Data;
-        if (_currentBatch != null && currentResult.Status != null)
-        {
-            SortVector = currentResult.Status.SortVector;
-        }
         FetchNextBatch = fetchNextBatch;
     }
 
     public bool MoveNext()
     {
-        if (string.IsNullOrEmpty(_currentBatch.NextPageState))
+        ApiResponseWithData<DocumentsResult<T>, FindStatusResult> nextResult;
+        if (_currentBatch == null)
         {
-            return false;
+            nextResult = FetchNextBatch(null, true).ResultSync();
+            if (nextResult.Data == null || nextResult.Data.Documents.Count == 0)
+            {
+                return false;
+            }
         }
-        var nextResult = FetchNextBatch(_currentBatch.NextPageState, true).ResultSync();
-        _currentBatch = nextResult.Data;
+        else
+        {
+            if (string.IsNullOrEmpty(_currentBatch.NextPageState))
+            {
+                return false;
+            }
+            nextResult = FetchNextBatch(_currentBatch.NextPageState, true).ResultSync();
+        }
         if (nextResult.Status != null && nextResult.Status.SortVector != null)
         {
-            SortVector = SortVector.Concat(nextResult.Status.SortVector).ToArray();
+            SortVectors = SortVectors.Concat(nextResult.Status.SortVector).ToArray();
         }
+        _currentBatch = nextResult.Data;
         return true;
     }
 
     public async Task<bool> MoveNextAsync()
     {
-        if (string.IsNullOrEmpty(_currentBatch.NextPageState))
+        ApiResponseWithData<DocumentsResult<T>, FindStatusResult> nextResult;
+        if (_currentBatch == null)
         {
-            return false;
+            nextResult = await FetchNextBatch(null, true).ConfigureAwait(false);
+            if (nextResult.Data == null || nextResult.Data.Documents.Count == 0)
+            {
+                return false;
+            }
         }
-        var nextResult = await FetchNextBatch(_currentBatch.NextPageState, false).ConfigureAwait(false);
-        _currentBatch = nextResult.Data;
+        else
+        {
+            if (string.IsNullOrEmpty(_currentBatch.NextPageState))
+            {
+                return false;
+            }
+            nextResult = await FetchNextBatch(_currentBatch.NextPageState, true).ConfigureAwait(false);
+        }
         if (nextResult.Status != null && nextResult.Status.SortVector != null)
         {
-            SortVector = SortVector.Concat(nextResult.Status.SortVector).ToArray();
+            SortVectors = SortVectors.Concat(nextResult.Status.SortVector).ToArray();
         }
+        _currentBatch = nextResult.Data;
         return true;
     }
 }
 
 public static class CursorExtensions
 {
-    public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this Cursor<T> cursor) where T : class
+    public static async IAsyncEnumerable<TResult> ToAsyncEnumerable<TResult>(this Cursor<TResult> cursor, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         bool hasNext;
         do
         {
-            var currentItems = cursor.Current;
-            if (currentItems == null)
+            cancellationToken.ThrowIfCancellationRequested();
+            hasNext = await cursor.MoveNextAsync().ConfigureAwait(false);
+            if (!hasNext || cursor.Current == null)
             {
                 yield break;
             }
-
-            hasNext = await cursor.MoveNextAsync().ConfigureAwait(false);
-
-            foreach (var item in currentItems)
+            foreach (var item in cursor.Current)
             {
                 yield return item;
             }
         } while (hasNext);
     }
 
-    public static IEnumerable<T> ToEnumerable<T>(this Cursor<T> cursor) where T : class
+    public static IEnumerable<TResult> ToEnumerable<TResult>(this Cursor<TResult> cursor)
     {
-        return new CursorEnumerable<T>(cursor);
-    }
-
-    public static List<T> ToList<T>(this Cursor<T> cursor) where T : class
-    {
-        return new CursorEnumerable<T>(cursor).ToList();
-    }
-}
-
-public class CursorEnumerable<T> : IEnumerable<T> where T : class
-{
-    private Cursor<T> _cursor;
-    public CursorEnumerable(Cursor<T> cursor)
-    {
-        _cursor = cursor;
-    }
-
-    public IEnumerator<T> GetEnumerator()
-    {
-        return new CursorEnumerator<T>(_cursor);
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-}
-
-public class CursorEnumerator<T> : IEnumerator<T>
-{
-    private Cursor<T> _cursor;
-    private List<T> _currentPageItems;
-    private int _currentIndex = -1;
-    private bool _isFinished = false;
-
-    public CursorEnumerator(Cursor<T> cursor)
-    {
-        _cursor = cursor;
-        _currentPageItems = cursor.Current.ToList();
-    }
-
-    public T Current
-    {
-        get
+        bool hasNext;
+        do
         {
-            if (_currentPageItems == null || _currentIndex < 0 || _currentIndex >= _currentPageItems.Count)
+            hasNext = cursor.MoveNext();
+            if (!hasNext || cursor.Current == null)
             {
-                throw new InvalidOperationException("Current is not valid before MoveNext or after enumeration is finished.");
+                yield break;
             }
-            return _currentPageItems[_currentIndex];
-        }
+            foreach (var item in cursor.Current)
+            {
+                yield return item;
+            }
+        } while (hasNext);
     }
 
-    object IEnumerator.Current => Current;
-
-    public void Dispose()
+    public static List<TResult> ToList<TResult>(this Cursor<TResult> cursor)
     {
-        _cursor = null;
+        return ToEnumerable(cursor).ToList();
     }
-
-    public bool MoveNext()
-    {
-        if (_isFinished)
-        {
-            return false;
-        }
-
-        _currentIndex++;
-
-        if (_currentPageItems == null || _currentIndex >= _currentPageItems.Count)
-        {
-            return FetchNextPage();
-        }
-
-        return true;
-    }
-
-    private bool FetchNextPage()
-    {
-        var hasNext = _cursor.MoveNext();
-        if (!hasNext)
-        {
-            _isFinished = true;
-            return false;
-        }
-
-        _currentPageItems = _cursor.Current.ToList();
-        _currentIndex = 0;
-
-        if (_currentPageItems == null || _currentPageItems.Count == 0)
-        {
-            _isFinished = true;
-            return false;
-        }
-
-        return true;
-    }
-
-    public void Reset()
-    {
-        _currentIndex = -1;
-        _currentPageItems = new List<T>();
-        _isFinished = false;
-    }
-
 }

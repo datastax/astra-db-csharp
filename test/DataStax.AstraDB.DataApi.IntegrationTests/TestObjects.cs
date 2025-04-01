@@ -9,7 +9,8 @@ namespace DataStax.AstraDB.DataApi.IntegrationTests;
 public class SimpleObjectWithVector
 {
     [DocumentMapping(DocumentMappingField.Id)]
-    public int Id { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vector)]
     public float[] VectorEmbeddings { get; set; }
@@ -18,7 +19,8 @@ public class SimpleObjectWithVector
 public class SimpleObjectWithVectorize
 {
     [DocumentMapping(DocumentMappingField.Id)]
-    public int Id { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vectorize)]
     public string StringToVectorize => Name;
@@ -34,15 +36,31 @@ public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
 
 public class SimpleObjectWithObjectId
 {
-    public ObjectId _id { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ObjectId? _id { get; set; }
+    public string Name { get; set; }
+}
+
+public class SimpleObjectWithGuidId
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? _id { get; set; }
     public string Name { get; set; }
 }
 
 public class SimpleObject
 {
-    public int _id { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? _id { get; set; }
     public string Name { get; set; }
     public Properties Properties { get; set; }
+}
+
+public class SerializationTest
+{
+    [DocumentMapping(DocumentMappingField.Id)]
+    public int TestId { get; set; }
+    public Properties NestedProperties { get; set; }
 }
 
 public class Properties
@@ -52,6 +70,10 @@ public class Properties
     public int IntProperty { get; set; }
     public string[] StringArrayProperty { get; set; }
     public bool BoolProperty { get; set; }
+    public DateTime DateTimeProperty { get; set; }
+    public DateTimeOffset DateTimeOffsetProperty { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string SkipWhenNull { get; set; }
 }
 
 public class SimpleObjectSkipNulls

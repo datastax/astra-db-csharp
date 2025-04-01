@@ -1,4 +1,5 @@
 using DataStax.AstraDB.DataApi;
+using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -18,11 +19,12 @@ public class AdminFixture : IDisposable
 
 		var token = configuration["ADMINTOKEN"] ?? configuration["AstraDB:AdminToken"];
 		var dbUrl = configuration["URL"];
+		DatabaseUrl = dbUrl;
 		DatabaseName = configuration["DATABASE_NAME"];
 
 		_databaseId = GetDatabaseIdFromUrl(dbUrl) ?? throw new Exception("Database ID could not be extracted from ASTRA_DB_URL.");
 
-		using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+		using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../admin_tests_latest_run.log"));
 		ILogger logger = factory.CreateLogger("IntegrationTests");
 
 		var clientOptions = new CommandOptions
@@ -41,8 +43,14 @@ public class AdminFixture : IDisposable
 	public Guid DatabaseId => _databaseId;
 	public string DatabaseName { get; private set; }
 	public DataApiClient Client { get; private set; }
+	public string DatabaseUrl { get; private set; }
 
-	private static Guid? GetDatabaseIdFromUrl(string url)
+	public Database GetDatabase()
+	{
+		return Client.GetDatabase(DatabaseUrl);
+	}
+
+	public static Guid? GetDatabaseIdFromUrl(string url)
 	{
 		if (string.IsNullOrWhiteSpace(url))
 			return null;
@@ -51,4 +59,18 @@ public class AdminFixture : IDisposable
 		var match = Regex.Match(url, @"([0-9a-fA-F-]{36})");
 		return match.Success ? Guid.Parse(match.Value) : null;
 	}
+
+	public DatabaseAdminAstra CreateAdmin(Database database = null)
+	{
+		database ??= Client.GetDatabaseAsync(DatabaseId).GetAwaiter().GetResult();
+
+		var adminOptions = new CommandOptions
+		{
+			Token = Client.ClientOptions.Token,
+			Environment = DBEnvironment.Production // or default
+		};
+
+		return new DatabaseAdminAstra(database, Client, adminOptions);
+	}
+
 }

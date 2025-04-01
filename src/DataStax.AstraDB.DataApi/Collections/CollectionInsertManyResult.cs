@@ -21,4 +21,5 @@ namespace DataStax.AstraDB.DataApi.Collections;
 public class CollectionInsertManyResult<T>
 {
     public List<T> InsertedIds { get; internal set; } = new List<T>();
+    public int InsertedCount => InsertedIds.Count;
 }

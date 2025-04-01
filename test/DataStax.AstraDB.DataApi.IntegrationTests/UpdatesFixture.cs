@@ -8,19 +8,19 @@ using Xunit.Abstractions;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
-[CollectionDefinition("DatabaseAndCollections")]
-public class DatabaseAndCollectionsCollection : ICollectionFixture<CollectionsFixture>
+[CollectionDefinition("Updates")]
+public class UpdatesCollection : ICollectionFixture<UpdatesFixture>
 {
 
 }
 
-public class CollectionsFixture : IDisposable, IAsyncLifetime
+public class UpdatesFixture : IDisposable, IAsyncLifetime
 {
     public DataApiClient Client { get; private set; }
     public Database Database { get; private set; }
     public string OpenAiApiKey { get; set; }
 
-    public CollectionsFixture()
+    public UpdatesFixture()
     {
         IConfiguration configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -32,7 +32,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
         var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../collections_fixture_latest_run.log"));
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../updates_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions
@@ -45,9 +45,9 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await CreateSearchCollection();
+        await CreateUpdatesCollection();
         var collection = Database.GetCollection<SimpleObject>(_queryCollectionName);
-        SearchCollection = collection;
+        UpdatesCollection = collection;
     }
 
     public async Task DisposeAsync()
@@ -55,11 +55,17 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
         await Database.DropCollectionAsync(_queryCollectionName);
     }
 
-    public Collection<SimpleObject> SearchCollection { get; private set; }
+    public Collection<SimpleObject> UpdatesCollection { get; private set; }
 
 
-    private const string _queryCollectionName = "simpleObjectsQueryTests";
-    private async Task CreateSearchCollection()
+    private const string _queryCollectionName = "updatesCollection";
+    private async Task CreateUpdatesCollection()
+    {
+        var collection = await CreateUpdatesCollection(_queryCollectionName);
+        UpdatesCollection = collection;
+    }
+
+    internal async Task<Collection<SimpleObject>> CreateUpdatesCollection(string collectionName)
     {
         List<SimpleObject> items = new List<SimpleObject>() {
                 new()
@@ -136,40 +142,15 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                     PropertyTwo = $"animal{i}",
                     IntProperty = i + 1,
                     BoolProperty = true,
-                    StringArrayProperty = new[] { $"animal{i}1", $"animal{i}2" }
+                    StringArrayProperty = new[] { $"animal{i}", $"animal{100 + i}", $"animal{200 + i}" },
+                    DateTimeProperty = new DateTime(2019, 5, i),
                 }
             });
         }
-        items.Add(new()
-        {
-            _id = 31,
-            Name = "Cow Group 4",
-            Properties = new Properties()
-            {
-                PropertyOne = "groupfour",
-                PropertyTwo = "cow",
-                IntProperty = 32,
-                BoolProperty = true,
-                StringArrayProperty = new[] { "cow1", "cow2" }
-            }
-        });
-        items.Add(new()
-        {
-            _id = 32,
-            Name = "Alligator Group 4",
-            Properties = new Properties()
-            {
-                PropertyOne = "groupfour",
-                PropertyTwo = "alligator",
-                IntProperty = 33,
-                BoolProperty = true,
-                StringArrayProperty = new[] { "alligator1", "alligator2" }
-            }
-        });
-        var collection = await Database.CreateCollectionAsync<SimpleObject>(_queryCollectionName);
+        var collection = await Database.CreateCollectionAsync<SimpleObject>(collectionName);
         await collection.InsertManyAsync(items);
 
-        SearchCollection = collection;
+        return collection;
     }
 
     public void Dispose()

@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using System.Text.Json.Serialization;
 
-public class InsertManyOptions
+namespace DataStax.AstraDB.DataApi.Core.Results;
+
+public class DeleteResult
 {
-    public const int DefaultChunkSize = 50;
-    public const int MaxConcurrency = int.MaxValue;
-
-    private bool _insertInOrder = false;
-    public bool InsertInOrder
-    {
-        get => _insertInOrder;
-        set
-        {
-            if (value) Concurrency = 1;
-            _insertInOrder = value;
-        }
-    }
-    public int Concurrency { get; set; } = MaxConcurrency;
-    public int ChunkSize { get; set; } = DefaultChunkSize;
+    [JsonPropertyName("deletedCount")]
+    public int DeletedCount { get; set; }
+    [JsonInclude]
+    [JsonPropertyName("moreData")]
+    internal bool MoreData { get; set; } = false;
 }
