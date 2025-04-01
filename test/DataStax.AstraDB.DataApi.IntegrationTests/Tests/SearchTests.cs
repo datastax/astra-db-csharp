@@ -598,6 +598,30 @@ public class SearchTests
         }
     }
 
+    [Fact]
+    public void Distinct_TopLevel()
+    {
+        var collection = fixture.SearchCollection;
+        var distinct = collection.Find().DistinctBy(so => so.Name);
+        Assert.Equal(33, distinct.Count());
+    }
 
+    [Fact]
+    public void Distinct_Nested()
+    {
+        var collection = fixture.SearchCollection;
+        var distinct = collection.Find().DistinctBy(so => so.Properties.PropertyOne);
+        Assert.Equal(4, distinct.Count());
+    }
+
+    [Fact]
+    public void Distinct_WithFilter()
+    {
+        var collection = fixture.SearchCollection;
+        var builder = Builders<SimpleObject>.Filter;
+        var filter = builder.Lt(so => so.Properties.IntProperty, 20);
+        var distinct = collection.Find(filter).DistinctBy(so => so.Properties.PropertyOne);
+        Assert.Equal(3, distinct.Count());
+    }
 }
 
