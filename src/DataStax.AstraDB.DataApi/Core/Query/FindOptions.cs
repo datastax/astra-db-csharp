@@ -49,7 +49,7 @@ public class FindOptions<T>
 
     [JsonInclude]
     [JsonPropertyName("filter")]
-    internal Dictionary<string, object> FilterMap => Filter == null ? null : SerializeFilter(Filter);
+    internal Dictionary<string, object> FilterMap => Filter == null ? null : Filter.Serialize();
 
     [JsonInclude]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -88,26 +88,7 @@ public class FindOptions<T>
         }
     }
 
-    private Dictionary<string, object> SerializeFilter(Filter<T> filter)
-    {
-        var result = new Dictionary<string, object>();
-        if (filter.Value is Filter<T>[] filtersArray)
-        {
-            var serializedArray = new List<object>();
-            foreach (var nestedFilter in filtersArray)
-            {
-                serializedArray.Add(SerializeFilter(nestedFilter));
-            }
-            result[filter.Name.ToString()] = serializedArray;
-        }
-        else
-        {
-            //TODO: abstract out ObjectId handling
-            result[filter.Name.ToString()] = filter.Value is Filter<T> nestedFilter ? SerializeFilter(nestedFilter) :
-              filter.Value is ObjectId ? filter.Value.ToString() : filter.Value;
-        }
-        return result;
-    }
+
 }
 
 internal class FindApiOptions

@@ -191,18 +191,28 @@ public class AdminTests
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_DoesKeyspaceExist_Another
-	// expects keyspace another_keyspace to have been created
 	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist_Another()
 	{
 		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
 		var daa = fixture.CreateAdmin(database);
+		var keyspaceName = "another_keyspace";
 
-		var keyspaceExists = await daa.KeyspaceExistsAsync("another_keyspace");
-		Assert.True(keyspaceExists);
-
-		keyspaceExists = daa.KeyspaceExists("another_keyspace");
-		Assert.True(keyspaceExists);
+		try
+		{
+			var keyspaceExists = await daa.KeyspaceExistsAsync(keyspaceName);
+			if (!keyspaceExists)
+			{
+				await daa.CreateKeyspaceAsync(keyspaceName);
+				Thread.Sleep(30 * 1000); //wait for keyspace to be created
+				keyspaceExists = await daa.KeyspaceExistsAsync(keyspaceName);
+			}
+			Assert.True(keyspaceExists);
+		}
+		finally
+		{
+			await daa.DropKeyspaceAsync(keyspaceName);
+		}
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_FindEmbeddingProvidersAsync

@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Query;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class InsertManyOptions
+public class Builders<T>
 {
-    public const int DefaultChunkSize = 50;
-    public const int MaxConcurrency = int.MaxValue;
-
-    private bool _insertInOrder = false;
-    public bool InsertInOrder
-    {
-        get => _insertInOrder;
-        set
-        {
-            if (value) Concurrency = 1;
-            _insertInOrder = value;
-        }
-    }
-    public int Concurrency { get; set; } = MaxConcurrency;
-    public int ChunkSize { get; set; } = DefaultChunkSize;
+    public static FilterBuilder<T> Filter => new();
+    public static ProjectionBuilder<T> Projection => new();
+    public static SortBuilder<T> Sort => new();
+    public static UpdateBuilder<T> Update => new();
 }

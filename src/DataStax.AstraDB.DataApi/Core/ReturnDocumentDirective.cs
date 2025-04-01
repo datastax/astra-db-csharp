@@ -14,11 +14,26 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core.Query;
+using System;
 
-public class Builders<T>
+namespace DataStax.AstraDB.DataApi.Core;
+
+public enum ReturnDocumentDirective
 {
-    public static FilterBuilder<T> Filter => new();
-    public static ProjectionBuilder<T> Projection => new();
-    public static SortBuilder<T> Sort => new();
+    Before,
+    After
+}
+
+public static class ReturnDocumentDirectiveExtensions
+{
+    public static string Serialize(this ReturnDocumentDirective? returnDocumentDirective)
+    {
+        if (returnDocumentDirective == null) return null;
+        return returnDocumentDirective switch
+        {
+            ReturnDocumentDirective.Before => "before",
+            ReturnDocumentDirective.After => "after",
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+    }
 }

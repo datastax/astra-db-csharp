@@ -16,16 +16,22 @@
 
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core.Results;
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
-public class FluentFind<T, TId, TResult> where T : class where TResult : class
+public class FluentFind<T, TId, TResult> : IAsyncEnumerable<TResult>, IEnumerable<TResult>
+    where T : class
+    where TResult : class
 {
     private readonly Filter<T> _filter;
     private readonly Collection<T, TId> _collection;
     private FindOptions<T> _findOptions;
+    private CommandOptions _commandOptions;
 
     internal Filter<T> Filter => _filter;
     internal Collection<T, TId> Collection => _collection;
@@ -35,10 +41,12 @@ public class FluentFind<T, TId, TResult> where T : class where TResult : class
         get { return _findOptions ??= new FindOptions<T>(); }
     }
 
-    internal FluentFind(Collection<T, TId> collection, Filter<T> filter)
+    internal FluentFind(Collection<T, TId> collection, Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
     {
         _filter = filter;
         _collection = collection;
+        _findOptions = findOptions;
+        _commandOptions = commandOptions;
     }
 
     public FluentFind<T, TId, TResult> Project(IProjectionBuilder projection)
@@ -80,45 +88,46 @@ public class FluentFind<T, TId, TResult> where T : class where TResult : class
     internal Task<ApiResponseWithData<DocumentsResult<TResult>, FindStatusResult>> RunAsync(string pageState = null, bool runSynchronously = false)
     {
         FindOptions.PageState = pageState;
-        return _collection.FindManyAsync<TResult>(_filter, FindOptions, null, runSynchronously);
+        return _collection.RunFindManyAsync<TResult>(_filter, FindOptions, _commandOptions, runSynchronously);
     }
 
-}
-
-public static class FluentFindExtensions
-{
-    public static async Task<Cursor<TResult>> ToCursorAsync<T, TId, TResult>(this FluentFind<T, TId, TResult> fluentFind) where T : class where TResult : class
+    public Cursor<TResult> ToCursor()
     {
-        var initialResults = await fluentFind.RunAsync().ConfigureAwait(false);
-        var cursor = new Cursor<TResult>(initialResults, (string pageState, bool runSynchronously) => fluentFind.RunAsync(pageState, runSynchronously));
+        var cursor = new Cursor<TResult>((string pageState, bool runSynchronously) => RunAsync(pageState, runSynchronously));
         return cursor;
     }
 
-    public static async IAsyncEnumerable<TResult> ToAsyncEnumerable<T, TId, TResult>(this FluentFind<T, TId, TResult> fluentFind) where T : class where TResult : class
+    public async IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        var cursor = await fluentFind.ToCursorAsync().ConfigureAwait(false);
-        await foreach (var item in cursor.ToAsyncEnumerable())
+        var cursor = ToCursor();
+        await foreach (var item in cursor.ToAsyncEnumerable(cancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             yield return item;
         }
     }
 
-    public static async Task<IEnumerable<TResult>> ToEnumerableAsync<T, TId, TResult>(this FluentFind<T, TId, TResult> fluentFind) where T : class where TResult : class
+    public IEnumerator<TResult> GetEnumerator()
     {
-        var cursor = await fluentFind.ToCursorAsync().ConfigureAwait(false);
-        return cursor.ToEnumerable();
+        var cursor = ToCursor();
+        bool hasNext;
+        do
+        {
+            hasNext = cursor.MoveNext();
+            if (!hasNext || cursor.Current == null)
+            {
+                yield break;
+            }
+            foreach (var item in cursor.Current)
+            {
+                yield return item;
+            }
+        } while (hasNext);
     }
 
-    public static async Task<List<TResult>> ToListAsync<T, TId, TResult>(this FluentFind<T, TId, TResult> fluentFind) where T : class where TResult : class
+    IEnumerator IEnumerable.GetEnumerator()
     {
-        var cursor = await fluentFind.ToCursorAsync().ConfigureAwait(false);
-        return cursor.ToList();
+        return GetEnumerator();
     }
 
-    public static List<TResult> ToList<T, TId, TResult>(this FluentFind<T, TId, TResult> fluentFind) where T : class where TResult : class
-    {
-        var initialResults = fluentFind.RunAsync(null, true).ResultSync();
-        var cursor = new Cursor<TResult>(initialResults, (string pageState, bool runSynchronously) => fluentFind.RunAsync(pageState, runSynchronously));
-        return cursor.ToList();
-    }
 }

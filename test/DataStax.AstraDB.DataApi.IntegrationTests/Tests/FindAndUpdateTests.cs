@@ -1,505 +1,114 @@
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
-using DataStax.AstraDB.DataApi.Core.Query;
-using MongoDB.Bson;
-using System.Linq;
-using System.Text.Json;
-using UUIDNext;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
-[Collection("DatabaseAndCollections")]
-public class SearchTests
+[Collection("FindAndUpdate")]
+public class FindAndUpdateTests
 {
-    CollectionsFixture fixture;
+    FindAndUpdateFixture fixture;
 
-    public SearchTests(CollectionsFixture fixture)
+    public FindAndUpdateTests(FindAndUpdateFixture fixture)
     {
         this.fixture = fixture;
     }
 
     [Fact]
-    public async Task ById()
+    public async Task FindAndUpdateOne_DefaultReturnsOriginalDocument()
     {
-        var collectionName = "idsSearchCollection";
-
-        try
-        {
-            var date = DateTime.Now;
-            var uuid4 = Uuid.NewRandom();
-            Guid urlNamespaceId = Guid.Parse("6ba7b811-9dad-11d1-80b4-00c04fd430c8");
-            var uuid5 = Uuid.NewNameBased(urlNamespaceId, "https://github.com/uuid6/uuid6-ietf-draft");
-            var uuid7 = Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql);
-            var uuid8 = Uuid.NewDatabaseFriendly(UUIDNext.Database.SqlServer);
-            var objectId = new ObjectId();
-
-            List<DifferentIdsObject> items = new List<DifferentIdsObject>
-            {
-                new DifferentIdsObject()
-                {
-                    TheId = 1,
-                    Name = $"Test Object Int"
-                },
-                new DifferentIdsObject()
-                {
-                    TheId = objectId,
-                    Name = $"Test Object ObjectId"
-                },
-                new DifferentIdsObject()
-                {
-                    TheId = uuid4,
-                    Name = $"Test Object UUID4"
-                },
-                new DifferentIdsObject()
-                {
-                    TheId = uuid5,
-                    Name = $"Test Object UUID5"
-                },
-                new DifferentIdsObject()
-                {
-                    TheId = uuid7,
-                    Name = $"Test Object UUID7"
-                },
-                new DifferentIdsObject()
-                {
-                    TheId = uuid8,
-                    Name = $"Test Object UUID8"
-                },
-                new DifferentIdsObject()
-                {
-                    TheId = "This is an id string",
-                    Name = $"Test Object String"
-                },
-                new DifferentIdsObject()
-                {
-                    TheId = date,
-                    Name = $"Test Object DateTime"
-                }
-            };
-
-            var collection = await fixture.Database.CreateCollectionAsync<DifferentIdsObject>(collectionName);
-            await collection.InsertManyAsync(items, new InsertManyOptions() { InsertInOrder = true });
-
-            //Search using Expression
-            var filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, 1);
-            var searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(1.ToString(), searchResult.TheId.ToString());
-            Assert.Equal("Test Object Int", searchResult.Name);
-
-            //Search using String
-            filter = Builders<DifferentIdsObject>.Filter.Eq("_id", 1);
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(1.ToString(), searchResult.TheId.ToString());
-            Assert.Equal("Test Object Int", searchResult.Name);
-
-            //objectId
-            filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, objectId);
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(objectId.ToString(), searchResult.TheId.ToString());
-            Assert.Equal("Test Object ObjectId", searchResult.Name);
-
-            //uuid4
-            filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, uuid4);
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(uuid4.ToString(), searchResult.TheId.ToString());
-            Assert.Equal("Test Object UUID4", searchResult.Name);
-
-            //uuid5
-            filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, uuid5);
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(uuid5.ToString(), searchResult.TheId.ToString());
-            Assert.Equal("Test Object UUID5", searchResult.Name);
-
-            //uuid7
-            filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, uuid7);
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(uuid7.ToString(), searchResult.TheId.ToString());
-            Assert.Equal("Test Object UUID7", searchResult.Name);
-
-            //uuid8
-            filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, uuid8);
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(uuid8.ToString(), searchResult.TheId.ToString());
-            Assert.Equal("Test Object UUID8", searchResult.Name);
-
-            //string
-            filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, "This is an id string");
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal("This is an id string", searchResult.TheId.ToString());
-            Assert.Equal("Test Object String", searchResult.Name);
-
-            //date
-            filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, date);
-            searchResult = await collection.FindOneAsync(filter);
-            Assert.Equal(date.ToUniversalTime().ToString("MMddyyhhmmss"), ((DateTime)searchResult.TheId).ToUniversalTime().ToString("MMddyyhhmmss"));
-            Assert.Equal("Test Object DateTime", searchResult.Name);
-        }
-        finally
-        {
-            await fixture.Database.DropCollectionAsync(collectionName);
-        }
+        var collection = fixture.UpdatesCollection;
+        var filter = Builders<SimpleObject>.Filter
+            .Eq(so => so.Name, "Cat");
+        var updater = Builders<SimpleObject>.Update;
+        var combinedUpdate = updater.Combine(
+            updater.Set(so => so.Properties.PropertyTwo, "CatUpdated"),
+            updater.Unset("Properties.PropertyOne")
+        );
+        var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate);
+        Assert.Equal("cat", result.Properties.PropertyTwo);
+        Assert.NotNull(result.Properties.PropertyOne);
     }
 
     [Fact]
-    public void SimpleStringFilter()
+    public async Task FindAndUpdateOne_ReturnsUpdatedDocument()
     {
-        var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq("Properties.PropertyOne", "grouptwo");
-        var results = collection.Find(filter).ToList();
-        var expectedArray = new[] { "horse", "cow", "alligator" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
+        var collection = fixture.UpdatesCollection;
+        var filter = Builders<SimpleObject>.Filter
+            .Eq(so => so.Name, "Animal5");
+        var updater = Builders<SimpleObject>.Update;
+        var combinedUpdate = updater.Combine(
+            updater.Set(so => so.Properties.PropertyTwo, "Animal5Updated"),
+            updater.Unset("Properties.PropertyOne")
+        );
+        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
+        var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate, options);
+        Assert.Equal("Animal5Updated", result.Properties.PropertyTwo);
+        Assert.Null(result.Properties.PropertyOne);
     }
 
     [Fact]
-    public void SimpleExpressionFilter()
+    public async Task FindAndUpdateOne_WithInclusiveProjection()
     {
-        var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var results = collection.Find(filter).ToList();
-        var expectedArray = new[] { "horse", "cow", "alligator" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public void Limit_RunsAsync_ReturnsLimitedResult()
-    {
-        var collection = fixture.SearchCollection;
-        var results = collection.Find().Limit(1).ToList();
-        Assert.Single(results);
-    }
-
-    [Fact]
-    public void InclusiveProjection_RunsSync_ReturnsIncludedProperties()
-    {
-        var collection = fixture.SearchCollection;
+        var collection = fixture.UpdatesCollection;
+        var filter = Builders<SimpleObject>.Filter
+            .Eq(so => so.Name, "Horse");
+        var updater = Builders<SimpleObject>.Update;
+        var combinedUpdate = updater.Combine(
+            updater.Set(so => so.Properties.PropertyTwo, "HorseUpdated")
+        );
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
-        var results = collection.Find().Limit(1).Project(inclusiveProjection).ToList();
-        var result = results.First();
+        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = inclusiveProjection };
+        var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate, options);
+        Assert.Equal("HorseUpdated", result.Properties.PropertyTwo);
+        Assert.Null(result.Properties.PropertyOne);
         Assert.True(string.IsNullOrEmpty(result.Name));
-        Assert.True(string.IsNullOrEmpty(result.Properties.PropertyOne));
-        Assert.False(string.IsNullOrEmpty(result.Properties.PropertyTwo));
     }
 
     [Fact]
-    public void ExclusiveProjection_RunsSync_ExcludesProperties()
+    public async Task FindAndUpdateOne_WithExclusiveProjection()
     {
-        var collection = fixture.SearchCollection;
+        var collection = fixture.UpdatesCollection;
+        var filter = Builders<SimpleObject>.Filter
+            .Eq(so => so.Name, "Cow");
+        var updater = Builders<SimpleObject>.Update;
+        var combinedUpdate = updater.Set(so => so.Properties.PropertyTwo, "CowUpdated");
         var exclusiveProjection = Builders<SimpleObject>.Projection
-                .Exclude("Properties.PropertyTwo");
-        var results = collection.Find().Limit(1).Project(exclusiveProjection).ToList();
-        var result = results.First();
+                .Exclude("Properties.PropertyOne");
+        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = exclusiveProjection };
+        var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate, options);
+        Assert.Equal("CowUpdated", result.Properties.PropertyTwo);
+        Assert.Null(result.Properties.PropertyOne);
         Assert.False(string.IsNullOrEmpty(result.Name));
-        Assert.False(string.IsNullOrEmpty(result.Properties.PropertyOne));
-        Assert.True(string.IsNullOrEmpty(result.Properties.PropertyTwo));
     }
 
     [Fact]
-    public void Sort_RunsAsync_ReturnsSortedResult()
+    public async Task FindAndUpdateByIdString()
     {
-        var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        var expectedArray = new[] { "alligator", "cow", "horse" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
+        var collection = fixture.UpdatesCollection;
+        var filter = Builders<SimpleObject>.Filter.Eq("_id", 4);
+        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
+        var update = Builders<SimpleObject>.Update.Set(so => so.Properties.PropertyTwo, "AlligatorUpdated");
+        var result = await collection.FindOneAndUpdateAsync(filter, update, options);
+        Assert.Equal("AlligatorUpdated", result.Properties.PropertyTwo);
     }
 
     [Fact]
-    public void SortDescending_RunsAsync_ReturnsResultsDescending()
+    public async Task FindOneAndUpdate_SetOnInsert()
     {
-        var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        var expectedArray = new[] { "horse", "cow", "alligator" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
+        var collection = fixture.UpdatesCollection;
+        var filter = Builders<SimpleObject>.Filter.Eq(so => so._id, 111);
+        var update = Builders<SimpleObject>.Update.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
+        var result = await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<SimpleObject> { Upsert = true, ReturnDocument = ReturnDocumentDirective.After });
+        Assert.Equal(111, result._id);
+        Assert.Equal("ThisWasSetOnInsert", result.Properties.PropertyTwo);
     }
 
     [Fact]
-    public void Skip_RunsAsync_ReturnsResultsAfterSkip()
+    public async Task FindAndUpdate_MostSimilarToSearchVector()
     {
-        var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
-        var results = collection.Find(filter).Sort(sort).Skip(1).ToList();
-        var expectedArray = new[] { "cow", "alligator" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public void LimitAndSkip_RunsAsync_ReturnsExpectedResults()
-    {
-        var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
-        var results = collection.Find(filter).Sort(sort).Skip(2).Limit(1).ToList();
-        var expectedArray = new[] { "alligator" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public void NotFluent_RunsAsync_ReturnsExpectedResults()
-    {
-        var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
-        var inclusiveProjection = Builders<SimpleObject>.Projection
-                .Include("Properties.PropertyTwo");
-        var findOptions = new FindOptions<SimpleObject>()
-        {
-            Sort = sort,
-            Limit = 1,
-            Skip = 2,
-            Projection = inclusiveProjection
-        };
-        var results = collection.Find(filter, findOptions).ToList();
-        var expectedArray = new[] { "alligator" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-        var result = results.First();
-        Assert.True(string.IsNullOrEmpty(result.Name));
-        Assert.True(string.IsNullOrEmpty(result.Properties.PropertyOne));
-        Assert.False(string.IsNullOrEmpty(result.Properties.PropertyTwo));
-    }
-
-    [Fact]
-    public void LogicalAnd_MongoStyle()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Eq(so => so.Properties.PropertyOne, "grouptwo") & builder.Eq(so => so.Properties.PropertyTwo, "cow");
-        var results = collection.Find(filter).ToList();
-        var expectedArray = new[] { "cow" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public void LogicalAnd_AstraStyle()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.And(builder.Eq(so => so.Properties.PropertyOne, "grouptwo"), builder.Eq(so => so.Properties.PropertyTwo, "cow"));
-        var results = collection.Find(filter).ToList();
-        var expectedArray = new[] { "cow" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public void LogicalOr_MongoStyle()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Eq(so => so.Properties.PropertyTwo, "alligator") | builder.Eq(so => so.Properties.PropertyTwo, "cow");
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        var expectedArray = new[] { "alligator", "alligator", "cow", "cow" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public void LogicalOr_AstraStyle()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Or(builder.Eq(so => so.Properties.PropertyOne, "groupone"), builder.Eq(so => so.Properties.PropertyOne, "grouptwo"));
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        var expectedArray = new[] { "alligator", "cat", "cow", "dog", "horse" };
-        var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
-        Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public async Task TestAsyncEnumeration()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Or(builder.Eq(so => so.Properties.PropertyOne, "groupone"), builder.Eq(so => so.Properties.PropertyOne, "grouptwo"));
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
-        var results = collection.Find(filter).Sort(sort);
-        var expectedArray = new[] { "alligator", "cat", "cow", "dog", "horse" };
-        var resultPropertyTwos = new List<string>();
-        await foreach (var result in results)
-        {
-            resultPropertyTwos.Add(result.Properties.PropertyTwo);
-        }
-        Assert.True(!expectedArray.Except(resultPropertyTwos).Any() && !resultPropertyTwos.Except(expectedArray).Any());
-    }
-
-    [Fact]
-    public void LogicalNot_MongoStyle()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = !(builder.Eq(so => so.Properties.PropertyTwo, "alligator") | builder.Eq(so => so.Properties.PropertyTwo, "cow"));
-        var results = collection.Find(filter).ToList();
-        Assert.Equal(29, results.Count);
-    }
-
-    [Fact]
-    public void LogicalNot_AstraStyle()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Not(builder.Eq(so => so.Properties.PropertyTwo, "alligator") | builder.Eq(so => so.Properties.PropertyTwo, "cow"));
-        var results = collection.Find(filter).ToList();
-        Assert.Equal(29, results.Count);
-    }
-
-    [Fact]
-    public void GreaterThan()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Gt(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.IntProperty);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        Assert.Equal(13, results.Count);
-        Assert.Equal(21, results.First().Properties.IntProperty);
-    }
-
-    [Fact]
-    public void GreaterThanOrEqual()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Gte(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.IntProperty);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        Assert.Equal(14, results.Count);
-        Assert.Equal(20, results.First().Properties.IntProperty);
-    }
-
-    [Fact]
-    public void LessThan()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Lt(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.IntProperty);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        Assert.Equal(19, results.Count);
-        Assert.Equal(19, results.First().Properties.IntProperty);
-    }
-
-    [Fact]
-    public void LessThanOrEqual()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Lte(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.IntProperty);
-        var results = collection.Find(filter).Sort(sort).ToList();
-        Assert.Equal(20, results.Count);
-        Assert.Equal(20, results.First().Properties.IntProperty);
-    }
-
-    [Fact]
-    public void NotEqualTo()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Ne(so => so.Properties.PropertyOne, "groupthree");
-        var results = collection.Find(filter).ToList();
-        Assert.Equal(7, results.Count);
-    }
-
-    [Fact]
-    public void InArray()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.In(so => so.Properties.PropertyOne, new[] { "groupone", "grouptwo" });
-        var results = collection.Find(filter).ToList();
-        Assert.Equal(5, results.Count);
-    }
-
-    [Fact]
-    public void NotInArray()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Nin(so => so.Properties.PropertyOne, new[] { "groupone", "grouptwo" });
-        var results = collection.Find(filter).ToList();
-        Assert.Equal(28, results.Count);
-    }
-
-    [Fact]
-    public void InArray_WithArrays()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.In(so => so.Properties.StringArrayProperty, new[] { "cat1", "dog1" });
-        var results = collection.Find(filter).ToList();
-        Assert.Equal(2, results.Count);
-    }
-
-    [Fact]
-    public async Task PropertyExists()
-    {
-        var collectionName = "differentProperties";
-        try
-        {
-
-            List<SimpleObjectSkipNulls> items = new List<SimpleObjectSkipNulls>();
-            for (var i = 0; i < 5; i++)
-            {
-                items.Add(new SimpleObjectSkipNulls()
-                {
-                    _id = i,
-                    Name = $"Test Object {i}",
-                    PropertyOne = i % 2 == 0 ? "groupone" : "grouptwo",
-                    PropertyTwo = i % 2 == 0 ? "hasvalue" : null
-                });
-            }
-            ;
-            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectSkipNulls>(collectionName);
-            var result = await collection.InsertManyAsync(items);
-            var builder = Builders<SimpleObjectSkipNulls>.Filter;
-            var filter = builder.Exists(so => so.PropertyTwo);
-            var results = collection.Find(filter).ToList();
-            Assert.Equal(3, results.Count);
-        }
-        finally
-        {
-            await fixture.Database.DropCollectionAsync(collectionName);
-        }
-    }
-
-    [Fact]
-    public void ArrayContainsAll()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.All(so => so.Properties.StringArrayProperty, new[] { "alligator1", "alligator2", "alligator3" });
-        var results = collection.Find(filter).ToList();
-        Assert.Single(results);
-    }
-
-    [Fact]
-    public void ArrayHasSize()
-    {
-        var collection = fixture.SearchCollection;
-        var builder = Builders<SimpleObject>.Filter;
-        var filter = builder.Size(so => so.Properties.StringArrayProperty, 3);
-        var results = collection.Find(filter).ToList();
-        Assert.Equal(5, results.Count);
-    }
-
-    [Fact]
-    public async Task QueryDocumentsWithVectorsAsync()
-    {
-        var collectionName = "simpleObjectsWithVectors";
+        var collectionName = "findAndUpdateObjectsWithVectors";
         try
         {
             List<SimpleObjectWithVector> items = new List<SimpleObjectWithVector>() {
@@ -533,10 +142,10 @@ public class SearchTests
             };
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
-            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var result = collection.Find(new FindOptions<SimpleObjectWithVector>() { Sort = Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector) }, null);
-            Assert.Equal("This is about a dog.", result.First().Name);
-
+            var sort = Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector); ;
+            var update = Builders<SimpleObjectWithVector>.Update.Set(so => so.Name, "Updated Dog Name");
+            var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVector> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            Assert.Equal("Updated Dog Name", result.Name);
         }
         finally
         {
@@ -545,9 +154,9 @@ public class SearchTests
     }
 
     [Fact]
-    public async Task QueryDocumentsWithVectorizeAsync()
+    public async Task FindOneAndUpdate_MostSimilarToSearchString_Vectorize()
     {
-        var collectionName = "simpleObjectsWithVectorize";
+        var collectionName = "findAndUpdateObjectWithVectorize";
         try
         {
             List<SimpleObjectWithVectorize> items = new List<SimpleObjectWithVectorize>() {
@@ -584,13 +193,10 @@ public class SearchTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var finder = collection.Find<SimpleObjectWithVectorizeResult>(new FindOptions<SimpleObjectWithVectorize>() { Sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString), IncludeSimilarity = true, IncludeSortVector = true }, null);
-            var cursor = finder.ToCursor();
-            var list = cursor.ToList();
-            var result = list.First();
-            Assert.Equal("This is about a dog.", result.Name);
-            Assert.NotNull(result.Similarity);
-            Assert.NotNull(cursor.SortVectors);
+            var sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString); ;
+            var update = Builders<SimpleObjectWithVectorize>.Update.Set(so => so.Name, "Updated Dog Name");
+            var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            Assert.Equal("Updated Dog Name", result.Name);
         }
         finally
         {
@@ -598,6 +204,4 @@ public class SearchTests
         }
     }
 
-
 }
-

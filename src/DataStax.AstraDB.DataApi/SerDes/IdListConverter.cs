@@ -25,8 +25,15 @@ using System.Text.Json.Serialization;
 
 public class IdListConverter : JsonConverter<List<object>>
 {
+    private static readonly GuidConverter _guidConverter = new();
+    private static readonly ObjectIdConverter _objectIdConverter = new();
+    private static readonly DateTimeConverter<DateTime> _dateTimeConverter = new();
+
     public override List<object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
+        if (reader.TokenType == JsonTokenType.Null)
+            return default;
+
         if (reader.TokenType != JsonTokenType.StartArray)
         {
             throw new JsonException("Expected StartArray for ID list");
@@ -41,27 +48,66 @@ public class IdListConverter : JsonConverter<List<object>>
                 return ids;
             }
 
-            ids.Add(ReadSingleValue(ref reader, typeToConvert, options));
+            ids.Add(ReadSingleIdValue(ref reader, typeToConvert, options));
         }
 
         throw new JsonException("Unexpected end of JSON while reading ID array");
     }
 
-    private object ReadSingleValue(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    static internal object ReadSingleIdValue(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        object value = reader.TokenType switch
+        switch (reader.TokenType)
         {
-            JsonTokenType.Number => reader.TryGetInt32(out int intValue) ? intValue : reader.GetDouble(),
-            JsonTokenType.String => ParseStringValue(reader.GetString()),
-            JsonTokenType.True => true,
-            JsonTokenType.False => false,
-            JsonTokenType.Null => null,
-            _ => JsonSerializer.Deserialize(ref reader, typeToConvert, options),
-        };
-        return value;
+            case JsonTokenType.Number:
+                if (typeToConvert == typeof(int) || typeToConvert == typeof(int?))
+                {
+                    if (reader.TryGetInt32(out int intValue))
+                        return intValue;
+                    throw new JsonException($"Expected an integer value for type '{typeToConvert}', but got a non-integer number.");
+                }
+                else if (typeToConvert == typeof(double) || typeToConvert == typeof(double?))
+                {
+                    return reader.GetDouble();
+                }
+                else
+                {
+                    if (reader.TryGetInt32(out int intValue))
+                        return intValue;
+                    return reader.GetDouble();
+                }
+
+            case JsonTokenType.String:
+                return ParseStringValue(reader.GetString());
+
+            case JsonTokenType.True:
+                return true;
+
+            case JsonTokenType.False:
+                return false;
+
+            case JsonTokenType.Null:
+                return null;
+
+            case JsonTokenType.StartObject:
+                Utf8JsonReader peekReader = reader;
+                if (!peekReader.Read() || peekReader.TokenType != JsonTokenType.PropertyName)
+                    throw new JsonException("Expected property name in ID object.");
+
+                string propertyName = peekReader.GetString();
+                return propertyName switch
+                {
+                    "$uuid" => _guidConverter.Read(ref reader, typeof(Guid), options),
+                    "$objectId" => _objectIdConverter.Read(ref reader, typeof(ObjectId), options),
+                    "$date" => _dateTimeConverter.Read(ref reader, typeof(DateTime), options),
+                    _ => throw new JsonException($"Unsupported object type '{propertyName}' in ID list.")
+                };
+
+            default:
+                throw new JsonException($"Unsupported token type {reader.TokenType} for ID value");
+        }
     }
 
-    private object ParseStringValue(string value)
+    static internal object ParseStringValue(string value)
     {
         if (string.IsNullOrEmpty(value))
             return value;
@@ -80,6 +126,14 @@ public class IdListConverter : JsonConverter<List<object>>
 
     public override void Write(Utf8JsonWriter writer, List<object> value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, value, value?.GetType() ?? typeof(object), options);
+        writer.WriteStartArray();
+        if (value != null)
+        {
+            foreach (var item in value)
+            {
+                JsonSerializer.Serialize(writer, item, options);
+            }
+        }
+        writer.WriteEndArray();
     }
 }
