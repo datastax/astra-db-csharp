@@ -26,6 +26,15 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi;
 
+/// <summary>
+/// The main entrypoint into working with the Data API. It sits at the top of the conceptual hierarchy of the SDK.
+/// The client can be passed a default token, which can be overridden by a stronger/weaker token when connectiong to a Database or Admin instance.
+/// 
+/// The DataApiClient, and the related methods for interacting with the database, accepts a set of options that can be used to affect the 
+/// command execution. These options can be specified at any level in the call hierarchy (Client, Database, Collection, Command, etc.) 
+/// The most specific defined option (or it's default) will be used for each request.
+/// 
+/// </summary>
 public class DataApiClient
 {
     private readonly CommandOptions _options;
@@ -38,21 +47,48 @@ public class DataApiClient
     internal IHttpClientFactory HttpClientFactory => _httpClientFactory;
     internal ILogger Logger => _logger;
 
-    public DataApiClient(string token)
-        : this(token, new CommandOptions())
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DataApiClient"/> class.
+    /// </summary>
+    public DataApiClient() : this(null, null)
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DataApiClient"/> class with a default authentication token. 
+    /// This token can be overridden when getting a database <see cref="GetDatabase"/> or admin instance <see cref="GetAstraAdmin"/>
+    /// as well as in the <see cref="CommandOptions"/> parameter of the commands.
+    /// </summary>
+    /// <param name="token">The token to use for authentication.</param>
+    public DataApiClient(string token)
+        : this(token, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DataApiClient"/> class with a default set of options
+    /// When using this constructor, the token must be provided in the <see cref="CommandOptions"/> parameter,
+    /// to the <see cref="GetDatabase"/> or <see cref="GetAstraAdmin"/> methods,
+    /// or the eventual end commands via a <see cref="CommandOptions"/> parameter.
+    /// </summary>
+    /// <param name="options">The default options to use for commands executed by this client.</param>
     public DataApiClient(CommandOptions options)
         : this(null, options)
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DataApiClient"/> class with a default authentication token.
+    /// When using the default constructor, the token must be provided to the <see cref="GetDatabase"/> or <see cref="GetAstraAdmin"/> methods
+    /// or the eventual end commands via a <see cref="CommandOptions"/> parameter.
+    /// </summary>
+    /// <param name="token">The token to use for authentication.</param>
+    /// <param name="options">The default options to use for commands executed by this client.</param>
+    /// <param name="logger">The logger to use for logging.</param>
     public DataApiClient(string token, CommandOptions options, ILogger logger = null)
     {
-        options.Token = token;
-        Guard.NotNull(options, nameof(options));
-        _options = options;
+        _options = options ?? new CommandOptions();
+        _options.Token = token;
         _logger = logger ?? NullLogger.Instance;
 
         var services = new ServiceCollection();
@@ -62,6 +98,11 @@ public class DataApiClient
         _httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>()!;
     }
 
+    /// <summary>
+    /// Gets an instance of the <see cref="AstraDatabasesAdmin"/> class.
+    /// </summary>
+    /// <param name="adminOptions">The options to use for the admin instance.</param>
+    /// <returns>An admin instance of the <see cref="AstraDatabasesAdmin"/> class.</returns>
     public AstraDatabasesAdmin GetAstraAdmin(CommandOptions adminOptions)
     {
         var applicableOptions = CommandOptions.Merge(_options, adminOptions);

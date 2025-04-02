@@ -8,3 +8,5 @@ test/DataStax.AstraDB.DataApi.UnitTests/bin
 test/DataStax.AstraDB.DataApi.UnitTests/obj
 appsettings.json
 *.log
+_site
+api

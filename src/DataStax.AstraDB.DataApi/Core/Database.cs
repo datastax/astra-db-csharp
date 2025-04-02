@@ -42,8 +42,6 @@ public class Database
 
     internal Guid DatabaseId => _id;
 
-
-
     internal CommandOptions[] OptionsTree
     {
         get
