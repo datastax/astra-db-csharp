@@ -139,6 +139,17 @@ public class DataApiClient
         return new Database(apiEndpoint, this, dbOptions);
     }
 
+    /// <summary>
+    /// Gets an instance of the <see cref="Database"/> class based on the database ID.
+    /// </summary>
+    /// <param name="databaseId">The ID of the database to get.</param>
+    /// <returns>An instance of the <see cref="Database"/> class.</returns>
+    /// <example>
+    /// <code>
+    /// var client = new DataApiClient("token");
+    /// var database = client.GetDatabase(Guid.Parse("databaseId"));
+    /// </code>
+    /// </example>
     public Database GetDatabase(Guid databaseId)
     {
         return GetDatabase(databaseId, null as DatabaseOptions);
