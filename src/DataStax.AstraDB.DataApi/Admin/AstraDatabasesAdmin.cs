@@ -40,7 +40,6 @@ public class AstraDatabasesAdmin
     {
         Guard.NotNull(client, nameof(client));
         _client = client;
-        Guard.NotNull(adminOptions, nameof(adminOptions));
         _adminOptions = adminOptions;
     }
 
@@ -411,6 +410,6 @@ public class AstraDatabasesAdmin
 
     private Command CreateCommand()
     {
-        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder(OptionsTree));
+        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder());
     }
 }

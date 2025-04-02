@@ -19,6 +19,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
     public DataApiClient Client { get; private set; }
     public Database Database { get; private set; }
     public string OpenAiApiKey { get; set; }
+    public string DatabaseUrl { get; set; }
 
     public CollectionsFixture()
     {
@@ -29,7 +30,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
             .Build();
 
         var token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
-        var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
+        DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
         using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../collections_fixture_latest_run.log"));
@@ -40,7 +41,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
             RunMode = RunMode.Debug
         };
         Client = new DataApiClient(token, clientOptions, logger);
-        Database = Client.GetDatabase(databaseUrl);
+        Database = Client.GetDatabase(DatabaseUrl);
     }
 
     public async Task InitializeAsync()

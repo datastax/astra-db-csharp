@@ -97,7 +97,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         internal async Task<IEnumerable<string>> ListKeyspaceNamesAsync(bool runSynchronously, CommandOptions options)
         {
-            var databaseInfo = await _client.GetAstraAdmin().GetDatabaseInfoAsync(_id, options, runSynchronously);
+            var databaseInfo = await _client.GetAstraDatabasesAdmin().GetDatabaseInfoAsync(_id, options, runSynchronously);
             return databaseInfo.Info.Keyspaces;
         }
 
@@ -275,7 +275,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         private Command CreateCommandAdmin()
         {
-            return new Command(_database.Client, _optionsTree, new AdminCommandUrlBuilder(_optionsTree, null));
+            return new Command(_database.Client, _optionsTree, new AdminCommandUrlBuilder());
         }
 
         private Command CreateCommandEmbedding()

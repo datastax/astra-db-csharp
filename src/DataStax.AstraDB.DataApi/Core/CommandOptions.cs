@@ -46,7 +46,7 @@ public class CommandOptions
 
     public static CommandOptions Merge(params CommandOptions[] arr)
     {
-        var list = arr.ToList();
+        var list = arr.Where(o => o != null).ToList();
         list.Insert(0, Defaults());
 
         bool? FirstNonNull(Func<CommandOptions, bool?> selector) =>

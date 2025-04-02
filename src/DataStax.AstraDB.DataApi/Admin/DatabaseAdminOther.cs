@@ -19,12 +19,26 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.Utils;
 
 namespace DataStax.AstraDB.DataApi.Admin
 {
     public class DatabaseAdminOther : IDatabaseAdmin
     {
         private readonly Guid _id;
+        private readonly Database _database;
+        private readonly CommandOptions _adminOptions;
+        private readonly DataApiClient _client;
+        private CommandOptions[] _optionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
+
+        internal DatabaseAdminOther(Database database, DataApiClient client, CommandOptions adminOptions)
+        {
+            Guard.NotNull(client, nameof(client));
+            _client = client;
+            _adminOptions = adminOptions;
+            _database = database;
+            _id = _database.DatabaseId;
+        }
 
         public DatabaseAdminOther(Guid id)
         {

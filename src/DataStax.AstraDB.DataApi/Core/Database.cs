@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.Utils;
-using System.Collections;
-using System.Collections.Generic;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -265,6 +264,27 @@ public class Database
         var command = CreateCommand("createCollection").WithPayload(payload).AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
         return GetCollection<T, TId>(collectionName);
+    }
+
+    public IDatabaseAdmin GetAdmin()
+    {
+        return GetAdmin(null);
+    }
+
+    public IDatabaseAdmin GetAdmin(CommandOptions options)
+    {
+        var baseCommandOptions = CommandOptions.Merge(OptionsTree);
+        if (options != null && options.Destination != null && baseCommandOptions != null && baseCommandOptions.Destination != null && options.Destination != baseCommandOptions.Destination)
+        {
+            throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
+        }
+        var destination = options != null && options.Destination != null ? options.Destination :
+            baseCommandOptions == null ? DataApiDestination.ASTRA : baseCommandOptions.Destination;
+        if (destination == DataApiDestination.ASTRA)
+        {
+            return new DatabaseAdminAstra(this, _client, options);
+        }
+        return new DatabaseAdminOther(this, _client, options);
     }
 
     public Collection<Document> GetCollection(string collectionName)
