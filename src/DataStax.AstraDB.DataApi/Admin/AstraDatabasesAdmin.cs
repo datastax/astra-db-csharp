@@ -1,4 +1,3 @@
-
 /*
  * Copyright DataStax, Inc.
  *
@@ -27,6 +26,12 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
+/// <summary>
+/// Provides administrative operations for Astra databases.
+/// </summary>
+/// <example>
+/// var admin = new AstraDatabasesAdmin(client, adminOptions);
+/// </example>
 public class AstraDatabasesAdmin
 {
     private const int WAIT_IN_SECONDS = 600;
@@ -43,43 +48,103 @@ public class AstraDatabasesAdmin
         _adminOptions = adminOptions;
     }
 
+    /// <summary>
+    /// Returns a list of database names.
+    /// </summary>
+    /// <returns>A list of database names.</returns>
+    /// <example>
+    /// var names = admin.ListDatabaseNames();
+    /// </example>
     public List<string> ListDatabaseNames()
     {
         return ListDatabases().Select(db => db.Info.Name).ToList();
     }
 
+    /// <summary>
+    /// Asynchronously returns a list of database names.
+    /// </summary>
+    /// <returns>A task that resolves to a list of database names.</returns>
+    /// <example>
+    /// var names = await admin.ListDatabaseNamesAsync();
+    /// </example>
     public async Task<List<string>> ListDatabaseNamesAsync()
     {
         var databases = await ListDatabasesAsync().ConfigureAwait(false);
         return databases.Select(db => db.Info.Name).ToList();
     }
 
+    /// <summary>
+    /// Returns a list of database names using specified command options.
+    /// </summary>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A list of database names.</returns>
+    /// <example>
+    /// var names = admin.ListDatabaseNames(options);
+    /// </example>
     public List<string> ListDatabaseNames(CommandOptions options)
     {
         return ListDatabases(options).Select(db => db.Info.Name).ToList();
     }
 
+    /// <summary>
+    /// Asynchronously returns a list of database names using specified command options.
+    /// </summary>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A task that resolves to a list of database names.</returns>
+    /// <example>
+    /// var names = await admin.ListDatabaseNamesAsync(options);
+    /// </example>
     public async Task<List<string>> ListDatabaseNamesAsync(CommandOptions options)
     {
         var databases = await ListDatabasesAsync(options).ConfigureAwait(false);
         return databases.Select(db => db.Info.Name).ToList();
     }
 
+    /// <summary>
+    /// Returns a list of database info objects.
+    /// </summary>
+    /// <returns>A list of DatabaseInfo objects.</returns>
+    /// <example>
+    /// var databases = admin.ListDatabases();
+    /// </example>
     public List<DatabaseInfo> ListDatabases()
     {
         return ListDatabasesAsync(null, true).ResultSync();
     }
 
+    /// <summary>
+    /// Asynchronously returns a list of database info objects.
+    /// </summary>
+    /// <returns>A task that resolves to a list of DatabaseInfo objects.</returns>
+    /// <example>
+    /// var databases = await admin.ListDatabasesAsync();
+    /// </example>
     public Task<List<DatabaseInfo>> ListDatabasesAsync()
     {
         return ListDatabasesAsync(null, false);
     }
 
+    /// <summary>
+    /// Returns a list of database info objects using specified command options.
+    /// </summary>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A list of DatabaseInfo objects.</returns>
+    /// <example>
+    /// var databases = admin.ListDatabases(options);
+    /// </example>
     public List<DatabaseInfo> ListDatabases(CommandOptions options)
     {
         return ListDatabasesAsync(options, true).ResultSync();
     }
 
+    /// <summary>
+    /// Asynchronously returns a list of database info objects using specified command options.
+    /// </summary>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A task that resolves to a list of DatabaseInfo objects.</returns>
+    /// <example>
+    /// var databases = await admin.ListDatabasesAsync(options);
+    /// </example>
     public Task<List<DatabaseInfo>> ListDatabasesAsync(CommandOptions options)
     {
         return ListDatabasesAsync(options, false);
@@ -95,6 +160,14 @@ public class AstraDatabasesAdmin
         return response;
     }
 
+    /// <summary>
+    /// Checks if a database with the specified name exists.
+    /// </summary>
+    /// <param name="databaseName">The database name to check.</param>
+    /// <returns>True if the database exists; otherwise, false.</returns>
+    /// <example>
+    /// bool exists = admin.DoesDatabaseExist("myDatabase");
+    /// </example>
     public bool DoesDatabaseExist(string databaseName)
     {
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
@@ -102,6 +175,14 @@ public class AstraDatabasesAdmin
         return list.Contains(databaseName);
     }
 
+    /// <summary>
+    /// Asynchronously checks if a database with the specified name exists.
+    /// </summary>
+    /// <param name="databaseName">The database name to check.</param>
+    /// <returns>A task that resolves to true if the database exists; otherwise, false.</returns>
+    /// <example>
+    /// bool exists = await admin.DoesDatabaseExistAsync("myDatabase");
+    /// </example>
     public async Task<bool> DoesDatabaseExistAsync(string databaseName)
     {
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
@@ -109,6 +190,14 @@ public class AstraDatabasesAdmin
         return list.Contains(databaseName);
     }
 
+    /// <summary>
+    /// Checks if a database with the specified GUID exists.
+    /// </summary>
+    /// <param name="dbGuid">The database GUID to check.</param>
+    /// <returns>True if the database exists; otherwise, false.</returns>
+    /// <example>
+    /// bool exists = admin.DoesDatabaseExist(new Guid("..."));
+    /// </example>
     public bool DoesDatabaseExist(Guid dbGuid)
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
@@ -117,6 +206,14 @@ public class AstraDatabasesAdmin
         return dbList.Any(item => item.Id == guid);
     }
 
+    /// <summary>
+    /// Asynchronously checks if a database with the specified GUID exists.
+    /// </summary>
+    /// <param name="dbGuid">The database GUID to check.</param>
+    /// <returns>A task that resolves to true if the database exists; otherwise, false.</returns>
+    /// <example>
+    /// bool exists = await admin.DoesDatabaseExistAsync(new Guid("..."));
+    /// </example>
     public async Task<bool> DoesDatabaseExistAsync(Guid dbGuid)
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
@@ -125,33 +222,89 @@ public class AstraDatabasesAdmin
         return dbList.Any(item => item.Id == guid);
     }
 
+    /// <summary>
+    /// Creates a new database with the specified name.
+    /// </summary>
+    /// <param name="databaseName">The name for the new database.</param>
+    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
+    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// var adminDb = admin.CreateDatabase("myDatabase");
+    /// </example>
     public IDatabaseAdmin CreateDatabase(string databaseName, bool waitForDb = true)
     {
         var options = new DatabaseCreationOptions() { Name = databaseName };
         return CreateDatabaseAsync(options, null, waitForDb, true).ResultSync();
     }
 
+    /// <summary>
+    /// Creates a new database with the specified creation options.
+    /// </summary>
+    /// <param name="options">The database creation options.</param>
+    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
+    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions { Name = "myDatabase" });
+    /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, bool waitForDb = true)
     {
         return CreateDatabaseAsync(options, null, waitForDb, true).ResultSync();
     }
 
+    /// <summary>
+    /// Creates a new database with the specified creation and command options.
+    /// </summary>
+    /// <param name="options">The database creation options.</param>
+    /// <param name="commandOptions">Additional command options.</param>
+    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
+    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions { Name = "myDatabase" }, commandOptions);
+    /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions, bool waitForDb = true)
     {
         return CreateDatabaseAsync(options, commandOptions, waitForDb, true).ResultSync();
     }
 
+    /// <summary>
+    /// Asynchronously creates a new database with the specified name.
+    /// </summary>
+    /// <param name="databaseName">The name for the new database.</param>
+    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
+    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// var adminDb = await admin.CreateDatabaseAsync("myDatabase");
+    /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(string databaseName, bool waitForDb = true)
     {
         var options = new DatabaseCreationOptions() { Name = databaseName };
         return CreateDatabaseAsync(options, null, waitForDb, false);
     }
 
+    /// <summary>
+    /// Asynchronously creates a new database with the specified creation options.
+    /// </summary>
+    /// <param name="creationOptions">The database creation options.</param>
+    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
+    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions { Name = "myDatabase" });
+    /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb = true)
     {
         return CreateDatabaseAsync(creationOptions, null, waitForDb, false);
     }
 
+    /// <summary>
+    /// Asynchronously creates a new database with the specified creation and command options.
+    /// </summary>
+    /// <param name="creationOptions">The database creation options.</param>
+    /// <param name="commandOptions">Additional command options.</param>
+    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
+    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions { Name = "myDatabase" }, commandOptions);
+    /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb = true)
     {
         return CreateDatabaseAsync(creationOptions, commandOptions, waitForDb, false);
@@ -287,41 +440,109 @@ public class AstraDatabasesAdmin
         return db.Status;
     }
 
+    /// <summary>
+    /// Drops the database with the specified name.
+    /// </summary>
+    /// <param name="databaseName">The name of the database to drop.</param>
+    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = admin.DropDatabase("myDatabase");
+    /// </example>
     public bool DropDatabase(string databaseName)
     {
         return DropDatabaseAsync(databaseName, null, false).ResultSync();
     }
 
+    /// <summary>
+    /// Drops the database with the specified GUID.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database to drop.</param>
+    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = admin.DropDatabase(new Guid("..."));
+    /// </example>
     public bool DropDatabase(Guid dbGuid)
     {
         return DropDatabaseAsync(dbGuid, null, false).ResultSync();
     }
 
+    /// <summary>
+    /// Drops the database with the specified name using provided command options.
+    /// </summary>
+    /// <param name="databaseName">The name of the database to drop.</param>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = admin.DropDatabase("myDatabase", options);
+    /// </example>
     public bool DropDatabase(string databaseName, CommandOptions options)
     {
         return DropDatabaseAsync(databaseName, options, false).ResultSync();
     }
 
+    /// <summary>
+    /// Drops the database with the specified GUID using provided command options.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database to drop.</param>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = admin.DropDatabase(new Guid("..."), options);
+    /// </example>
     public bool DropDatabase(Guid dbGuid, CommandOptions options)
     {
         return DropDatabaseAsync(dbGuid, options, false).ResultSync();
     }
 
+    /// <summary>
+    /// Asynchronously drops the database with the specified name.
+    /// </summary>
+    /// <param name="databaseName">The name of the database to drop.</param>
+    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = await admin.DropDatabaseAsync("myDatabase");
+    /// </example>
     public Task<bool> DropDatabaseAsync(string databaseName)
     {
         return DropDatabaseAsync(databaseName, null, true);
     }
 
+    /// <summary>
+    /// Asynchronously drops the database with the specified GUID.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database to drop.</param>
+    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = await admin.DropDatabaseAsync(new Guid("..."));
+    /// </example>
     public Task<bool> DropDatabaseAsync(Guid dbGuid)
     {
         return DropDatabaseAsync(dbGuid, null, true);
     }
 
+    /// <summary>
+    /// Asynchronously drops the database with the specified name using provided command options.
+    /// </summary>
+    /// <param name="databaseName">The name of the database to drop.</param>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = await admin.DropDatabaseAsync("myDatabase", options);
+    /// </example>
     public Task<bool> DropDatabaseAsync(string databaseName, CommandOptions options)
     {
         return DropDatabaseAsync(databaseName, options, true);
     }
 
+    /// <summary>
+    /// Asynchronously drops the database with the specified GUID using provided command options.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database to drop.</param>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// bool dropped = await admin.DropDatabaseAsync(new Guid("..."), options);
+    /// </example>
     public Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options)
     {
         return DropDatabaseAsync(dbGuid, options, true);
@@ -371,21 +592,55 @@ public class AstraDatabasesAdmin
         return new DatabaseAdminAstra(dbGuid, _client, null);
     }
 
+    /// <summary>
+    /// Retrieves database information for the specified GUID.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database.</param>
+    /// <returns>A DatabaseInfo object.</returns>
+    /// <example>
+    /// var info = admin.GetDatabaseInfo(new Guid("..."));
+    /// </example>
     public DatabaseInfo GetDatabaseInfo(Guid dbGuid)
     {
         return GetDatabaseInfoAsync(dbGuid, null, true).ResultSync();
     }
 
+    /// <summary>
+    /// Asynchronously retrieves database information for the specified GUID.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database.</param>
+    /// <returns>A task that resolves to a DatabaseInfo object.</returns>
+    /// <example>
+    /// var info = await admin.GetDatabaseInfoAsync(new Guid("..."));
+    /// </example>
     public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid)
     {
         return await GetDatabaseInfoAsync(dbGuid, null, false).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Retrieves database information for the specified GUID using provided command options.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database.</param>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A DatabaseInfo object.</returns>
+    /// <example>
+    /// var info = admin.GetDatabaseInfo(new Guid("..."), options);
+    /// </example>
     public DatabaseInfo GetDatabaseInfo(Guid dbGuid, CommandOptions options)
     {
         return GetDatabaseInfoAsync(dbGuid, options, true).ResultSync();
     }
 
+    /// <summary>
+    /// Asynchronously retrieves database information for the specified GUID using provided command options.
+    /// </summary>
+    /// <param name="dbGuid">The GUID of the database.</param>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A task that resolves to a DatabaseInfo object.</returns>
+    /// <example>
+    /// var info = await admin.GetDatabaseInfoAsync(new Guid("..."), options);
+    /// </example>
     public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, CommandOptions options)
     {
         return await GetDatabaseInfoAsync(dbGuid, options, false).ConfigureAwait(false);
