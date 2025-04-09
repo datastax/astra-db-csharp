@@ -10,3 +10,4 @@ appsettings.json
 *.log
 _site
 api
+api-docs

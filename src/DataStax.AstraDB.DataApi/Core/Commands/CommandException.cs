@@ -20,6 +20,9 @@ using System.Linq;
 
 namespace DataStax.AstraDB.DataApi.Core.Commands;
 
+/// <summary>
+/// Exception thrown when an error occurs calling the backend.
+/// </summary>
 public class CommandException : Exception
 {
     public CommandException()

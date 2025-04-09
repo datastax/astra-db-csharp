@@ -20,6 +20,10 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
+/// <summary>
+/// A custom converter to handle DataApi DateTime values
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class DateTimeConverter<T> : JsonConverter<T>
 {
     private static readonly DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);

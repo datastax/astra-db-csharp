@@ -21,6 +21,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Options to use when replacing documents in a collection.
+/// </summary>
 public class ReplaceOptions<T> where T : class
 {
   [JsonInclude]
@@ -33,6 +36,9 @@ public class ReplaceOptions<T> where T : class
   [JsonPropertyName("filter")]
   internal Dictionary<string, object> FilterMap => Filter == null ? null : Filter.Serialize();
 
+  /// <summary>
+  /// Defines the fields to be returned in the result.
+  /// </summary>
   [JsonIgnore]
   public IProjectionBuilder Projection { get; set; }
 
@@ -41,6 +47,9 @@ public class ReplaceOptions<T> where T : class
   [JsonPropertyName("projection")]
   internal Dictionary<string, object> ProjectionMap => Projection == null ? null : Projection.Projections.ToDictionary(x => x.FieldName, x => x.Value);
 
+  /// <summary>
+  /// Defines the sort order to apply before making the replacement.
+  /// </summary>
   [JsonIgnore]
   public SortBuilder<T> Sort { get; set; }
 
@@ -49,15 +58,24 @@ public class ReplaceOptions<T> where T : class
   [JsonPropertyName("sort")]
   internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.Sorts.ToDictionary(x => x.Name, x => x.Value);
 
+  /// <summary>
+  /// The document to replace the matching document with.
+  /// </summary>
   [JsonPropertyName("replacement")]
   public T Replacement { get; set; }
 
+  /// <summary>
+  /// Whether to insert the document if no matching document is found or not.
+  /// </summary>
   [JsonIgnore]
   public bool Upsert
   {
     set => Parameters.Upsert = value;
   }
 
+  /// <summary>
+  /// Whether to return the document before or after the replacement.
+  /// </summary>
   [JsonIgnore]
   public ReturnDocumentDirective? ReturnDocument
   {

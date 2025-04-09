@@ -22,6 +22,17 @@ using System.Threading;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// This class provides a set of low-level options to control the interactions with the underlying data store.
+/// 
+/// These options can be provided at any level of the SDK hierarchy:
+///     <see cref="DataApiClient"/>
+///         <see cref="Database"/>
+///             <see cref="Collections.Collection"/>
+///             
+/// as well as directly to each of the methods. You can provide different options objects at each level,
+/// the options specified at the most granular level will take precedence.
+/// </summary>
 public class CommandOptions
 {
     internal DBEnvironment? Environment { get; set; }
@@ -30,21 +41,53 @@ public class CommandOptions
     internal JsonConverter InputConverter { get; set; }
     internal JsonConverter OutputConverter { get; set; }
 
+    /// <summary>
+    /// The token to use for authentication
+    /// </summary>
     public string Token { get; internal set; }
+
+    /// <summary>
+    /// The destination datastore.
+    /// 
+    /// Defaults to <see cref="DataApiDestination.ASTRA"/>
+    /// </summary>
     public DataApiDestination? Destination { get; set; }
+
+    /// <summary>
+    /// Options for the HTTP client
+    /// 
+    /// Defaults to HttpVersion: 2.0, FollowRedirects: true
+    /// </summary>
     public HttpClientOptions HttpClientOptions { get; set; }
+
+    /// <summary>
+    /// Connection and request timeout options
+    /// 
+    /// Defaults to ConnectTimeoutMillis: 5000, RequestTimeoutMillis: 30000
+    /// </summary>
     public TimeoutOptions TimeoutOptions { get; set; }
+
+    /// <summary>
+    /// API version to connect to
+    /// 
+    /// Defaults to <see cref="ApiVersion.V1"/>
+    /// </summary>
     public ApiVersion? ApiVersion { get; set; }
+
+    /// <summary>
+    /// An optional CancellationToken to interrupt asynchronous operations
+    /// </summary>
     public CancellationToken? CancellationToken { get; set; }
 
-    public void SetConvertersIfNull(JsonConverter inputConverter, JsonConverter outputConverter)
+    internal void SetConvertersIfNull(JsonConverter inputConverter, JsonConverter outputConverter)
     {
         InputConverter ??= inputConverter;
         OutputConverter ??= outputConverter;
     }
-    public bool IncludeKeyspaceInUrl { get; set; }
 
-    public static CommandOptions Merge(params CommandOptions[] arr)
+    internal bool IncludeKeyspaceInUrl { get; set; }
+
+    internal static CommandOptions Merge(params CommandOptions[] arr)
     {
         var list = arr.Where(o => o != null).ToList();
         list.Insert(0, Defaults());
@@ -70,6 +113,10 @@ public class CommandOptions
         return options;
     }
 
+    /// <summary>
+    /// The default set of options
+    /// </summary>
+    /// <returns>Default command options</returns>
     public static CommandOptions Defaults()
     {
         return new CommandOptions()

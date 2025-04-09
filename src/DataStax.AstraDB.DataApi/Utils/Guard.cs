@@ -19,9 +19,9 @@ using System.Collections;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
-public static class Guard
+internal static class Guard
 {
-    public static void NotNullOrEmpty(string value, string paramName, string message = null)
+    internal static void NotNullOrEmpty(string value, string paramName, string message = null)
     {
         if (string.IsNullOrEmpty(value))
         {
@@ -29,7 +29,7 @@ public static class Guard
         }
     }
 
-    public static void NotNullOrEmpty(IList value, string paramName, string message = null)
+    internal static void NotNullOrEmpty(IList value, string paramName, string message = null)
     {
         if (value == null || value.Count == 0)
         {
@@ -37,7 +37,7 @@ public static class Guard
         }
     }
 
-    public static void Equals<T>(T value, T valueTwo, string paramName, string message = null)
+    internal static void Equals<T>(T value, T valueTwo, string paramName, string message = null)
     {
         if (!value.Equals(valueTwo))
         {
@@ -45,12 +45,12 @@ public static class Guard
         }
     }
 
-    public static T NotNull<T>(T value, string paramName) where T : class
+    internal static T NotNull<T>(T value, string paramName) where T : class
     {
         return value ?? throw new ArgumentNullException(paramName);
     }
 
-    public static void NotEmpty(Guid value, string paramName)
+    internal static void NotEmpty(Guid value, string paramName)
     {
         if (value == Guid.Empty)
         {
@@ -58,7 +58,7 @@ public static class Guard
         }
     }
 
-    public static void NotDefault<T>(T value, string paramName) where T : struct
+    internal static void NotDefault<T>(T value, string paramName) where T : struct
     {
         if (value.Equals(default(T)))
         {

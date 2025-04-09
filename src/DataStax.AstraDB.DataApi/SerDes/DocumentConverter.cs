@@ -25,7 +25,11 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-
+/// <summary>
+/// A custom converter to handle converting documents to and from JSON using the <see cref="DocumentMappingAttribute"/>
+/// to handle DataApi-specific properties.
+/// </summary>
+/// <typeparam name="T">The type of the document</typeparam>
 public class DocumentConverter<T> : JsonConverter<T>
 {
     private static readonly Dictionary<PropertyInfo, string> FieldMappings;
@@ -150,9 +154,18 @@ public class DocumentConverter<T> : JsonConverter<T>
             ReadCommentHandling = options.ReadCommentHandling,
             ReferenceHandler = options.ReferenceHandler,
             UnknownTypeHandling = options.UnknownTypeHandling,
-            WriteIndented = options.WriteIndented
+            WriteIndented = options.WriteIndented,
+            //Converters = options.Converters.Where()
         };
+        foreach (var converter in options.Converters)
+        {
+            if (converter.GetType() != typeof(DocumentConverter<T>))
+            {
+                defaultOptions.Converters.Add(converter);
+            }
+        }
         string defaultJson = JsonSerializer.Serialize(value, typeof(T), defaultOptions);
+        //string defaultJson = JsonSerializer.Serialize(value, typeof(T), options);
         using var doc = JsonDocument.Parse(defaultJson);
         foreach (var prop in doc.RootElement.EnumerateObject())
         {

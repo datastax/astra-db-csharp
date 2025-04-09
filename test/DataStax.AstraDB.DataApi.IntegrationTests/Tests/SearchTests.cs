@@ -337,6 +337,19 @@ public class SearchTests
     }
 
     [Fact]
+    public async Task FindAll_AsyncEnumeration()
+    {
+        var collection = fixture.SearchCollection;
+        var results = collection.Find();
+        var names = new List<string>();
+        await foreach (var result in results)
+        {
+            names.Add(result.Name);
+        }
+        Assert.Equal(33, names.Count);
+    }
+
+    [Fact]
     public void LogicalNot_MongoStyle()
     {
         var collection = fixture.SearchCollection;
@@ -366,6 +379,18 @@ public class SearchTests
         var results = collection.Find(filter).Sort(sort).ToList();
         Assert.Equal(13, results.Count);
         Assert.Equal(21, results.First().Properties.IntProperty);
+    }
+
+    [Fact]
+    public void GreaterThan_Date()
+    {
+        var collection = fixture.SearchCollection;
+        var builder = Builders<SimpleObject>.Filter;
+        var filter = builder.Gt(so => so.Properties.DateTimeProperty, new DateTime(2020, 1, 1, 1, 14, 0));
+        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.DateTimeProperty);
+        var results = collection.Find(filter).Sort(sort).ToList();
+        Assert.Equal(19, results.Count);
+        Assert.Equal(new DateTime(2020, 1, 1, 1, 15, 0).ToUniversalTime().ToString("MMddyyhhmmss"), results.First().Properties.DateTimeProperty.ToUniversalTime().ToString("MMddyyhhmmss"));
     }
 
     [Fact]
@@ -585,6 +610,61 @@ public class SearchTests
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var finder = collection.Find<SimpleObjectWithVectorizeResult>(new FindOptions<SimpleObjectWithVectorize>() { Sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString), IncludeSimilarity = true, IncludeSortVector = true }, null);
+            var cursor = finder.ToCursor();
+            var list = cursor.ToList();
+            var result = list.First();
+            Assert.Equal("This is about a dog.", result.Name);
+            Assert.NotNull(result.Similarity);
+            Assert.NotNull(cursor.SortVectors);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task QueryDocumentsWithVectorize_Fluent_Async()
+    {
+        var collectionName = "simpleObjectsWithVectorizeFluent";
+        try
+        {
+            List<SimpleObjectWithVectorize> items = new List<SimpleObjectWithVectorize>() {
+                new()
+                {
+                    Id = 0,
+                    Name = "This is about a cat.",
+                },
+                new()
+                {
+                    Id = 1,
+                    Name = "This is about a dog.",
+                },
+                new()
+                {
+                    Id = 2,
+                    Name = "This is about a horse.",
+                },
+            };
+            var dogQueryVectorString = "dog";
+
+            var options = new CollectionDefinition
+            {
+                Vector = new VectorOptions
+                {
+                    Metric = SimilarityMetric.Cosine,
+                    Service = new VectorServiceOptions
+                    {
+                        Provider = "nvidia",
+                        ModelName = "NV-Embed-QA"
+                    }
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
+            var insertResult = await collection.InsertManyAsync(items);
+            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            var finder = collection.Find<SimpleObjectWithVectorizeResult>().Sort(
+                Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString)).IncludeSimilarity(true).IncludeSortVector(true);
             var cursor = finder.ToCursor();
             var list = cursor.ToList();
             var result = list.First();

@@ -18,16 +18,16 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
-public enum LogicalOperator : int
+internal enum LogicalOperator : int
 {
     And,
     Or,
     Not
 }
 
-public static class LogicalOperatorExtensions
+internal static class LogicalOperatorExtensions
 {
-    public static string ToApiString(this LogicalOperator value)
+    internal static string ToApiString(this LogicalOperator value)
     {
         return value switch
         {

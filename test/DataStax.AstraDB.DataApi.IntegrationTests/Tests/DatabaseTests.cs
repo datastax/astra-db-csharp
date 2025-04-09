@@ -25,7 +25,7 @@ public class DatabaseTests
         var admin = databaseWithKeyspace.GetAdmin();
         try
         {
-            var dbOptions = new DatabaseOptions
+            var dbOptions = new DatabaseCommandOptions
             {
                 Keyspace = keyspaceName
             };
@@ -80,7 +80,7 @@ public class DatabaseTests
     {
         var collectionName = "simpleCollectionCanceled";
         var cts = new CancellationTokenSource();
-        var commandOptions = new CommandOptions
+        var commandOptions = new DatabaseCommandOptions
         {
             CancellationToken = cts.Token
         };
@@ -242,7 +242,7 @@ public class DatabaseTests
     public async Task ListCollectionNamesAsync_WithCommandOptions_ShouldReturnCollectionNames()
     {
         await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
-        var commandOptions = new CommandOptions { /* Initialize with necessary options */ };
+        var commandOptions = new DatabaseCommandOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);

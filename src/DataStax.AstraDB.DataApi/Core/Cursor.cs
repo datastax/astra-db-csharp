@@ -24,11 +24,25 @@ using DataStax.AstraDB.DataApi.Core.Results;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// A cursor for iterating over the results of a query.
+///  
+/// When multiple results are returned by the underlying API, they are returned in batches.
+/// You can use the <see cref="MoveNext()"/> or <see cref="MoveNextAsync()"/> methods to iterate over the batches
+/// and <see cref="Current"/> to access the current batch of results.
+/// 
+/// In most situations, using the results of a query directly as an IEnumerable or IAsyncEnumerable is recommended.
+/// Use the cursor directly if you need access to the SortVectors or want to manually control iterating over the batches.
+/// </summary>
+/// <typeparam name="T">The type of the documents in the collection.</typeparam>
 public class Cursor<T>
 {
     private DocumentsResult<T> _currentBatch;
     private Func<string, bool, Task<ApiResponseWithData<DocumentsResult<T>, FindStatusResult>>> FetchNextBatch { get; }
 
+    /// <summary>
+    /// The current batch of results.
+    /// </summary>
     public IEnumerable<T> Current
     {
         get
@@ -41,6 +55,9 @@ public class Cursor<T>
         }
     }
 
+    /// <summary>
+    /// An array containing the sort vectors used for this query.
+    /// </summary>
     public float[] SortVectors { get; internal set; } = Array.Empty<float>();
 
     internal Cursor(Func<string, bool, Task<ApiResponseWithData<DocumentsResult<T>, FindStatusResult>>> fetchNextBatch)
@@ -48,6 +65,13 @@ public class Cursor<T>
         FetchNextBatch = fetchNextBatch;
     }
 
+    /// <summary>
+    /// Synchronously moves the cursor to the next batch of results.
+    /// </summary>
+    /// <returns>True if there are more batches, false otherwise.</returns>
+    /// <remarks>
+    /// The asynchronous version <see cref="MoveNextAsync()"/> of this method is recommended.
+    /// </remarks>
     public bool MoveNext()
     {
         ApiResponseWithData<DocumentsResult<T>, FindStatusResult> nextResult;
@@ -75,6 +99,10 @@ public class Cursor<T>
         return true;
     }
 
+    /// <summary>
+    /// Moves the cursor to the next batch of results.
+    /// </summary>
+    /// <returns>True if there are more batches, false otherwise.</returns>
     public async Task<bool> MoveNextAsync()
     {
         ApiResponseWithData<DocumentsResult<T>, FindStatusResult> nextResult;
@@ -103,8 +131,18 @@ public class Cursor<T>
     }
 }
 
+/// <summary>
+/// Extensions for <see cref="Cursor{T}"/>.
+/// </summary>
 public static class CursorExtensions
 {
+    /// <summary>
+    /// Converts the cursor to an IAsyncEnumerable.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the documents in the collection.</typeparam>
+    /// <param name="cursor">The cursor to convert.</param>
+    /// <param name="cancellationToken">An optional cancellation token.</param>
+    /// <returns>An IAsyncEnumerable containing all of the documents in the cursor.</returns>
     public static async IAsyncEnumerable<TResult> ToAsyncEnumerable<TResult>(this Cursor<TResult> cursor, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         bool hasNext;
@@ -123,6 +161,12 @@ public static class CursorExtensions
         } while (hasNext);
     }
 
+    /// <summary>
+    /// Converts the cursor to an IEnumerable.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the documents in the collection.</typeparam>
+    /// <param name="cursor">The cursor to convert.</param>
+    /// <returns>An IEnumerable containing all of the documents in the cursor.</returns>
     public static IEnumerable<TResult> ToEnumerable<TResult>(this Cursor<TResult> cursor)
     {
         bool hasNext;
@@ -140,6 +184,12 @@ public static class CursorExtensions
         } while (hasNext);
     }
 
+    /// <summary>
+    /// Returns all of the results of the cursor as a List.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the documents in the collection.</typeparam>
+    /// <param name="cursor">The cursor to convert.</param>
+    /// <returns>A List containing all of the documents in the cursor.</returns>
     public static List<TResult> ToList<TResult>(this Cursor<TResult> cursor)
     {
         return ToEnumerable(cursor).ToList();

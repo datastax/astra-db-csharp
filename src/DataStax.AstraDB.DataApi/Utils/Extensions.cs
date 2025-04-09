@@ -24,7 +24,7 @@ using System.Text;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
-public static class Extensions
+internal static class Extensions
 {
     internal static string OrIfEmpty(this string str, string alternate)
     {
@@ -41,7 +41,7 @@ public static class Extensions
         return result;
     }
 
-    public static string GetMemberNameTree<T1, T2>(this Expression<Func<T1, T2>> expression)
+    internal static string GetMemberNameTree<T1, T2>(this Expression<Func<T1, T2>> expression)
     {
         if (expression.Body is MemberExpression memberExpression)
         {

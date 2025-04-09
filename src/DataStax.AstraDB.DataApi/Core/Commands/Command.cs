@@ -19,7 +19,6 @@ using DataStax.AstraDB.DataApi.SerDes;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -30,7 +29,7 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Commands;
 
-public class Command
+internal class Command
 {
     private readonly ILogger _logger;
     private readonly List<CommandOptions> _commandOptionsTree;
@@ -42,7 +41,7 @@ public class Command
     internal object Payload { get; set; }
     internal string UrlPostfix { get; set; }
 
-    public readonly struct EmptyResult { }
+    internal readonly struct EmptyResult { }
 
     private Func<HttpResponseMessage, Task> _responseHandler;
     internal Func<HttpResponseMessage, Task> ResponseHandler { set { _responseHandler = value; } }
@@ -142,14 +141,14 @@ public class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         serializeOptions ??= new JsonSerializerOptions();
-        if (commandOptions.InputConverter != null)
-        {
-            serializeOptions.Converters.Add(commandOptions.InputConverter);
-        }
         serializeOptions.Converters.Add(new ObjectIdConverter());
         serializeOptions.Converters.Add(new SerDes.GuidConverter());
         serializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
         serializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+        if (commandOptions.InputConverter != null)
+        {
+            serializeOptions.Converters.Add(commandOptions.InputConverter);
+        }
         if (log)
         {
             _logger.LogInformation("Serializing {Type} with options {Options}", typeof(T).Name, serializeOptions);

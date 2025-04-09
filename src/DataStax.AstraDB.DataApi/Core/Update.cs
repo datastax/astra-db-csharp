@@ -19,23 +19,11 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class Update<T>
+internal class Update<T>
 {
     internal string UpdateOperator { get; set; }
     internal string FieldName { get; set; }
     internal object FieldValue { get; set; }
-    //internal List<Update<T>> Updates { get; set; }
-
-    // internal Update(List<Update<T>> updates)
-    // {
-    //     Updates = updates;
-    // }
-
-    // internal Update(string filterName, object value)
-    // {
-    //     Name = filterName;
-    //     Value = value;
-    // }
 
     internal Update(string updateOperator, string fieldName, object value)
     {
@@ -46,13 +34,13 @@ public class Update<T>
 
 }
 
-public class AddToSetValue<T>
+internal class AddToSetValue<T>
 {
     [JsonPropertyName("$each")]
     public List<T> Each { get; set; }
 }
 
-public class PushUpdateValue<T>
+internal class PushUpdateValue<T>
 {
     [JsonPropertyName("$each")]
     public List<T> Each { get; set; }

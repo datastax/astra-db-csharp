@@ -18,6 +18,9 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Whether to return the document before or after the replacement.
+/// </summary>
 public enum ReturnDocumentDirective
 {
     Before,

@@ -14,14 +14,14 @@
           "src": "./src"
         }
       ],
-      "dest": "api"
+      "dest": "api-docs"
     }
   ],
   "build": {
     "content": [
       {
         "files": [
-          "api/*.yml"
+          "**/*.{md|yml}"
         ],
         "exclude": [
           "_site/**"
@@ -43,6 +43,7 @@
     "globalMetadata": {
       "_appName": "astra-db-csharp",
       "_appTitle": "astra-db-csharp",
+      "_appLogoPath": "images/logo.svg",
       "_enableSearch": true,
       "pdf": true
     }

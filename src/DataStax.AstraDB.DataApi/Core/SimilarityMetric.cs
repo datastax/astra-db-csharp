@@ -18,6 +18,7 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+
 [JsonConverter(typeof(JsonStringEnumConverter<SimilarityMetric>))]
 public enum SimilarityMetric
 {

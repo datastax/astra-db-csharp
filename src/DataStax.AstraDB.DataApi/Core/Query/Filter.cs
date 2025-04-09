@@ -19,10 +19,15 @@ using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// Filters are used target specific documents in a collection. This class is not used directly,
+/// you can create filters using the <see cref="FilterBuilder{T}"/> class.
+/// </summary>
+/// <typeparam name="T">Type of document in the collection</typeparam>
 public class Filter<T>
 {
-    public virtual object Name { get; }
-    public virtual object Value { get; }
+    internal virtual object Name { get; }
+    internal virtual object Value { get; }
 
     internal Filter(string filterName, object value)
     {
@@ -36,16 +41,51 @@ public class Filter<T>
         Value = new Filter<T>(fieldName, value);
     }
 
+    /// <summary>
+    /// Logical AND operator for combining filters.
+    /// </summary>
+    /// <param name="left">First filter to combine</param>
+    /// <param name="right">Second filter to combine</param>
+    /// <returns>The combined filter</returns>
+    /// <example>
+    /// <code>
+    /// // Find documents where the "field" property equals "value" and "field2" property equals "value2"
+    /// var filter = Filter.Eq("field", "value") &amp; Filter.Eq("field2", "value2");
+    /// </code>
+    /// </example>
     public static Filter<T> operator &(Filter<T> left, Filter<T> right)
     {
         return new LogicalFilter<T>(LogicalOperator.And, new[] { left, right });
     }
 
+    /// <summary>
+    /// Logical OR operator for combining filters.
+    /// </summary>
+    /// <param name="left">First filter to combine</param>
+    /// <param name="right">Second filter to combine</param>
+    /// <returns>The combined filter</returns>
+    /// <example>
+    /// <code>
+    /// // Find documents where the "field" property equals either "value" or "value2"
+    /// var filter = Filter.Eq("field", "value") | Filter.Eq("field", "value2");
+    /// </code>
+    /// </example>
     public static Filter<T> operator |(Filter<T> left, Filter<T> right)
     {
         return new LogicalFilter<T>(LogicalOperator.Or, new[] { left, right });
     }
 
+    /// <summary>
+    /// Logical NOT operator for negating a filter.
+    /// </summary>
+    /// <param name="notFilter">The filter to negate</param>
+    /// <returns>The negated filter</returns>
+    /// <example>
+    /// <code>
+    /// // Find documents where the "field" property does not equal "value"
+    /// var filter = !Filter.Eq("field", "value");
+    /// </code>
+    /// </example>
     public static Filter<T> operator !(Filter<T> notFilter)
     {
         return new LogicalFilter<T>(LogicalOperator.Not, notFilter);

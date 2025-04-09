@@ -21,7 +21,7 @@ using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
-public class Sort
+internal class Sort
 {
     internal const int SortAscending = 1;
     internal const int SortDescending = -1;
@@ -35,25 +35,25 @@ public class Sort
         Value = value;
     }
 
-    public static Sort Ascending(string field) => new(field, SortAscending);
+    internal static Sort Ascending(string field) => new(field, SortAscending);
 
-    public static Sort Descending(string field) => new(field, SortDescending);
+    internal static Sort Descending(string field) => new(field, SortDescending);
 
-    public static Sort Vector(float[] vector) => new(DataApiKeywords.Vector, vector);
+    internal static Sort Vector(float[] vector) => new(DataApiKeywords.Vector, vector);
 
-    public static Sort Vectorize(string valueToVectorize) => new(DataApiKeywords.Vectorize, valueToVectorize);
+    internal static Sort Vectorize(string valueToVectorize) => new(DataApiKeywords.Vectorize, valueToVectorize);
 }
 
-public class Sort<T> : Sort
+internal class Sort<T> : Sort
 {
     internal Sort(string sortKey, object value) : base(sortKey, value) { }
 
-    public static Sort Ascending<TField>(Expression<Func<T, TField>> expression)
+    internal static Sort Ascending<TField>(Expression<Func<T, TField>> expression)
     {
         return new Sort<T>(expression.GetMemberNameTree(), SortAscending);
     }
 
-    public static Sort Descending<TField>(Expression<Func<T, TField>> expression)
+    internal static Sort Descending<TField>(Expression<Func<T, TField>> expression)
     {
         return new Sort<T>(expression.GetMemberNameTree(), SortDescending);
     }

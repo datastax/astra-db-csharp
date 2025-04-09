@@ -20,15 +20,27 @@ namespace DataStax.AstraDB.DataApi.Core;
 
 public class VectorServiceOptions
 {
+    /// <summary>
+    /// The provider for vectorization
+    /// </summary>
     [JsonPropertyName("provider")]
     public string Provider { get; set; }
 
+    /// <summary>
+    /// The name of the model to use
+    /// </summary>
     [JsonPropertyName("modelName")]
     public string ModelName { get; set; }
 
+    /// <summary>
+    /// Authentication details for the vectorization provider
+    /// </summary>
     [JsonPropertyName("authentication")]
     public Dictionary<string, object> Authentication { get; set; }
 
+    /// <summary>
+    /// Additional parameters for the vectorization provider
+    /// </summary>
     [JsonPropertyName("parameters")]
     public Dictionary<string, object> Parameters { get; set; }
 }

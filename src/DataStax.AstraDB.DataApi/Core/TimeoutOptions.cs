@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
-
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class VectorServiceParameters
+public class TimeoutOptions
 {
-    [JsonPropertyName("type")]
-    public string Type { get; set; }
-
-    [JsonPropertyName("required")]
-    public bool? Required { get; set; }
-
-    [JsonPropertyName("default")]
-    public object DefaultValue { get; set; }
-
-    [JsonPropertyName("help")]
-    public string Help { get; set; }
-
+    public int ConnectTimeoutMillis { get; set; } = 5000;
+    public int RequestTimeoutMillis { get; set; } = 30000;
 }

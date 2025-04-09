@@ -18,14 +18,26 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Vector options for a collection definition
+/// </summary>
 public class VectorOptions
 {
+    /// <summary>
+    /// The dimension of the vector
+    /// </summary>
     [JsonPropertyName("dimension")]
     public int? Dimension { get; set; }
 
+    /// <summary>
+    /// The similarity metric to use
+    /// </summary>
     [JsonPropertyName("metric")]
     public SimilarityMetric Metric { get; set; }
 
+    /// <summary>
+    /// Options for the service providing the vectorization
+    /// </summary>
     [JsonPropertyName("service")]
     public VectorServiceOptions Service { get; set; }
 }

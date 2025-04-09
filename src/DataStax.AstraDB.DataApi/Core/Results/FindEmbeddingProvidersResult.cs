@@ -18,9 +18,13 @@ using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
+/// <summary>
+/// The result of a find embedding providers operation.
+/// </summary>
 public class FindEmbeddingProvidersResult
 {
+    /// <summary>
+    /// A dictionary of embedding provider names to <see cref="EmbeddingProvider"/> details.
+    /// </summary>
     public Dictionary<string, EmbeddingProvider> EmbeddingProviders { get; set; } = new();
-
-    public FindEmbeddingProvidersResult() { }
 }

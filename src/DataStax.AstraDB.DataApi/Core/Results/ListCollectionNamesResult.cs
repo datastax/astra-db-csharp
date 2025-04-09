@@ -19,8 +19,14 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
+/// <summary>
+/// The result object for an operation returning a list of collection names.
+/// </summary>
 public class ListCollectionNamesResult
 {
+    /// <summary>
+    /// A list of collection names.
+    /// </summary>
     [JsonPropertyName("collections")]
     public List<string> CollectionNames { get; set; }
 }

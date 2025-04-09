@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
+using System;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class DatabaseOptions : CommandOptions
+/// <summary>
+/// Options for the HTTP client used by the Data API.
+/// </summary>
+public class HttpClientOptions
 {
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
+    /// <summary>
+    /// The version of HTTP to use.
+    /// </summary>
+    public Version HttpVersion { get; set; } = new Version(2, 0);
+
+    /// <summary>
+    /// Whether the HTTP client should follow redirects or not.
+    /// </summary>
+    public bool FollowRedirects { get; set; } = true;
 }

@@ -21,23 +21,100 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// A set of options to be used when finding documents in a collection.
+/// </summary>
+/// <typeparam name="T">The type of the documents in the collection.</typeparam>
 public class FindOptions<T>
 {
+    /// <summary>
+    /// The builder used to define the sort to apply when running the query.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// // Sort documents by the nested Properties.PropertyOne field in ascending order
+    /// var sortBuilder = Builders&lt;SimpleObject&gt;.Sort;
+    /// var sort = sortBuilder.Ascending(so =&gt; so.Properties.PropertyOne);
+    /// </code>
+    /// </example>
     [JsonIgnore]
     public SortBuilder<T> Sort { get; set; }
 
+    /// <summary>
+    /// The builder used to define the Projection to apply when running the query.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// // Inclusive Projection, return only the nested Properties.PropertyOne field
+    /// var projectionBuilder = Builders&lt;SimpleObject&gt;.Projection;
+    /// var projection = projectionBuilder.Include(p =&gt; p.Properties.PropertyOne);
+    /// </code>
+    /// </example>
     [JsonIgnore]
     public IProjectionBuilder Projection { get; set; }
 
+    /// <summary>
+    /// The number of documents to skip before starting to return documents.
+    /// Use in conjuction with <see cref="Sort"/> to determine the order to apply before skipping. 
+    /// </summary>
     [JsonIgnore]
     public int? Skip { get; set; }
 
+    /// <summary>
+    /// The number of documents to return.
+    /// </summary>
     [JsonIgnore]
     public int? Limit { get; set; }
 
+    /// <summary>
+    /// Whether to include the similarity score in the result or not
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// You can use the attribute <see cref="SerDes.DocumentMappingAttribute"/> to map the similarity score to the result class.
+    /// public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
+    /// {
+    ///     [DocumentMapping(DocumentMappingField.Similarity)]
+    ///     public double? Similarity { get; set; }
+    /// }
+    /// 
+    /// var finder = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;(
+    ///     new FindOptions&lt;SimpleObjectWithVectorize&gt;() { 
+    ///         Sort = Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString), 
+    ///         IncludeSimilarity = true 
+    ///     }, null);
+    /// var cursor = finder.ToCursor();
+    /// var list = cursor.ToList();
+    /// var result = list.First();
+    /// var similarity = result.Similarity;
+    /// </code>
+    /// </example>
     [JsonIgnore]
     public bool? IncludeSimilarity { get; set; }
 
+    /// <summary>
+    /// Whether to include the sort vector in the result or not
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// You can use the attribute <see cref="SerDes.DocumentMappingAttribute"/> to map the sort vector to the result class.
+    /// public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
+    /// {
+    ///     [DocumentMapping(DocumentMappingField.SortVector)]
+    ///     public double? SortVector { get; set; }
+    /// }
+    /// 
+    /// var finder = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;(
+    ///     new FindOptions&lt;SimpleObjectWithVectorize&gt;() { 
+    ///         Sort = Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString), 
+    ///         IncludeSortVector = true 
+    ///     }, null);
+    /// var cursor = finder.ToCursor();
+    /// var list = cursor.ToList();
+    /// var result = list.First();
+    /// var sortVector = result.SortVector;
+    /// </code>
+    /// </example>
     [JsonIgnore]
     public bool? IncludeSortVector { get; set; }
 

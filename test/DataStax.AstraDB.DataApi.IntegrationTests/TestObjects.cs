@@ -30,8 +30,6 @@ public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
 {
     [DocumentMapping(DocumentMappingField.Similarity)]
     public double? Similarity { get; set; }
-    [DocumentMapping(DocumentMappingField.SortVector)]
-    public float[] Vector { get; set; }
 }
 
 public class SimpleObjectWithObjectId

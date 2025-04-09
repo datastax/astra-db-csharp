@@ -19,7 +19,7 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-internal class InsertDocumentsCommandResponse<T>
+public class InsertDocumentsCommandResponse<T>
 {
     [JsonPropertyName("insertedIds")]
     public List<T> InsertedIds { get; set; }

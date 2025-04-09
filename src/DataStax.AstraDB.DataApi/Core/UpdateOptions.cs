@@ -21,6 +21,10 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Base class for update options.
+/// </summary>
+/// <typeparam name="T">The type of the documents in the collection.</typeparam>
 public abstract class UpdateOptions<T> where T : class
 {
   [JsonInclude]
@@ -58,8 +62,15 @@ internal class UpdateOptionsParameters
   internal string NextPageState { get; set; }
 }
 
+/// <summary>
+/// Options for FindOneAndUpdate operations
+/// </summary>
+/// <typeparam name="T">The type of the documents in the collection.</typeparam>
 public class FindOneAndUpdateOptions<T> : UpdateOptions<T> where T : class
 {
+  /// <summary>
+  /// The sort order to use when determining the document to update.
+  /// </summary>
   [JsonIgnore]
   public SortBuilder<T> Sort { get; set; }
 
@@ -68,6 +79,9 @@ public class FindOneAndUpdateOptions<T> : UpdateOptions<T> where T : class
   [JsonPropertyName("sort")]
   internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.Sorts.ToDictionary(x => x.Name, x => x.Value);
 
+  /// <summary>
+  /// The Projection to use to define the fields to return.
+  /// </summary>
   [JsonIgnore]
   public IProjectionBuilder Projection { get; set; }
 
@@ -76,7 +90,9 @@ public class FindOneAndUpdateOptions<T> : UpdateOptions<T> where T : class
   [JsonPropertyName("projection")]
   internal Dictionary<string, object> ProjectionMap => Projection == null ? null : Projection.Projections.ToDictionary(x => x.FieldName, x => x.Value);
 
-
+  /// <summary>
+  /// Whether to insert a new document if the filter does not match any documents.
+  /// </summary>
   [JsonIgnore]
   public bool Upsert
   {
@@ -84,6 +100,9 @@ public class FindOneAndUpdateOptions<T> : UpdateOptions<T> where T : class
     set => Parameters.Upsert = value;
   }
 
+  /// <summary>
+  /// Whether to return the original document or the updated document.
+  /// </summary>
   [JsonIgnore]
   public ReturnDocumentDirective? ReturnDocument
   {
@@ -91,8 +110,15 @@ public class FindOneAndUpdateOptions<T> : UpdateOptions<T> where T : class
   }
 }
 
+/// <summary>
+/// Options for UpdateOne operations
+/// </summary>
+/// <typeparam name="T">The type of the documents in the collection.</typeparam>
 public class UpdateOneOptions<T> : UpdateOptions<T> where T : class
 {
+  /// <summary>
+  /// The sort order to use when determining the document to update.
+  /// </summary>
   [JsonIgnore]
   public SortBuilder<T> Sort { get; set; }
 
@@ -101,6 +127,9 @@ public class UpdateOneOptions<T> : UpdateOptions<T> where T : class
   [JsonPropertyName("sort")]
   internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.Sorts.ToDictionary(x => x.Name, x => x.Value);
 
+  /// <summary>
+  /// Whether to insert a new document if the filter does not match any documents.
+  /// </summary>
   [JsonIgnore]
   public bool Upsert
   {
@@ -109,8 +138,15 @@ public class UpdateOneOptions<T> : UpdateOptions<T> where T : class
   }
 }
 
+/// <summary>
+/// Options for UpdateMany operations
+/// </summary>
+/// <typeparam name="T">The type of the documents in the collection.</typeparam>
 public class UpdateManyOptions<T> : UpdateOptions<T> where T : class
 {
+  /// <summary>
+  /// Whether to insert a new document if the filter does not match any documents.
+  /// </summary>
   [JsonIgnore]
   public bool Upsert
   {
