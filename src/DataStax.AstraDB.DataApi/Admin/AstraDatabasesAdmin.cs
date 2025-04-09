@@ -30,7 +30,9 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// Provides administrative operations for Astra databases.
 /// </summary>
 /// <example>
+/// <code>
 /// var admin = new AstraDatabasesAdmin(client, adminOptions);
+/// </code>
 /// </example>
 public class AstraDatabasesAdmin
 {
@@ -53,7 +55,9 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <returns>A list of database names.</returns>
     /// <example>
+    /// <code>
     /// var names = admin.ListDatabaseNames();
+    /// </code>
     /// </example>
     public List<string> ListDatabaseNames()
     {
@@ -65,7 +69,9 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <returns>A task that resolves to a list of database names.</returns>
     /// <example>
+    /// <code>
     /// var names = await admin.ListDatabaseNamesAsync();
+    /// </code>
     /// </example>
     public async Task<List<string>> ListDatabaseNamesAsync()
     {
@@ -79,7 +85,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A list of database names.</returns>
     /// <example>
+    /// <code>
     /// var names = admin.ListDatabaseNames(options);
+    /// </code>
     /// </example>
     public List<string> ListDatabaseNames(CommandOptions options)
     {
@@ -92,7 +100,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A task that resolves to a list of database names.</returns>
     /// <example>
+    /// <code>
     /// var names = await admin.ListDatabaseNamesAsync(options);
+    /// </code>
     /// </example>
     public async Task<List<string>> ListDatabaseNamesAsync(CommandOptions options)
     {
@@ -105,7 +115,9 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <returns>A list of DatabaseInfo objects.</returns>
     /// <example>
+    /// <code>
     /// var databases = admin.ListDatabases();
+    /// </code>
     /// </example>
     public List<DatabaseInfo> ListDatabases()
     {
@@ -116,8 +128,10 @@ public class AstraDatabasesAdmin
     /// Asynchronously returns a list of database info objects.
     /// </summary>
     /// <returns>A task that resolves to a list of DatabaseInfo objects.</returns>
-    /// <example>
+    /// <example>   
+    /// <code>
     /// var databases = await admin.ListDatabasesAsync();
+    /// </code>
     /// </example>
     public Task<List<DatabaseInfo>> ListDatabasesAsync()
     {
@@ -130,7 +144,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A list of DatabaseInfo objects.</returns>
     /// <example>
+    /// <code>
     /// var databases = admin.ListDatabases(options);
+    /// </code>
     /// </example>
     public List<DatabaseInfo> ListDatabases(CommandOptions options)
     {
@@ -143,7 +159,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A task that resolves to a list of DatabaseInfo objects.</returns>
     /// <example>
+    /// <code>
     /// var databases = await admin.ListDatabasesAsync(options);
+    /// </code>
     /// </example>
     public Task<List<DatabaseInfo>> ListDatabasesAsync(CommandOptions options)
     {
@@ -166,7 +184,9 @@ public class AstraDatabasesAdmin
     /// <param name="databaseName">The database name to check.</param>
     /// <returns>True if the database exists; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool exists = admin.DoesDatabaseExist("myDatabase");
+    /// </code>
     /// </example>
     public bool DoesDatabaseExist(string databaseName)
     {
@@ -181,7 +201,9 @@ public class AstraDatabasesAdmin
     /// <param name="databaseName">The database name to check.</param>
     /// <returns>A task that resolves to true if the database exists; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool exists = await admin.DoesDatabaseExistAsync("myDatabase");
+    /// </code>
     /// </example>
     public async Task<bool> DoesDatabaseExistAsync(string databaseName)
     {
@@ -196,7 +218,9 @@ public class AstraDatabasesAdmin
     /// <param name="dbGuid">The database GUID to check.</param>
     /// <returns>True if the database exists; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool exists = admin.DoesDatabaseExist(new Guid("..."));
+    /// </code>
     /// </example>
     public bool DoesDatabaseExist(Guid dbGuid)
     {
@@ -212,7 +236,9 @@ public class AstraDatabasesAdmin
     /// <param name="dbGuid">The database GUID to check.</param>
     /// <returns>A task that resolves to true if the database exists; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool exists = await admin.DoesDatabaseExistAsync(new Guid("..."));
+    /// </code>
     /// </example>
     public async Task<bool> DoesDatabaseExistAsync(Guid dbGuid)
     {
@@ -229,7 +255,9 @@ public class AstraDatabasesAdmin
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
+    /// <code>
     /// var adminDb = admin.CreateDatabase("myDatabase");
+    /// </code>
     /// </example>
     public IDatabaseAdmin CreateDatabase(string databaseName, bool waitForDb = true)
     {
@@ -244,7 +272,9 @@ public class AstraDatabasesAdmin
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
+    /// <code>
     /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions { Name = "myDatabase" });
+    /// </code>
     /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, bool waitForDb = true)
     {
@@ -259,7 +289,9 @@ public class AstraDatabasesAdmin
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
+    /// <code>
     /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions { Name = "myDatabase" }, commandOptions);
+    /// </code>
     /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions, bool waitForDb = true)
     {
@@ -273,7 +305,9 @@ public class AstraDatabasesAdmin
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
+    /// <code>
     /// var adminDb = await admin.CreateDatabaseAsync("myDatabase");
+    /// </code>
     /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(string databaseName, bool waitForDb = true)
     {
@@ -288,7 +322,9 @@ public class AstraDatabasesAdmin
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
+    /// <code>
     /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions { Name = "myDatabase" });
+    /// </code>
     /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb = true)
     {
@@ -303,7 +339,9 @@ public class AstraDatabasesAdmin
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
+    /// <code>
     /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions { Name = "myDatabase" }, commandOptions);
+    /// </code>
     /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb = true)
     {
@@ -446,7 +484,9 @@ public class AstraDatabasesAdmin
     /// <param name="databaseName">The name of the database to drop.</param>
     /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = admin.DropDatabase("myDatabase");
+    /// </code>
     /// </example>
     public bool DropDatabase(string databaseName)
     {
@@ -459,7 +499,9 @@ public class AstraDatabasesAdmin
     /// <param name="dbGuid">The GUID of the database to drop.</param>
     /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = admin.DropDatabase(new Guid("..."));
+    /// </code>
     /// </example>
     public bool DropDatabase(Guid dbGuid)
     {
@@ -473,7 +515,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = admin.DropDatabase("myDatabase", options);
+    /// </code>
     /// </example>
     public bool DropDatabase(string databaseName, CommandOptions options)
     {
@@ -487,7 +531,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = admin.DropDatabase(new Guid("..."), options);
+    /// </code>
     /// </example>
     public bool DropDatabase(Guid dbGuid, CommandOptions options)
     {
@@ -500,7 +546,9 @@ public class AstraDatabasesAdmin
     /// <param name="databaseName">The name of the database to drop.</param>
     /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = await admin.DropDatabaseAsync("myDatabase");
+    /// </code>
     /// </example>
     public Task<bool> DropDatabaseAsync(string databaseName)
     {
@@ -513,7 +561,9 @@ public class AstraDatabasesAdmin
     /// <param name="dbGuid">The GUID of the database to drop.</param>
     /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = await admin.DropDatabaseAsync(new Guid("..."));
+    /// </code>
     /// </example>
     public Task<bool> DropDatabaseAsync(Guid dbGuid)
     {
@@ -527,7 +577,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = await admin.DropDatabaseAsync("myDatabase", options);
+    /// </code>
     /// </example>
     public Task<bool> DropDatabaseAsync(string databaseName, CommandOptions options)
     {
@@ -541,7 +593,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
+    /// <code>
     /// bool dropped = await admin.DropDatabaseAsync(new Guid("..."), options);
+    /// </code>
     /// </example>
     public Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options)
     {
@@ -598,7 +652,9 @@ public class AstraDatabasesAdmin
     /// <param name="dbGuid">The GUID of the database.</param>
     /// <returns>A DatabaseInfo object.</returns>
     /// <example>
+    /// <code>
     /// var info = admin.GetDatabaseInfo(new Guid("..."));
+    /// </code>
     /// </example>
     public DatabaseInfo GetDatabaseInfo(Guid dbGuid)
     {
@@ -611,7 +667,9 @@ public class AstraDatabasesAdmin
     /// <param name="dbGuid">The GUID of the database.</param>
     /// <returns>A task that resolves to a DatabaseInfo object.</returns>
     /// <example>
+    /// <code>
     /// var info = await admin.GetDatabaseInfoAsync(new Guid("..."));
+    /// </code>
     /// </example>
     public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid)
     {
@@ -625,7 +683,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A DatabaseInfo object.</returns>
     /// <example>
+    /// <code>
     /// var info = admin.GetDatabaseInfo(new Guid("..."), options);
+    /// </code>
     /// </example>
     public DatabaseInfo GetDatabaseInfo(Guid dbGuid, CommandOptions options)
     {
@@ -639,7 +699,9 @@ public class AstraDatabasesAdmin
     /// <param name="options">The command options to use.</param>
     /// <returns>A task that resolves to a DatabaseInfo object.</returns>
     /// <example>
+    /// <code>
     /// var info = await admin.GetDatabaseInfoAsync(new Guid("..."), options);
+    /// </code>
     /// </example>
     public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, CommandOptions options)
     {
