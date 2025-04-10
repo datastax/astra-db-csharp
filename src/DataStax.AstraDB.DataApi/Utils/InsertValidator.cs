@@ -18,15 +18,14 @@
 using DataStax.AstraDB.DataApi.SerDes;
 using MongoDB.Bson;
 using System;
-using System.Collections;
 using System.Linq;
 using System.Reflection;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
-public static class InsertValidator
+internal static class InsertValidator
 {
-    public static T Validate<T>(T document)
+    internal static T Validate<T>(T document)
     {
         if (document == null)
             throw new ArgumentNullException(nameof(document), "Document cannot be null.");

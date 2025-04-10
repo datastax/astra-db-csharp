@@ -18,10 +18,17 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
+/// <summary>
+/// The result of a delete operation.
+/// </summary>
 public class DeleteResult
 {
+    /// <summary>
+    /// The number of documents deleted.
+    /// </summary>
     [JsonPropertyName("deletedCount")]
     public int DeletedCount { get; set; }
+
     [JsonInclude]
     [JsonPropertyName("moreData")]
     internal bool MoreData { get; set; } = false;

@@ -19,11 +19,22 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Options for indexing the documents in a collection.
+/// Please read the <see href="https://docs.datastax.com/en/astra-db-serverless/api-reference/collection-indexes.html">Data API documentation</see>
+/// before setting specific indexing options.
+/// </summary>
 public class IndexingOptions
 {
+    /// <summary>
+    /// List of field names to exclude from indexing.
+    /// </summary>
     [JsonPropertyName("deny")]
     public List<string> Deny { get; set; }
 
+    /// <summary>
+    /// List of field names to include in indexing.
+    /// </summary>
     [JsonPropertyName("allow")]
     public List<string> Allow { get; set; }
 }

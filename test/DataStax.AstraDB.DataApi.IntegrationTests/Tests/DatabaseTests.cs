@@ -1,4 +1,5 @@
 using DataStax.AstraDB.DataApi;
+using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using Xunit;
@@ -13,6 +14,40 @@ public class DatabaseTests
     public DatabaseTests(CollectionsFixture fixture)
     {
         this.fixture = fixture;
+    }
+
+    [Fact]
+    public async Task KeyspaceTests()
+    {
+        var collectionName = "simpleTestKeyspaceCollection";
+        var keyspaceName = "simpleTestKeyspace";
+        var databaseWithKeyspace = fixture.Client.GetDatabase(fixture.DatabaseUrl, keyspaceName);
+        var admin = databaseWithKeyspace.GetAdmin();
+        try
+        {
+            var dbOptions = new DatabaseCommandOptions
+            {
+                Keyspace = keyspaceName
+            };
+            await Assert.ThrowsAnyAsync<Exception>(async () => await fixture.Database.CreateCollectionAsync(collectionName, dbOptions));
+            //create keyspace
+
+            await admin.CreateKeyspaceAsync(keyspaceName);
+            Thread.Sleep(30 * 1000);
+            //passed-in dboptions should override keyspace and creation should work
+            await fixture.Database.CreateCollectionAsync(collectionName, dbOptions);
+            var collections = await databaseWithKeyspace.ListCollectionsAsync();
+            var collection = collections.FirstOrDefault(c => c.Name == collectionName);
+            Assert.NotNull(collection);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+            if (admin != null)
+            {
+                await admin.DropKeyspaceAsync(keyspaceName);
+            }
+        }
     }
 
     [Fact]
@@ -45,7 +80,7 @@ public class DatabaseTests
     {
         var collectionName = "simpleCollectionCanceled";
         var cts = new CancellationTokenSource();
-        var commandOptions = new CommandOptions
+        var commandOptions = new DatabaseCommandOptions
         {
             CancellationToken = cts.Token
         };
@@ -207,7 +242,7 @@ public class DatabaseTests
     public async Task ListCollectionNamesAsync_WithCommandOptions_ShouldReturnCollectionNames()
     {
         await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
-        var commandOptions = new CommandOptions { /* Initialize with necessary options */ };
+        var commandOptions = new DatabaseCommandOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);

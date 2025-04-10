@@ -1,0 +1,143 @@
+= C# client usage
+:description: Guidance for using the {data-api} C# client.
+
+This page provides language-specific guidance for using the data-api C# client.
+
+For information about installing and getting started with the C# client, see ???.
+
+== Terminology
+
+The Data API stores structured data as `Documents` which are essentially key-value pairs. In the C# client these documents will be represented by C# classes (POCOs) or, at the lowest level, by dictionaries. When we refer to "fields" or "properties" we are referring to these key-value pairs and/or their representative members in the C# classes, not specifying the C# implementation.
+
+== Client hierarchy
+
+All interactions with the data begin with a DataApiClient object.
+
+Once you have an instance of a `DataAPIClient`, you can use it to get an instance of a `Database` object, which can be used to manage and access `Collection` objects which are themselves used to interact with the actual documents.
+
+[source,c#]
+----
+//instantiate a client
+var client = new DataApiClient("YourTokenHere");
+
+//connect to a database
+var database = client.GetDatabase("YourDatabaseUrlHere");
+
+//create a new collection
+var collection = await database.CreateCollectionAsync<SimpleObject>("YourCollectionNameHere");
+
+//insert a document into the collection
+var newObject = new SimpleObject()
+{
+    Name = "Test Object 1",
+};
+var insertResult = await collection.InsertOneAsync(newObject);
+var insertedId = insertResult.InsertedId;
+----
+
+=== Command Options
+
+The `CommandOptions` class provides a set of low-level options to control the interactions with the underlying data store.
+
+These options can be provided at any level of the SDK hierarchy:
+
+* `DataApiClient`
+** `Database`
+*** `Collection`
+
+as well as directly to each of the methods. You can provide different options objects at each level. The options specified at the most granular level will take precedence.
+
+== Serialization and Deserialization
+
+=== Default Behavior
+
+The C# client uses System.Text.Json to handle serializing the documents to JSON to send to the underlying datastore and to deserialize resultant documents back into C# objects. As such, you can use standard System.Text.Json attributes to affect the serialization and deserialization behavior. For example, you can use the `JsonIgnore` attribute to exclude a property from serialization and deserialization.
+
+[source,c#]
+----
+public class MyDocument
+{
+    public int? _id { get; set; }
+    public string Name { get; set; }
+    //This property will not be serialized or deserialized
+    [JsonIgnore]
+    public InternalProperty { get; set; }
+}
+----
+
+=== Special Fields
+
+While most of the properties passed to the data store are simply serialized to JSON and stored, there are several reserved fields that have special handling. These special fields are identified on your documents by using the `DocumentMappingAttribute`.
+
+The most commonly used special field is `_id`, which is the primary key for the document and is required -- if not provided it will be added by the Data API when storing the document. The Data API can handle multiple types for the `_id` field ([Include link here to documentation on the supported types]). The C# class defining your document can either specifically name a property `_id` or use `DocumentMappingAttribute(DocumentMappingField.Id)` to specify which property should be used as the id.
+
+[source,c#]
+----
+//This document will use the default id property name
+public class DocumentWithDefaultId
+{
+    public int _id { get; set; }
+}
+
+//This document will use a custom id property name
+public class CustomIdProperty
+{
+    [DocumentMapping(DocumentMappingField.Id)]
+    public Guid ThisIsTheId { get; set; }
+}
+----
+
+The other field mappings are:
+
+* `DocumentMappingField.Vectorize` - When you want a document to have embeddings automatically generated (based on the vectorize settings for the collection), use this field mapping to specify the text to be vectorized for this document.
+
+* `DocumentMappingField.Vector` - When you generate your own embeddings for a document, these are passed to the Data API through a float array annotated with this field mapping.
+
+* `DocumentMappingField.Similarity` - When performing a vector search on the data, you can specify to include a similarity score for the results. Include this field mapping on a property of the class receiving the results to store the similarity score.
+
+== Handling List Results
+
+For the operations that return a list of documents (i.e. the Find variants), the underlying data is returned in batches by the Data API. The most straightforward way to interact with the data is to simply iterate over the results as an `IAsyncEnumerable<T>` or `IEnumerable<T>`. The enumerable implementations will handle the batch iteration internally.
+
+You can also at this point use all of the standard IEnumerable extensions (e.g. `Skip`, `Take`, `Where`, etc.) to further filter and process the results.
+
+[source,c#]
+----
+// find all documents       
+var results = collection.Find();
+
+// synchronous example
+foreach (var doc in results) {
+    // do something
+}
+
+// asynchronous example
+await foreach (var doc in results)
+{
+    // do something
+}
+----
+
+If you need to manually control the batch iteration, you can use the `Cursor` class by calling ToCursor() on the results.
+
+[source,c#]
+----
+// find all documents
+var cursor = collection.Find().ToCursor();
+
+// synchronous example
+while (cursor.MoveNext())
+{
+    var batch = cursor.Current;
+    foreach (var doc in batch) {
+        // do something
+    }
+}
+
+// asynchronous example
+while (await cursor.MoveNextAsync())
+{
+    var batch = cursor.Current;
+    // do something with batch
+}
+----

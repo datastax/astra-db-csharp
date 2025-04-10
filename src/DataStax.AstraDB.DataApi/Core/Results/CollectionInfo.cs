@@ -18,11 +18,20 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
+/// <summary>
+/// Information about a collection in a database.
+/// </summary>
 public class CollectionInfo
 {
+    /// <summary>
+    /// The name of the collection.
+    /// </summary>
     [JsonPropertyName("name")]
     public string Name { get; set; }
 
+    /// <summary>
+    /// The options for the collection.
+    /// </summary>
     [JsonPropertyName("options")]
     public CollectionDefinition Options { get; set; }
 }

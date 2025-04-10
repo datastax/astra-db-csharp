@@ -18,6 +18,9 @@ using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
+/// <summary>
+/// A provider for embeddings.
+/// </summary>
 public class EmbeddingProvider
 {
     public const string AuthenticationMethodNone = "NONE";

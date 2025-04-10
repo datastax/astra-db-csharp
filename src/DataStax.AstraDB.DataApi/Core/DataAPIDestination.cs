@@ -14,29 +14,16 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core.Commands;
-using System;
+namespace DataStax.AstraDB.DataApi.Core;
 
-namespace DataStax.AstraDB.DataApi.Query;
-
-public enum SpecialField
+/// <summary>
+/// The data source to connect to.
+/// </summary>
+public enum DataApiDestination
 {
-    Vectorize,
-    Vector,
-    Id
-}
-
-public static class SpecialFieldExtensions
-{
-    public static string ToString(this SpecialField specialField)
-    {
-        return specialField switch
-        {
-            SpecialField.Vectorize => DataApiKeywords.Vectorize,
-            SpecialField.Vector => DataApiKeywords.Vector,
-            SpecialField.Id => DataApiKeywords.Id,
-            _ => throw new ArgumentOutOfRangeException(),
-        };
-
-    }
+    ASTRA,
+    DSE,
+    HCD,
+    CASSANDRA,
+    OTHERS
 }

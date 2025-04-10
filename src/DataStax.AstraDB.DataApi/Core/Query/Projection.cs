@@ -17,12 +17,12 @@
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 
-public class Projection
+internal class Projection
 {
-    public string FieldName { get; set; }
-    public bool Include { get; set; }
-    public int? SliceStart { get; set; }
-    public int? SliceEnd { get; set; }
+    internal string FieldName { get; set; }
+    internal bool Include { get; set; }
+    internal int? SliceStart { get; set; }
+    internal int? SliceEnd { get; set; }
 
     internal object Value
     {

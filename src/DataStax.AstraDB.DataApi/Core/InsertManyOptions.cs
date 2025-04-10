@@ -16,12 +16,25 @@
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Options for inserting multiple documents into a collection.
+/// </summary>
 public class InsertManyOptions
 {
+    /// <summary>
+    /// Default batch size.
+    /// </summary>
     public const int DefaultChunkSize = 50;
+
+    /// <summary>
+    /// Maximum concurrency.
+    /// </summary>
     public const int MaxConcurrency = int.MaxValue;
 
     private bool _insertInOrder = false;
+    /// <summary>
+    /// Whether to insert documents in order or not.
+    /// </summary>
     public bool InsertInOrder
     {
         get => _insertInOrder;
@@ -31,6 +44,14 @@ public class InsertManyOptions
             _insertInOrder = value;
         }
     }
+    /// <summary>
+    /// The number of parallel processes to use while inserting documents.
+    /// Must be set to 1 for ordered inserts.
+    /// </summary>
     public int Concurrency { get; set; } = MaxConcurrency;
+
+    /// <summary>
+    /// The number of documents to insert in each batch.
+    /// </summary>
     public int ChunkSize { get; set; } = DefaultChunkSize;
 }

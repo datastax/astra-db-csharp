@@ -21,6 +21,10 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Options for deleting documents from a collection
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class DeleteOptions<T> where T : class
 {
   internal Filter<T> Filter { get; set; }
@@ -29,6 +33,9 @@ public class DeleteOptions<T> where T : class
   [JsonPropertyName("filter")]
   internal Dictionary<string, object> FilterMap => Filter == null ? new Dictionary<string, object>() : Filter.Serialize();
 
+  /// <summary>
+  /// Define the sort to apply before the delete operation
+  /// </summary>
   [JsonIgnore]
   public SortBuilder<T> Sort { get; set; }
 
@@ -38,8 +45,15 @@ public class DeleteOptions<T> where T : class
   internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.Sorts.ToDictionary(x => x.Name, x => x.Value);
 }
 
+/// <summary>
+/// Options for finding and deleting a single document from a collection
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class FindOneAndDeleteOptions<T> : DeleteOptions<T> where T : class
 {
+  /// <summary>
+  /// Define the projection to apply on the returned document
+  /// </summary>
   [JsonIgnore]
   public IProjectionBuilder Projection { get; set; }
 
@@ -49,7 +63,7 @@ public class FindOneAndDeleteOptions<T> : DeleteOptions<T> where T : class
   internal Dictionary<string, object> ProjectionMap => Projection == null ? null : Projection.Projections.ToDictionary(x => x.FieldName, x => x.Value);
 }
 
-public class DeleteManyOptions<T> where T : class
+internal class DeleteManyOptions<T> where T : class
 {
   internal Filter<T> Filter { get; set; }
 

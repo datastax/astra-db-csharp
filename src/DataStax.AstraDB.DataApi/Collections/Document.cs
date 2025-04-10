@@ -22,12 +22,18 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
+/// <summary>
+/// A base document represented by a dictionary of string keys and object values.
+/// </summary>
 [JsonConverter(typeof(DocumentDictionaryConverter))]
 public class Document : Dictionary<string, object>
 {
 
 }
 
+/// <summary>
+/// A custom JSON converter for the <see cref="Document"/> class.
+/// </summary>
 public class DocumentDictionaryConverter : JsonConverter<Document>
 {
     public override Document Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

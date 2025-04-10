@@ -18,8 +18,8 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-public class FindStatusResult
+internal class FindStatusResult
 {
     [JsonPropertyName("sortVector")]
-    public float[] SortVector { get; set; }
+    internal float[] SortVector { get; set; }
 }

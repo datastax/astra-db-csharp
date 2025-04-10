@@ -18,11 +18,12 @@ namespace DataStax.AstraDB.DataApi.SerDes;
 
 using MongoDB.Bson;
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-
+/// <summary>
+/// A custom converter to handle serialization and deserialization of ObjectId values
+/// </summary>
 public class ObjectIdConverter : JsonConverter<ObjectId>
 {
     public override ObjectId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

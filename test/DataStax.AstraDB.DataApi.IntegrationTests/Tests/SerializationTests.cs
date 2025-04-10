@@ -53,6 +53,40 @@ public class SerializationTests
 	}
 
 	[Fact]
+	public void TestTypeSerializationDeserialization_WithDocumentSerializer()
+	{
+		var collection = _database.GetCollection<SerializationTest>("serializationTest");
+		var testObject = new SerializationTest()
+		{
+			TestId = 1,
+			NestedProperties = new Properties()
+			{
+				PropertyOne = "One",
+				PropertyTwo = "Two",
+				IntProperty = 1,
+				StringArrayProperty = new string[] { "One", "Two", "Three" },
+				BoolProperty = true,
+				DateTimeProperty = DateTime.Now,
+				DateTimeOffsetProperty = DateTimeOffset.Now,
+				SkipWhenNull = null
+			}
+		};
+		var commandOptions = new CommandOptions();
+		commandOptions.SetConvertersIfNull(new DocumentConverter<SerializationTest>(), new DocumentConverter<SerializationTest>());
+		string serialized = collection.CheckSerialization(testObject, commandOptions);
+		var deserialized = collection.CheckDeserialization(serialized, commandOptions);
+		Assert.Equal(testObject.TestId, deserialized.TestId);
+		Assert.Equal(testObject.NestedProperties.BoolProperty, deserialized.NestedProperties.BoolProperty);
+		Assert.Equal(testObject.NestedProperties.PropertyOne, deserialized.NestedProperties.PropertyOne);
+		Assert.Equal(testObject.NestedProperties.PropertyTwo, deserialized.NestedProperties.PropertyTwo);
+		Assert.Equal(testObject.NestedProperties.IntProperty, deserialized.NestedProperties.IntProperty);
+		Assert.Equal(testObject.NestedProperties.StringArrayProperty, deserialized.NestedProperties.StringArrayProperty);
+		Assert.Equal(testObject.NestedProperties.DateTimeOffsetProperty.ToUniversalTime().ToString("yyyyMMddHHmmss"), deserialized.NestedProperties.DateTimeOffsetProperty.ToUniversalTime().ToString("yyyyMMddHHmmss"));
+		Assert.Equal(testObject.NestedProperties.DateTimeProperty.ToUniversalTime().ToString("yyyyMMddHHmmss"), deserialized.NestedProperties.DateTimeProperty.ToUniversalTime().ToString("yyyyMMddHHmmss"));
+		Assert.Equal(testObject.NestedProperties.SkipWhenNull, deserialized.NestedProperties.SkipWhenNull);
+	}
+
+	[Fact]
 	public void TestSpecific()
 	{
 		string serializationTestString = "{\"_id\":19,\"Name\":\"Animal19\",\"Properties\":{\"PropertyOne\":\"groupthree\",\"PropertyTwo\":\"animal19\",\"IntProperty\":20,\"StringArrayProperty\":[\"animal19\",\"animal119\",\"animal219\"],\"BoolProperty\":true,\"DateTimeProperty\":\"2019-05-19T00:00:00\",\"DateTimeOffsetProperty\":\"0001-01-01T00:00:00+00:00\"}}";

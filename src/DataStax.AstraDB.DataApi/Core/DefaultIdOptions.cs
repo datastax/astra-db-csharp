@@ -18,8 +18,14 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Options for automatically generated ids.
+/// </summary>
 public class DefaultIdOptions
 {
+    /// <summary>
+    /// The type of id to generate.
+    /// </summary>
     [JsonPropertyName("type")]
     public DefaultIdType Type { get; set; }
 }

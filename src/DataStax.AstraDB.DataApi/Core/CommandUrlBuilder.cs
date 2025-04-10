@@ -45,21 +45,6 @@ internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
 
 internal class AdminCommandUrlBuilder : CommandUrlBuilder
 {
-    private readonly string _urlPostfix;
-    private readonly CommandOptions[] _optionsTree;
-
-    //TODO: refactor once we get more usages
-    internal AdminCommandUrlBuilder(CommandOptions[] optionsTree, string urlPostfix)
-    {
-        _optionsTree = optionsTree;
-        _urlPostfix = urlPostfix;
-    }
-
-    internal AdminCommandUrlBuilder(CommandOptions[] optionsTree) : this(optionsTree, null)
-    {
-
-    }
-
     internal override string BuildUrl(CommandOptions options)
     {
         string url = null;
@@ -79,10 +64,6 @@ internal class AdminCommandUrlBuilder : CommandUrlBuilder
         {
             url = CombineUrlParts(url, options.Keyspace);
         }
-        if (!string.IsNullOrEmpty(_urlPostfix))
-        {
-            url += "/" + _urlPostfix;
-        }
         return url;
     }
 
@@ -98,7 +79,6 @@ internal class EmbeddingCommandUrlBuilder : CommandUrlBuilder
 {
 
     private readonly Database _database;
-    private readonly string _urlPostfix;
 
     internal EmbeddingCommandUrlBuilder(Database database)
     {

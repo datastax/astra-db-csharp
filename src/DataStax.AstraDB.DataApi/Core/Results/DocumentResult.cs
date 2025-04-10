@@ -18,8 +18,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-public class DocumentResult<T>
+internal class DocumentResult<T>
 {
+    [JsonInclude]
     [JsonPropertyName("document")]
-    public T Document { get; set; }
+    internal T Document { get; set; }
 }

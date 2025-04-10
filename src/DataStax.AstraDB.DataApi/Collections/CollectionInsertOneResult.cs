@@ -18,5 +18,8 @@ namespace DataStax.AstraDB.DataApi.Collections;
 
 public class CollectionInsertOneResult<T>
 {
+    /// <summary>
+    /// The Id of the inserted document
+    /// </summary>
     public T InsertedId { get; internal set; }
 }

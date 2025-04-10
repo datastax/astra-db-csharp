@@ -19,6 +19,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
     public DataApiClient Client { get; private set; }
     public Database Database { get; private set; }
     public string OpenAiApiKey { get; set; }
+    public string DatabaseUrl { get; set; }
 
     public CollectionsFixture()
     {
@@ -29,7 +30,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
             .Build();
 
         var token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
-        var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
+        DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
         using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../collections_fixture_latest_run.log"));
@@ -40,7 +41,7 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
             RunMode = RunMode.Debug
         };
         Client = new DataApiClient(token, clientOptions, logger);
-        Database = Client.GetDatabase(databaseUrl);
+        Database = Client.GetDatabase(DatabaseUrl);
     }
 
     public async Task InitializeAsync()
@@ -71,7 +72,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                         PropertyTwo = "cat",
                         IntProperty = 1,
                         BoolProperty = true,
-                        StringArrayProperty = new[] { "cat1", "cat2", "cat3" }
+                        StringArrayProperty = new[] { "cat1", "cat2", "cat3" },
+                        DateTimeProperty = new DateTime(2020, 1, 1, 1, 1, 0)
                     }
                 },
                 new()
@@ -83,7 +85,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                         PropertyTwo = "dog",
                         IntProperty = 2,
                         BoolProperty = true,
-                        StringArrayProperty = new[] { "dog1", "dog2", "dog3" }
+                        StringArrayProperty = new[] { "dog1", "dog2", "dog3" },
+                        DateTimeProperty = new DateTime(2020, 1, 1, 1, 2, 0)
                     }
                 },
                 new()
@@ -95,7 +98,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                         PropertyTwo = "horse",
                         IntProperty = 3,
                         BoolProperty = true,
-                        StringArrayProperty = new[] { "horse1", "horse2", "horse3" }
+                        StringArrayProperty = new[] { "horse1", "horse2", "horse3" },
+                        DateTimeProperty = new DateTime(2020, 1, 1, 1, 3, 0)
                     }
                 },
                 new()
@@ -107,7 +111,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                         PropertyTwo = "cow",
                         IntProperty = 4,
                         BoolProperty = true,
-                        StringArrayProperty = new[] { "cow1", "cow2", "cow3" }
+                        StringArrayProperty = new[] { "cow1", "cow2", "cow3" },
+                        DateTimeProperty = new DateTime(2020, 1, 1, 1, 4, 0)
                     }
                 },
                 new()
@@ -119,7 +124,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                         PropertyTwo = "alligator",
                         IntProperty = 5,
                         BoolProperty = true,
-                        StringArrayProperty = new[] { "alligator1", "alligator2", "alligator3" }
+                        StringArrayProperty = new[] { "alligator1", "alligator2", "alligator3" },
+                        DateTimeProperty = new DateTime(2020, 1, 1, 1, 5, 0)
                     }
                 },
             };
@@ -136,7 +142,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                     PropertyTwo = $"animal{i}",
                     IntProperty = i + 1,
                     BoolProperty = true,
-                    StringArrayProperty = new[] { $"animal{i}1", $"animal{i}2" }
+                    StringArrayProperty = new[] { $"animal{i}1", $"animal{i}2" },
+                    DateTimeProperty = new DateTime(2020, 1, 1, 1, i + 1, 0)
                 }
             });
         }
@@ -150,7 +157,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                 PropertyTwo = "cow",
                 IntProperty = 32,
                 BoolProperty = true,
-                StringArrayProperty = new[] { "cow1", "cow2" }
+                StringArrayProperty = new[] { "cow1", "cow2" },
+                DateTimeProperty = new DateTime(2020, 1, 1, 1, 32, 0)
             }
         });
         items.Add(new()
@@ -163,7 +171,8 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
                 PropertyTwo = "alligator",
                 IntProperty = 33,
                 BoolProperty = true,
-                StringArrayProperty = new[] { "alligator1", "alligator2" }
+                StringArrayProperty = new[] { "alligator1", "alligator2" },
+                DateTimeProperty = new DateTime(2020, 1, 1, 1, 33, 0)
             }
         });
         var collection = await Database.CreateCollectionAsync<SimpleObject>(_queryCollectionName);

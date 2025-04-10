@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-using System.Linq;
-
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 internal class LogicalFilter<T> : Filter<T>

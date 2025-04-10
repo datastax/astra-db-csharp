@@ -38,10 +38,10 @@ public class AdminTests
 	[Fact]
 	public async Task GetDatabasesList()
 	{
-		var list = await fixture.Client.GetAstraAdmin().ListDatabasesAsync();
+		var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync();
 		Assert.NotNull(list);
 
-		list = fixture.Client.GetAstraAdmin().ListDatabases();
+		list = fixture.Client.GetAstraDatabasesAdmin().ListDatabases();
 		Assert.NotNull(list);
 
 		Console.WriteLine($"GetDatabasesList: {list.Count} items");
@@ -50,10 +50,10 @@ public class AdminTests
 	[Fact]
 	public async Task GetDatabasesNamesList()
 	{
-		var list = await fixture.Client.GetAstraAdmin().ListDatabaseNamesAsync();
+		var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabaseNamesAsync();
 		Assert.NotNull(list);
 
-		list = fixture.Client.GetAstraAdmin().ListDatabaseNames();
+		list = fixture.Client.GetAstraDatabasesAdmin().ListDatabaseNames();
 		Assert.NotNull(list);
 
 		Console.WriteLine($"GetDatabasesNamesList: {list.Count} items");
@@ -65,10 +65,10 @@ public class AdminTests
 	{
 		var dbName = fixture.DatabaseName;
 
-		var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbName);
+		var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbName);
 		Assert.True(found);
 
-		found = fixture.Client.GetAstraAdmin().DoesDatabaseExist(dbName);
+		found = fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(dbName);
 		Assert.True(found);
 	}
 
@@ -77,7 +77,7 @@ public class AdminTests
 	[InlineData("")]
 	public void CheckDatabaseExistsByName_ExpectedError(string invalidName)
 	{
-		var ex = Assert.Throws<ArgumentNullException>(() => fixture.Client.GetAstraAdmin().DoesDatabaseExist(invalidName));
+		var ex = Assert.Throws<ArgumentNullException>(() => fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(invalidName));
 		Assert.Contains("Value cannot be null or empty", ex.Message);
 	}
 
@@ -87,7 +87,7 @@ public class AdminTests
 	public async Task CheckDatabaseExistsByNameAsync_ExpectedError(string invalidName)
 	{
 		var ex = await Assert.ThrowsAsync<ArgumentNullException>(
-			() => fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(invalidName)
+			() => fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(invalidName)
 		);
 		Assert.Contains("Value cannot be null or empty", ex.Message);
 	}
@@ -97,10 +97,10 @@ public class AdminTests
 	{
 		var dbName = "this-is-not-the-greatest-db-in-the-world-this-is-a-tribute";
 
-		var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbName);
+		var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbName);
 		Assert.False(found);
 
-		found = fixture.Client.GetAstraAdmin().DoesDatabaseExist(dbName);
+		found = fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(dbName);
 		Assert.False(found);
 	}
 
@@ -109,10 +109,10 @@ public class AdminTests
 	{
 		var dbId = fixture.DatabaseId;
 
-		var found = await fixture.Client.GetAstraAdmin().DoesDatabaseExistAsync(dbId);
+		var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbId);
 		Assert.True(found);
 
-		found = fixture.Client.GetAstraAdmin().DoesDatabaseExist(dbId);
+		found = fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(dbId);
 		Assert.True(found);
 	}
 
@@ -121,14 +121,13 @@ public class AdminTests
 	{
 		var dbName = fixture.DatabaseName;
 
-		var status = await fixture.Client.GetAstraAdmin().GetDatabaseStatusAsync(dbName);
+		var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
 		Assert.Equal("ACTIVE", status);
 
-		status = fixture.Client.GetAstraAdmin().GetDatabaseStatus(dbName);
+		status = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(dbName);
 		Assert.Equal("ACTIVE", status);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetDatabaseAdminAstra
 	[Fact]
 	public async Task DatabaseAdminAstra_GetDatabaseAdminAstra()
 	{
@@ -138,7 +137,6 @@ public class AdminTests
 		Assert.IsType<DatabaseAdminAstra>(daa);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetDatabase
 	[Fact]
 	public async Task DatabaseAdminAstra_GetDatabase()
 	{
@@ -148,7 +146,6 @@ public class AdminTests
 		Assert.IsType<Database>(daa.GetDatabase());
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetApiEndpoint
 	[Fact]
 	public async Task DatabaseAdminAstra_GetApiEndpoint()
 	{
@@ -158,7 +155,6 @@ public class AdminTests
 		Assert.Equal(fixture.DatabaseId, AdminFixture.GetDatabaseIdFromUrl(daa.GetApiEndpoint()));
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_GetKeyspacesList
 	[Fact]
 	public async Task DatabaseAdminAstra_GetKeyspacesList()
 	{
@@ -176,7 +172,6 @@ public class AdminTests
 		list.ForEach(Console.WriteLine);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_DoesKeyspaceExist
 	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist()
 	{
@@ -190,7 +185,6 @@ public class AdminTests
 		Assert.True(keyspaceExists);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_DoesKeyspaceExist_Another
 	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist_Another()
 	{
@@ -215,7 +209,6 @@ public class AdminTests
 		}
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_FindEmbeddingProvidersAsync
 	[Fact]
 	public async Task DatabaseAdminAstra_FindEmbeddingProvidersAsync()
 	{
@@ -257,7 +250,7 @@ public class AdminTests
 	public void CreateDatabaseBlocking()
 	{
 		var dbName = "test-db-create-blocking-x";
-		var admin = fixture.Client.GetAstraAdmin().CreateDatabase(dbName);
+		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(dbName);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -267,7 +260,7 @@ public class AdminTests
 	public async Task CreateDatabaseBlockingAsync()
 	{
 		var dbName = "test-db-create-blocking-async-x";
-		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(dbName);
+		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(dbName);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -277,7 +270,7 @@ public class AdminTests
 	public void CreateDatabase()
 	{
 		var dbName = "test-db-create-x";
-		var admin = fixture.Client.GetAstraAdmin().CreateDatabase(dbName, false);
+		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(dbName, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -287,7 +280,7 @@ public class AdminTests
 	public async Task CreateDatabaseAsync()
 	{
 		var dbName = "test-db-create-async-x";
-		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(dbName, false);
+		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(dbName, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -299,7 +292,7 @@ public class AdminTests
 		var dbName = "test-db-create-options-x";
 		var options = new DatabaseCreationOptions();
 		options.Name = dbName;
-		var admin = fixture.Client.GetAstraAdmin().CreateDatabase(options, false);
+		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -311,7 +304,7 @@ public class AdminTests
 		var dbName = "test-db-create-options-async-x";
 		var options = new DatabaseCreationOptions();
 		options.Name = dbName;
-		var admin = await fixture.Client.GetAstraAdmin().CreateDatabaseAsync(options, false);
+		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -321,7 +314,7 @@ public class AdminTests
 	public void DropDatabaseByName()
 	{
 		var dbName = "test-db-drop-by-name";
-		var dropped = fixture.Client.GetAstraAdmin().DropDatabase(dbName);
+		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbName);
 
 		Assert.True(dropped);
 	}
@@ -331,7 +324,7 @@ public class AdminTests
 	public async Task DropDatabaseByNameAsync()
 	{
 		var dbName = "test-db-drop-by-name-async";
-		var dropped = await fixture.Client.GetAstraAdmin().DropDatabaseAsync(dbName);
+		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbName);
 
 		Assert.True(dropped);
 	}
@@ -341,7 +334,7 @@ public class AdminTests
 	public void DropDatabaseById()
 	{
 		var dbGuid = Guid.Parse("ee1a268c-112f-47fd-971e-57ecef64a23b"); // from a db created ad-hoc on astra's site
-		var dropped = fixture.Client.GetAstraAdmin().DropDatabase(dbGuid);
+		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid);
 
 		Assert.True(dropped);
 	}
@@ -351,7 +344,7 @@ public class AdminTests
 	public async Task DropDatabaseByIdAsync()
 	{
 		var dbGuid = Guid.Parse("65b4cdb5-2f21-4550-99ce-8c2570d18c1a"); // from a db created ad-hoc on astra's site
-		var dropped = await fixture.Client.GetAstraAdmin().DropDatabaseAsync(dbGuid);
+		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid);
 
 		Assert.True(dropped);
 	}

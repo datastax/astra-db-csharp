@@ -16,20 +16,20 @@
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-public class UpdateOperator
+internal class UpdateOperator
 {
-    public const string CurrentDate = "$currentDate";
-    public const string Increment = "$inc";
-    public const string Min = "$min";
-    public const string Max = "$max";
-    public const string Multiply = "$mul";
-    public const string Rename = "$rename";
-    public const string Set = "$set";
-    public const string SetOnInsert = "$setOnInsert";
-    public const string Unset = "$unset";
-    public const string AddToSet = "$addToSet";
-    public const string Pop = "$pop";
-    public const string Push = "$push";
-    public const string Each = "$each";
-    public const string Position = "$position";
+    internal const string CurrentDate = "$currentDate";
+    internal const string Increment = "$inc";
+    internal const string Min = "$min";
+    internal const string Max = "$max";
+    internal const string Multiply = "$mul";
+    internal const string Rename = "$rename";
+    internal const string Set = "$set";
+    internal const string SetOnInsert = "$setOnInsert";
+    internal const string Unset = "$unset";
+    internal const string AddToSet = "$addToSet";
+    internal const string Pop = "$pop";
+    internal const string Push = "$push";
+    internal const string Each = "$each";
+    internal const string Position = "$position";
 }

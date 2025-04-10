@@ -16,18 +16,18 @@
 
 namespace DataStax.AstraDB.DataApi.Core.Commands;
 
-public static class DataApiKeywords
+internal static class DataApiKeywords
 {
-    public const string Id = "_id";
-    public const string All = "$all";
-    public const string Date = "$date";
-    public const string Uuid = "$uuid";
-    public const string ObjectId = "$objectId";
-    public const string Size = "$size";
-    public const string Exists = "$exists";
-    public const string Slice = "$slice";
-    public const string Similarity = "$similarity";
-    public const string Vector = "$vector";
-    public const string SortVector = "sortVector";
-    public const string Vectorize = "$vectorize";
+    internal const string Id = "_id";
+    internal const string All = "$all";
+    internal const string Date = "$date";
+    internal const string Uuid = "$uuid";
+    internal const string ObjectId = "$objectId";
+    internal const string Size = "$size";
+    internal const string Exists = "$exists";
+    internal const string Slice = "$slice";
+    internal const string Similarity = "$similarity";
+    internal const string Vector = "$vector";
+    internal const string SortVector = "sortVector";
+    internal const string Vectorize = "$vectorize";
 }

@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi;
+namespace DataStax.AstraDB.DataApi.Core;
 
-public class TimeoutOptions
+/// <summary>
+/// Command options specific to the database level.
+/// </summary>
+public class DatabaseCommandOptions : CommandOptions
 {
-    public int ConnectTimeoutMillis { get; set; } = 5000;
-    public int RequestTimeoutMillis { get; set; } = 30000;
+    /// <summary>
+    /// The current keyspace to use for commands run against the database.
+    /// 
+    /// Defaults to the default keyspace for the database.
+    /// </summary>
+    public new string Keyspace
+    {
+        get => base.Keyspace;
+        set => base.Keyspace = value;
+    }
 }

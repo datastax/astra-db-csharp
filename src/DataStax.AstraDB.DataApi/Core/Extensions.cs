@@ -21,9 +21,9 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-public static class CoreExtensions
+internal static class CoreExtensions
 {
-    public static string ToUrlString(this ApiVersion apiVersion)
+    internal static string ToUrlString(this ApiVersion apiVersion)
     {
         return apiVersion switch
         {
@@ -32,17 +32,17 @@ public static class CoreExtensions
         };
     }
 
-    public static TResult ResultSync<TResult>(this Task<TResult> task)
+    internal static TResult ResultSync<TResult>(this Task<TResult> task)
     {
         return task.GetAwaiter().GetResult();
     }
 
-    public static void ResultSync(this Task task)
+    internal static void ResultSync(this Task task)
     {
         task.GetAwaiter().GetResult();
     }
 
-    public static IEnumerable<List<T>> Chunk<T>(this List<T> list, int chunkSize)
+    internal static IEnumerable<List<T>> Chunk<T>(this List<T> list, int chunkSize)
     {
         for (int i = 0; i < list.Count; i += chunkSize)
         {

@@ -22,7 +22,12 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-
+/// <summary>
+/// A custom converter to handle serialization and deserialization of a list of IDs
+/// </summary>
+/// <remarks>
+/// We recommend using strongly-typed IDs instead of objects.
+/// </remarks>
 public class IdListConverter : JsonConverter<List<object>>
 {
     private static readonly GuidConverter _guidConverter = new();

@@ -19,11 +19,19 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
+/// <summary>
+/// A list of documents returned from an operation.
+/// </summary>
+/// <typeparam name="T">The type of the documents</typeparam>
 public class DocumentsResult<T>
 {
+    /// <summary>
+    /// The list of documents returned.
+    /// </summary>
     [JsonPropertyName("documents")]
     public List<T> Documents { get; set; }
 
+    [JsonInclude]
     [JsonPropertyName("nextPageState")]
-    public string NextPageState { get; set; }
+    internal string NextPageState { get; set; }
 }
