@@ -12,7 +12,8 @@
     <Company>DataStax</Company>
     <Product>DataStax Astra DB Serverless</Product>
     <Description>Client library for accessing the DataStax AstraDB Data API from .NET applications.</Description>
-    <PackageTags>astra;datastax;serverless;dataapi</PackageTags>
+    <Copyright>Copyright (c) DataStax 2025</Copyright>
+    <PackageTags>astradb;datastax;serverless;dataapi</PackageTags>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageProjectUrl>https://docs.datastax.com/en/astra-db-serverless</PackageProjectUrl>
     <RepositoryUrl>https://github.com/datastax/astra-db-csharp</RepositoryUrl>
