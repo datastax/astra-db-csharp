@@ -5,7 +5,27 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <LangVersion>10.0</LangVersion>
+
+    <PackageId>DataStax.AstraDB.DataApi</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>DataStax</Authors>
+    <Company>DataStax</Company>
+    <Description>Client library for accessing the DataStax Astra DB Data API from .NET applications.</Description>
+    <Copyright>Copyright (c) DataStax 2025</Copyright>
+    <PackageTags>astradb;datastax;serverless;dataapi</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://docs.datastax.com/en/astra-db-serverless</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/datastax/astra-db-csharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageIcon>packageIcon.png</PackageIcon>
+    <Readme>README.md</Readme>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="packageIcon.png" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
