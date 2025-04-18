@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
@@ -64,6 +65,11 @@ internal static class Extensions
         var name = memberExpression.Member.Name;
         if (memberExpression.Member is PropertyInfo propertyInfo)
         {
+            var jsonPropertyNameAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
+            if (jsonPropertyNameAttribute != null)
+            {
+                name = jsonPropertyNameAttribute.Name;
+            }
             var attribute = propertyInfo.GetCustomAttribute<DocumentMappingAttribute>();
             if (attribute != null && attribute.Field == DocumentMappingField.Id)
             {
@@ -71,7 +77,6 @@ internal static class Extensions
             }
         }
         sb.Append(name);
-
     }
 
 }
