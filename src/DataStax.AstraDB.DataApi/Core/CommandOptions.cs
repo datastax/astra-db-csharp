@@ -40,6 +40,8 @@ public class CommandOptions
     internal string Keyspace { get; set; }
     internal JsonConverter InputConverter { get; set; }
     internal JsonConverter OutputConverter { get; set; }
+    internal bool? SerializeGuidAsDollarUuid { get; set; }
+    internal bool? SerializeDateAsDollarDate { get; set; }
 
     /// <summary>
     /// The token to use for authentication
@@ -109,6 +111,8 @@ public class CommandOptions
             InputConverter = list.Select(o => o.InputConverter).Merge(),
             OutputConverter = list.Select(o => o.OutputConverter).Merge(),
             IncludeKeyspaceInUrl = FirstNonNull(x => x.IncludeKeyspaceInUrl) ?? Defaults().IncludeKeyspaceInUrl,
+            SerializeGuidAsDollarUuid = FirstNonNull(x => x.SerializeGuidAsDollarUuid) ?? Defaults().SerializeGuidAsDollarUuid,
+            SerializeDateAsDollarDate = FirstNonNull(x => x.SerializeDateAsDollarDate) ?? Defaults().SerializeDateAsDollarDate,
         };
         return options;
     }
@@ -128,6 +132,8 @@ public class CommandOptions
             HttpClientOptions = new HttpClientOptions(),
             Keyspace = Database.DefaultKeyspace,
             IncludeKeyspaceInUrl = true,
+            SerializeGuidAsDollarUuid = true,
+            SerializeDateAsDollarDate = true,
         };
     }
 }

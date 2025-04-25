@@ -30,4 +30,7 @@ internal static class DataApiKeywords
     internal const string Vector = "$vector";
     internal const string SortVector = "sortVector";
     internal const string Vectorize = "$vectorize";
+    internal const string Binary = "$binary";
+    internal const int SortAscending = 1;
+    internal const int SortDescending = -1;
 }

@@ -24,7 +24,7 @@ public class InsertManyOptions
     /// <summary>
     /// Default batch size.
     /// </summary>
-    public const int DefaultChunkSize = 50;
+    public const int DefaultChunkSize = 100;
 
     /// <summary>
     /// Maximum concurrency.

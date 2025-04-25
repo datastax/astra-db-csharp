@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Tables;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -109,7 +110,7 @@ internal class Command
         return response;
     }
 
-    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TDocument, TStatus>(bool runSynchronously)
+    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnDocumentData<TData, TDocument, TStatus>(bool runSynchronously)
     {
         var useDocumentConverter = typeof(TDocument) != typeof(Document);
         if (useDocumentConverter)
@@ -119,6 +120,16 @@ internal class Command
                 OutputConverter = new DocumentConverter<TDocument>()
             });
         }
+        var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        if (response.Errors != null && response.Errors.Count > 0)
+        {
+            throw new CommandException(response.Errors);
+        }
+        return response;
+    }
+
+    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
+    {
         var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
@@ -142,9 +153,17 @@ internal class Command
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         serializeOptions ??= new JsonSerializerOptions();
         serializeOptions.Converters.Add(new ObjectIdConverter());
-        serializeOptions.Converters.Add(new SerDes.GuidConverter());
-        serializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
-        serializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+        serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
+        if (commandOptions.SerializeDateAsDollarDate == true)
+        {
+            serializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
+            serializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+        }
+        if (commandOptions.SerializeGuidAsDollarUuid == true)
+        {
+            serializeOptions.Converters.Add(new GuidConverter());
+        }
+        serializeOptions.Converters.Add(new IpAddressConverter());
         if (commandOptions.InputConverter != null)
         {
             serializeOptions.Converters.Add(commandOptions.InputConverter);
@@ -166,15 +185,22 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         var deserializeOptions = new JsonSerializerOptions();
-
+        deserializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         if (commandOptions.OutputConverter != null)
         {
             deserializeOptions.Converters.Add(commandOptions.OutputConverter);
         }
         deserializeOptions.Converters.Add(new ObjectIdConverter());
-        deserializeOptions.Converters.Add(new SerDes.GuidConverter());
-        deserializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
-        deserializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+        if (commandOptions.SerializeGuidAsDollarUuid == true)
+        {
+            deserializeOptions.Converters.Add(new GuidConverter());
+        }
+        if (commandOptions.SerializeDateAsDollarDate == true)
+        {
+            deserializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
+            deserializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+        }
+        deserializeOptions.Converters.Add(new IpAddressConverter());
 
         return JsonSerializer.Deserialize<T>(input, deserializeOptions);
     }

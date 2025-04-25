@@ -1,8 +1,10 @@
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
 using MongoDB.Bson;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using UUIDNext;
 using Xunit;
 
@@ -703,5 +705,7 @@ public class SearchTests
         var distinct = collection.Find(filter).DistinctBy(so => so.Properties.PropertyOne);
         Assert.Equal(3, distinct.Count());
     }
+
+
 }
 

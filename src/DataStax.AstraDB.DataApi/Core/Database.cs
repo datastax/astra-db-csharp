@@ -18,6 +18,7 @@ using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
@@ -577,6 +578,111 @@ public class Database
         var command = CreateCommand("deleteCollection").WithPayload(payload).AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
     }
+
+    public Task<Table<TRow>> CreateTableAsync<TRow>() where TRow : class, new()
+    {
+        return CreateTableAsync<TRow>(null as CommandOptions);
+    }
+
+    public Task<Table<TRow>> CreateTableAsync<TRow>(CommandOptions options) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return CreateTableAsync<TRow>(tableName, options);
+    }
+
+    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName) where TRow : class, new()
+    {
+        return CreateTableAsync<TRow>(tableName, null);
+    }
+
+    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CommandOptions options) where TRow : class, new()
+    {
+        var definition = TableDefinition.CreateTableDefinition<TRow>();
+        return CreateTableAsync<TRow>(tableName, definition, options, false);
+    }
+
+    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition)
+    {
+        return CreateTableAsync(tableName, definition, null);
+    }
+
+    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, CommandOptions options)
+    {
+        if (definition.PrimaryKey == null)
+        {
+            throw new InvalidOperationException("No primary key defined for table class. Please use definition.AddPrimaryKey() or definition.AddCompoundPrimaryKey()");
+        }
+        return CreateTableAsync<Row>(tableName, definition, options, false);
+    }
+
+    private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CommandOptions options, bool runSynchronously) where TRow : class
+    {
+
+        var payload = new TableCommandPayload
+        {
+            Name = tableName,
+            Definition = definition
+        };
+        var command = CreateCommand("createTable").WithPayload(payload).AddCommandOptions(options);
+        await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
+        return GetTable<TRow>(tableName, options);
+    }
+
+    private Table<TRow> GetTable<TRow>(string tableName, CommandOptions options) where TRow : class
+    {
+        return new Table<TRow>(tableName, this, options);
+    }
+
+    public Task DropTableAsync<TRow>() where TRow : class, new()
+    {
+        return DropTableAsync<TRow>(null as CommandOptions);
+    }
+
+    public Task DropTableAsync<TRow>(CommandOptions options) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return DropTableAsync(tableName, options, false);
+    }
+
+    public Task DropTableAsync(string tableName)
+    {
+        return DropTableAsync(tableName, null, false);
+    }
+
+    public Task DropTableAsync(string tableName, CommandOptions options)
+    {
+        return DropTableAsync(tableName, options, false);
+    }
+
+    private async Task DropTableAsync(string tableName, CommandOptions options, bool runSynchronously)
+    {
+        var payload = new
+        {
+            name = tableName
+        };
+        var command = CreateCommand("dropTable").WithPayload(payload).AddCommandOptions(options);
+        await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
+    }
+
+    public Task<IEnumerable<TableInfo>> ListTablesAsync()
+    {
+        return ListTablesAsync(null, true, false);
+    }
+
+    private async Task<IEnumerable<TableInfo>> ListTablesAsync(CommandOptions options, bool includeDetails, bool runSynchronously)
+    {
+        var payload = new
+        {
+            options = new
+            {
+                explain = includeDetails
+            }
+        };
+        var command = CreateCommand("listTables").WithPayload(payload).AddCommandOptions(options);
+        var result = await command.RunAsyncReturnStatus<ListTablesResult>(runSynchronously).ConfigureAwait(false);
+        return result.Result.Tables;
+    }
+
 
     internal static Guid? GetDatabaseIdFromUrl(string url)
     {

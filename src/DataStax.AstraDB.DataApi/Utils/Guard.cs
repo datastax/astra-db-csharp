@@ -15,7 +15,8 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
@@ -29,9 +30,9 @@ internal static class Guard
         }
     }
 
-    internal static void NotNullOrEmpty(IList value, string paramName, string message = null)
+    internal static void NotNullOrEmpty<T>(IEnumerable<T> value, string paramName, string message = null)
     {
-        if (value == null || value.Count == 0)
+        if (value == null || !value.Any())
         {
             throw new ArgumentNullException(message.OrIfEmpty("Value cannot be null or empty."), paramName);
         }

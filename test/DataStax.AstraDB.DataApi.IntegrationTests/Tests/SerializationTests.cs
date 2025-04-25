@@ -1,8 +1,10 @@
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Tables;
 using System.Runtime.CompilerServices;
 using Xunit;
 
@@ -120,6 +122,17 @@ public class SerializationTests
 			OutputConverter = new IdListConverter()
 		};
 		var deserialized = collection.CheckDeserialization(serializationTestString, commandOptions);
+	}
+
+	[Fact]
+	public void TableInsertManyResult()
+	{
+		string serializationTestString = "{\"primaryKeySchema\":{\"Name\":{\"type\":\"text\"}},\"insertedIds\":[[\"Test\"]]}";
+		var commandOptions = Array.Empty<CommandOptions>();
+		var command = new Command("deserializationTest", new DataApiClient(), commandOptions, null);
+		var deserialized = command.Deserialize<TableInsertManyResult>(serializationTestString);
+		Assert.Equal("text", deserialized.PrimaryKeys["Name"].Type);
+		Assert.Equal("Test", deserialized.InsertedIds.First().First().ToString());
 	}
 
 }

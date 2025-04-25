@@ -1,6 +1,6 @@
-
-
+using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Tables;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
@@ -114,4 +114,126 @@ public class GradeEntry
     public DateTime Date { get; set; }
     public string Grade { get; set; }
     public float? Score { get; set; }
+}
+
+public class SimpleRowObject
+{
+    [ColumnPrimaryKey]
+    public string Name { get; set; }
+}
+
+public class RowBook
+{
+    [ColumnPrimaryKey]
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public int NumberOfPages { get; set; }
+    public DateTime DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
+public class RowTestObject
+{
+    [ColumnPrimaryKey(1)]
+    [ColumnName("renamed")]
+    public string Name { get; set; }
+    [ColumnPrimaryKey(2)]
+    [ColumnVector(4)]
+    public float[] Vector { get; set; }
+    [ColumnPrimaryKey(3)]
+    [ColumnVectorize(1024,
+        serviceProvider: "nvidia",
+        serviceModelName: "NV-Embed-QA")]
+    public object StringToVectorize { get; set; }
+    [ColumnPrimaryKey(4)]
+    public string Text { get; set; }
+    public System.Net.IPAddress Inet { get; set; }
+    [ColumnPrimaryKey(5)]
+    public int Int { get; set; }
+    [ColumnPrimaryKey(6)]
+    public byte TinyInt { get; set; }
+    [ColumnPrimaryKey(7)]
+    public short SmallInt { get; set; }
+    [ColumnPrimaryKey(8)]
+    public long BigInt { get; set; }
+    [ColumnPrimaryKey(9)]
+    public decimal Decimal { get; set; }
+    [ColumnPrimaryKey(10)]
+    public double Double { get; set; }
+    [ColumnPrimaryKey(11)]
+    public float Float { get; set; }
+    public Dictionary<string, int> IntDictionary { get; set; }
+    public Dictionary<string, decimal> DecimalDictionary { get; set; }
+    public HashSet<string> StringSet { get; set; }
+    public HashSet<int> IntSet { get; set; }
+    public List<string> StringList { get; set; }
+    //[JsonConverter(typeof(JsonStringConverter<List<Properties>>))]
+    [ColumnJsonString]
+    public List<Properties> ObjectList { get; set; }
+    [ColumnPrimaryKey(12)]
+    public bool Boolean { get; set; }
+    [ColumnPrimaryKey(13)]
+    public DateTime Date { get; set; }
+    [ColumnPrimaryKey(14)]
+    public Guid UUID { get; set; }
+    public byte[] Blob { get; set; }
+}
+
+public class CompositePrimaryKey
+{
+    [ColumnPrimaryKey(2)]
+    public string KeyTwo { get; set; }
+    [ColumnPrimaryKey(1)]
+    public string KeyOne { get; set; }
+}
+
+public class CompoundPrimaryKey
+{
+    [ColumnPrimaryKey(2)]
+    public string KeyTwo { get; set; }
+    [ColumnPrimaryKey(1)]
+    public string KeyOne { get; set; }
+    [ColumnPrimaryKeySort(2, SortDirection.Descending)]
+    public string SortTwoDescending { get; set; }
+    [ColumnPrimaryKeySort(1, SortDirection.Ascending)]
+    public string SortOneAscending { get; set; }
+}
+
+public class BrokenCompositePrimaryKey
+{
+    [ColumnPrimaryKey(3)]
+    public string KeyTwo { get; set; }
+    [ColumnPrimaryKey(1)]
+    public string KeyOne { get; set; }
+}
+
+public class BrokenCompoundPrimaryKey
+{
+    [ColumnPrimaryKey(2)]
+    public string KeyTwo { get; set; }
+    [ColumnPrimaryKey(1)]
+    public string KeyOne { get; set; }
+    [ColumnPrimaryKeySort(2, SortDirection.Descending)]
+    public string SortTwoDescending { get; set; }
+    [ColumnPrimaryKeySort(0, SortDirection.Ascending)]
+    public string SortOneAscending { get; set; }
+}
+
+public class Book
+{
+    [DocumentMapping(DocumentMappingField.Id)]
+    public Guid Id { get; set; }
+
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public double[] Vector { get; set; }
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; }
+
+    [JsonPropertyName("isCheckedOut")]
+    public bool IsCheckedOut { get; set; }
+
+    [JsonPropertyName("numberOfPages")]
+    public int NumberOfPages { get; set; }
 }
