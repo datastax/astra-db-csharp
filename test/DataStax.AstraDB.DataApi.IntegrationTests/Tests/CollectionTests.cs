@@ -1,7 +1,9 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.SerDes;
 using MongoDB.Bson;
+using System.Text.Json.Serialization;
 using UUIDNext;
 using Xunit;
 
@@ -162,6 +164,150 @@ public class CollectionTests
             var newId2 = result.InsertedId;
 
             Assert.NotEqual(newId, newId2);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    public class DefaultIdUUID4
+    {
+        [DocumentId]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Guid? Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DefaultIdUUIDV6
+    {
+        [DocumentId(DefaultIdType.UuidV6)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Guid? Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DefaultIdUUIDV7
+    {
+        [DocumentId(DefaultIdType.UuidV7)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Guid? Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DefaultIdUUIDObjectId
+    {
+        [DocumentId(DefaultIdType.ObjectId)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ObjectId? Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    [Fact]
+    public async Task DefaultId_UUIDV4_FromObject()
+    {
+        var collectionName = "defaultIdUUIDV4FromObject";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<DefaultIdUUID4, Guid>(collectionName);
+            var newObject = new DefaultIdUUID4()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            Assert.NotEqual(Guid.Empty, newId);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultId_UUIDV6_FromObject()
+    {
+        var collectionName = "defaultIdUUIDV6FromObject";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<DefaultIdUUIDV6, Guid>(collectionName);
+            var newObject = new DefaultIdUUIDV6()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            Assert.NotEqual(Guid.Empty, newId);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultId_UUIDV7_FromObject()
+    {
+        var collectionName = "defaultIdUUIDV7FromObject";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<DefaultIdUUIDV7, Guid>(collectionName);
+            var newObject = new DefaultIdUUIDV7()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            Assert.NotEqual(Guid.Empty, newId);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultId_UUIDObjectId_FromObject()
+    {
+        var collectionName = "defaultIdUUIDObjectIdFromObject";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<DefaultIdUUIDObjectId, ObjectId>(collectionName);
+            var newObject = new DefaultIdUUIDObjectId()
+            {
+                Name = "Test Object 1",
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+            var newId = result.InsertedId;
+
+            Assert.NotEqual(ObjectId.Empty, newId);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task DefaultId_WrongTypes()
+    {
+        var collectionName = "defaultIdWrongTypes";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
+            var newObject = new SimpleObject()
+            {
+                Name = "Test Object 1",
+            };
+
+            await Assert.ThrowsAnyAsync<Exception>(async () => await collection.InsertOneAsync(newObject));
         }
         finally
         {

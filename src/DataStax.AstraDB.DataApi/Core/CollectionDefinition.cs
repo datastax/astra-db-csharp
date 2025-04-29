@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.SerDes;
+using System;
+using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
@@ -40,6 +44,36 @@ public class CollectionDefinition
     /// </summary>
     [JsonPropertyName("indexing")]
     public IndexingOptions Indexing { get; set; }
+
+    internal static CollectionDefinition Create<T>()
+    {
+        Type type = typeof(T);
+        PropertyInfo idProperty = null;
+        DocumentIdAttribute idAttribute = null;
+
+        CollectionDefinition definition = new();
+
+        foreach (var property in type.GetProperties())
+        {
+            var attr = property.GetCustomAttribute<DocumentIdAttribute>();
+            if (attr != null)
+            {
+                idProperty = property;
+                idAttribute = attr;
+                break;
+            }
+        }
+
+        if (idProperty != null)
+        {
+            if (idAttribute.DefaultIdType.HasValue)
+            {
+                definition.DefaultId = new DefaultIdOptions() { Type = idAttribute.DefaultIdType.Value };
+            }
+        }
+
+        return definition;
+    }
 }
 
 

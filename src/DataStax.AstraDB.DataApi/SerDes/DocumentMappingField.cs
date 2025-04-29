@@ -21,8 +21,6 @@ namespace DataStax.AstraDB.DataApi.SerDes;
 /// </summary>
 public enum DocumentMappingField
 {
-    /// <summary>Serializes as "_id" for unique identifiers</summary>
-    Id,
     /// <summary>Serializes as "$vectorize" for a string to vectorize</summary>
     Vectorize,
     /// <summary>Serializes as "$vector" for vector data.</summary>
