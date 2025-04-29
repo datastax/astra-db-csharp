@@ -64,7 +64,7 @@ internal static class InsertValidator
             return explicitId;
 
         return type.GetProperties()
-            .FirstOrDefault(p => p.GetCustomAttribute<DocumentMappingAttribute>()?.Field == DocumentMappingField.Id && p.CanWrite);
+            .FirstOrDefault(p => p.GetCustomAttribute<DocumentIdAttribute>() != null && p.CanWrite);
     }
 
     private static bool IsNullOrEmpty(object value, Type type)

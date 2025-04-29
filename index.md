@@ -8,7 +8,9 @@ This C# Client Library simplifies using the DataStax Data API to manage and inte
 
 # Installation
 
-// TODO: NuGet instructions
+```
+dotnet add package DataStax.AstraDB.DataApi --prerelease
+```
 
 # Quickstart
 
@@ -17,7 +19,7 @@ This C# Client Library simplifies using the DataStax Data API to manage and inte
 var client = new DataApiClient("YourTokenHere");
 
 //connect to a database
-var database = client.GetDatabase("YourDatabaseUrlHere");
+var database = client.GetDatabase("YourAPIEndpointHere");
 
 //create a new collection
 var collection = await database.CreateCollectionAsync<SimpleObject>("YourCollectionNameHere");

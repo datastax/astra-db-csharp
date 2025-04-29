@@ -70,8 +70,8 @@ internal static class Extensions
             {
                 name = jsonPropertyNameAttribute.Name;
             }
-            var attribute = propertyInfo.GetCustomAttribute<DocumentMappingAttribute>();
-            if (attribute != null && attribute.Field == DocumentMappingField.Id)
+            var attribute = propertyInfo.GetCustomAttribute<DocumentIdAttribute>();
+            if (attribute != null)
             {
                 name = DataApiKeywords.Id;
             }

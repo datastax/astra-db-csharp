@@ -21,7 +21,8 @@ public class DatabaseTests
     {
         var collectionName = "simpleTestKeyspaceCollection";
         var keyspaceName = "simpleTestKeyspace";
-        var databaseWithKeyspace = fixture.Client.GetDatabase(fixture.DatabaseUrl, keyspaceName);
+        var databaseWithKeyspace = fixture.Client.GetDatabase(fixture.DatabaseUrl);
+        databaseWithKeyspace.UseKeyspace(keyspaceName);
         var admin = databaseWithKeyspace.GetAdmin();
         try
         {
@@ -30,10 +31,11 @@ public class DatabaseTests
                 Keyspace = keyspaceName
             };
             await Assert.ThrowsAnyAsync<Exception>(async () => await fixture.Database.CreateCollectionAsync(collectionName, dbOptions));
-            //create keyspace
 
+            //create keyspace
             await admin.CreateKeyspaceAsync(keyspaceName);
             Thread.Sleep(30 * 1000);
+
             //passed-in dboptions should override keyspace and creation should work
             await fixture.Database.CreateCollectionAsync(collectionName, dbOptions);
             var collections = await databaseWithKeyspace.ListCollectionsAsync();
@@ -48,6 +50,17 @@ public class DatabaseTests
                 await admin.DropKeyspaceAsync(keyspaceName);
             }
         }
+    }
+
+    [Fact]
+    public async Task PassTokenToDatabase()
+    {
+        var collectionName = "tokenToDbCollectionTest";
+        var database = fixture.ClientWithoutToken.GetDatabase(fixture.DatabaseUrl, fixture.Token);
+        var collection = await database.CreateCollectionAsync(collectionName);
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+        await database.DropCollectionAsync(collectionName);
     }
 
     [Fact]

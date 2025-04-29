@@ -8,8 +8,7 @@ namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
 public class SimpleObjectWithVector
 {
-    [DocumentMapping(DocumentMappingField.Id)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [DocumentId]
     public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vector)]
@@ -18,8 +17,7 @@ public class SimpleObjectWithVector
 
 public class SimpleObjectWithVectorize
 {
-    [DocumentMapping(DocumentMappingField.Id)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [DocumentId]
     public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vectorize)]
@@ -56,7 +54,7 @@ public class SimpleObject
 
 public class SerializationTest
 {
-    [DocumentMapping(DocumentMappingField.Id)]
+    [DocumentId]
     public int TestId { get; set; }
     public Properties NestedProperties { get; set; }
 }
@@ -86,7 +84,7 @@ public class SimpleObjectSkipNulls
 
 public class DifferentIdsObject
 {
-    [DocumentMapping(DocumentMappingField.Id)]
+    [DocumentId]
     public object TheId { get; set; }
     public string Name { get; set; }
 }

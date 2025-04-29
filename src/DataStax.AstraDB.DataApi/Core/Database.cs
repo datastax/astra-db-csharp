@@ -73,8 +73,9 @@ public class Database
     private readonly string _apiEndpoint;
     private readonly DataApiClient _client;
     private readonly string _urlPostfix = "";
-    private readonly DatabaseCommandOptions _dbCommandOptions;
     private readonly Guid _id;
+
+    private DatabaseCommandOptions _dbCommandOptions;
 
     internal string ApiEndpoint => _apiEndpoint;
     internal DataApiClient Client => _client;
@@ -96,6 +97,17 @@ public class Database
         _client = client;
         _dbCommandOptions = dbCommandOptions;
         _id = (Guid)GetDatabaseIdFromUrl(_apiEndpoint);
+    }
+
+    /// <summary>
+    /// Set the active keyspace to use for all subsequent operations (can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter)
+    /// </summary>
+    /// <param name="keyspace"></param>
+    public void UseKeyspace(string keyspace)
+    {
+        var commandOptions = _dbCommandOptions ?? new DatabaseCommandOptions();
+        commandOptions.Keyspace = keyspace;
+        _dbCommandOptions = commandOptions;
     }
 
     ///<summary>
@@ -409,10 +421,11 @@ public class Database
 
     private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options, bool runSynchronously) where T : class
     {
-        object payload = definition == null ? new
+        if (definition == null)
         {
-            name = collectionName
-        } : new
+
+        }
+        object payload = new
         {
             name = collectionName,
             options = definition
@@ -424,10 +437,11 @@ public class Database
 
     private async Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options, bool runSynchronously) where T : class
     {
-        object payload = definition == null ? new
+        if (definition == null)
         {
-            name = collectionName
-        } : new
+            definition = CollectionDefinition.Create<T>();
+        }
+        object payload = new
         {
             name = collectionName,
             options = definition

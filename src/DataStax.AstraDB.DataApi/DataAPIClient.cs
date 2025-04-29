@@ -169,10 +169,12 @@ public class DataApiClient
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="Database"/> class given the API Endpoint and the keyspace to connect to.
+    /// Gets an instance of the <see cref="Database"/> class given the API Endpoint of the database to connect to, a token to use, and optionally a keyspace.
+    /// If the keyspace is not provided the default keyspace will be used.
     /// </summary>
     /// <param name="apiEndpoint">The API endpoint of the database.</param>
-    /// <param name="keyspace">The keyspace to connect to.</param>
+    /// <param name="token">The specific token to use for this database connection.</param>
+    /// <param name="keyspace">Optional: The keyspace to connect to.</param>
     /// <returns>An instance of the <see cref="Database"/> class.</returns>
     /// <example>
     /// <code>
@@ -180,9 +182,9 @@ public class DataApiClient
     /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com", "myKeyspace");
     /// </code>
     /// </example>
-    public Database GetDatabase(string apiEndpoint, string keyspace)
+    public Database GetDatabase(string apiEndpoint, string token, string keyspace = null)
     {
-        var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace };
+        var dbOptions = new DatabaseCommandOptions() { Token = token, Keyspace = keyspace };
         return GetDatabase(apiEndpoint, dbOptions);
     }
 
@@ -229,7 +231,8 @@ public class DataApiClient
     /// Gets an instance of a <see cref="Database"/> based on the database Id, set to the provided keyspace.
     /// </summary>
     /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="keyspace">The keyspace to use for the database commands.</param>
+    /// <param name="token">The specific token to use for this database connection.</param>
+    /// <param name="keyspace">Optional: The keyspace to use for the database commands.</param>
     /// <returns>An instance of the <see cref="Database"/> class.</returns>
     /// <example>
     /// <code>
@@ -241,9 +244,9 @@ public class DataApiClient
     ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
     ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, string)"/>).
     /// </remarks>
-    public Database GetDatabase(Guid databaseId, string keyspace)
+    public Database GetDatabase(Guid databaseId, string token, string keyspace = null)
     {
-        var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace };
+        var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace, Token = token };
         return GetDatabase(databaseId, dbOptions);
     }
 

@@ -50,7 +50,6 @@ public class DocumentConverter<T> : JsonConverter<T>
                 {
                     DocumentMappingField.Vectorize => DataApiKeywords.Vectorize,
                     DocumentMappingField.Vector => DataApiKeywords.Vector,
-                    DocumentMappingField.Id => DataApiKeywords.Id,
                     DocumentMappingField.Similarity => DataApiKeywords.Similarity,
                     _ => prop.Name
                 };
@@ -60,7 +59,8 @@ public class DocumentConverter<T> : JsonConverter<T>
             }
             else
             {
-                if (prop.Name == DataApiKeywords.Id)
+                var idAttr = prop.GetCustomAttribute<DocumentIdAttribute>();
+                if (idAttr != null || prop.Name == DataApiKeywords.Id)
                 {
                     FieldMappings[prop] = DataApiKeywords.Id;
                     ReverseMappings[DataApiKeywords.Id] = prop;
@@ -131,6 +131,13 @@ public class DocumentConverter<T> : JsonConverter<T>
                         continue;
                     }
                 }
+
+                var documentIdAttr = prop.GetCustomAttribute<DocumentIdAttribute>();
+                if (documentIdAttr != null && propValue == null)
+                {
+                    continue;
+                }
+
                 writer.WritePropertyName(propertyName);
 
                 JsonSerializer.Serialize(writer, propValue, prop.PropertyType, options);

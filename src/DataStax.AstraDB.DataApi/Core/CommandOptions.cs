@@ -44,7 +44,7 @@ public class CommandOptions
     /// <summary>
     /// The token to use for authentication
     /// </summary>
-    public string Token { get; internal set; }
+    public string Token { get; set; }
 
     /// <summary>
     /// The destination datastore.
