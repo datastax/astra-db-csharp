@@ -174,7 +174,6 @@ public class CollectionTests
     public class DefaultIdUUID4
     {
         [DocumentId]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? Id { get; set; }
         public string Name { get; set; }
     }
@@ -182,7 +181,6 @@ public class CollectionTests
     public class DefaultIdUUIDV6
     {
         [DocumentId(DefaultIdType.UuidV6)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? Id { get; set; }
         public string Name { get; set; }
     }
@@ -190,7 +188,6 @@ public class CollectionTests
     public class DefaultIdUUIDV7
     {
         [DocumentId(DefaultIdType.UuidV7)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? Id { get; set; }
         public string Name { get; set; }
     }
@@ -198,7 +195,6 @@ public class CollectionTests
     public class DefaultIdUUIDObjectId
     {
         [DocumentId(DefaultIdType.ObjectId)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ObjectId? Id { get; set; }
         public string Name { get; set; }
     }

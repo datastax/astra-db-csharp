@@ -9,7 +9,6 @@ namespace DataStax.AstraDB.DataApi.IntegrationTests;
 public class SimpleObjectWithVector
 {
     [DocumentId]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vector)]
@@ -19,7 +18,6 @@ public class SimpleObjectWithVector
 public class SimpleObjectWithVectorize
 {
     [DocumentId]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vectorize)]

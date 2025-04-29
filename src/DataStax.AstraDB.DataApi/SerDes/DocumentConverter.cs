@@ -131,6 +131,13 @@ public class DocumentConverter<T> : JsonConverter<T>
                         continue;
                     }
                 }
+
+                var documentIdAttr = prop.GetCustomAttribute<DocumentIdAttribute>();
+                if (documentIdAttr != null && propValue == null)
+                {
+                    continue;
+                }
+
                 writer.WritePropertyName(propertyName);
 
                 JsonSerializer.Serialize(writer, propValue, prop.PropertyType, options);
