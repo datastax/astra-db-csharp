@@ -133,6 +133,26 @@ public class RowBook
     public float Rating { get; set; }
 }
 
+public class RowEventByDay
+{
+    [ColumnPrimaryKey(1)]
+    [ColumnName("event_date")]
+    public DateTime EventDate { get; set; }
+
+    [ColumnPrimaryKey(2)]
+    [ColumnName("id")]
+    public Guid Id { get; set; }
+
+    [ColumnName("title")]
+    public string Title { get; set; }
+
+    [ColumnName("location")]
+    public string Location { get; set; }
+        
+    [ColumnName("category")]
+    public string Category { get; set; }
+}
+
 public class RowTestObject
 {
     [ColumnPrimaryKey(1)]

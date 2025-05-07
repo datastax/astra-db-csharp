@@ -141,6 +141,72 @@ public class Table<T> : IQueryRunner<T> where T : class
         return response;
     }
 
+    public async Task<TableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions, bool runSynchronously)
+    {
+        var payload = new
+        {
+            options = new
+            {
+                explain = true,
+            }
+        };
+        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<TableIndexMetadataResult>(runSynchronously).ConfigureAwait(false);
+        return response.Result;
+    }
+
+    public void CreateIndex(TableIndexOptions options)
+    {
+        CreateIndexAsync(options, null, true).ResultSync();
+    }
+
+    public void CreateIndex(TableIndexOptions options, CommandOptions commandOptions)
+    {
+        CreateIndexAsync(options, commandOptions, true).ResultSync();;
+    }
+
+    public async Task CreateIndexAsync(TableIndexOptions options)
+    {
+        await CreateIndexAsync(options, null, false);
+    }
+
+    public async Task CreateIndexAsync(TableIndexOptions options, CommandOptions commandOptions)
+    {
+        await CreateIndexAsync(options, commandOptions, false);
+    }
+
+    internal async Task CreateIndexAsync(TableIndexOptions options, CommandOptions commandOptions, bool runSynchronously)
+    {
+        var indexResponse = await this.ListIndexMetadataAsync(commandOptions, runSynchronously);
+        var exists = indexResponse?.Indexes?.Any(i => i.Name == options.Name) == true;
+
+        if (exists)
+        {
+            throw new InvalidOperationException($"Index '{options.Name}' already exists on table '{this._tableName}'.");
+        }
+
+        var payload = new
+        {
+            name = options.Name,
+            definition = new
+            {
+                column = options.Column,
+                options = options.Options != null
+                        ? new Dictionary<string, bool?>
+                        {
+                            { "ascii", options.Options.Ascii },
+                            { "normalize", options.Options.Normalize },
+                            { "caseSensitive", options.Options.CaseSensitive }
+                        }.Where(kvp => kvp.Value.HasValue)
+                         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Value)
+                        : null
+            }
+        };
+
+        var command = CreateCommand("createIndex").WithPayload(payload).AddCommandOptions(commandOptions);
+        await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
+    }
+
     internal Command CreateCommand(string name)
     {
         var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions }).ToArray();
@@ -151,5 +217,4 @@ public class Table<T> : IQueryRunner<T> where T : class
     {
         return RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously);
     }
-
 }

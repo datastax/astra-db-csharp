@@ -628,7 +628,7 @@ public class Database
         return GetTable<TRow>(tableName, options);
     }
 
-    private Table<TRow> GetTable<TRow>(string tableName, CommandOptions options) where TRow : class
+    internal Table<TRow> GetTable<TRow>(string tableName, CommandOptions options) where TRow : class
     {
         return new Table<TRow>(tableName, this, options);
     }
