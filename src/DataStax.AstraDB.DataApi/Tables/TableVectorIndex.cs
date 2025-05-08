@@ -19,23 +19,22 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 
-public class TableIndex
+public class TableVectorIndex
 {
   /*
-  {
   "name": example_index_name",
-  "definition": {
-    "column": "example_column",
-    "options": {
-      "caseSensitive": false
+    "definition": {
+      "column": "example_vector_column",
+      "options": {
+        "metric": "dot_product",
+        "sourceModel": "ada002"
+      }
     }
-  }
-}
   */
   [JsonPropertyName("name")]
   public string IndexName { get; set; }
 
   [JsonPropertyName("definition")]
-  public TableIndexDefinition Definition { get; set; }
+  public TableVectorIndexDefinition Definition { get; set; }
 
 }

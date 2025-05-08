@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Tables;
 using System.Net;
 using System.Text;
@@ -382,7 +383,7 @@ public class DatabaseTests
             var table = await fixture.Database.CreateTableAsync<RowTestObject>();
             Assert.NotNull(table);
             var definitions = await fixture.Database.ListTablesAsync();
-            var definition = definitions.FirstOrDefault(d => d.Name == typeof(RowTestObject).Name);
+            var definition = definitions.FirstOrDefault(d => d.Name == "testTable");
             Assert.NotNull(definition);
             Assert.Equal(4, (definition.TableDefinition.Columns["Vector"] as VectorColumn).Dimension);
 
@@ -411,11 +412,12 @@ public class DatabaseTests
                 Boolean = false,
                 Date = DateTime.Now,
                 UUID = Guid.NewGuid(),
-                Blob = Encoding.ASCII.GetBytes("Test Blob")
+                Blob = Encoding.ASCII.GetBytes("Test Blob"),
+                Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us1ns")
             };
             var result = await table.InsertManyAsync(new List<RowTestObject> { row });
             Assert.Equal(1, result.InsertedCount);
-            var resultSet = table.Find(null, null, null);
+            var resultSet = table.Find();
             var resultList = resultSet.ToList();
             var resultRow = resultList.First();
             Assert.Equal(row.Name, resultRow.Name);
@@ -439,6 +441,8 @@ public class DatabaseTests
             Assert.Equal(row.Date.ToUniversalTime().ToString("MMddyyhhmmss"), resultRow.Date.ToUniversalTime().ToString("MMddyyhhmmss"));
             Assert.Equal(row.UUID, resultRow.UUID);
             Assert.Equal(row.Blob, resultRow.Blob);
+            Assert.Equal(row.Duration, resultRow.Duration);
+
         }
         finally
         {
@@ -585,6 +589,60 @@ public class DatabaseTests
     public async Task CreateTableFromObject_InvalidPrimaryKeySorts_ThrowsException()
     {
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await fixture.Database.CreateTableAsync<BrokenCompoundPrimaryKey>());
+    }
+
+    [Fact]
+    public async Task GetTable()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBook>();
+            Assert.NotNull(table);
+            var foundTable = fixture.Database.GetTable<RowBook>();
+            Assert.NotNull(foundTable);
+            var foundTable2 = fixture.Database.GetTable<RowBook>("bookTestTable");
+            Assert.NotNull(foundTable2);
+            //add a row to the first table, then make sure it exists in the second (both should be the same underlying table)
+            var row = new RowBook()
+            {
+                Title = "Desert Peace",
+                Author = "Walter Dray",
+                NumberOfPages = 355,
+                DueDate = DateTime.Now - TimeSpan.FromDays(2),
+                Genres = new HashSet<string> { "Fiction" }
+            };
+            var result = await table.InsertOneAsync(row);
+            Assert.Equal(1, result.InsertedCount);
+            var id = result.InsertedIds.First().First().ToString();
+            var filter = Builders<RowBook>.Filter.Eq(b => b.Title, id);
+            var foundRow = await foundTable2.FindOneAsync(filter);
+            Assert.Equal(row.Title, foundRow.Title);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBook>();
+        }
+    }
+
+    [Fact]
+    public async Task DropNonExistentTable_ThrowsException()
+    {
+        await Assert.ThrowsAsync<CommandException>(async () => await fixture.Database.DropTableAsync("nonExistentTable"));
+    }
+
+    [Fact]
+    public async Task DropNonExistentTable_DoesNotThrowException_WhenNotExistsIsTrue()
+    {
+        await fixture.Database.DropTableAsync("nonExistentTable", true);
+    }
+
+    [Fact]
+    public async Task DropExistingTable()
+    {
+        var tableName = "testDropExistingTable";
+        var table = await fixture.Database.CreateTableAsync<RowBook>(tableName);
+        Assert.NotNull(table);
+        await fixture.Database.DropTableAsync(tableName);
     }
 
 }

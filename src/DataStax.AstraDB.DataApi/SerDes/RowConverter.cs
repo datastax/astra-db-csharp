@@ -33,7 +33,7 @@ public class RowConverter<T> : JsonConverter<T> where T : class
         T instance = Activator.CreateInstance<T>();
         var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanWrite && !p.GetCustomAttributes<ColumnIgnoreAttribute>().Any())
-            .ToDictionary(p => GetPropertyName(p), p => p);
+            .ToDictionary(p => GetPropertyName(p, true), p => p);
 
         while (reader.Read())
         {
@@ -48,7 +48,30 @@ public class RowConverter<T> : JsonConverter<T> where T : class
             {
                 reader.Read();
 
-                if (property.GetCustomAttribute<ColumnJsonStringAttribute>() != null)
+                if (property.GetCustomAttribute<ColumnVectorizeAttribute>() != null)
+                {
+                    if (reader.TokenType == JsonTokenType.StartArray)
+                    {
+                        var floatList = new System.Collections.Generic.List<float>();
+                        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                        {
+                            if (reader.TokenType == JsonTokenType.Number)
+                            {
+                                floatList.Add(reader.GetSingle());
+                            }
+                            else
+                            {
+                                throw new JsonException($"Unexpected token type '{reader.TokenType}' within float array for property '{propertyName}'. Expected Number.");
+                            }
+                        }
+                        property.SetValue(instance, floatList.ToArray());
+                    }
+                    else
+                    {
+                        throw new JsonException($"Expected StartArray token for ColumnVectorize property '{propertyName}'.");
+                    }
+                }
+                else if (property.GetCustomAttribute<ColumnJsonStringAttribute>() != null)
                 {
                     if (reader.TokenType == JsonTokenType.String)
                     {
@@ -81,7 +104,7 @@ public class RowConverter<T> : JsonConverter<T> where T : class
 
         foreach (var property in properties)
         {
-            string propertyName = GetPropertyName(property);
+            string propertyName = GetPropertyName(property, false);
             object propertyValue = property.GetValue(value);
 
             if (propertyValue == null && options.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull)
@@ -103,8 +126,18 @@ public class RowConverter<T> : JsonConverter<T> where T : class
         writer.WriteEndObject();
     }
 
-    private static string GetPropertyName(PropertyInfo property)
+    private static string GetPropertyName(PropertyInfo property, bool forDeserialization)
     {
+        var documentMappingAttribute = property.GetCustomAttribute<DocumentMappingAttribute>();
+        if (documentMappingAttribute != null && forDeserialization)
+        {
+            if (documentMappingAttribute.Field == DocumentMappingField.Similarity)
+            {
+                return "$similarity";
+            }
+
+        }
+
         var nameAttribute = property.GetCustomAttribute<ColumnNameAttribute>();
         return nameAttribute == null ? property.Name : nameAttribute.ColumnName;
     }

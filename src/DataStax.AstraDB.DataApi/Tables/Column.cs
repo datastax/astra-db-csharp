@@ -76,7 +76,7 @@ public class BooleanColumn : Column
     public override string Type => "boolean";
 }
 
-public class DateColumn : Column
+public class DateTimeColumn : Column
 {
     [JsonPropertyName("type")]
     public override string Type => "timestamp";
@@ -92,6 +92,12 @@ public class IPAddressColumn : Column
 {
     [JsonPropertyName("type")]
     public override string Type => "inet";
+}
+
+public class DurationColumn : Column
+{
+    [JsonPropertyName("type")]
+    public override string Type => "duration";
 }
 
 public class DictionaryColumn : Column

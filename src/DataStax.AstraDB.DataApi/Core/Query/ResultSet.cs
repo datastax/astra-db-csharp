@@ -22,29 +22,40 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+public class DocumentResultSet<T, TResult> : ResultSet<T, TResult, DocumentSortBuilder<T>>
+    where T : class
+    where TResult : class
+{
+    internal DocumentResultSet(IQueryRunner<T, DocumentSortBuilder<T>> queryRunner, Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions)
+        : base(queryRunner, filter, findOptions, commandOptions)
+    {
+    }
+}
+
 /// <summary>
 /// A Fluent API for finding documents in a collection.
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <typeparam name="TResult">The type of the result.</typeparam>
-public class ResultSet<T, TResult> : IAsyncEnumerable<TResult>, IEnumerable<TResult>
+public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerable<TResult>
     where T : class
     where TResult : class
+    where TSort : SortBuilder<T>
 {
     private readonly Filter<T> _filter;
-    private readonly IQueryRunner<T> _queryRunner;
-    private FindOptions<T> _findOptions;
+    private readonly IQueryRunner<T, TSort> _queryRunner;
+    private IFindManyOptions<T, TSort> _findOptions;
     private CommandOptions _commandOptions;
 
     internal Filter<T> Filter => _filter;
-    internal IQueryRunner<T> QueryRunner => _queryRunner;
+    internal IQueryRunner<T, TSort> QueryRunner => _queryRunner;
 
-    private FindOptions<T> FindOptions
+    private IFindManyOptions<T, TSort> FindOptions
     {
-        get { return _findOptions ??= new FindOptions<T>(); }
+        get { return _findOptions; }
     }
 
-    internal ResultSet(IQueryRunner<T> queryRunner, Filter<T> filter, FindOptions<T> findOptions, CommandOptions commandOptions)
+    internal ResultSet(IQueryRunner<T, TSort> queryRunner, Filter<T> filter, IFindManyOptions<T, TSort> findOptions, CommandOptions commandOptions)
     {
         _filter = filter;
         _queryRunner = queryRunner;
@@ -64,9 +75,32 @@ public class ResultSet<T, TResult> : IAsyncEnumerable<TResult>, IEnumerable<TRes
     /// var projection = projectionBuilder.Include(p =&gt; p.Properties.PropertyOne);
     /// </code>
     /// </example>
-    public ResultSet<T, TResult> Project(IProjectionBuilder projection)
+    public ResultSet<T, TResult, TSort> Project(IProjectionBuilder projection)
     {
         FindOptions.Projection = projection;
+        return this;
+    }
+
+    /// <summary>
+    /// Specify the maximum number of documents to return.
+    /// </summary>
+    /// <param name="limit">The maximum number of documents to return.</param>
+    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
+    public ResultSet<T, TResult, TSort> Limit(int limit)
+    {
+        FindOptions.Limit = limit;
+        return this;
+    }
+
+    /// <summary>
+    /// The number of documents to skip before starting to return documents.
+    /// Use in conjuction with <see cref="Sort"/> to determine the order to apply before skipping. 
+    /// </summary>
+    /// <param name="skip">The number of documents to skip.</param>
+    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
+    public ResultSet<T, TResult, TSort> Skip(int skip)
+    {
+        FindOptions.Skip = skip;
         return this;
     }
 
@@ -82,34 +116,12 @@ public class ResultSet<T, TResult> : IAsyncEnumerable<TResult>, IEnumerable<TRes
     /// var sort = sortBuilder.Ascending(p =&gt; p.Properties.PropertyOne);
     /// </code>
     /// </example>
-    public ResultSet<T, TResult> Sort(SortBuilder<T> sortBuilder)
+    public ResultSet<T, TResult, TSort> Sort(TSort sortBuilder)
     {
         FindOptions.Sort = sortBuilder;
         return this;
     }
 
-    /// <summary>
-    /// Specify the maximum number of documents to return.
-    /// </summary>
-    /// <param name="limit">The maximum number of documents to return.</param>
-    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
-    public ResultSet<T, TResult> Limit(int limit)
-    {
-        FindOptions.Limit = limit;
-        return this;
-    }
-
-    /// <summary>
-    /// The number of documents to skip before starting to return documents.
-    /// Use in conjuction with <see cref="Sort"/> to determine the order to apply before skipping. 
-    /// </summary>
-    /// <param name="skip">The number of documents to skip.</param>
-    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
-    public ResultSet<T, TResult> Skip(int skip)
-    {
-        FindOptions.Skip = skip;
-        return this;
-    }
 
     /// <summary>
     /// Whether to include the similarity score in the result or not.
@@ -134,7 +146,7 @@ public class ResultSet<T, TResult> : IAsyncEnumerable<TResult>, IEnumerable<TRes
     /// var similarity = result.Similarity;
     /// </code>
     /// </example>
-    public ResultSet<T, TResult> IncludeSimilarity(bool includeSimilarity)
+    public ResultSet<T, TResult, TSort> IncludeSimilarity(bool includeSimilarity)
     {
         FindOptions.IncludeSimilarity = includeSimilarity;
         return this;
@@ -155,7 +167,7 @@ public class ResultSet<T, TResult> : IAsyncEnumerable<TResult>, IEnumerable<TRes
     /// var sortVector = cursor.SortVectors;
     /// </code>
     /// </example>
-    public ResultSet<T, TResult> IncludeSortVector(bool includeSortVector)
+    public ResultSet<T, TResult, TSort> IncludeSortVector(bool includeSortVector)
     {
         FindOptions.IncludeSortVector = includeSortVector;
         return this;

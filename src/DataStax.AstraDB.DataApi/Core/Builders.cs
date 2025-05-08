@@ -53,7 +53,17 @@ public class Builders<T>
     /// sort = sort.Ascending(x => x.Name);
     /// </code>
     /// </example>
-    public static SortBuilder<T> Sort => new();
+    public static DocumentSortBuilder<T> Sort => new();
+    /// <summary>
+    /// A builder for creating sort definitions for tables
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var sort = Builders&lt;DocumentType&gt;.TableSort;
+    /// sort = sort.Ascending(x => x.Name);
+    /// </code>
+    /// </example>
+    public static TableSortBuilder<T> TableSort => new();
     /// <summary>
     /// A builder for creating update definitions
     /// </summary>

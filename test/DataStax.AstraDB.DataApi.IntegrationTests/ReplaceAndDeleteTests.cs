@@ -388,7 +388,6 @@ public class ReplaceAndDeleteTests
         }
     }
 
-    //NEW
     [Fact]
     public async Task DeleteOne()
     {

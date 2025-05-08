@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -54,6 +55,18 @@ internal static class Extensions
         throw new ArgumentException("Invalid property expression.");
     }
 
+    internal static string GetMemberNameTree(this Expression expression)
+    {
+        if (expression is MemberExpression memberExpression)
+        {
+            StringBuilder sb = new StringBuilder();
+            BuildPropertyName(memberExpression, sb);
+            return sb.ToString();
+        }
+
+        throw new ArgumentException("Invalid property expression.");
+    }
+
     private static void BuildPropertyName(MemberExpression memberExpression, StringBuilder sb)
     {
         if (memberExpression.Expression is MemberExpression parentExpression)
@@ -74,6 +87,11 @@ internal static class Extensions
             if (attribute != null)
             {
                 name = DataApiKeywords.Id;
+            }
+            var columnNameAttribute = propertyInfo.GetCustomAttribute<ColumnNameAttribute>();
+            if (columnNameAttribute != null)
+            {
+                name = columnNameAttribute.ColumnName;
             }
         }
         sb.Append(name);

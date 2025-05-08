@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
+using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Tables;
+namespace DataStax.AstraDB.DataApi.SerDes;
 
-
-public class TableIndex
+public class DurationConverter : JsonConverter<Duration>
 {
-  /*
-  {
-  "name": example_index_name",
-  "definition": {
-    "column": "example_column",
-    "options": {
-      "caseSensitive": false
+    public override Duration Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        string value = reader.GetString();
+        return Duration.Parse(value);
     }
-  }
-}
-  */
-  [JsonPropertyName("name")]
-  public string IndexName { get; set; }
 
-  [JsonPropertyName("definition")]
-  public TableIndexDefinition Definition { get; set; }
-
+    public override void Write(Utf8JsonWriter writer, Duration value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
+    }
 }

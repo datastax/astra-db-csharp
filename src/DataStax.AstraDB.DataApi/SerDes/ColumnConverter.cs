@@ -72,12 +72,13 @@ public class ColumnConverter : JsonConverter<Column>
             "set" => JsonSerializer.Deserialize<SetColumn>(jsonText, options),
             "list" => JsonSerializer.Deserialize<ListColumn>(jsonText, options),
             "boolean" => JsonSerializer.Deserialize<BooleanColumn>(jsonText, options),
-            "date" => JsonSerializer.Deserialize<DateColumn>(jsonText, options),
-            "time" => JsonSerializer.Deserialize<DateColumn>(jsonText, options),
-            "timestamp" => JsonSerializer.Deserialize<DateColumn>(jsonText, options),
+            "date" => JsonSerializer.Deserialize<DateTimeColumn>(jsonText, options),
+            "time" => JsonSerializer.Deserialize<DateTimeColumn>(jsonText, options),
+            "timestamp" => JsonSerializer.Deserialize<DateTimeColumn>(jsonText, options),
             "vector" => JsonSerializer.Deserialize<VectorColumn>(jsonText, options),
             "uuid" => JsonSerializer.Deserialize<GuidColumn>(jsonText, options),
             "blob" => JsonSerializer.Deserialize<BlobColumn>(jsonText, options),
+            "duration" => JsonSerializer.Deserialize<DurationColumn>(jsonText, options),
             _ => throw new JsonException($"Unknown Column type '{typeValue}' encountered.")
         };
     }

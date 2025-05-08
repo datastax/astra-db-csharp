@@ -581,10 +581,10 @@ public class Database
 
     public Task<Table<TRow>> CreateTableAsync<TRow>() where TRow : class, new()
     {
-        return CreateTableAsync<TRow>(null as CommandOptions);
+        return CreateTableAsync<TRow>(null as DatabaseCommandOptions);
     }
 
-    public Task<Table<TRow>> CreateTableAsync<TRow>(CommandOptions options) where TRow : class, new()
+    public Task<Table<TRow>> CreateTableAsync<TRow>(DatabaseCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
         return CreateTableAsync<TRow>(tableName, options);
@@ -595,7 +595,7 @@ public class Database
         return CreateTableAsync<TRow>(tableName, null);
     }
 
-    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CommandOptions options) where TRow : class, new()
+    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class, new()
     {
         var definition = TableDefinition.CreateTableDefinition<TRow>();
         return CreateTableAsync<TRow>(tableName, definition, options, false);
@@ -606,7 +606,7 @@ public class Database
         return CreateTableAsync(tableName, definition, null);
     }
 
-    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, CommandOptions options)
+    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, DatabaseCommandOptions options)
     {
         if (definition.PrimaryKey == null)
         {
@@ -615,7 +615,7 @@ public class Database
         return CreateTableAsync<Row>(tableName, definition, options, false);
     }
 
-    private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CommandOptions options, bool runSynchronously) where TRow : class
+    private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, DatabaseCommandOptions options, bool runSynchronously) where TRow : class
     {
 
         var payload = new TableCommandPayload
@@ -628,37 +628,213 @@ public class Database
         return GetTable<TRow>(tableName, options);
     }
 
-    internal Table<TRow> GetTable<TRow>(string tableName, CommandOptions options) where TRow : class
+    /// <summary>
+    /// Returns a reference to the table with the name defined by a [TableName] attribute on the type, or the type name if no attribute is present.
+    /// </summary>
+    /// <returns>A table class allowing performing operations on the table.</returns>
+    public Table<TRow> GetTable<TRow>() where TRow : class, new()
     {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return GetTable<TRow>(tableName);
+    }
+
+    /// <inheritdoc cref="GetTable{TRow}()" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    public Table<TRow> GetTable<TRow>(DatabaseCommandOptions options) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return GetTable<TRow>(tableName, options);
+    }
+
+    /// <summary>
+    /// Returns a reference to the table with the specified name.
+    /// </summary>
+    /// <param name="tableName"></param>
+    /// <returns></returns>
+    public Table<Row> GetTable(string tableName)
+    {
+        return GetTable(tableName, null);
+    }
+
+    /// <inheritdoc cref="GetTable(string)" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    public Table<Row> GetTable(string tableName, DatabaseCommandOptions options)
+    {
+        return GetTable<Row>(tableName, options);
+    }
+
+    /// <inheritdoc cref="GetTable(string)" />
+    /// <typeparam name="T">The type of the document stored in the referenced table</typeparam>
+    public Table<T> GetTable<T>(string tableName) where T : class
+    {
+        return GetTable<T>(tableName, null);
+    }
+
+    /// <inheritdoc cref="GetTable{T}(string)" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    public Table<TRow> GetTable<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class
+    {
+        Guard.NotNullOrEmpty(tableName, nameof(tableName));
         return new Table<TRow>(tableName, this, options);
     }
 
-    public Task DropTableAsync<TRow>() where TRow : class, new()
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync{TRow}()"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync{TRow}()"/>
+    public void DropTable<TRow>() where TRow : class, new()
     {
-        return DropTableAsync<TRow>(null as CommandOptions);
+        DropTable<TRow>(false, null);
     }
 
-    public Task DropTableAsync<TRow>(CommandOptions options) where TRow : class, new()
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync{TRow}(DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync{TRow}(DatabaseCommandOptions)"/>
+    public void DropTable<TRow>(DatabaseCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
-        return DropTableAsync(tableName, options, false);
+        DropTable(tableName, false, options);
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync(string)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync(string)"/>
+    public void DropTable(string tableName)
+    {
+        DropTable(tableName, false, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync(string, DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync(string, DatabaseCommandOptions)"/>
+    public void DropTable(string tableName, DatabaseCommandOptions options)
+    {
+        DropTable(tableName, false, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync{TRow}(bool)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync{TRow}(bool)"/>
+    public void DropTable<TRow>(bool onlyIfExists) where TRow : class, new()
+    {
+        DropTable<TRow>(onlyIfExists, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync{TRow}(bool, DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync{TRow}(bool, DatabaseCommandOptions)"/>
+    public void DropTable<TRow>(bool onlyIfExists, DatabaseCommandOptions options) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        DropTable(tableName, onlyIfExists, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync(string, bool)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync(string, bool)"/>
+    public void DropTable(string tableName, bool onlyIfExists)
+    {
+        DropTable(tableName, onlyIfExists, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableAsync(string, bool, DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableAsync(string, bool, DatabaseCommandOptions)"/>
+    public void DropTable(string tableName, bool onlyIfExists, DatabaseCommandOptions options)
+    {
+        DropTableAsync(tableName, onlyIfExists, options, true).ResultSync();
+    }
+
+
+
+
+    /// <summary>
+    /// Drops the table with the name defined by a [TableName] attribute on the TRowtype, or the type name if no attribute is present.
+    /// </summary>
+    /// <typeparam name="TRow"></typeparam>
+    public Task DropTableAsync<TRow>() where TRow : class, new()
+    {
+        return DropTableAsync<TRow>(false, null);
+    }
+
+    /// <inheritdoc cref="DropTableAsync{TRow}()" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    public Task DropTableAsync<TRow>(DatabaseCommandOptions options) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return DropTableAsync(tableName, false, options, false);
+    }
+
+    /// <summary>
+    /// Drops the table with the specified name.
+    /// </summary>
+    /// <param name="tableName"></param>
     public Task DropTableAsync(string tableName)
     {
-        return DropTableAsync(tableName, null, false);
+        return DropTableAsync(tableName, false, null, false);
     }
 
-    public Task DropTableAsync(string tableName, CommandOptions options)
+    /// <inheritdoc cref="DropTableAsync(string)" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    public Task DropTableAsync(string tableName, DatabaseCommandOptions options)
     {
-        return DropTableAsync(tableName, options, false);
+        return DropTableAsync(tableName, false, options, false);
     }
 
-    private async Task DropTableAsync(string tableName, CommandOptions options, bool runSynchronously)
+    /// <summary>
+    /// Drops the table with the name defined by a [TableName] attribute on the TRowtype, or the type name if no attribute is present.
+    /// </summary>
+    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
+    /// <typeparam name="TRow"></typeparam>
+    public Task DropTableAsync<TRow>(bool onlyIfExists) where TRow : class, new()
+    {
+        return DropTableAsync<TRow>(onlyIfExists, null);
+    }
+
+    /// <inheritdoc cref="DropTableAsync{TRow}()" />
+    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    public Task DropTableAsync<TRow>(bool onlyIfExists, DatabaseCommandOptions options) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return DropTableAsync(tableName, onlyIfExists, options, false);
+    }
+
+    /// <summary>
+    /// Drops the table with the specified name.
+    /// </summary>
+    /// <param name="tableName"></param>
+    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
+    public Task DropTableAsync(string tableName, bool onlyIfExists)
+    {
+        return DropTableAsync(tableName, onlyIfExists, null, false);
+    }
+
+    /// <inheritdoc cref="DropTableAsync(string)" />
+    /// <param name="tableName"></param>
+    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    public Task DropTableAsync(string tableName, bool onlyIfExists, DatabaseCommandOptions options)
+    {
+        return DropTableAsync(tableName, onlyIfExists, options, false);
+    }
+
+    private async Task DropTableAsync(string tableName, bool onlyIfExists, DatabaseCommandOptions options, bool runSynchronously)
     {
         var payload = new
         {
-            name = tableName
+            name = tableName,
+            options = new
+            {
+                ifExists = onlyIfExists
+            }
         };
         var command = CreateCommand("dropTable").WithPayload(payload).AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);

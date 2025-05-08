@@ -26,7 +26,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// <typeparam name="T">Type of document in the collection</typeparam>
 public class Filter<T>
 {
-    internal virtual object Name { get; }
+    internal virtual string Name { get; }
     internal virtual object Value { get; }
 
     internal Filter(string filterName, object value)
@@ -98,7 +98,11 @@ internal static class FilterExtensions
     internal static Dictionary<string, object> Serialize<T>(this Filter<T> filter)
     {
         var result = new Dictionary<string, object>();
-        if (filter.Value is Filter<T>[] filtersArray)
+        if (filter.Value is Dictionary<string, object> dictionary)
+        {
+            result = dictionary;
+        }
+        else if (filter.Value is Filter<T>[] filtersArray)
         {
             var serializedArray = new List<object>();
             foreach (var nestedFilter in filtersArray)

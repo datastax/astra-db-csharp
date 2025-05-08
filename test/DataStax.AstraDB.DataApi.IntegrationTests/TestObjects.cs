@@ -122,12 +122,18 @@ public class SimpleRowObject
     public string Name { get; set; }
 }
 
+[TableName("bookTestTable")]
 public class RowBook
 {
     [ColumnPrimaryKey]
     public string Title { get; set; }
-    public string Author { get; set; }
+    [ColumnVectorize(1024,
+        serviceProvider: "nvidia",
+        serviceModelName: "NV-Embed-QA")]
+    public object Author { get; set; }
+    // [ColumnName("number_of_pages")]
     public int NumberOfPages { get; set; }
+    //[ColumnName("due_date")]
     public DateTime DueDate { get; set; }
     public HashSet<string> Genres { get; set; }
     public float Rating { get; set; }
@@ -153,6 +159,13 @@ public class RowEventByDay
     public string Category { get; set; }
 }
 
+public class RowBookWithSimilarity : RowBook
+{
+    [DocumentMapping(DocumentMappingField.Similarity)]
+    public double Similarity { get; set; }
+}
+
+[TableName("testTable")]
 public class RowTestObject
 {
     [ColumnPrimaryKey(1)]
@@ -198,6 +211,7 @@ public class RowTestObject
     [ColumnPrimaryKey(14)]
     public Guid UUID { get; set; }
     public byte[] Blob { get; set; }
+    public Duration Duration { get; set; }
 }
 
 public class CompositePrimaryKey

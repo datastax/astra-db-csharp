@@ -14,28 +14,17 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+using System;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-
-public class TableIndex
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public class TableNameAttribute : Attribute
 {
-  /*
-  {
-  "name": example_index_name",
-  "definition": {
-    "column": "example_column",
-    "options": {
-      "caseSensitive": false
+    public string Name { get; set; }
+
+    public TableNameAttribute(string name)
+    {
+        Name = name;
     }
-  }
-}
-  */
-  [JsonPropertyName("name")]
-  public string IndexName { get; set; }
-
-  [JsonPropertyName("definition")]
-  public TableIndexDefinition Definition { get; set; }
-
 }

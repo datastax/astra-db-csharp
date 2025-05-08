@@ -14,28 +14,25 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Tables;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
-
-public class TableIndex
+/// <summary>
+/// A list of documents returned from an operation.
+/// </summary>
+public class DocumentInsertResult
 {
-  /*
-  {
-  "name": example_index_name",
-  "definition": {
-    "column": "example_column",
-    "options": {
-      "caseSensitive": false
-    }
-  }
-}
-  */
-  [JsonPropertyName("name")]
-  public string IndexName { get; set; }
+    /// <summary>
+    /// The list of documents returned.
+    /// </summary>
+    [JsonPropertyName("_id")]
+    public List<object> Ids { get; set; }
 
-  [JsonPropertyName("definition")]
-  public TableIndexDefinition Definition { get; set; }
-
+    /// <summary>
+    /// The status of the insert.
+    /// </summary>
+    [JsonPropertyName("status")]
+    public string Status { get; set; }
 }

@@ -54,4 +54,9 @@ public class InsertManyOptions
     /// The number of documents to insert in each batch.
     /// </summary>
     public int ChunkSize { get; set; } = DefaultChunkSize;
+
+    /// <summary>
+    /// Whether to return status and id for each insert or not.
+    /// </summary>
+    public bool ReturnDocumentResponses { get; set; } = false;
 }

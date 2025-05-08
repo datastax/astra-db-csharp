@@ -258,6 +258,10 @@ public class TableDefinition
         {
           definition.AddGuidColumn(columnName);
         }
+        else if (propertyType == typeof(Duration))
+        {
+          definition.AddDurationColumn(columnName);
+        }
         else if (propertyType == typeof(IPAddress))
         {
           definition.AddIPAddressColumn(columnName);
@@ -305,6 +309,11 @@ public class TableDefinition
   internal static string GetTableName<TRow>() where TRow : class, new()
   {
     Type type = typeof(TRow);
+    var tableNameAttribute = type.GetCustomAttribute<TableNameAttribute>();
+    if (tableNameAttribute != null)
+    {
+      return tableNameAttribute.Name;
+    }
     return type.Name;
   }
 
@@ -431,7 +440,7 @@ public static class TableDefinitionExtensions
 
   public static TableDefinition AddDateColumn(this TableDefinition tableDefinition, string columnName)
   {
-    tableDefinition.Columns.Add(columnName, new DateColumn());
+    tableDefinition.Columns.Add(columnName, new DateTimeColumn());
     return tableDefinition;
   }
 
@@ -493,6 +502,12 @@ public static class TableDefinitionExtensions
   public static TableDefinition AddIPAddressColumn(this TableDefinition tableDefinition, string columnName)
   {
     tableDefinition.Columns.Add(columnName, new IPAddressColumn());
+    return tableDefinition;
+  }
+
+  public static TableDefinition AddDurationColumn(this TableDefinition tableDefinition, string columnName)
+  {
+    tableDefinition.Columns.Add(columnName, new DurationColumn());
     return tableDefinition;
   }
 

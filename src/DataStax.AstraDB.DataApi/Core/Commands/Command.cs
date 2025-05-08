@@ -153,6 +153,7 @@ internal class Command
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         serializeOptions ??= new JsonSerializerOptions();
         serializeOptions.Converters.Add(new ObjectIdConverter());
+        serializeOptions.Converters.Add(new DurationConverter());
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         if (commandOptions.SerializeDateAsDollarDate == true)
         {
@@ -185,6 +186,7 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         var deserializeOptions = new JsonSerializerOptions();
+        deserializeOptions.Converters.Add(new DurationConverter());
         deserializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         if (commandOptions.OutputConverter != null)
         {

@@ -18,24 +18,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-
-public class TableIndex
+public class PrimaryKeySchema
 {
-  /*
-  {
-  "name": example_index_name",
-  "definition": {
-    "column": "example_column",
-    "options": {
-      "caseSensitive": false
-    }
-  }
+  [JsonPropertyName("type")]
+  public string Type { get; set; }
 }
-  */
-  [JsonPropertyName("name")]
-  public string IndexName { get; set; }
 
-  [JsonPropertyName("definition")]
-  public TableIndexDefinition Definition { get; set; }
-
-}
