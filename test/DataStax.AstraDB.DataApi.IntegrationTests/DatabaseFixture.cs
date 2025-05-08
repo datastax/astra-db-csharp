@@ -14,9 +14,11 @@ public class Databaseollection : ICollectionFixture<DatabaseFixture>
 public class DatabaseFixture : IDisposable, IAsyncLifetime
 {
     public DataApiClient Client { get; private set; }
+    public DataApiClient ClientWithoutToken { get; private set; }
     public Database Database { get; private set; }
     public string OpenAiApiKey { get; set; }
     public string DatabaseUrl { get; set; }
+    public string Token { get; set; }
 
     public DatabaseFixture()
     {
@@ -26,7 +28,7 @@ public class DatabaseFixture : IDisposable, IAsyncLifetime
             .AddEnvironmentVariables(prefix: "ASTRA_DB_")
             .Build();
 
-        var token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
+        Token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
         DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
@@ -37,7 +39,8 @@ public class DatabaseFixture : IDisposable, IAsyncLifetime
         {
             RunMode = RunMode.Debug
         };
-        Client = new DataApiClient(token, clientOptions, logger);
+        Client = new DataApiClient(Token, clientOptions, logger);
+        ClientWithoutToken = new DataApiClient(null, clientOptions, logger);
         Database = Client.GetDatabase(DatabaseUrl);
     }
 

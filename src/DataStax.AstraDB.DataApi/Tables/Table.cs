@@ -41,27 +41,141 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         _commandOptions = commandOptions;
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="ListIndexMetadataAsync()"/>
+    /// </summary>
+    /// <returns></returns>
+    public TableIndexMetadataResult ListIndexMetadata()
+    {
+        return ListIndexMetadata(null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListIndexMetadataAsync(CommandOptions)"/>
+    /// </summary>
+    /// <param name="commandOptions"></param>
+    /// <returns></returns>
+    public TableIndexMetadataResult ListIndexMetadata(CommandOptions commandOptions)
+    {
+        return ListIndexMetadataAsync(commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Get a list of indexes for the table.
+    /// </summary>
+    /// <returns></returns>
+    public Task<TableIndexMetadataResult> ListIndexMetadataAsync()
+    {
+        return ListIndexMetadataAsync(null);
+    }
+
+    /// <summary>
+    /// Get a list of indexes for the table.
+    /// </summary>
+    /// <param name="commandOptions"></param>
+    /// <returns></returns>
+    public Task<TableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions)
+    {
+        return ListIndexMetadataAsync(commandOptions, false);
+    }
+
+    private async Task<TableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions, bool runSynchronously)
+    {
+        var payload = new
+        {
+            options = new
+            {
+                explain = true,
+            }
+        };
+        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<TableIndexMetadataResult>(runSynchronously).ConfigureAwait(false);
+        return response.Result;
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateIndexAsync(TableIndex)"/>
+    /// </summary>
+    /// <param name="index"></param>
+    public void CreateIndex(TableIndex index)
+    {
+        CreateIndex(index, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateIndexAsync(TableIndex, CreateIndexCommandOptions)"/>
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="commandOptions"></param>
+    public void CreateIndex(TableIndex index, CreateIndexCommandOptions commandOptions)
+    {
+        CreateIndexAsync(index, commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Creates an index on the table.
+    /// </summary>
+    /// <param name="index"></param>
     public async Task CreateIndexAsync(TableIndex index)
     {
         await CreateIndexAsync(index, null, false);
     }
 
-    public async Task CreateIndexAsync(TableIndex index, CommandOptions commandOptions)
+    /// <inheritdoc cref="CreateIndexAsync(TableIndex)"/>
+    /// <param name="commandOptions"></param>
+    public async Task CreateIndexAsync(TableIndex index, CreateIndexCommandOptions commandOptions)
     {
         await CreateIndexAsync(index, commandOptions, false);
     }
 
-    private async Task CreateIndexAsync(TableIndex index, CommandOptions commandOptions, bool runSynchronously)
+    private async Task CreateIndexAsync(TableIndex index, CreateIndexCommandOptions commandOptions, bool runSynchronously)
     {
+        var indexResponse = await ListIndexMetadataAsync(commandOptions, runSynchronously);
+        var exists = indexResponse?.Indexes?.Any(i => i.Name == index.IndexName) == true;
+
+        if (exists)
+        {
+            if (commandOptions != null && commandOptions.SkipIfExists)
+            {
+                return;
+            }
+            throw new InvalidOperationException($"Index '{index.IndexName}' already exists on table '{this._tableName}'.");
+        }
+
         var command = CreateCommand("createIndex").WithPayload(index).AddCommandOptions(commandOptions);
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="CreateVectorIndexAsync(TableVectorIndex)"/>
+    /// </summary>
+    /// <param name="index"></param>
+    public void CreateVectorIndex(TableVectorIndex index)
+    {
+        CreateVectorIndex(index, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateVectorIndexAsync(TableVectorIndex, CommandOptions)"/>
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="commandOptions"></param>
+    public void CreateVectorIndex(TableVectorIndex index, CommandOptions commandOptions)
+    {
+        CreateVectorIndexAsync(index, commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Creates a vector index on the table.
+    /// </summary>
+    /// <param name="index"></param>
     public async Task CreateVectorIndexAsync(TableVectorIndex index)
     {
         await CreateVectorIndexAsync(index, null, false);
     }
 
+    /// <inheritdoc cref="CreateVectorIndexAsync(TableVectorIndex)"/>
+    /// <param name="commandOptions"></param>
     public async Task CreateVectorIndexAsync(TableVectorIndex index, CommandOptions commandOptions)
     {
         await CreateVectorIndexAsync(index, commandOptions, false);

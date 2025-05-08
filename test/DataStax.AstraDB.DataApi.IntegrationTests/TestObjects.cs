@@ -154,7 +154,7 @@ public class RowEventByDay
 
     [ColumnName("location")]
     public string Location { get; set; }
-        
+
     [ColumnName("category")]
     public string Category { get; set; }
 }
@@ -256,7 +256,7 @@ public class BrokenCompoundPrimaryKey
 
 public class Book
 {
-    [DocumentMapping(DocumentMappingField.Id)]
+    [DocumentId]
     public Guid Id { get; set; }
 
     [DocumentMapping(DocumentMappingField.Vector)]

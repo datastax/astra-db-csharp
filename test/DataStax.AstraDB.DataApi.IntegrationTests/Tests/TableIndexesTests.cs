@@ -15,52 +15,16 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task FixtureTableExists()
-    {
-        var tableInfos = await fixture.Database.ListTablesAsync();
-        Assert.Contains("tableIndexesTest", tableInfos.Select(t => t.Name));
-    }
-
-    [Fact]
-    public async Task ListIndexMetadata()
-    {
-        var table = fixture.Database.GetTable<RowEventByDay>("tableIndexesTest", null);
-        await table.ListIndexMetadataAsync(null, false);
-    }
-
-    [Fact]
-    public async Task CreateIndexOnCategoryColumn()
+    public async Task CreateIndexTests()
     {
         var table = fixture.Database.GetTable<RowEventByDay>("tableIndexesTest", null);
 
-        var indexOptions = new TableIndexOptions
+        var indexOptions = new TableIndex
         {
-            Name = "category_idx",
-            Column = "category",
-            Options = new IndexOptionFlags
+            IndexName = "category_idx",
+            Definition = new TableIndexDefinition<RowEventByDay, string>()
             {
-                Normalize = true,
-                CaseSensitive = false
-            }
-        };
-
-        await table.CreateIndexAsync(indexOptions, null, runSynchronously: false);
-
-        var result = await table.ListIndexMetadataAsync(null, false);
-        Assert.Contains(result.Indexes, i => i.Name == "category_idx");
-    }
-
-    [Fact]
-    public async Task CreateIndexThrowsOnExtantIndex()
-    {
-        var table = fixture.Database.GetTable<RowEventByDay>("tableIndexesTest", null);
-
-        var indexOptions = new TableIndexOptions
-        {
-            Name = "category_idx",
-            Column = "category",
-            Options = new IndexOptionFlags
-            {
+                Column = (b) => b.Category,
                 Normalize = true,
                 CaseSensitive = false
             }
@@ -74,5 +38,15 @@ public class TableIndexesTests
             table.CreateIndexAsync(indexOptions));
 
         Assert.Contains("already exists", ex.Message);
+
+        // second creation (should not fail when SkipIfExists is set)
+        await table.CreateIndexAsync(indexOptions, new CreateIndexCommandOptions()
+        {
+            SkipIfExists = true
+        });
+
+        var result = await table.ListIndexMetadataAsync();
+        Assert.Contains(result.Indexes, i => i.Name == "category_idx");
     }
+
 }
