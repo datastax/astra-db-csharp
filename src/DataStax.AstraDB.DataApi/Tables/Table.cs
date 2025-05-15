@@ -696,6 +696,60 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return deleteResult;
     }
 
+    /// <summary>
+    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
+    /// </summary>
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
+    public Dictionary<string, int> Alter(IAlterTableOperation operation)
+    {
+        return Alter(operation, null);
+    }
+
+    /// <summary>
+    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>.
+    /// </summary>
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>
+    public Dictionary<string, int> Alter(IAlterTableOperation operation, CommandOptions commandOptions)
+    {
+        var response = AlterAsync(operation, commandOptions, true).ResultSync();
+        return response.Result;
+    }
+
+    /// <summary>
+    /// Alters a table using the specified operation.
+    /// </summary>
+    /// <param name="operation">The alteration operation to apply.</param>
+    /// <returns>The status result of the alterTable command.</returns>
+    public async Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation)
+    {
+        var response = await AlterAsync(operation, null, false);
+        return response.Result;
+    }
+
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
+    /// <param name="commandOptions">Options to customize the command execution.</param>
+    public async Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions)
+    {
+        var response = await AlterAsync(operation, commandOptions, false);
+        return response.Result;
+    }
+
+    internal async Task<ApiResponseWithStatus<Dictionary<string, int>>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions, bool runSynchronously)
+    {
+        var payload = new
+        {
+            operation = operation.ToJsonFragment()
+        };
+
+        var command = CreateCommand("alterTable")
+            .WithPayload(payload)
+            .AddCommandOptions(commandOptions);
+
+        var result = await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
+
+        return result;
+    }
+
     internal Command CreateCommand(string name)
     {
         var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions }).ToArray();
