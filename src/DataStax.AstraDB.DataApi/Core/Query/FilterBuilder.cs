@@ -423,7 +423,7 @@ public class FilterBuilder<T>
         {
             if (clusteringColumn.Value is Filter<T> filter)
             {
-                dictionary.Add(filter.Name, new Filter<T>(clusteringColumn.Name, filter.Value));
+                dictionary.Add(clusteringColumn.Name, new Filter<T>(filter.Name, filter.Value));
             }
             else
             {
@@ -443,8 +443,6 @@ public class PrimaryKeyFilter
 
 public class PrimaryKeyFilter<T, TValue> : PrimaryKeyFilter
 {
-    public new TValue Value { get; set; }
-
     public PrimaryKeyFilter(Expression<Func<T, TValue>> columnExpression, TValue value)
     {
         ColumnName = columnExpression.GetMemberNameTree();

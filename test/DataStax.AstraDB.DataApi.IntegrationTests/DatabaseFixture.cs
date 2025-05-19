@@ -40,7 +40,11 @@ public class DatabaseFixture : IDisposable, IAsyncLifetime
             RunMode = RunMode.Debug
         };
         Client = new DataApiClient(Token, clientOptions, logger);
-        ClientWithoutToken = new DataApiClient(null, clientOptions, logger);
+        var clientWithoutTokenOptions = new CommandOptions
+        {
+            RunMode = RunMode.Debug
+        };
+        ClientWithoutToken = new DataApiClient(null, clientWithoutTokenOptions, logger);
         Database = Client.GetDatabase(DatabaseUrl);
     }
 

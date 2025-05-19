@@ -220,40 +220,138 @@ public class TableTests
     public async Task Update_Test()
     {
         var table = fixture.SearchTable;
-        var filter = Builders<RowBook>.Filter.Eq(so => so.Title, "Title 30");
-        var update = Builders<RowBook>.Update.Set(so => so.NumberOfPages, 3).Set(so => so.Genres, new HashSet<string> { "SetItem1", "SetItem2" }).Unset(so => so.DueDate);
+        var filter = Builders<RowBook>.Filter.Eq(x => x.Title, "Title 30");
+        var update = Builders<RowBook>.Update.Set(x => x.Rating, 3.07)
+            .Set(x => x.Genres, new HashSet<string> { "SetItem1", "SetItem2" })
+            .Unset(x => x.DueDate);
         var result = await table.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await table.FindOneAsync(filter);
-        Assert.Equal(3, updatedDocument.NumberOfPages);
+        Assert.Equal(3.07, updatedDocument.Rating);
         Assert.Equal(new HashSet<string> { "SetItem1", "SetItem2" }, updatedDocument.Genres);
         Assert.Equal(default, updatedDocument.DueDate);
     }
 
     [Fact]
-    public async Task DeleteOne()
+    public async Task Delete_One()
     {
-        var table = fixture.DeleteTable;
-        var filter = Builders<RowBook>.Filter
-            .Eq(so => so.Title, "Title 1");
-        var findResult = await table.FindOneAsync(filter);
-        Assert.Equal("Title 1", findResult.Title);
-        var result = await table.DeleteOneAsync(filter);
-        var deletedResult = await table.FindOneAsync(filter);
-        Assert.Null(deletedResult);
+        var tableName = "testDeleteOne";
+        try
+        {
+            var rows = new List<RowBookSinglePrimaryKey>();
+            for (var i = 0; i < 10; i++)
+            {
+                var row = new RowBookSinglePrimaryKey()
+                {
+                    Title = "Title " + i,
+                    Author = "Author Number" + i,
+                    NumberOfPages = 400 + i,
+                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    Genres = (i % 2 == 0)
+                        ? new HashSet<string> { "History", "Biography" }
+                        : new HashSet<string> { "Fiction", "History" },
+                    Rating = (float)new Random().NextDouble()
+                };
+                rows.Add(row);
+            }
+            for (var i = 10; i < 20; i++)
+            {
+                var row = new RowBookSinglePrimaryKey()
+                {
+                    Title = "Title " + i,
+                    Author = "AuthorDeleteMe",
+                    NumberOfPages = 22,
+                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    Genres = (i % 2 == 0)
+                        ? new HashSet<string> { "History", "Biography" }
+                        : new HashSet<string> { "Fiction", "History" },
+                    Rating = (float)new Random().NextDouble()
+                };
+                rows.Add(row);
+            }
+            var table = await fixture.Database.CreateTableAsync<RowBookSinglePrimaryKey>(tableName);
+            await table.CreateIndexAsync(new TableIndex()
+            {
+                IndexName = "testDeleteOne_number_of_pages_index",
+                Definition = new TableIndexDefinition<RowBookSinglePrimaryKey, int>()
+                {
+                    Column = (b) => b.NumberOfPages
+                }
+            });
+            await table.InsertManyAsync(rows);
+            var filter = Builders<RowBookSinglePrimaryKey>.Filter
+                .Eq(so => so.Title, "Title 1");
+            var findResult = await table.FindOneAsync(filter);
+            Assert.Equal("Title 1", findResult.Title);
+            var result = await table.DeleteOneAsync(filter);
+            var deletedResult = await table.FindOneAsync(filter);
+            Assert.Null(deletedResult);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
     }
 
     [Fact]
-    public async Task DeleteMany()
+    public async Task Delete_Many()
     {
-        var table = fixture.DeleteTable;
-        var filter = Builders<RowBook>.Filter
-            .Eq(so => so.NumberOfPages, 22);
-        var findResult = table.Find(filter).ToList();
-        Assert.Equal(10, findResult.Count);
-        var result = await table.DeleteManyAsync(filter);
-        var deletedResult = table.Find(filter).ToList();
-        Assert.Empty(deletedResult);
+        var tableName = "testDeleteMany";
+        try
+        {
+            var rows = new List<RowBookSinglePrimaryKey>();
+            for (var i = 0; i < 10; i++)
+            {
+                var row = new RowBookSinglePrimaryKey()
+                {
+                    Title = "Title " + i,
+                    Author = "Author Number" + i,
+                    NumberOfPages = 400 + i,
+                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    Genres = (i % 2 == 0)
+                        ? new HashSet<string> { "History", "Biography" }
+                        : new HashSet<string> { "Fiction", "History" },
+                    Rating = (float)new Random().NextDouble()
+                };
+                rows.Add(row);
+            }
+            for (var i = 10; i < 20; i++)
+            {
+                var row = new RowBookSinglePrimaryKey()
+                {
+                    Title = "Title " + i,
+                    Author = "AuthorDeleteMe",
+                    NumberOfPages = 22,
+                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    Genres = (i % 2 == 0)
+                        ? new HashSet<string> { "History", "Biography" }
+                        : new HashSet<string> { "Fiction", "History" },
+                    Rating = (float)new Random().NextDouble()
+                };
+                rows.Add(row);
+            }
+            var table = await fixture.Database.CreateTableAsync<RowBookSinglePrimaryKey>(tableName);
+            await table.CreateIndexAsync(new TableIndex()
+            {
+                IndexName = "testDeleteOne_number_of_pages_index",
+                Definition = new TableIndexDefinition<RowBookSinglePrimaryKey, int>()
+                {
+                    Column = (b) => b.NumberOfPages
+                }
+            });
+            await table.InsertManyAsync(rows);
+            var filter = Builders<RowBookSinglePrimaryKey>.Filter
+            .Eq(so => so.Title, "Title 1") & Builders<RowBookSinglePrimaryKey>.Filter.Eq(x => x.NumberOfPages, 401);
+            var findResult = table.Find(filter).ToList();
+            Assert.Equal(10, findResult.Count);
+            var result = await table.DeleteManyAsync(filter);
+            var deletedResult = table.Find(filter).ToList();
+            Assert.Empty(deletedResult);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
     }
 
     [Fact]
@@ -284,6 +382,10 @@ public class TableTests
             var result = await table.DeleteManyAsync(filter);
             var deletedResult = table.Find(filter).ToList();
             Assert.Empty(deletedResult);
+        }
+        catch (Exception ex)
+        {
+            var msg = ex.Message;
         }
         finally
         {

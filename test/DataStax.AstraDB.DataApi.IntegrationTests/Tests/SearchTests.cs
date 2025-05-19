@@ -705,7 +705,5 @@ public class SearchTests
         var distinct = collection.Find(filter).DistinctBy(so => so.Properties.PropertyOne);
         Assert.Equal(3, distinct.Count());
     }
-
-
 }
 

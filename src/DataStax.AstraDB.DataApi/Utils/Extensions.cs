@@ -45,7 +45,13 @@ internal static class Extensions
 
     internal static string GetMemberNameTree<T1, T2>(this Expression<Func<T1, T2>> expression)
     {
-        if (expression.Body is MemberExpression memberExpression)
+        var body = expression.Body;
+        if (body is UnaryExpression unaryExpression && unaryExpression.NodeType == ExpressionType.Convert)
+        {
+            body = unaryExpression.Operand;
+        }
+
+        if (body is MemberExpression memberExpression)
         {
             StringBuilder sb = new StringBuilder();
             BuildPropertyName(memberExpression, sb);

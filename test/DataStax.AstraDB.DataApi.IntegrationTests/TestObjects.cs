@@ -125,15 +125,26 @@ public class SimpleRowObject
 [TableName("bookTestTable")]
 public class RowBook
 {
-    [ColumnPrimaryKey]
+    [ColumnPrimaryKey(1)]
     public string Title { get; set; }
     [ColumnVectorize(1024,
         serviceProvider: "nvidia",
         serviceModelName: "NV-Embed-QA")]
     public object Author { get; set; }
-    // [ColumnName("number_of_pages")]
+    [ColumnPrimaryKey(2)]
     public int NumberOfPages { get; set; }
-    //[ColumnName("due_date")]
+    public DateTime DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
+[TableName("bookTestTableSinglePrimaryKey")]
+public class RowBookSinglePrimaryKey
+{
+    [ColumnPrimaryKey(1)]
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public int NumberOfPages { get; set; }
     public DateTime DueDate { get; set; }
     public HashSet<string> Genres { get; set; }
     public float Rating { get; set; }
@@ -257,17 +268,25 @@ public class BrokenCompoundPrimaryKey
 public class Book
 {
     [DocumentId]
-    public Guid Id { get; set; }
-
-    [DocumentMapping(DocumentMappingField.Vector)]
-    public double[] Vector { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? Id { get; set; }
 
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Title { get; set; }
+
+    [JsonPropertyName("author")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Author { get; set; }
+
+    [JsonPropertyName("number_of_pages")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? NumberOfPages { get; set; }
 
     [JsonPropertyName("isCheckedOut")]
-    public bool IsCheckedOut { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? IsCheckedOut { get; set; }
 
-    [JsonPropertyName("numberOfPages")]
-    public int NumberOfPages { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize { get; set; }
 }

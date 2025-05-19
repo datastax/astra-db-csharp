@@ -52,27 +52,28 @@ public class TableIndexDefinition
 
     [JsonInclude]
     [JsonPropertyName("options")]
-    internal Dictionary<string, bool> Options { get; set; } = new Dictionary<string, bool>();
+    internal Dictionary<string, string> Options { get; set; } = new Dictionary<string, string>();
+
 
     [JsonIgnore]
     public bool CaseSensitive
     {
-        get { return Options.ContainsKey("caseSensitive") ? Options["caseSensitive"] : false; }
-        set { Options["caseSensitive"] = value; }
+        get { return Options.ContainsKey("caseSensitive") ? Options["caseSensitive"] == "true" : false; }
+        set { Options["caseSensitive"] = value ? "true" : "false"; }
     }
 
     [JsonIgnore]
     public bool Normalize
     {
-        get { return Options.ContainsKey("normalize") ? Options["normalize"] : false; }
-        set { Options["normalize"] = value; }
+        get { return Options.ContainsKey("normalize") ? Options["normalize"] == "true" : false; }
+        set { Options["normalize"] = value ? "true" : "false"; }
     }
 
     [JsonIgnore]
     public bool Ascii
     {
-        get { return Options.ContainsKey("ascii") ? Options["ascii"] : false; }
-        set { Options["ascii"] = value; }
+        get { return Options.ContainsKey("ascii") ? Options["ascii"] == "true" : false; }
+        set { Options["ascii"] = value ? "true" : "false"; }
     }
 
 }

@@ -62,7 +62,9 @@ public class TablesFixture : IDisposable, IAsyncLifetime
     private const string _queryTableName = "tableQueryTests";
     private async Task CreateSearchTable()
     {
-        var rows = new List<RowBook>() {
+        try
+        {
+            var rows = new List<RowBook>() {
             new RowBook()
             {
                 Title = "Computed Wilderness",
@@ -82,48 +84,53 @@ public class TablesFixture : IDisposable, IAsyncLifetime
                 Rating = 2.50123f
             }
         };
-        for (var i = 0; i < 100; i++)
-        {
-            var row = new RowBook()
+            for (var i = 0; i < 100; i++)
             {
-                Title = "Title " + i,
-                Author = "Author Number" + i,
-                NumberOfPages = 400 + i,
-                DueDate = DateTime.Now - TimeSpan.FromDays(1),
-                Genres = (i % 2 == 0)
-                    ? new HashSet<string> { "History", "Biography" }
-                    : new HashSet<string> { "Fiction", "History" },
-                Rating = (float)new Random().NextDouble()
-            };
-            rows.Add(row);
+                var row = new RowBook()
+                {
+                    Title = "Title " + i,
+                    Author = "Author Number" + i,
+                    NumberOfPages = 400 + i,
+                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    Genres = (i % 2 == 0)
+                        ? new HashSet<string> { "History", "Biography" }
+                        : new HashSet<string> { "Fiction", "History" },
+                    Rating = (float)new Random().NextDouble()
+                };
+                rows.Add(row);
+            }
+            var table = await Database.CreateTableAsync<RowBook>(_queryTableName);
+            await table.CreateIndexAsync(new TableIndex()
+            {
+                IndexName = "number_of_pages_index",
+                Definition = new TableIndexDefinition<RowBook, int>()
+                {
+                    Column = (b) => b.NumberOfPages
+                }
+            });
+            await table.CreateVectorIndexAsync(new TableVectorIndex()
+            {
+                IndexName = "author_index",
+                Definition = new TableVectorIndexDefinition<RowBook, object>()
+                {
+                    Column = (b) => b.Author
+                }
+            });
+            await table.CreateIndexAsync(new TableIndex()
+            {
+                IndexName = "due_date_index",
+                Definition = new TableIndexDefinition<RowBook, DateTime>()
+                {
+                    Column = (b) => b.DueDate
+                }
+            });
+            await table.InsertManyAsync(rows);
+            SearchTable = table;
         }
-        var table = await Database.CreateTableAsync<RowBook>(_queryTableName);
-        await table.CreateIndexAsync(new TableIndex()
+        catch (Exception ex)
         {
-            IndexName = "number_of_pages_index",
-            Definition = new TableIndexDefinition<RowBook, int>()
-            {
-                Column = (b) => b.NumberOfPages
-            }
-        });
-        await table.CreateVectorIndexAsync(new TableVectorIndex()
-        {
-            IndexName = "author_index",
-            Definition = new TableVectorIndexDefinition<RowBook, object>()
-            {
-                Column = (b) => b.Author
-            }
-        });
-        await table.CreateIndexAsync(new TableIndex()
-        {
-            IndexName = "due_date_index",
-            Definition = new TableIndexDefinition<RowBook, DateTime>()
-            {
-                Column = (b) => b.DueDate
-            }
-        });
-        await table.InsertManyAsync(rows);
-        SearchTable = table;
+            Console.WriteLine(ex.Message);
+        }
     }
 
     private const string _deleteTableName = "tableDeleteTests";

@@ -66,6 +66,16 @@ public class DocumentConverter<T> : JsonConverter<T>
                     ReverseMappings[DataApiKeywords.Id] = prop;
                     PropertyNamesToIgnore.Add(prop.Name);
                 }
+                else
+                {
+                    var jsonPropertyNameAttribute = prop.GetCustomAttribute<JsonPropertyNameAttribute>();
+                    if (jsonPropertyNameAttribute != null)
+                    {
+                        FieldMappings[prop] = jsonPropertyNameAttribute.Name;
+                        ReverseMappings[jsonPropertyNameAttribute.Name] = prop;
+                        PropertyNamesToIgnore.Add(jsonPropertyNameAttribute.Name);
+                    }
+                }
             }
         }
     }

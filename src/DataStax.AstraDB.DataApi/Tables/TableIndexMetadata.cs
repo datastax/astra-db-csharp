@@ -29,3 +29,6 @@ public class TableIndexMetadata
   [JsonPropertyName("indexType")]
   public string IndexType { get; set; }
 }
+
+//{"indexes":[{"name":"author_index",
+// "definition":{"column":"Author","options":{"metric":"cosine","sourceModel":"other"}},"indexType":"vector"},{"name":"number_of_pages_index","definition":{"column":"NumberOfPages","options":{}},"indexType":"regular"}]}}
