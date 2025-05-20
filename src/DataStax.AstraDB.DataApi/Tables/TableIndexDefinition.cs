@@ -18,6 +18,7 @@ using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
@@ -35,45 +36,93 @@ public class TableIndexDefinition<TRow, TColumn> : TableIndexDefinition
 
 public class TableIndexDefinition
 {
-    /*
-    {
-    "definition": {
-      "column": "example_column",
-      "options": {
-        "caseSensitive": false,
-        "normalize": true,
-        "ascii": false
-      }
-    }
-  }
-    */
     [JsonPropertyName("column")]
     public string ColumnName { get; set; }
 
     [JsonInclude]
     [JsonPropertyName("options")]
+    [JsonConverter(typeof(StringBoolDictionaryConverter))]
     internal Dictionary<string, string> Options { get; set; } = new Dictionary<string, string>();
-
 
     [JsonIgnore]
     public bool CaseSensitive
     {
-        get { return Options.ContainsKey("caseSensitive") ? Options["caseSensitive"] == "true" : false; }
-        set { Options["caseSensitive"] = value ? "true" : "false"; }
+        get => Options.ContainsKey("caseSensitive") && bool.TryParse(Options["caseSensitive"], out var result) && result;
+        set => Options["caseSensitive"] = value.ToString().ToLowerInvariant();
     }
 
     [JsonIgnore]
     public bool Normalize
     {
-        get { return Options.ContainsKey("normalize") ? Options["normalize"] == "true" : false; }
-        set { Options["normalize"] = value ? "true" : "false"; }
+        get => Options.ContainsKey("normalize") && bool.TryParse(Options["normalize"], out var result) && result;
+        set => Options["normalize"] = value.ToString().ToLowerInvariant();
     }
 
     [JsonIgnore]
     public bool Ascii
     {
-        get { return Options.ContainsKey("ascii") ? Options["ascii"] == "true" : false; }
-        set { Options["ascii"] = value ? "true" : "false"; }
+        get => Options.ContainsKey("ascii") && bool.TryParse(Options["ascii"], out var result) && result;
+        set => Options["ascii"] = value.ToString().ToLowerInvariant();
+    }
+}
+
+public class StringBoolDictionaryConverter : JsonConverter<Dictionary<string, string>>
+{
+    public override Dictionary<string, string> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new JsonException("Expected StartObject token.");
+        }
+
+        var dictionary = new Dictionary<string, string>();
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                return dictionary;
+            }
+
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonException("Expected PropertyName token.");
+            }
+
+            string propertyName = reader.GetString();
+
+            reader.Read(); // Move to the value
+
+            string value;
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.True:
+                case JsonTokenType.False:
+                    value = reader.GetBoolean().ToString().ToLowerInvariant();
+                    break;
+                case JsonTokenType.String:
+                    value = reader.GetString();
+                    break;
+                default:
+                    throw new JsonException($"Unexpected token type {reader.TokenType} for property {propertyName}.");
+            }
+
+            dictionary[propertyName] = value;
+        }
+
+        throw new JsonException("Unexpected end of JSON.");
     }
 
+    public override void Write(Utf8JsonWriter writer, Dictionary<string, string> value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+
+        foreach (var kvp in value)
+        {
+            writer.WritePropertyName(kvp.Key);
+            writer.WriteStringValue(kvp.Value);
+        }
+
+        writer.WriteEndObject();
+    }
 }

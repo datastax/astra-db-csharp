@@ -20,8 +20,8 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-public class TableIndexMetadataResult
+public class ListTableIndexNamesResult
 {
     [JsonPropertyName("indexes")]
-    public List<TableIndexMetadata> Indexes { get; set; }
+    public List<string> IndexNames { get; set; }
 }

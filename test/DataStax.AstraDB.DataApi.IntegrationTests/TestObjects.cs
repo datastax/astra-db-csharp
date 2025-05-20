@@ -265,6 +265,7 @@ public class BrokenCompoundPrimaryKey
     public string SortOneAscending { get; set; }
 }
 
+#nullable enable
 public class Book
 {
     [DocumentId]
@@ -288,5 +289,5 @@ public class Book
     public bool? IsCheckedOut { get; set; }
 
     [DocumentMapping(DocumentMappingField.Vectorize)]
-    public string StringToVectorize { get; set; }
+    public string? StringToVectorize { get; set; }
 }

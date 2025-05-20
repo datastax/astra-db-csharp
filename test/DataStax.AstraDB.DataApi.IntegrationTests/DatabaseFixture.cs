@@ -11,7 +11,7 @@ public class Databaseollection : ICollectionFixture<DatabaseFixture>
 
 }
 
-public class DatabaseFixture : IDisposable, IAsyncLifetime
+public class DatabaseFixture
 {
     public DataApiClient Client { get; private set; }
     public DataApiClient ClientWithoutToken { get; private set; }
@@ -48,18 +48,4 @@ public class DatabaseFixture : IDisposable, IAsyncLifetime
         Database = Client.GetDatabase(DatabaseUrl);
     }
 
-    public async Task InitializeAsync()
-    {
-
-    }
-
-    public async Task DisposeAsync()
-    {
-
-    }
-
-    public void Dispose()
-    {
-        //nothing needed
-    }
 }

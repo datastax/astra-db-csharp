@@ -840,12 +840,45 @@ public class Database
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
     }
 
-    public Task<IEnumerable<TableInfo>> ListTablesAsync()
+    /// <summary>
+    /// Synchronous version of <see cref="ListTablesAsync()"/>
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<TableInfo> ListTables()
     {
-        return ListTablesAsync(null, true, false);
+        return ListTables(null);
     }
 
-    private async Task<IEnumerable<TableInfo>> ListTablesAsync(CommandOptions options, bool includeDetails, bool runSynchronously)
+    /// <summary>
+    /// Synchronous version of <see cref="ListTablesAsync(DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    /// <returns></returns>
+    public IEnumerable<TableInfo> ListTables(DatabaseCommandOptions options)
+    {
+        return ListTablesAsync(options, true, true).ResultSync();
+    }
+
+    /// <summary>
+    /// List the tables in the database.
+    /// </summary>
+    /// <returns></returns>
+    public Task<IEnumerable<TableInfo>> ListTablesAsync()
+    {
+        return ListTablesAsync(null);
+    }
+
+    /// <summary>
+    /// List the tables in the database.
+    /// </summary>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    /// <returns></returns>
+    public Task<IEnumerable<TableInfo>> ListTablesAsync(DatabaseCommandOptions options)
+    {
+        return ListTablesAsync(options, true, false);
+    }
+
+    private async Task<IEnumerable<TableInfo>> ListTablesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
     {
         var payload = new
         {
@@ -859,6 +892,106 @@ public class Database
         return result.Result.Tables;
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="ListTableNamesAsync()"/>
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<string> ListTableNames()
+    {
+        return ListTableNames(null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListTableNamesAsync(DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    /// <returns></returns>
+    public IEnumerable<string> ListTableNames(DatabaseCommandOptions options)
+    {
+        return ListTableNamesAsync(options, true, true).ResultSync();
+    }
+
+    /// <summary>
+    /// List the tables in the database.
+    /// </summary>
+    /// <returns></returns>
+    public Task<IEnumerable<string>> ListTableNamesAsync()
+    {
+        return ListTableNamesAsync(null);
+    }
+
+    /// <summary>
+    /// List the tables in the database.
+    /// </summary>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    /// <returns></returns>
+    public Task<IEnumerable<string>> ListTableNamesAsync(DatabaseCommandOptions options)
+    {
+        return ListTableNamesAsync(options, true, false);
+    }
+
+    private async Task<IEnumerable<string>> ListTableNamesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
+    {
+        var payload = new
+        {
+            options = new
+            {
+                explain = includeDetails
+            }
+        };
+        var command = CreateCommand("listTables").WithPayload(payload).AddCommandOptions(options);
+        var result = await command.RunAsyncReturnStatus<ListTableNamesResult>(runSynchronously).ConfigureAwait(false);
+        return result.Result.Tables;
+    }
+
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableIndexAsync(string)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableIndexAsync(string)"/>
+    public void DropTableIndex(string indexName)
+    {
+        DropTableIndex(indexName, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableIndexAsync(string, DropIndexCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableIndexAsync(string, DropIndexCommandOptions)"/>
+    public void DropTableIndex(string indexName, DropIndexCommandOptions commandOptions)
+    {
+        DropTableIndexAsync(indexName, commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Drops an index on the table.
+    /// </summary>
+    /// <param name="indexName">The name of the index to drop</param>
+    public async Task DropTableIndexAsync(string indexName)
+    {
+        await DropTableIndexAsync(indexName, null, false);
+    }
+
+    /// <inheritdoc cref="DropTableIndexAsync(string)"/>
+    /// <param name="commandOptions"></param>
+    public async Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions)
+    {
+        await DropTableIndexAsync(indexName, commandOptions, false);
+    }
+
+    private async Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions, bool runSynchronously)
+    {
+        var payload = new
+        {
+            name = indexName,
+            options = new
+            {
+                ifExists = commandOptions?.SkipIfNotExists ?? false,
+            }
+        };
+        var command = CreateCommand("dropIndex").WithPayload(payload).AddCommandOptions(commandOptions);
+        await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
+    }
 
     internal static Guid? GetDatabaseIdFromUrl(string url)
     {

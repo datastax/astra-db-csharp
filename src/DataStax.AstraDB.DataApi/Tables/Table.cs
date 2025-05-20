@@ -45,7 +45,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// Synchronous version of <see cref="ListIndexMetadataAsync()"/>
     /// </summary>
     /// <returns></returns>
-    public TableIndexMetadataResult ListIndexMetadata()
+    public ListTableIndexMetadataResult ListIndexMetadata()
     {
         return ListIndexMetadata(null);
     }
@@ -55,7 +55,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public TableIndexMetadataResult ListIndexMetadata(CommandOptions commandOptions)
+    public ListTableIndexMetadataResult ListIndexMetadata(CommandOptions commandOptions)
     {
         return ListIndexMetadataAsync(commandOptions, true).ResultSync();
     }
@@ -64,7 +64,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// Get a list of indexes for the table.
     /// </summary>
     /// <returns></returns>
-    public Task<TableIndexMetadataResult> ListIndexMetadataAsync()
+    public Task<ListTableIndexMetadataResult> ListIndexMetadataAsync()
     {
         return ListIndexMetadataAsync(null);
     }
@@ -74,12 +74,12 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public Task<TableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions)
+    public Task<ListTableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions)
     {
         return ListIndexMetadataAsync(commandOptions, false);
     }
 
-    private async Task<TableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions, bool runSynchronously)
+    private async Task<ListTableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions, bool runSynchronously)
     {
         var payload = new
         {
@@ -89,14 +89,65 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
             }
         };
         var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<TableIndexMetadataResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnStatus<ListTableIndexMetadataResult>(runSynchronously).ConfigureAwait(false);
         return response.Result;
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListIndexNamesAsync()"/>
+    /// </summary>
+    /// <inheritdoc cref="ListIndexNamesAsync()"/>
+    public List<string> ListIndexNames()
+    {
+        return ListIndexNames(null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListIndexNamesAsync(CommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="ListIndexNamesAsync(CommandOptions)"/>
+    public List<string> ListIndexNames(CommandOptions commandOptions)
+    {
+        return ListIndexNamesAsync(commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Get a list of index names for the table.
+    /// </summary>
+    /// <returns></returns>
+    public Task<List<string>> ListIndexNamesAsync()
+    {
+        return ListIndexNamesAsync(null);
+    }
+
+    /// <summary>
+    /// Get a list of index names for the table.
+    /// </summary>
+    /// <param name="commandOptions"></param>
+    /// <returns></returns>
+    public Task<List<string>> ListIndexNamesAsync(CommandOptions commandOptions)
+    {
+        return ListIndexNamesAsync(commandOptions, false);
+    }
+
+    private async Task<List<string>> ListIndexNamesAsync(CommandOptions commandOptions, bool runSynchronously)
+    {
+        var payload = new
+        {
+            options = new
+            {
+                explain = false,
+            }
+        };
+        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
+        var response = await command.RunAsyncReturnStatus<ListTableIndexNamesResult>(runSynchronously).ConfigureAwait(false);
+        return response.Result.IndexNames;
     }
 
     /// <summary>
     /// Synchronous version of <see cref="CreateIndexAsync(TableIndex)"/>
     /// </summary>
-    /// <param name="index"></param>
+    /// <inheritdoc cref="CreateIndexAsync(TableIndex)"/>
     public void CreateIndex(TableIndex index)
     {
         CreateIndex(index, null);
@@ -105,8 +156,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <summary>
     /// Synchronous version of <see cref="CreateIndexAsync(TableIndex, CreateIndexCommandOptions)"/>
     /// </summary>
-    /// <param name="index"></param>
-    /// <param name="commandOptions"></param>
+    /// <inheritdoc cref="CreateIndexAsync(TableIndex, CreateIndexCommandOptions)"/>
     public void CreateIndex(TableIndex index, CreateIndexCommandOptions commandOptions)
     {
         CreateIndexAsync(index, commandOptions, true).ResultSync();
@@ -115,7 +165,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <summary>
     /// Creates an index on the table.
     /// </summary>
-    /// <param name="index"></param>
+    /// <param name="index">The index specifications</param>
     public async Task CreateIndexAsync(TableIndex index)
     {
         await CreateIndexAsync(index, null, false);
@@ -149,18 +199,17 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <summary>
     /// Synchronous version of <see cref="CreateVectorIndexAsync(TableVectorIndex)"/>
     /// </summary>
-    /// <param name="index"></param>
+    /// <inheritdoc cref="CreateVectorIndexAsync(TableVectorIndex)"/>
     public void CreateVectorIndex(TableVectorIndex index)
     {
         CreateVectorIndex(index, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync(TableVectorIndex, CommandOptions)"/>
+    /// Synchronous version of <see cref="CreateVectorIndexAsync(TableVectorIndex, CreateIndexCommandOptions)"/>
     /// </summary>
-    /// <param name="index"></param>
-    /// <param name="commandOptions"></param>
-    public void CreateVectorIndex(TableVectorIndex index, CommandOptions commandOptions)
+    /// <inheritdoc cref="CreateVectorIndexAsync(TableVectorIndex, CreateIndexCommandOptions)"/>
+    public void CreateVectorIndex(TableVectorIndex index, CreateIndexCommandOptions commandOptions)
     {
         CreateVectorIndexAsync(index, commandOptions, true).ResultSync();
     }
@@ -176,17 +225,21 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
 
     /// <inheritdoc cref="CreateVectorIndexAsync(TableVectorIndex)"/>
     /// <param name="commandOptions"></param>
-    public async Task CreateVectorIndexAsync(TableVectorIndex index, CommandOptions commandOptions)
+    public async Task CreateVectorIndexAsync(TableVectorIndex index, CreateIndexCommandOptions commandOptions)
     {
         await CreateVectorIndexAsync(index, commandOptions, false);
     }
 
-    private async Task CreateVectorIndexAsync(TableVectorIndex index, CommandOptions commandOptions, bool runSynchronously)
+    private async Task CreateVectorIndexAsync(TableVectorIndex index, CreateIndexCommandOptions commandOptions, bool runSynchronously)
     {
         var command = CreateCommand("createVectorIndex").WithPayload(index).AddCommandOptions(commandOptions);
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// This is a synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions, CommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions, CommandOptions)"/>
     public TableInsertManyResult InsertMany(IEnumerable<T> rows)
     {
         return InsertMany(rows, null as CommandOptions);
@@ -521,7 +574,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <returns></returns>
     public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update)
     {
-        return UpdateOneAsync(filter, update, new UpdateOneOptions<T>(), null);
+        return UpdateOneAsync(filter, update, null, null);
     }
 
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
@@ -541,6 +594,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
 
     internal async Task<ApiResponseWithStatus<UpdateResult>> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
     {
+        updateOptions = updateOptions ?? new UpdateOneOptions<T>();
         updateOptions.Filter = filter;
         updateOptions.Update = update;
         var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
@@ -660,7 +714,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// Delete all documents matching the filter from the collection.
+    /// Delete all documents matching the filter from the table.
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
@@ -694,6 +748,23 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         }
 
         return deleteResult;
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DeleteAllAsync()"/>
+    /// </summary>
+    /// <inheritdoc cref="DeleteAllAsync()"/>
+    public DeleteResult DeleteAll()
+    {
+        return DeleteAllAsync().ResultSync();
+    }
+
+    /// <summary>
+    /// Delete all rows from the table.
+    /// </summary>
+    public Task<DeleteResult> DeleteAllAsync()
+    {
+        return DeleteManyAsync(null, null);
     }
 
     /// <summary>

@@ -35,13 +35,13 @@ public class ExamplesTests
             {
                 { "$vector", embeddings },
                 { "title", "Ocean Depths" },
-                { "numberOfPages", 434 },
+                { "number_of_pages", 434 },
                 { "isCheckedOut", false }
             };
             var insertResult = await collection.InsertOneAsync(document);
 
             var builder = Builders<Document>.Filter;
-            var filter = builder.And(builder.Eq("isCheckedOut", false), builder.Eq("numberOfPages", 434));
+            var filter = builder.And(builder.Eq("isCheckedOut", false), builder.Eq("number_of_pages", 434));
 
             var findResult = await collection.FindOneAsync(filter);
 

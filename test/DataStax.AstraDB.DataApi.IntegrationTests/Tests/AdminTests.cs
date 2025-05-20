@@ -3,6 +3,7 @@ using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Results;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -97,11 +98,12 @@ public class AdminTests
 	{
 		var dbName = "this-is-not-the-greatest-db-in-the-world-this-is-a-tribute";
 
-		var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbName);
-		Assert.False(found);
+		var databasesAdmin = fixture.Client.GetAstraDatabasesAdmin();
+		var doesExist = await databasesAdmin.DoesDatabaseExistAsync(dbName);
+		Assert.False(doesExist);
 
-		found = fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(dbName);
-		Assert.False(found);
+		doesExist = databasesAdmin.DoesDatabaseExist(dbName);
+		Assert.False(doesExist);
 	}
 
 	[Fact]

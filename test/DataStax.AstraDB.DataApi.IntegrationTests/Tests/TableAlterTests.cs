@@ -1,5 +1,5 @@
-using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Tables;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -27,21 +27,8 @@ public class TableAlterTests
         };
 
         await table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false);
-    }
 
-    [Fact]
-    public async Task AlterTableAddColumnsDupe()
-    {
-        var table = fixture.Database.GetTable<RowEventByDay>("tableAlterTest", null);
-
-        var newColumns = new Dictionary<string, AlterTableColumnDefinition>
-        {
-            ["is_archived"] = new AlterTableColumnDefinition { Type = "boolean" },
-            ["review_notes"] = new AlterTableColumnDefinition { Type = "text" }
-        };
-
-        await table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false);
-
+        //throws error on dupe
         var ex = await Assert.ThrowsAsync<DataStax.AstraDB.DataApi.Core.Commands.CommandException>(() =>
                  table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false));
 
@@ -86,11 +73,8 @@ public class TableAlterTests
                 VectorDimension = null,
                 Service = new VectorServiceOptions
                 {
-                    Provider = "openai",
-                    //ModelName = "text-embedding-ada-002",
-                    ModelName = "text-embedding-3-small",
-                    Authentication = new Dictionary<string, string> { ["providerKey"] = "OPEN_AI_TEST_SCOPE" },
-                    Parameters = new Dictionary<string, string> { ["organizationId"] = "An optional organization ID" },
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
                 }
             }
         }), null, false);
@@ -103,7 +87,7 @@ public class TableAlterTests
 
         await table.AlterAsync(new AlterTableAddVectorColumns(new Dictionary<string, AlterTableVectorColumnDefinition>
         {
-            ["plot_synopsis"] = new AlterTableVectorColumnDefinition
+            ["plot_synopsis_no_config"] = new AlterTableVectorColumnDefinition
             {
                 VectorDimension = 2
             }
@@ -117,13 +101,12 @@ public class TableAlterTests
 
         var newColumns = new Dictionary<string, AlterTableColumnDefinition>
         {
-            ["is_archived"] = new AlterTableColumnDefinition { Type = "boolean" },
-            ["review_notes"] = new AlterTableColumnDefinition { Type = "text" }
+            ["is_archived_drop"] = new AlterTableColumnDefinition { Type = "boolean" }
         };
 
         await table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false);
 
-        await table.AlterAsync(new AlterTableDropColumns(new[] { "is_archived" }), null, runSynchronously: false);
+        await table.AlterAsync(new AlterTableDropColumns(new[] { "is_archived_drop" }), null, runSynchronously: false);
     }
 
     [Fact]
@@ -133,13 +116,13 @@ public class TableAlterTests
 
         await table.AlterAsync(new AlterTableAddVectorColumns(new Dictionary<string, AlterTableVectorColumnDefinition>
         {
-            ["plot_synopsis"] = new AlterTableVectorColumnDefinition
+            ["plot_synopsis_drop"] = new AlterTableVectorColumnDefinition
             {
                 VectorDimension = 2
             }
         }), null, false);
 
-        var dropColumn = new AlterTableDropColumns(new[] { "plot_synopsis" });
+        var dropColumn = new AlterTableDropColumns(new[] { "plot_synopsis_drop" });
         await table.AlterAsync(dropColumn, null, runSynchronously: false);
     }
 
@@ -150,20 +133,18 @@ public class TableAlterTests
 
         await table.AlterAsync(new AlterTableAddVectorColumns(new Dictionary<string, AlterTableVectorColumnDefinition>
         {
-            ["plot_synopsis"] = new AlterTableVectorColumnDefinition
+            ["plot_synopsis_vectorize"] = new AlterTableVectorColumnDefinition
             {
-                VectorDimension = 2
+                VectorDimension = 1024
             }
         }), null, false);
 
         await table.AlterAsync(new AlterTableAddVectorize(new Dictionary<string, VectorServiceOptions>
         {
-            ["plot_synopsis"] = new VectorServiceOptions
+            ["plot_synopsis_vectorize"] = new VectorServiceOptions
             {
-                Provider = "openai",
-                ModelName = "text-embedding-3-small",
-                Authentication = new Dictionary<string, string> { ["providerKey"] = "OPEN_AI_TEST_SCOPE" },
-                Parameters = new Dictionary<string, string> { ["organizationId"] = "An optional organization ID" },
+                Provider = "nvidia",
+                ModelName = "NV-Embed-QA"
             }
 
         }), null, false);
@@ -176,28 +157,26 @@ public class TableAlterTests
 
         await table.AlterAsync(new AlterTableAddVectorColumns(new Dictionary<string, AlterTableVectorColumnDefinition>
         {
-            ["plot_synopsis"] = new AlterTableVectorColumnDefinition
+            ["plot_synopsis_vectorize_drop"] = new AlterTableVectorColumnDefinition
             {
-                VectorDimension = 2
+                VectorDimension = 1024
             }
         }), null, false);
 
         await table.AlterAsync(new AlterTableAddVectorize(new Dictionary<string, VectorServiceOptions>
         {
-            ["plot_synopsis"] = new VectorServiceOptions
+            ["plot_synopsis_vectorize_drop"] = new VectorServiceOptions
             {
-                Provider = "openai",
-                ModelName = "text-embedding-3-small",
-                Authentication = new Dictionary<string, string> { ["providerKey"] = "OPEN_AI_TEST_SCOPE" },
-                Parameters = new Dictionary<string, string> { ["organizationId"] = "An optional organization ID" },
+                Provider = "nvidia",
+                ModelName = "NV-Embed-QA"
             }
 
         }), null, false);
 
-        var dropVectorize = new AlterTableDropVectorize(new[] { "plot_synopsis" });
+        var dropVectorize = new AlterTableDropVectorize(new[] { "plot_synopsis_vectorize_drop" });
         await table.AlterAsync(dropVectorize, null, runSynchronously: false);
 
-        var dropColumn = new AlterTableDropColumns(new[] { "plot_synopsis" });
+        var dropColumn = new AlterTableDropColumns(new[] { "plot_synopsis_vectorize_drop" });
         await table.AlterAsync(dropColumn, null, runSynchronously: false);
     }
 

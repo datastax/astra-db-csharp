@@ -127,7 +127,7 @@ public class TableTests
             Assert.Equal(rows.Count, result.InsertedCount);
             Assert.Equal(rows.Count, result.DocumentResponses.Count);
             var updatedRow = result.DocumentResponses.FirstOrDefault(r => r.Ids.Contains("Title1"));
-            Assert.Equal(updatedRow.Status, "OK");
+            Assert.Equal("OK", updatedRow.Status);
         }
         finally
         {
@@ -202,7 +202,7 @@ public class TableTests
     }
 
     [Fact]
-    public async Task FindOne_Sort_Skip_Exclude()
+    public void FindOne_Sort_Skip_Exclude()
     {
         var table = fixture.SearchTable;
         var sort = Builders<RowBook>.TableSort;
@@ -220,14 +220,14 @@ public class TableTests
     public async Task Update_Test()
     {
         var table = fixture.SearchTable;
-        var filter = Builders<RowBook>.Filter.Eq(x => x.Title, "Title 30");
+        var filter = Builders<RowBook>.Filter.CompositeKey(new PrimaryKeyFilter<RowBook, string>(x => x.Title, "Title 30"), new PrimaryKeyFilter<RowBook, int>(x => x.NumberOfPages, 430));
         var update = Builders<RowBook>.Update.Set(x => x.Rating, 3.07)
             .Set(x => x.Genres, new HashSet<string> { "SetItem1", "SetItem2" })
             .Unset(x => x.DueDate);
         var result = await table.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await table.FindOneAsync(filter);
-        Assert.Equal(3.07, updatedDocument.Rating);
+        Assert.Equal(3.07f, updatedDocument.Rating);
         Assert.Equal(new HashSet<string> { "SetItem1", "SetItem2" }, updatedDocument.Genres);
         Assert.Equal(default, updatedDocument.DueDate);
     }
@@ -341,9 +341,9 @@ public class TableTests
             });
             await table.InsertManyAsync(rows);
             var filter = Builders<RowBookSinglePrimaryKey>.Filter
-            .Eq(so => so.Title, "Title 1") & Builders<RowBookSinglePrimaryKey>.Filter.Eq(x => x.NumberOfPages, 401);
+            .Eq(so => so.Title, "Title 1");
             var findResult = table.Find(filter).ToList();
-            Assert.Equal(10, findResult.Count);
+            Assert.Equal(1, findResult.Count);
             var result = await table.DeleteManyAsync(filter);
             var deletedResult = table.Find(filter).ToList();
             Assert.Empty(deletedResult);
@@ -427,6 +427,38 @@ public class TableTests
             Assert.Single(findResult);
             var result = await table.DeleteManyAsync(filter);
             var deletedResult = table.Find(filter).ToList();
+            Assert.Empty(deletedResult);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task Delete_All()
+    {
+        var tableName = "deleteAllTest";
+        try
+        {
+            var rows = new List<CompoundPrimaryKey>();
+            for (var i = 0; i < 10; i++)
+            {
+                var row = new CompoundPrimaryKey()
+                {
+                    KeyOne = "KeyOne" + i,
+                    KeyTwo = "KeyTwo" + i,
+                    SortOneAscending = "SortOneAscending" + i,
+                    SortTwoDescending = "SortTwoDescending" + i
+                };
+                rows.Add(row);
+            }
+            var table = await fixture.Database.CreateTableAsync<CompoundPrimaryKey>(tableName);
+            await table.InsertManyAsync(rows);
+            var findResult = table.Find().ToList();
+            Assert.Equal(rows.Count, findResult.Count);
+            var result = await table.DeleteAllAsync();
+            var deletedResult = table.Find().ToList();
             Assert.Empty(deletedResult);
         }
         finally

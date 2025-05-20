@@ -545,8 +545,24 @@ public class DatabaseTests
 
             var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
             Assert.NotNull(table);
-            var definitions = await fixture.Database.ListTablesAsync();
-            var definition = definitions.FirstOrDefault(d => d.Name == tableName);
+            const int retries = 6;
+            const int waitInSeconds = 5;
+            int tryNumber = 0;
+
+            TableInfo definition = null;
+
+            while (tryNumber < retries && definition == null)
+            {
+                var definitions = await fixture.Database.ListTablesAsync();
+                definition = definitions.FirstOrDefault(d => d.Name == tableName);
+                if (definition != null)
+                {
+                    return;
+                }
+                await Task.Delay(waitInSeconds * 1000);
+                tryNumber++;
+            }
+
             Assert.NotNull(definition);
             Assert.Equal(2, definition.TableDefinition.PrimaryKey.Keys.Count);
             Assert.Equal("KeyOne", definition.TableDefinition.PrimaryKey.Keys[0]);

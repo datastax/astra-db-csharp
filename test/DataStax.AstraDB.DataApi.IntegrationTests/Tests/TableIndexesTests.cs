@@ -1,3 +1,4 @@
+using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Tables;
 using System.Data;
 using Xunit;
@@ -17,7 +18,7 @@ public class TableIndexesTests
     [Fact]
     public async Task CreateIndexTests()
     {
-        var table = fixture.Database.GetTable<RowEventByDay>("tableIndexesTest", null);
+        var table = fixture.Database.GetTable<RowEventByDay>("tableIndexesTest");
 
         var indexOptions = new TableIndex
         {
@@ -47,6 +48,40 @@ public class TableIndexesTests
 
         var result = await table.ListIndexMetadataAsync();
         Assert.Contains(result.Indexes, i => i.Name == "category_idx");
+    }
+
+    [Fact]
+    public async Task DropIndexTests()
+    {
+        var table = fixture.Database.GetTable<RowEventByDay>("tableIndexesTest");
+
+        var indexName = "drop_idx";
+        var indexOptions = new TableIndex
+        {
+            IndexName = indexName,
+            Definition = new TableIndexDefinition<RowEventByDay, string>()
+            {
+                Column = (b) => b.Location
+            }
+        };
+        await table.CreateIndexAsync(indexOptions);
+
+        // drop should work
+        await fixture.Database.DropTableIndexAsync(indexName);
+        var result = await table.ListIndexMetadataAsync();
+        Assert.DoesNotContain(result.Indexes, i => i.Name == indexName);
+
+        // second drop (should fail)
+        var ex = await Assert.ThrowsAsync<CommandException>(() =>
+            fixture.Database.DropTableIndexAsync(indexName));
+
+        // second drop (should not fail when SkipIfExists is set)
+        await fixture.Database.DropTableIndexAsync(indexName, new DropIndexCommandOptions()
+        {
+            SkipIfNotExists = true
+        });
+
+
     }
 
 }
