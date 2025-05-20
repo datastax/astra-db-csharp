@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using System;
 
-public class ColumnDefinition
+namespace DataStax.AstraDB.DataApi.Tables;
+
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+public class ColumnVectorAttribute : Attribute
 {
-    // TBD
+    public int Dimension { get; set; }
+
+    public ColumnVectorAttribute(int dimension)
+    {
+        Dimension = dimension;
+    }
 }
+

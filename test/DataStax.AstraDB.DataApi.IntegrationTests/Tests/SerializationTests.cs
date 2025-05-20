@@ -1,8 +1,11 @@
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Tables;
 using System.Runtime.CompilerServices;
 using Xunit;
 
@@ -120,6 +123,52 @@ public class SerializationTests
 			OutputConverter = new IdListConverter()
 		};
 		var deserialized = collection.CheckDeserialization(serializationTestString, commandOptions);
+	}
+
+	[Fact]
+	public void TableInsertManyResult()
+	{
+		string serializationTestString = "{\"primaryKeySchema\":{\"Name\":{\"type\":\"text\"}},\"insertedIds\":[[\"Test\"]]}";
+		var commandOptions = Array.Empty<CommandOptions>();
+		var command = new Command("deserializationTest", new DataApiClient(), commandOptions, null);
+		var deserialized = command.Deserialize<TableInsertManyResult>(serializationTestString);
+		Assert.Equal("text", deserialized.PrimaryKeys["Name"].Type);
+		Assert.Equal("Test", deserialized.InsertedIds.First().First().ToString());
+	}
+
+	[Fact]
+	public void CompoundKeySerializationTest()
+	{
+		var filterBuilder = Builders<CompoundPrimaryKey>.Filter;
+		var filter = filterBuilder.CompoundKey(
+				new[] {
+					new PrimaryKeyFilter<CompoundPrimaryKey, string>(x => x.KeyOne, "KeyOne3"),
+					new PrimaryKeyFilter<CompoundPrimaryKey, string>(x => x.KeyTwo, "KeyTwo3")
+				},
+				new[] {
+					filterBuilder.Eq(x => x.SortOneAscending,"SortOneAscending3"),
+					filterBuilder.Eq(x => x.SortTwoDescending, "SortTwoDescending3")
+				});
+		var commandOptions = Array.Empty<CommandOptions>();
+		var command = new Command("deserializationTest", new DataApiClient(), commandOptions, null);
+		var serialized = command.Serialize(filter);
+		Console.WriteLine(serialized);
+	}
+
+	//{"data":{"documents":[{"_id":"3a0cdac3-679b-435a-8cda-c3679bf35a6b","title":"Test Book 1","author":"Test Author 1","number_of_pages":100}
+	[Fact]
+	public void BookDeserializationTest()
+	{
+		var serializationTestString = "{\"_id\":\"3a0cdac3-679b-435a-8cda-c3679bf35a6b\",\"title\":\"Test Book 1\",\"author\":\"Test Author 1\",\"number_of_pages\":100}";
+		var collection = _database.GetCollection<Book>("bookTestTable");
+		var commandOptions = new CommandOptions()
+		{
+			OutputConverter = new DocumentConverter<Book>()
+		};
+		var deserialized = collection.CheckDeserialization(serializationTestString, commandOptions);
+		Assert.Equal("Test Book 1", deserialized.Title);
+		Assert.Equal("Test Author 1", deserialized.Author);
+		Assert.Equal(100, deserialized.NumberOfPages);
 	}
 
 }
