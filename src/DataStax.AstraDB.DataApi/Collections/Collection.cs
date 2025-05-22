@@ -274,9 +274,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <summary>
     /// Asynchronously drops the collection from the database.
     /// </summary>
-    public async Task DropAsync()
+    public Task DropAsync()
     {
-        await _database.DropCollectionAsync(_collectionName).ConfigureAwait(false);
+        return _database.DropCollectionAsync(_collectionName);
     }
 
     public T FindOne()
@@ -754,10 +754,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="FindOneAndUpdateAsync(Filter{T}, UpdateBuilder{T}, FindOneAndUpdateOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
+    public Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
     {
-        var response = await FindOneAndUpdateAsync<T>(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
-        return response;
+        return FindOneAndUpdateAsync<T>(filter, update, updateOptions, commandOptions, false);
     }
 
     /// <summary>
@@ -807,10 +806,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="FindOneAndUpdateAsync{TResult}(Filter{T}, UpdateBuilder{T}, FindOneAndUpdateOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
+    public Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
     {
-        var response = await FindOneAndUpdateAsync<TResult>(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
-        return response;
+        return FindOneAndUpdateAsync<TResult>(filter, update, updateOptions, commandOptions, false);
     }
 
     internal async Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
@@ -869,10 +867,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(T, ReplaceOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    public Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
-        var response = await FindOneAndReplaceAsync<T>(null, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
-        return response;
+        return FindOneAndReplaceAsync<T>(null, replacement, replaceOptions, commandOptions, false);
     }
 
     /// <summary>
@@ -922,10 +919,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T, ReplaceOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
-        var response = await FindOneAndReplaceAsync<TResult>(null, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
-        return response;
+        return FindOneAndReplaceAsync<TResult>(null, replacement, replaceOptions, commandOptions, false);
     }
 
     /// <summary>
@@ -976,10 +972,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(Filter{T}, T, ReplaceOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<T> FindOneAndReplaceAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    public Task<T> FindOneAndReplaceAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
-        var response = await FindOneAndReplaceAsync<T>(filter, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
-        return response;
+        return FindOneAndReplaceAsync<T>(filter, replacement, replaceOptions, commandOptions, false);
     }
 
     /// <summary>
@@ -1035,10 +1030,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// The FindOneAndReplace alternatives that accept a TResult type parameter allow for deserializing the resulting document
     /// as a different type (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public async Task<TResult> FindOneAndReplaceAsync<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    public Task<TResult> FindOneAndReplaceAsync<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
-        var response = await FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
-        return response;
+        return FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, commandOptions, false);
     }
 
     internal async Task<TResult> FindOneAndReplaceAsync<TResult>(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
@@ -1075,7 +1069,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     public ReplaceResult ReplaceOne(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
         var response = ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
-        return response.Result;
+        return response;
     }
 
     /// <summary>
@@ -1099,20 +1093,19 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T, ReplaceOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    public Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
-        var response = await ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, false).ConfigureAwait(false);
-        return response.Result;
+        return ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, false);
     }
 
-    internal async Task<ApiResponseWithStatus<ReplaceResult>> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         replaceOptions.Filter = filter;
         replaceOptions.Replacement = replacement;
         replaceOptions.Projection = new ExclusiveProjectionBuilder<T>().Exclude("*");
         var command = CreateCommand("findOneAndReplace").WithPayload(replaceOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<ReplaceResult>(runSynchronously).ConfigureAwait(false);
-        return response;
+        return response.Result;
     }
 
     /// <summary>
@@ -1630,7 +1623,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
     {
         var response = UpdateOneAsync(filter, update, updateOptions, commandOptions, true).ResultSync();
-        return response.Result;
+        return response;
     }
 
     /// <summary>
@@ -1675,19 +1668,18 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
+    public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
     {
-        var response = await UpdateOneAsync(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
-        return response.Result;
+        return UpdateOneAsync(filter, update, updateOptions, commandOptions, false);
     }
 
-    internal async Task<ApiResponseWithStatus<UpdateResult>> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         updateOptions.Filter = filter;
         updateOptions.Update = update;
         var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
-        return response;
+        return response.Result;
     }
 
     /// <summary>
@@ -1715,7 +1707,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     public UpdateResult UpdateMany(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
     {
         var response = UpdateManyAsync(filter, update, updateOptions, commandOptions, false).ResultSync();
-        return response.Result;
+        return response;
     }
 
     /// <summary>
@@ -1738,13 +1730,12 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="UpdateManyAsync(Filter{T}, UpdateBuilder{T}, UpdateManyOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
+    public Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
     {
-        var response = await UpdateManyAsync(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
-        return response.Result;
+        return UpdateManyAsync(filter, update, updateOptions, commandOptions, false);
     }
 
-    internal async Task<ApiResponseWithStatus<UpdateResult>> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         updateOptions.Filter = filter;
         updateOptions.Update = update;
@@ -1767,7 +1758,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
                 keepProcessing = false;
             }
         }
-        return new ApiResponseWithStatus<UpdateResult>() { Result = updateResult };
+        return updateResult;
     }
 
     /// <summary>
@@ -1780,10 +1771,10 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync(CommandOptions)"/>
+    /// Synchronous version of <see cref="CountDocumentsAsync(CountDocumentsCommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CountDocumentsAsync(CommandOptions)"/>
-    public DocumentsCountResult CountDocuments(CommandOptions commandOptions)
+    public DocumentsCountResult CountDocuments(CountDocumentsCommandOptions commandOptions)
     {
         return CountDocumentsAsync(null, commandOptions, true).ResultSync();
     }
@@ -1802,7 +1793,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public Task<DocumentsCountResult> CountDocumentsAsync(CommandOptions commandOptions)
+    public Task<DocumentsCountResult> CountDocumentsAsync(CountDocumentsCommandOptions commandOptions)
     {
         return CountDocumentsAsync(null, commandOptions, false);
     }
@@ -1817,10 +1808,10 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync(Filter{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="CountDocumentsAsync(Filter{T}, CountDocumentsCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}, CommandOptions)"/>
-    public DocumentsCountResult CountDocuments(Filter<T> filter, CommandOptions commandOptions)
+    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}, CountDocumentsCommandOptions)"/>
+    public DocumentsCountResult CountDocuments(Filter<T> filter, CountDocumentsCommandOptions commandOptions)
     {
         return CountDocumentsAsync(filter, commandOptions, true).ResultSync();
     }
@@ -1837,12 +1828,12 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="CountDocumentsAsync(Filter{T}"/>
     /// <param name="commandOptions"></param>
-    public Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CommandOptions commandOptions)
+    public Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CountDocumentsCommandOptions commandOptions)
     {
         return CountDocumentsAsync(filter, commandOptions, false);
     }
 
-    internal async Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CountDocumentsCommandOptions commandOptions, bool runSynchronously)
     {
         var findOptions = new DocumentFindOptions<T>()
         {

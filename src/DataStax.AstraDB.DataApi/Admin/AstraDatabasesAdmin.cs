@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -73,10 +72,9 @@ public class AstraDatabasesAdmin
     /// var names = await admin.ListDatabaseNamesAsync();
     /// </code>
     /// </example>
-    public async Task<List<string>> ListDatabaseNamesAsync()
+    public Task<List<string>> ListDatabaseNamesAsync()
     {
-        var databases = await ListDatabasesAsync().ConfigureAwait(false);
-        return databases.Select(db => db.Info.Name).ToList();
+        return ListDatabaseNamesAsync(null);
     }
 
     /// <summary>
@@ -208,7 +206,7 @@ public class AstraDatabasesAdmin
     public async Task<bool> DoesDatabaseExistAsync(string databaseName)
     {
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-        List<string> list = await ListDatabaseNamesAsync();
+        List<string> list = await ListDatabaseNamesAsync().ConfigureAwait(false);
         return list.Contains(databaseName);
     }
 
@@ -244,7 +242,7 @@ public class AstraDatabasesAdmin
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
         string guid = dbGuid.ToString();
-        List<DatabaseInfo> dbList = await ListDatabasesAsync();
+        List<DatabaseInfo> dbList = await ListDatabasesAsync().ConfigureAwait(false);
         return dbList.Any(item => item.Id == guid);
     }
 
@@ -671,9 +669,9 @@ public class AstraDatabasesAdmin
     /// var info = await admin.GetDatabaseInfoAsync(new Guid("..."));
     /// </code>
     /// </example>
-    public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid)
+    public Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid)
     {
-        return await GetDatabaseInfoAsync(dbGuid, null, false).ConfigureAwait(false);
+        return GetDatabaseInfoAsync(dbGuid, null, true);
     }
 
     /// <summary>
@@ -703,9 +701,9 @@ public class AstraDatabasesAdmin
     /// var info = await admin.GetDatabaseInfoAsync(new Guid("..."), options);
     /// </code>
     /// </example>
-    public async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, CommandOptions options)
+    public Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, CommandOptions options)
     {
-        return await GetDatabaseInfoAsync(dbGuid, options, false).ConfigureAwait(false);
+        return GetDatabaseInfoAsync(dbGuid, options, false);
     }
 
     internal async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, bool runSynchronously)

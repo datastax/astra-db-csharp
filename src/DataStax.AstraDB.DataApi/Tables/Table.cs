@@ -166,16 +166,16 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// Creates an index on the table.
     /// </summary>
     /// <param name="index">The index specifications</param>
-    public async Task CreateIndexAsync(TableIndex index)
+    public Task CreateIndexAsync(TableIndex index)
     {
-        await CreateIndexAsync(index, null, false);
+        return CreateIndexAsync(index, null, false);
     }
 
     /// <inheritdoc cref="CreateIndexAsync(TableIndex)"/>
     /// <param name="commandOptions"></param>
-    public async Task CreateIndexAsync(TableIndex index, CreateIndexCommandOptions commandOptions)
+    public Task CreateIndexAsync(TableIndex index, CreateIndexCommandOptions commandOptions)
     {
-        await CreateIndexAsync(index, commandOptions, false);
+        return CreateIndexAsync(index, commandOptions, false);
     }
 
     private async Task CreateIndexAsync(TableIndex index, CreateIndexCommandOptions commandOptions, bool runSynchronously)
@@ -218,16 +218,16 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// Creates a vector index on the table.
     /// </summary>
     /// <param name="index"></param>
-    public async Task CreateVectorIndexAsync(TableVectorIndex index)
+    public Task CreateVectorIndexAsync(TableVectorIndex index)
     {
-        await CreateVectorIndexAsync(index, null, false);
+        return CreateVectorIndexAsync(index, null, false);
     }
 
     /// <inheritdoc cref="CreateVectorIndexAsync(TableVectorIndex)"/>
     /// <param name="commandOptions"></param>
-    public async Task CreateVectorIndexAsync(TableVectorIndex index, CreateIndexCommandOptions commandOptions)
+    public Task CreateVectorIndexAsync(TableVectorIndex index, CreateIndexCommandOptions commandOptions)
     {
-        await CreateVectorIndexAsync(index, commandOptions, false);
+        return CreateVectorIndexAsync(index, commandOptions, false);
     }
 
     private async Task CreateVectorIndexAsync(TableVectorIndex index, CreateIndexCommandOptions commandOptions, bool runSynchronously)
@@ -543,7 +543,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
     {
         var response = UpdateOneAsync(filter, update, updateOptions, commandOptions, true).ResultSync();
-        return response.Result;
+        return response;
     }
 
     /// <summary>
@@ -586,20 +586,19 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
 
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public async Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
+    public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
     {
-        var response = await UpdateOneAsync(filter, update, updateOptions, commandOptions, false).ConfigureAwait(false);
-        return response.Result;
+        return UpdateOneAsync(filter, update, updateOptions, commandOptions, false);
     }
 
-    internal async Task<ApiResponseWithStatus<UpdateResult>> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         updateOptions = updateOptions ?? new UpdateOneOptions<T>();
         updateOptions.Filter = filter;
         updateOptions.Update = update;
         var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
-        return response;
+        return response.Result;
     }
 
     /// <summary>
@@ -783,7 +782,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     public Dictionary<string, int> Alter(IAlterTableOperation operation, CommandOptions commandOptions)
     {
         var response = AlterAsync(operation, commandOptions, true).ResultSync();
-        return response.Result;
+        return response;
     }
 
     /// <summary>
@@ -791,21 +790,19 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// </summary>
     /// <param name="operation">The alteration operation to apply.</param>
     /// <returns>The status result of the alterTable command.</returns>
-    public async Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation)
+    public Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation)
     {
-        var response = await AlterAsync(operation, null, false);
-        return response.Result;
+        return AlterAsync(operation, null, false);
     }
 
     /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
     /// <param name="commandOptions">Options to customize the command execution.</param>
-    public async Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions)
+    public Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions)
     {
-        var response = await AlterAsync(operation, commandOptions, false);
-        return response.Result;
+        return AlterAsync(operation, commandOptions, false);
     }
 
-    internal async Task<ApiResponseWithStatus<Dictionary<string, int>>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions, bool runSynchronously)
     {
         var payload = new
         {
@@ -817,8 +814,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
             .AddCommandOptions(commandOptions);
 
         var result = await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
-
-        return result;
+        return result.Result;
     }
 
     internal Command CreateCommand(string name)

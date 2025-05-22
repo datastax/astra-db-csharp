@@ -260,9 +260,9 @@ public class DataApiClient
     ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
     ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string)"/>).
     /// </remarks>
-    public async Task<Database> GetDatabaseAsync(Guid databaseId)
+    public Task<Database> GetDatabaseAsync(Guid databaseId)
     {
-        return await GetDatabaseAsync(databaseId, new DatabaseCommandOptions(), false).ConfigureAwait(false);
+        return GetDatabaseAsync(databaseId, new DatabaseCommandOptions(), false);
     }
 
     /// <summary>
@@ -292,10 +292,10 @@ public class DataApiClient
     ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
     ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, string)"/>).
     /// </remarks>
-    public async Task<Database> GetDatabaseAsync(Guid databaseId, string keyspace)
+    public Task<Database> GetDatabaseAsync(Guid databaseId, string keyspace)
     {
         var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace };
-        return await GetDatabaseAsync(databaseId, dbOptions, false).ConfigureAwait(false);
+        return GetDatabaseAsync(databaseId, dbOptions, true);
     }
 
     /// <summary>
@@ -310,9 +310,9 @@ public class DataApiClient
     ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
     ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, DatabaseCommandOptions)"/>).
     /// </remarks>
-    public async Task<Database> GetDatabaseAsync(Guid databaseId, DatabaseCommandOptions dbOptions)
+    public Task<Database> GetDatabaseAsync(Guid databaseId, DatabaseCommandOptions dbOptions)
     {
-        return await GetDatabaseAsync(databaseId, dbOptions, false).ConfigureAwait(false);
+        return GetDatabaseAsync(databaseId, dbOptions, true);
     }
 
     /// <summary>

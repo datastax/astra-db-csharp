@@ -199,6 +199,112 @@ public class SearchTests
     }
 
     [Fact]
+    public void Inclusive_Projection_Can_Exclude_Special_Using_Field_Names()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Include("Name")
+                .ExcludeSpecial("_id");
+        var results = collection.Find().Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.False(string.IsNullOrEmpty(result.Name));
+        Assert.True(string.IsNullOrEmpty(result._id.ToString()));
+        Assert.Null(result.Properties);
+    }
+
+    [Fact]
+    public void Inclusive_Projection_Can_Exclude_Special_Using_Expressions()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Include(so => so.Name)
+                .ExcludeSpecial(so => so._id);
+        var results = collection.Find().Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.False(string.IsNullOrEmpty(result.Name));
+        Assert.True(string.IsNullOrEmpty(result._id.ToString()));
+        Assert.Null(result.Properties);
+    }
+
+    [Fact]
+    public void Exclusive_Projection_Can_Include_Special_Using_Field_Names()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Exclude("Name")
+                .IncludeSpecial("_id");
+        var results = collection.Find().Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.True(string.IsNullOrEmpty(result.Name));
+        Assert.False(string.IsNullOrEmpty(result._id.ToString()));
+        Assert.False(string.IsNullOrEmpty(result.Properties.PropertyOne));
+        Assert.False(string.IsNullOrEmpty(result.Properties.PropertyTwo));
+    }
+
+    [Fact]
+    public void Exclusive_Projection_Can_Include_Special_Using_Expressions()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Exclude(so => so.Name)
+                .IncludeSpecial(so => so._id);
+        var results = collection.Find().Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.True(string.IsNullOrEmpty(result.Name));
+        Assert.False(string.IsNullOrEmpty(result._id.ToString()));
+        Assert.False(string.IsNullOrEmpty(result.Properties.PropertyOne));
+        Assert.False(string.IsNullOrEmpty(result.Properties.PropertyTwo));
+    }
+
+    [Fact]
+    public void Projection_Handles_Slice_WithExpression()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Slice(so => so.Properties.StringArrayProperty, 1, 2);
+        var filter = Builders<SimpleObject>.Filter.Eq(x => x._id, 0);
+        var results = collection.Find(filter).Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.Equal(new[] { "cat2", "cat3" }, result.Properties.StringArrayProperty);
+    }
+
+    [Fact]
+    public void Projection_Handles_Slice()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Slice("Properties.StringArrayProperty", 1, 2);
+        var filter = Builders<SimpleObject>.Filter.Eq(x => x._id, 0);
+        var results = collection.Find(filter).Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.Equal(new[] { "cat2", "cat3" }, result.Properties.StringArrayProperty);
+    }
+
+    [Fact]
+    public void Projection_Handles_Slice_WithExpression_WithEndStart()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Slice(so => so.Properties.StringArrayProperty, -2);
+        var filter = Builders<SimpleObject>.Filter.Eq(x => x._id, 0);
+        var results = collection.Find(filter).Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.Equal(new[] { "cat2", "cat3" }, result.Properties.StringArrayProperty);
+    }
+
+    [Fact]
+    public void Projection_Handles_Slice_WithEndStart()
+    {
+        var collection = fixture.SearchCollection;
+        var projection = Builders<SimpleObject>.Projection
+                .Slice("Properties.StringArrayProperty", -2);
+        var filter = Builders<SimpleObject>.Filter.Eq(x => x._id, 0);
+        var results = collection.Find(filter).Limit(1).Project(projection).ToList();
+        var result = results.First();
+        Assert.Equal(new[] { "cat2", "cat3" }, result.Properties.StringArrayProperty);
+    }
+
+    [Fact]
     public void Sort_RunsAsync_ReturnsSortedResult()
     {
         var collection = fixture.SearchCollection;

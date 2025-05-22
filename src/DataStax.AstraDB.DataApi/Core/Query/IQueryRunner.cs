@@ -1,5 +1,3 @@
-
-using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Results;
 using System.Threading.Tasks;
 

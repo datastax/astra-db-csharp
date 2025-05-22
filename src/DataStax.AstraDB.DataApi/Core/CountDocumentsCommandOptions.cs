@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+namespace DataStax.AstraDB.DataApi.Core;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
-
-public class ListTableIndexNamesResult
+public class CountDocumentsCommandOptions : CommandOptions
 {
-    [JsonPropertyName("indexes")]
-    public List<string> IndexNames { get; set; }
+  public int MaxDocumentsToCount { get; set; } = int.MaxValue;
 }
