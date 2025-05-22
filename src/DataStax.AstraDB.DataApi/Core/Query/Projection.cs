@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Commands;
+using System.Collections.Generic;
+
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 
@@ -22,7 +25,7 @@ internal class Projection
     internal string FieldName { get; set; }
     internal bool Include { get; set; }
     internal int? SliceStart { get; set; }
-    internal int? SliceEnd { get; set; }
+    internal int? SliceLength { get; set; }
 
     internal object Value
     {
@@ -30,14 +33,19 @@ internal class Projection
         {
             if (SliceStart.HasValue)
             {
-                if (SliceEnd.HasValue)
+                object sliceVal;
+                if (SliceLength.HasValue)
                 {
-                    return new int[] { SliceStart.Value, SliceEnd.Value };
+                    sliceVal = new int[] { SliceStart.Value, SliceLength.Value };
                 }
                 else
                 {
-                    return SliceStart.Value;
+                    sliceVal = SliceStart.Value;
                 }
+                return new Dictionary<string, object>
+                {
+                    { DataApiKeywords.Slice, sliceVal }
+                };
             }
             return Include;
         }

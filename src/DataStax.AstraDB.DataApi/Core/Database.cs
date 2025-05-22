@@ -967,16 +967,16 @@ public class Database
     /// Drops an index on the table.
     /// </summary>
     /// <param name="indexName">The name of the index to drop</param>
-    public async Task DropTableIndexAsync(string indexName)
+    public Task DropTableIndexAsync(string indexName)
     {
-        await DropTableIndexAsync(indexName, null, false);
+        return DropTableIndexAsync(indexName, null, false);
     }
 
     /// <inheritdoc cref="DropTableIndexAsync(string)"/>
     /// <param name="commandOptions"></param>
-    public async Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions)
+    public Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions)
     {
-        await DropTableIndexAsync(indexName, commandOptions, false);
+        return DropTableIndexAsync(indexName, commandOptions, false);
     }
 
     private async Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions, bool runSynchronously)

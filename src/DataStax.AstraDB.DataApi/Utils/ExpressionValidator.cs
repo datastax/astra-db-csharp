@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using System;
+using System.Linq.Expressions;
+using System.Reflection;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
+namespace DataStax.AstraDB.DataApi.Utils;
 
-public class ListTableIndexNamesResult
+public class ExpressionValidator
 {
-    [JsonPropertyName("indexes")]
-    public List<string> IndexNames { get; set; }
+    public static bool DoesPropertyHaveAttribute<T, TField, TAttribute>(Expression<Func<T, TField>> expression)
+        where TAttribute : Attribute
+    {
+        if (expression.Body is MemberExpression memberExpression &&
+            memberExpression.Member is PropertyInfo propertyInfo)
+        {
+            return propertyInfo.GetCustomAttribute<TAttribute>() != null;
+        }
+        return false;
+    }
 }

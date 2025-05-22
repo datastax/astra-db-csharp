@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
@@ -25,8 +26,12 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// A utility for specifying projections to apply to the results of an operation.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class ProjectionBuilder<T>
+public class ProjectionBuilder<T> : IProjectionBuilder
 {
+    internal readonly List<Projection> _projections = new List<Projection>();
+
+    List<Projection> IProjectionBuilder.Projections => _projections;
+
     /// <summary>
     /// Create an inclusive projection by specifying a field to include.
     /// </summary>
@@ -37,7 +42,7 @@ public class ProjectionBuilder<T>
     /// </remarks>
     public InclusiveProjectionBuilder<T> Include(string field)
     {
-        var builder = new InclusiveProjectionBuilder<T>();
+        var builder = new InclusiveProjectionBuilder<T>(_projections);
         builder.Include(field);
         return builder;
     }
@@ -52,7 +57,7 @@ public class ProjectionBuilder<T>
     /// </remarks>
     public ExclusiveProjectionBuilder<T> Exclude(string field)
     {
-        var builder = new ExclusiveProjectionBuilder<T>();
+        var builder = new ExclusiveProjectionBuilder<T>(_projections);
         builder.Exclude(field);
         return builder;
     }
@@ -65,7 +70,7 @@ public class ProjectionBuilder<T>
     /// <returns>The projection builder.</returns>
     public InclusiveProjectionBuilder<T> Include<TField>(Expression<Func<T, TField>> fieldExpression)
     {
-        var builder = new InclusiveProjectionBuilder<T>();
+        var builder = new InclusiveProjectionBuilder<T>(_projections);
         builder.Include(fieldExpression);
         return builder;
     }
@@ -78,9 +83,43 @@ public class ProjectionBuilder<T>
     /// <returns>The projection builder.</returns>
     public ExclusiveProjectionBuilder<T> Exclude<TField>(Expression<Func<T, TField>> fieldExpression)
     {
-        var builder = new ExclusiveProjectionBuilder<T>();
+        var builder = new ExclusiveProjectionBuilder<T>(_projections);
         builder.Exclude(fieldExpression);
         return builder;
+    }
+
+    /// <summary>
+    /// Specify a field to include in the projection.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to include.</param>
+    /// <returns>The projection builder.</returns>
+    public ProjectionBuilder<T> Slice(string fieldName, int start, int length = 0)
+    {
+        var projection = new Projection() { FieldName = fieldName, Include = true, SliceStart = start };
+        if (length > 0)
+        {
+            projection.SliceLength = length;
+        }
+        _projections.Add(projection);
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a field to include in the projection.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field to include.</typeparam>
+    /// <param name="fieldExpression">The field to include in the projection.</param>
+    /// <returns>The projection builder.</returns>
+    public ProjectionBuilder<T> Slice<TField>(Expression<Func<T, TField>> fieldExpression, int start, int length = 0)
+    {
+        var fieldName = fieldExpression.GetMemberNameTree();
+        var projection = new Projection() { FieldName = fieldName, Include = true, SliceStart = start };
+        if (length > 0)
+        {
+            projection.SliceLength = length;
+        }
+        _projections.Add(projection);
+        return this;
     }
 
 }
@@ -101,7 +140,7 @@ public interface IProjectionBuilder
 /// <typeparam name="TBuilder">The type of the projection builder.</typeparam>
 public abstract class ProjectionBuilderBase<T, TBuilder> : IProjectionBuilder where TBuilder : ProjectionBuilderBase<T, TBuilder>
 {
-    internal readonly List<Projection> _projections = new List<Projection>();
+    internal List<Projection> _projections;
 
     List<Projection> IProjectionBuilder.Projections => _projections;
 
@@ -113,7 +152,8 @@ public abstract class ProjectionBuilderBase<T, TBuilder> : IProjectionBuilder wh
 /// <typeparam name="T">The type of the document.</typeparam>
 public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveProjectionBuilder<T>>
 {
-    internal InclusiveProjectionBuilder() { }
+    internal InclusiveProjectionBuilder() { _projections = new List<Projection>(); }
+    internal InclusiveProjectionBuilder(List<Projection> projections) { _projections = projections; }
 
     /// <summary>
     /// Specify a field to include in the projection.
@@ -137,6 +177,80 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
         _projections.Add(new Projection() { FieldName = fieldExpression.GetMemberNameTree(), Include = true });
         return this;
     }
+
+    /// <summary>
+    /// Specify a special field to exclude from the projection.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to exclude.</param>
+    /// <returns>The projection builder.</returns>
+    public InclusiveProjectionBuilder<T> ExcludeSpecial(string fieldName)
+    {
+        _projections.Add(new Projection() { FieldName = fieldName, Include = false });
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a special field to exclude from the projection.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to exclude.</param>
+    /// <returns>The projection builder.</returns>
+    public InclusiveProjectionBuilder<T> ExcludeSpecial<TField>(Expression<Func<T, TField>> fieldExpression)
+    {
+        var isSpecial = false;
+        if (ExpressionValidator.DoesPropertyHaveAttribute<T, TField, DocumentMappingAttribute>(fieldExpression))
+        {
+            isSpecial = true;
+        }
+        if (ExpressionValidator.DoesPropertyHaveAttribute<T, TField, DocumentIdAttribute>(fieldExpression))
+        {
+            isSpecial = true;
+        }
+        var fieldName = fieldExpression.GetMemberNameTree();
+        if (fieldName == "_id")
+        {
+            isSpecial = true;
+        }
+        if (!isSpecial)
+        {
+            throw new ArgumentException($"Property '{fieldName}' must either have the '{typeof(DocumentMappingAttribute).Name}' attribute or be the '{typeof(DocumentIdAttribute).Name}' attribute.", nameof(fieldExpression));
+        }
+        _projections.Add(new Projection() { FieldName = fieldName, Include = false });
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a field to include in the projection.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to include.</param>
+    /// <returns>The projection builder.</returns>
+    public InclusiveProjectionBuilder<T> Slice(string fieldName, int start, int length = 0)
+    {
+        var projection = new Projection() { FieldName = fieldName, Include = true, SliceStart = start };
+        if (length > 0)
+        {
+            projection.SliceLength = length;
+        }
+        _projections.Add(projection);
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a field to include in the projection.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field to include.</typeparam>
+    /// <param name="fieldExpression">The field to include in the projection.</param>
+    /// <returns>The projection builder.</returns>
+    public InclusiveProjectionBuilder<T> Slice<TField>(Expression<Func<T, TField>> fieldExpression, int start, int length = 0)
+    {
+        var fieldName = fieldExpression.GetMemberNameTree();
+        var projection = new Projection() { FieldName = fieldName, Include = true, SliceStart = start };
+        if (length > 0)
+        {
+            projection.SliceLength = length;
+        }
+        _projections.Add(projection);
+        return this;
+    }
 }
 
 /// <summary>
@@ -145,7 +259,8 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
 /// <typeparam name="T">The type of the document.</typeparam>
 public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveProjectionBuilder<T>>
 {
-    internal ExclusiveProjectionBuilder() { }
+    internal ExclusiveProjectionBuilder() { _projections = new List<Projection>(); }
+    internal ExclusiveProjectionBuilder(List<Projection> projections) { _projections = projections; }
 
     /// <summary>
     /// Specify a field to exclude from the projection.
@@ -167,6 +282,80 @@ public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveP
     public ExclusiveProjectionBuilder<T> Exclude<TField>(Expression<Func<T, TField>> fieldExpression)
     {
         _projections.Add(new Projection() { FieldName = fieldExpression.GetMemberNameTree(), Include = false });
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a field to include in the projection.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to include.</param>
+    /// <returns>The projection builder.</returns>
+    public ExclusiveProjectionBuilder<T> Slice(string fieldName, int start, int length = 0)
+    {
+        var projection = new Projection() { FieldName = fieldName, Include = true, SliceStart = start };
+        if (length > 0)
+        {
+            projection.SliceLength = length;
+        }
+        _projections.Add(projection);
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a field to include in the projection.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field to include.</typeparam>
+    /// <param name="fieldExpression">The field to include in the projection.</param>
+    /// <returns>The projection builder.</returns>
+    public ExclusiveProjectionBuilder<T> Slice<TField>(Expression<Func<T, TField>> fieldExpression, int start, int length = 0)
+    {
+        var fieldName = fieldExpression.GetMemberNameTree();
+        var projection = new Projection() { FieldName = fieldName, Include = true, SliceStart = start };
+        if (length > 0)
+        {
+            projection.SliceLength = length;
+        }
+        _projections.Add(projection);
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a special field to include in the projection.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to include.</param>
+    /// <returns>The projection builder.</returns>
+    public ExclusiveProjectionBuilder<T> IncludeSpecial(string fieldName)
+    {
+        _projections.Add(new Projection() { FieldName = fieldName, Include = true });
+        return this;
+    }
+
+    /// <summary>
+    /// Specify a special field to include in the projection.
+    /// </summary>
+    /// <param name="fieldName">The name of the field to include.</param>
+    /// <returns>The projection builder.</returns>
+    public ExclusiveProjectionBuilder<T> IncludeSpecial<TField>(Expression<Func<T, TField>> fieldExpression)
+    {
+        var isSpecial = false;
+        if (ExpressionValidator.DoesPropertyHaveAttribute<T, TField, DocumentMappingAttribute>(fieldExpression))
+        {
+            isSpecial = true;
+        }
+        if (ExpressionValidator.DoesPropertyHaveAttribute<T, TField, DocumentIdAttribute>(fieldExpression))
+        {
+            isSpecial = true;
+        }
+        var fieldName = fieldExpression.GetMemberNameTree();
+        if (fieldName == "_id")
+        {
+            isSpecial = true;
+        }
+        if (!isSpecial)
+        {
+            throw new ArgumentException($"Property '{fieldName}' must either have the '{typeof(DocumentMappingAttribute).Name}' attribute or be the '{typeof(DocumentIdAttribute).Name}' attribute.", nameof(fieldExpression));
+        }
+        _projections.Add(new Projection() { FieldName = fieldName, Include = true });
         return this;
     }
 }

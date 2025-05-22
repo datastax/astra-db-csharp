@@ -16,7 +16,6 @@
 
 using DataStax.AstraDB.DataApi.SerDes;
 using System;
-using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text.Json.Serialization;
 

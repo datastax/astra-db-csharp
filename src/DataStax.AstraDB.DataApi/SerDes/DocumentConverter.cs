@@ -17,7 +17,6 @@
 namespace DataStax.AstraDB.DataApi.SerDes;
 
 using DataStax.AstraDB.DataApi.Core.Commands;
-using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Linq;

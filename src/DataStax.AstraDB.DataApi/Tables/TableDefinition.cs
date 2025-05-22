@@ -15,7 +15,6 @@
  */
 
 using DataStax.AstraDB.DataApi.Core;
-using DataStax.AstraDB.DataApi.SerDes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
