@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
@@ -396,5 +397,55 @@ public class FilterBuilder<T>
     public Filter<T> Size<TField>(Expression<Func<T, TField[]>> expression, int size)
     {
         return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.Size, size);
+    }
+
+    /// <summary>
+    /// Build a composite key filter using a dictionary of primary key names and the values to match.
+    /// </summary>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public Filter<T> CompositeKey(params PrimaryKeyFilter[] values)
+    {
+        var dictionary = values.ToDictionary(x => x.ColumnName, x => x.Value);
+        return new Filter<T>(null, dictionary);
+    }
+
+    /// <summary>
+    /// Build a compound key filter using a dictionary of partition key names and the values to match, and a dictionary of clustering key names and filters to match.
+    /// </summary>
+    /// <param name="partitionColumns"></param>
+    /// <param name="clusteringColumns"></param>
+    /// <returns></returns>
+    public Filter<T> CompoundKey(PrimaryKeyFilter[] partitionColumns, Filter<T>[] clusteringColumns)
+    {
+        var dictionary = partitionColumns.ToDictionary(x => x.ColumnName, x => x.Value);
+        foreach (var clusteringColumn in clusteringColumns)
+        {
+            if (clusteringColumn.Value is Filter<T> filter)
+            {
+                dictionary.Add(clusteringColumn.Name, new Filter<T>(filter.Name, filter.Value));
+            }
+            else
+            {
+                throw new ArgumentException("Only the following filters are allowed for clustering column filters: Gt, Gte, Lt, Lte, Eq");
+            }
+        }
+        return new Filter<T>(null, dictionary);
+    }
+
+}
+
+public class PrimaryKeyFilter
+{
+    public string ColumnName { get; set; }
+    public object Value { get; set; }
+}
+
+public class PrimaryKeyFilter<T, TValue> : PrimaryKeyFilter
+{
+    public PrimaryKeyFilter(Expression<Func<T, TValue>> columnExpression, TValue value)
+    {
+        ColumnName = columnExpression.GetMemberNameTree();
+        Value = value;
     }
 }

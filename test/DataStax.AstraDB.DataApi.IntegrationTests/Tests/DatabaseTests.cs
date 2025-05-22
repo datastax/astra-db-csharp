@@ -1,17 +1,20 @@
-using DataStax.AstraDB.DataApi;
-using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Tables;
+using System.Net;
+using System.Text;
+using System.Text.Json;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
-[Collection("DatabaseAndCollections")]
+[Collection("Database")]
 public class DatabaseTests
 {
-    CollectionsFixture fixture;
+    DatabaseFixture fixture;
 
-    public DatabaseTests(CollectionsFixture fixture)
+    public DatabaseTests(DatabaseFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -276,7 +279,7 @@ public class DatabaseTests
                 {
                     Provider = "openai",
                     ModelName = "text-embedding-ada-002",
-                    Authentication = new Dictionary<string, object>
+                    Authentication = new Dictionary<string, string>
                     {
                         { "providerKey", fixture.OpenAiApiKey }
                     }
@@ -303,7 +306,7 @@ public class DatabaseTests
                 {
                     Provider = "openai",
                     ModelName = "text-embedding-ada-002",
-                    Authentication = new Dictionary<string, object>
+                    Authentication = new Dictionary<string, string>
                     {
                         { "providerKey", fixture.OpenAiApiKey }
                     }
@@ -351,6 +354,311 @@ public class DatabaseTests
         {
             await fixture.Database.DropCollectionAsync(collectionName);
         }
+    }
+
+    [Fact]
+    public async Task CreateTable_Default()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleRowObject>();
+            Assert.NotNull(table);
+            var definitions = await fixture.Database.ListTablesAsync();
+            var definition = definitions.FirstOrDefault(d => d.Name == typeof(SimpleRowObject).Name);
+            Assert.NotNull(definition);
+            Assert.Single(definition.TableDefinition.PrimaryKey.Keys);
+            Assert.Equal("Name", definition.TableDefinition.PrimaryKey.Keys[0]);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<SimpleRowObject>();
+        }
+    }
+
+    [Fact]
+    public async Task CreateTable_DataTypesTest_FromObject()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowTestObject>();
+            Assert.NotNull(table);
+            var definitions = await fixture.Database.ListTablesAsync();
+            var definition = definitions.FirstOrDefault(d => d.Name == "testTable");
+            Assert.NotNull(definition);
+            Assert.Equal(4, (definition.TableDefinition.Columns["Vector"] as VectorColumn).Dimension);
+
+            var row = new RowTestObject
+            {
+                Name = "Test",
+                Vector = new float[4] { 1, 2, 3, 4 },
+                StringToVectorize = "TestStringToVectorize",
+                Text = "TestText",
+                Inet = IPAddress.Parse("192.168.0.1"),
+                Int = int.MaxValue,
+                TinyInt = byte.MaxValue,
+                SmallInt = short.MaxValue,
+                BigInt = long.MaxValue,
+                Decimal = decimal.MaxValue,
+                Double = double.MaxValue,
+                Float = float.MaxValue,
+                IntDictionary = new Dictionary<string, int>() { { "One", 1 }, { "Two", 2 } },
+                DecimalDictionary = new Dictionary<string, decimal>() { { "One", 1.11111m }, { "Two", 2.22222m } },
+                StringSet = new HashSet<string>() { "HashSetOne", "HashSetTwo" },
+                IntSet = new HashSet<int>() { 1, 2 },
+                StringList = new List<string>() { "One", "Two" },
+                ObjectList = new List<Properties>() {
+                    new Properties() { PropertyOne = "OneOne", PropertyTwo = "OneTwo" },
+                    new Properties() { PropertyOne = "TwoOne", PropertyTwo = "TwoTwo" } },
+                Boolean = false,
+                Date = DateTime.Now,
+                UUID = Guid.NewGuid(),
+                Blob = Encoding.ASCII.GetBytes("Test Blob"),
+                Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us1ns")
+            };
+            var result = await table.InsertManyAsync(new List<RowTestObject> { row });
+            Assert.Equal(1, result.InsertedCount);
+            var resultSet = table.Find();
+            var resultList = resultSet.ToList();
+            var resultRow = resultList.First();
+            Assert.Equal(row.Name, resultRow.Name);
+            Assert.Equal(row.Vector, resultRow.Vector);
+            Assert.Equal(row.Text, resultRow.Text);
+            Assert.Equal(row.Inet, resultRow.Inet);
+            Assert.Equal(row.Int, resultRow.Int);
+            Assert.Equal(row.TinyInt, resultRow.TinyInt);
+            Assert.Equal(row.SmallInt, resultRow.SmallInt);
+            Assert.Equal(row.BigInt, resultRow.BigInt);
+            Assert.Equal(row.Decimal, resultRow.Decimal);
+            Assert.Equal(row.Double, resultRow.Double);
+            Assert.Equal(row.Float, resultRow.Float);
+            Assert.Equal(row.IntDictionary, resultRow.IntDictionary);
+            Assert.Equal(row.DecimalDictionary, resultRow.DecimalDictionary);
+            Assert.Equal(row.StringSet, resultRow.StringSet);
+            Assert.Equal(row.IntSet, resultRow.IntSet);
+            Assert.Equal(row.StringList, resultRow.StringList);
+            Assert.Equal(JsonSerializer.Serialize(row.ObjectList), JsonSerializer.Serialize(resultRow.ObjectList));
+            Assert.Equal(row.Boolean, resultRow.Boolean);
+            Assert.Equal(row.Date.ToUniversalTime().ToString("MMddyyhhmmss"), resultRow.Date.ToUniversalTime().ToString("MMddyyhhmmss"));
+            Assert.Equal(row.UUID, resultRow.UUID);
+            Assert.Equal(row.Blob, resultRow.Blob);
+            Assert.Equal(row.Duration, resultRow.Duration);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowTestObject>();
+        }
+    }
+
+    [Fact]
+    public async Task CreateTable_DataTypesTest_FromDefinition()
+    {
+        var tableName = "testDataTypesFromDefinition";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddTextColumn("Name")
+                .AddVectorColumn("Vector", 1024)
+                .AddVectorizeColumn("StringToVectorize", 1024, new VectorServiceOptions
+                {
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                })
+                .AddPrimaryKey("Name");
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+            Assert.NotNull(table);
+            var definitions = await fixture.Database.ListTablesAsync();
+            var definition = definitions.FirstOrDefault(d => d.Name == tableName);
+            Assert.NotNull(definition);
+            Assert.Equal(1024, (definition.TableDefinition.Columns["Vector"] as VectorColumn).Dimension);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateTable_CompositePrimaryKey_FromObject()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<CompositePrimaryKey>();
+            Assert.NotNull(table);
+            var definitions = await fixture.Database.ListTablesAsync();
+            var definition = definitions.FirstOrDefault(d => d.Name == typeof(CompositePrimaryKey).Name);
+            Assert.NotNull(definition);
+            Assert.Equal(2, definition.TableDefinition.PrimaryKey.Keys.Count);
+            Assert.Equal("KeyOne", definition.TableDefinition.PrimaryKey.Keys[0]);
+            Assert.Equal("KeyTwo", definition.TableDefinition.PrimaryKey.Keys[1]);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<CompositePrimaryKey>();
+        }
+    }
+
+    [Fact]
+    public async Task CreateTable_CompoundPrimaryKey_FromObject()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<CompoundPrimaryKey>();
+            Assert.NotNull(table);
+            var definitions = await fixture.Database.ListTablesAsync();
+            var definition = definitions.FirstOrDefault(d => d.Name == typeof(CompoundPrimaryKey).Name);
+            Assert.NotNull(definition);
+            Assert.Equal(2, definition.TableDefinition.PrimaryKey.Keys.Count);
+            Assert.Equal("KeyOne", definition.TableDefinition.PrimaryKey.Keys[0]);
+            Assert.Equal("KeyTwo", definition.TableDefinition.PrimaryKey.Keys[1]);
+            Assert.Equal(2, definition.TableDefinition.PrimaryKey.Sorts.Count);
+            Assert.Equal(SortDirection.Ascending, definition.TableDefinition.PrimaryKey.Sorts["SortOneAscending"]);
+            Assert.Equal(SortDirection.Descending, definition.TableDefinition.PrimaryKey.Sorts["SortTwoDescending"]);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<CompoundPrimaryKey>();
+        }
+    }
+
+    [Fact]
+    public async Task CreateTable_CompoundPrimaryKey_FromDefinition()
+    {
+        var tableName = "testCompoundPrimaryKeyFromDefinition";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddTextColumn("KeyOne")
+                .AddTextColumn("KeyTwo")
+                .AddTextColumn("Name")
+                .AddTextColumn("SortOneAscending")
+                .AddTextColumn("SortTwoDescending")
+                .AddCompoundPrimaryKey("KeyOne", 1)
+                .AddCompoundPrimaryKey("KeyTwo", 2)
+                .AddCompoundPrimaryKeySort("SortOneAscending", 1, SortDirection.Ascending)
+                .AddCompoundPrimaryKeySort("SortTwoDescending", 2, SortDirection.Descending);
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+            Assert.NotNull(table);
+            const int retries = 6;
+            const int waitInSeconds = 5;
+            int tryNumber = 0;
+
+            TableInfo definition = null;
+
+            while (tryNumber < retries && definition == null)
+            {
+                var definitions = await fixture.Database.ListTablesAsync();
+                definition = definitions.FirstOrDefault(d => d.Name == tableName);
+                if (definition != null)
+                {
+                    return;
+                }
+                await Task.Delay(waitInSeconds * 1000);
+                tryNumber++;
+            }
+
+            Assert.NotNull(definition);
+            Assert.Equal(2, definition.TableDefinition.PrimaryKey.Keys.Count);
+            Assert.Equal("KeyOne", definition.TableDefinition.PrimaryKey.Keys[0]);
+            Assert.Equal("KeyTwo", definition.TableDefinition.PrimaryKey.Keys[1]);
+            Assert.Equal(2, definition.TableDefinition.PrimaryKey.Sorts.Count);
+            Assert.Equal(SortDirection.Ascending, definition.TableDefinition.PrimaryKey.Sorts["SortOneAscending"]);
+            Assert.Equal(SortDirection.Descending, definition.TableDefinition.PrimaryKey.Sorts["SortTwoDescending"]);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<CompoundPrimaryKey>();
+            Assert.NotNull(table);
+            var definitions = await fixture.Database.ListTablesAsync();
+            var definition = definitions.FirstOrDefault(d => d.Name == typeof(CompoundPrimaryKey).Name);
+            Assert.NotNull(definition);
+            Assert.Equal(2, definition.TableDefinition.PrimaryKey.Keys.Count);
+            Assert.Equal("KeyOne", definition.TableDefinition.PrimaryKey.Keys[0]);
+            Assert.Equal("KeyTwo", definition.TableDefinition.PrimaryKey.Keys[1]);
+            Assert.Equal(2, definition.TableDefinition.PrimaryKey.Sorts.Count);
+            Assert.Equal(SortDirection.Ascending, definition.TableDefinition.PrimaryKey.Sorts["SortOneAscending"]);
+            Assert.Equal(SortDirection.Descending, definition.TableDefinition.PrimaryKey.Sorts["SortTwoDescending"]);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<CompoundPrimaryKey>();
+        }
+    }
+
+    [Fact]
+    public async Task CreateTableFromObject_InvalidPrimaryKeys_ThrowsException()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await fixture.Database.CreateTableAsync<BrokenCompositePrimaryKey>());
+    }
+
+    [Fact]
+    public async Task CreateTableFromObject_InvalidPrimaryKeySorts_ThrowsException()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await fixture.Database.CreateTableAsync<BrokenCompoundPrimaryKey>());
+    }
+
+    [Fact]
+    public async Task GetTable()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBook>();
+            Assert.NotNull(table);
+            var foundTable = fixture.Database.GetTable<RowBook>();
+            Assert.NotNull(foundTable);
+            var foundTable2 = fixture.Database.GetTable<RowBook>("bookTestTable");
+            Assert.NotNull(foundTable2);
+            //add a row to the first table, then make sure it exists in the second (both should be the same underlying table)
+            var row = new RowBook()
+            {
+                Title = "Desert Peace",
+                Author = "Walter Dray",
+                NumberOfPages = 355,
+                DueDate = DateTime.Now - TimeSpan.FromDays(2),
+                Genres = new HashSet<string> { "Fiction" }
+            };
+            var result = await table.InsertOneAsync(row);
+            Assert.Equal(1, result.InsertedCount);
+            var id = result.InsertedIds.First().First().ToString();
+            var filter = Builders<RowBook>.Filter.Eq(b => b.Title, id);
+            var foundRow = await foundTable2.FindOneAsync(filter);
+            Assert.Equal(row.Title, foundRow.Title);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBook>();
+        }
+    }
+
+    [Fact]
+    public async Task DropNonExistentTable_ThrowsException()
+    {
+        await Assert.ThrowsAsync<CommandException>(async () => await fixture.Database.DropTableAsync("nonExistentTable"));
+    }
+
+    [Fact]
+    public async Task DropNonExistentTable_DoesNotThrowException_WhenNotExistsIsTrue()
+    {
+        await fixture.Database.DropTableAsync("nonExistentTable", true);
+    }
+
+    [Fact]
+    public async Task DropExistingTable()
+    {
+        var tableName = "testDropExistingTable";
+        var table = await fixture.Database.CreateTableAsync<RowBook>(tableName);
+        Assert.NotNull(table);
+        await fixture.Database.DropTableAsync(tableName);
     }
 
 }

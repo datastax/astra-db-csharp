@@ -23,9 +23,6 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 internal class Sort
 {
-    internal const int SortAscending = 1;
-    internal const int SortDescending = -1;
-
     internal string Name { get; set; }
     internal object Value { get; set; }
 
@@ -35,9 +32,9 @@ internal class Sort
         Value = value;
     }
 
-    internal static Sort Ascending(string field) => new(field, SortAscending);
+    internal static Sort Ascending(string field) => new(field, DataApiKeywords.SortAscending);
 
-    internal static Sort Descending(string field) => new(field, SortDescending);
+    internal static Sort Descending(string field) => new(field, DataApiKeywords.SortDescending);
 
     internal static Sort Vector(float[] vector) => new(DataApiKeywords.Vector, vector);
 
@@ -50,11 +47,11 @@ internal class Sort<T> : Sort
 
     internal static Sort Ascending<TField>(Expression<Func<T, TField>> expression)
     {
-        return new Sort<T>(expression.GetMemberNameTree(), SortAscending);
+        return new Sort<T>(expression.GetMemberNameTree(), DataApiKeywords.SortAscending);
     }
 
     internal static Sort Descending<TField>(Expression<Func<T, TField>> expression)
     {
-        return new Sort<T>(expression.GetMemberNameTree(), SortDescending);
+        return new Sort<T>(expression.GetMemberNameTree(), DataApiKeywords.SortDescending);
     }
 }

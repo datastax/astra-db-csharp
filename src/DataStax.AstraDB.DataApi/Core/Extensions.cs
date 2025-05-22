@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core;
@@ -42,11 +43,11 @@ internal static class CoreExtensions
         task.GetAwaiter().GetResult();
     }
 
-    internal static IEnumerable<List<T>> Chunk<T>(this List<T> list, int chunkSize)
+    internal static IEnumerable<IEnumerable<T>> CreateBatch<T>(this IEnumerable<T> list, int chunkSize)
     {
-        for (int i = 0; i < list.Count; i += chunkSize)
+        for (int i = 0; i < list.Count(); i += chunkSize)
         {
-            yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
+            yield return list.Skip(i).Take(Math.Min(chunkSize, list.Count() - i));
         }
     }
 }

@@ -58,11 +58,9 @@ public class ReplaceOptions<T> where T : class
   [JsonPropertyName("sort")]
   internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.Sorts.ToDictionary(x => x.Name, x => x.Value);
 
-  /// <summary>
-  /// The document to replace the matching document with.
-  /// </summary>
+  [JsonInclude]
   [JsonPropertyName("replacement")]
-  public T Replacement { get; set; }
+  internal T Replacement { get; set; }
 
   /// <summary>
   /// Whether to insert the document if no matching document is found or not.
