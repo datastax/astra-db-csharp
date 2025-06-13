@@ -115,7 +115,7 @@ public class AdminTests
 		var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
 		Assert.Equal("ACTIVE", status);
 
-		status = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(dbName);
+		status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
 		Assert.Equal("ACTIVE", status);
 	}
 
