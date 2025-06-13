@@ -1,9 +1,8 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
-using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
 using MongoDB.Bson;
-using System.Text.Json.Serialization;
 using UUIDNext;
 using Xunit;
 
@@ -623,7 +622,7 @@ public class CollectionTests
     {
         var collection = fixture.SearchCollection;
         var count = await collection.CountDocumentsAsync();
-        Assert.Equal(33, count.Count);
+        Assert.Equal(33, count);
     }
 
     [Fact]
@@ -632,7 +631,34 @@ public class CollectionTests
         var collection = fixture.SearchCollection;
         var filter = Builders<SimpleObject>.Filter.Eq("Properties.PropertyOne", "grouptwo");
         var count = await collection.CountDocumentsAsync(filter);
-        Assert.Equal(3, count.Count);
+        Assert.Equal(3, count);
+    }
+
+    [Fact]
+    public async Task CountDocuments_MaxCount()
+    {
+        var collectionName = "testCountObjects";
+        try
+        {
+            List<SimpleObject> items = new List<SimpleObject>();
+            for (var i = 0; i < 100; i++)
+            {
+                items.Add(new SimpleObject()
+                {
+                    _id = i,
+                    Name = $"Test Object {i}"
+                });
+            }
+            ;
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
+            await collection.InsertManyAsync(items, new InsertManyOptions() { InsertInOrder = true });
+            await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(50));
+
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
     }
 
 }

@@ -20,6 +20,7 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 
 internal class FindStatusResult
 {
+    [JsonInclude]
     [JsonPropertyName("sortVector")]
     internal float[] SortVector { get; set; }
 }

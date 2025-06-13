@@ -35,8 +35,6 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// </example>
 public class AstraDatabasesAdmin
 {
-    private const int WAIT_IN_SECONDS = 600;
-
     private readonly CommandOptions _adminOptions;
     private readonly DataApiClient _client;
 
@@ -360,7 +358,7 @@ public class AstraDatabasesAdmin
             if (existingDb.Status == "ACTIVE")
             {
                 Console.WriteLine($"Database {databaseName} already exists and is ACTIVE.");
-                return GetDatabaseAdmin(Guid.Parse(existingDb.Id));
+                return GetDatabaseAdmin(existingDb);
             }
 
             throw new InvalidOperationException($"Database {databaseName} already exists but is in state: {existingDb.Status}");
@@ -403,63 +401,29 @@ public class AstraDatabasesAdmin
 
     private void WaitForDatabase(string databaseName)
     {
-        WaitForDatabaseAsync(databaseName, true).ResultSync();
+        WaitForDatabaseAsync(databaseName).ResultSync();
     }
 
-    private async Task WaitForDatabaseAsync(string databaseName)
+    internal async Task WaitForDatabaseAsync(string databaseName)
     {
-        await WaitForDatabaseAsync(databaseName, false).ConfigureAwait(false);
-    }
-
-    internal async Task WaitForDatabaseAsync(string databaseName, bool runSynchronously)
-    {
+        const int MAX_WAIT_IN_SECONDS = 600;
+        const int SLEEP_SECONDS = 5;
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-        if (runSynchronously)
-        {
-            Console.WriteLine($"Waiting {WAIT_IN_SECONDS} seconds synchronously before checking db status...");
-            Thread.Sleep(WAIT_IN_SECONDS * 1000);
-            string status = GetDatabaseStatus(databaseName);
 
-            if (status != "ACTIVE")
-            {
-                throw new Exception($"Database {databaseName} is still {status} after {WAIT_IN_SECONDS} seconds.");
-            }
+        int secondsWaited = 0;
 
-            Console.WriteLine($"Database {databaseName} is ready.");
-            return;
-        }
-
-        const int retry = 30_000; // 30 seconds
-        int waiting = 0;
-
-        while (waiting < WAIT_IN_SECONDS * 1000)
+        while (secondsWaited < MAX_WAIT_IN_SECONDS)
         {
             string status = await GetDatabaseStatusAsync(databaseName).ConfigureAwait(false);
             if (status == "ACTIVE")
             {
-                Console.WriteLine($"Database {databaseName} is ready.");
                 return;
             }
-
-            Console.WriteLine($"Database {databaseName} is {status}... retrying in {retry / 1000} seconds.");
-            await Task.Delay(retry).ConfigureAwait(false);
-            waiting += retry;
+            await Task.Delay(SLEEP_SECONDS * 1000).ConfigureAwait(false);
+            secondsWaited += SLEEP_SECONDS;
         }
 
-        throw new Exception($"Database {databaseName} did not become ready within {WAIT_IN_SECONDS} seconds.");
-    }
-
-    internal string GetDatabaseStatus(string databaseName)
-    {
-        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-        var db = ListDatabases().FirstOrDefault(item => databaseName.Equals(item.Info.Name));
-
-        if (db == null)
-        {
-            throw new Exception($"Database '{databaseName}' not found.");
-        }
-
-        return db.Status;
+        throw new Exception($"Database {databaseName} did not become ready within {MAX_WAIT_IN_SECONDS} seconds.");
     }
 
     internal async Task<string> GetDatabaseStatusAsync(string databaseName)
@@ -638,10 +602,19 @@ public class AstraDatabasesAdmin
         return false;
     }
 
-    private IDatabaseAdmin GetDatabaseAdmin(Guid dbGuid)
+    private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
     {
-        Guard.NotEmpty(dbGuid, nameof(dbGuid));
-        return new DatabaseAdminAstra(dbGuid, _client, null);
+        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Info.Region}.apps.astra.datastax.com";
+        var database = _client.GetDatabase(apiEndpoint);
+        return new DatabaseAdminAstra(database, _client, null);
+    }
+
+    private DatabaseAdminAstra GetDatabaseAdmin(Guid dbGuid)
+    {
+        var dbInfo = GetDatabaseInfo(dbGuid);
+        var apiEndpoint = $"https://{dbGuid}-{dbInfo.Info.Region}.apps.astra.datastax.com";
+        var database = _client.GetDatabase(apiEndpoint);
+        return new DatabaseAdminAstra(database, _client, null);
     }
 
     /// <summary>

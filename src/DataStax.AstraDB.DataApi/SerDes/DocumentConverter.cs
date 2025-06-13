@@ -141,6 +141,12 @@ public class DocumentConverter<T> : JsonConverter<T>
                     }
                 }
 
+                var docMappingAttr = prop.GetCustomAttribute<DocumentMappingAttribute>();
+                if (docMappingAttr != null && propValue == null)
+                {
+                    continue;
+                }
+
                 var documentIdAttr = prop.GetCustomAttribute<DocumentIdAttribute>();
                 if (documentIdAttr != null && propValue == null)
                 {

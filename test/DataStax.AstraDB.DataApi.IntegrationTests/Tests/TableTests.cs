@@ -343,7 +343,7 @@ public class TableTests
             var filter = Builders<RowBookSinglePrimaryKey>.Filter
             .Eq(so => so.Title, "Title 1");
             var findResult = table.Find(filter).ToList();
-            Assert.Equal(1, findResult.Count);
+            Assert.Single(findResult);
             var result = await table.DeleteManyAsync(filter);
             var deletedResult = table.Find(filter).ToList();
             Assert.Empty(deletedResult);

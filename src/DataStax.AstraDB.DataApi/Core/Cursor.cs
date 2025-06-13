@@ -32,7 +32,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// and <see cref="Current"/> to access the current batch of results.
 /// 
 /// In most situations, using the results of a query directly as an IEnumerable or IAsyncEnumerable is recommended.
-/// Use the cursor directly if you need access to the SortVectors or want to manually control iterating over the batches.
+/// Use the cursor directly if you need access to the SortVector or want to manually control iterating over the batches.
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 public class Cursor<T>
@@ -58,7 +58,7 @@ public class Cursor<T>
     /// <summary>
     /// An array containing the sort vectors used for this query.
     /// </summary>
-    public float[] SortVectors { get; internal set; } = Array.Empty<float>();
+    public float[] SortVector { get; internal set; } = Array.Empty<float>();
 
     internal Cursor(Func<string, bool, Task<ApiResponseWithData<DocumentsResult<T>, FindStatusResult>>> fetchNextBatch)
     {
@@ -93,7 +93,7 @@ public class Cursor<T>
         }
         if (nextResult.Status != null && nextResult.Status.SortVector != null)
         {
-            SortVectors = SortVectors.Concat(nextResult.Status.SortVector).ToArray();
+            SortVector = SortVector.Concat(nextResult.Status.SortVector).ToArray();
         }
         _currentBatch = nextResult.Data;
         return true;
@@ -124,7 +124,7 @@ public class Cursor<T>
         }
         if (nextResult.Status != null && nextResult.Status.SortVector != null)
         {
-            SortVectors = SortVectors.Concat(nextResult.Status.SortVector).ToArray();
+            SortVector = SortVector.Concat(nextResult.Status.SortVector).ToArray();
         }
         _currentBatch = nextResult.Data;
         return true;

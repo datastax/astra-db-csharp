@@ -1,6 +1,6 @@
 # Overview
 
-This C# Client Library simplifies using the DataStax Data API to manage and interact with AstraDB instances as well as other DataStax databases.
+This C# Client Library simplifies using the DataStax Data API to manage and interact with Astra DB instances as well as other DataStax databases.
 
 # Installation
 
@@ -12,29 +12,29 @@ dotnet add package DataStax.AstraDB.DataApi
 
 ```
 //instantiate a client
-var client = new DataApiClient("YourTokenHere");
+var client = new DataApiClient();
 
 //connect to a database
-var database = client.GetDatabase("YourDatabaseUrlHere");
+var database = client.GetDatabase("YourDatabaseUrlHere", "YourTokenHere");
 
 //create a new collection
-var collection = await database.CreateCollectionAsync<SimpleObject>("YourCollectionNameHere");
+var collection = await database.CreateCollectionAsync<User>("YourCollectionNameHere");
 
 //insert a document into the collection
-var documents = new List<SimpleObject>
+var documents = new List<User>
 {
-    new SimpleObject()
+    new User()
     {
-        Name = "Test Object 1",
+        Name = "Test User 1",
     },
-    new SimpleObject()
+    new User()
     {
-        Name = "Test Object 2",
+        Name = "Test User 2",
     }
 };
 var insertResult = await collection.InsertManyAsync(documents);
 
 //find a document
-var filter = Builders<SimpleObject>.Filter.Eq(so => so.Name, "Test Object 1");
+var filter = Builders<User>.Filter.Eq(x => x.Name, "Test User 1");
 var results = await collection.Find(filter);
 ```

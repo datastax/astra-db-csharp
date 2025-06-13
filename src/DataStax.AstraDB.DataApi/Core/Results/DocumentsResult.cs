@@ -23,13 +23,14 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 /// A list of documents returned from an operation.
 /// </summary>
 /// <typeparam name="T">The type of the documents</typeparam>
-public class DocumentsResult<T>
+internal class DocumentsResult<T>
 {
     /// <summary>
     /// The list of documents returned.
     /// </summary>
+    [JsonInclude]
     [JsonPropertyName("documents")]
-    public List<T> Documents { get; set; }
+    internal List<T> Documents { get; set; }
 
     [JsonInclude]
     [JsonPropertyName("nextPageState")]

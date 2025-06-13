@@ -28,4 +28,10 @@ public class DocumentsCountResult
     /// </summary>
     [JsonPropertyName("count")]
     public int Count { get; set; }
+
+    /// <summary>
+    /// Is the count potentially larger than the count (i.e. reached the MaxDocumentsToCount)
+    /// </summary>
+    [JsonPropertyName("moreData")]
+    public bool MoreData { get; set; } = false;
 }

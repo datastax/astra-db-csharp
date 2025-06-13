@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Net.Http;
-using System;
-using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi;
 
@@ -32,12 +32,12 @@ namespace DataStax.AstraDB.DataApi;
 /// 
 /// The DataApiClient, and the related methods for interacting with the database, accepts a set of options that can be used to affect the 
 /// command execution. These options can be specified at any level in the call hierarchy (Client, Database, Collection, Command, etc.) 
-/// The most specific defined option (or it's default) will be used for each request.
+/// The most specific defined option (or its default) will be used for each request.
 /// 
 ///
 ///  Once you have a <see cref="DataApiClient"/> instance, 
 ///  you can use it to get a <see cref="Core.Database"/> instance.
-///  From there you can create or connect to a <see cref="Collections.Collection"/>
+///  From there you can create or connect to a <see cref="Collections.Collection"/>.
 ///  
 /// </summary>
 public class DataApiClient
@@ -207,238 +207,4 @@ public class DataApiClient
         return new Database(apiEndpoint, this, dbOptions);
     }
 
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <example>
-    /// <code>
-    /// var client = new DataApiClient("token");
-    /// var database = client.GetDatabase(Guid.Parse("databaseId"));
-    /// </code>
-    /// </example>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string)"/>).
-    /// </remarks>
-    public Database GetDatabase(Guid databaseId)
-    {
-        return GetDatabase(databaseId, null as DatabaseCommandOptions);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, set to the provided keyspace.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="token">The specific token to use for this database connection.</param>
-    /// <param name="keyspace">Optional: The keyspace to use for the database commands.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <example>
-    /// <code>
-    /// var client = new DataApiClient("token");
-    /// var database = client.GetDatabase(Guid.Parse("databaseId"), "keyspace");
-    /// </code>
-    /// </example>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, string)"/>).
-    /// </remarks>
-    public Database GetDatabase(Guid databaseId, string token, string keyspace = null)
-    {
-        var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace, Token = token };
-        return GetDatabase(databaseId, dbOptions);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> using the Guid database Id.
-    /// 
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string)"/>).
-    /// </remarks>
-    public Task<Database> GetDatabaseAsync(Guid databaseId)
-    {
-        return GetDatabaseAsync(databaseId, new DatabaseCommandOptions(), false);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, using the provided options.
-    /// 
-    /// Any options provided in the <paramref name="dbOptions"/> parameter will take precedence over the options from the <see cref="DataApiClient"/>.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="dbOptions">The options to use for the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, DatabaseCommandOptions)"/>).
-    /// </remarks>
-    public Database GetDatabase(Guid databaseId, DatabaseCommandOptions dbOptions)
-    {
-        return GetDatabaseAsync(databaseId, dbOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, using the provided keyspace.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="keyspace">The keyspace to use for the database commands.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, string)"/>).
-    /// </remarks>
-    public Task<Database> GetDatabaseAsync(Guid databaseId, string keyspace)
-    {
-        var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace };
-        return GetDatabaseAsync(databaseId, dbOptions, true);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, using the provided options.
-    /// 
-    /// Any options provided in the <paramref name="dbOptions"/> parameter will take precedence over the options from the <see cref="DataApiClient"/>.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="dbOptions">The options to use for the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, DatabaseCommandOptions)"/>).
-    /// </remarks>
-    public Task<Database> GetDatabaseAsync(Guid databaseId, DatabaseCommandOptions dbOptions)
-    {
-        return GetDatabaseAsync(databaseId, dbOptions, true);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> using the database Id.
-    /// 
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <exception cref="ArgumentException">Thrown when the database Id is not a valid Guid.</exception>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string)"/>).
-    /// </remarks>
-    public Database GetDatabaseById(string databaseId)
-    {
-        return GetDatabaseById(databaseId, null as DatabaseCommandOptions);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, using the provided keyspace.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="keyspace">The keyspace to use for the database commands.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <exception cref="ArgumentException">Thrown when the database Id is not a valid Guid.</exception>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, string)"/>).
-    /// </remarks>
-    public Database GetDatabaseById(string databaseId, string keyspace)
-    {
-        var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace };
-        return GetDatabaseById(databaseId, dbOptions);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, using the provided options.
-    /// 
-    /// Any options provided in the <paramref name="dbOptions"/> parameter will take precedence over the options from the <see cref="DataApiClient"/>.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="dbOptions">The options to use for the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <exception cref="ArgumentException">Thrown when the database Id is not a valid Guid.</exception>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, DatabaseCommandOptions)"/>).
-    /// </remarks>
-    public Database GetDatabaseById(string databaseId, DatabaseCommandOptions dbOptions)
-    {
-        return GetDatabaseByIdAsync(databaseId, dbOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> using the database Id.
-    /// 
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <exception cref="ArgumentException">Thrown when the database Id is not a valid Guid.</exception>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string)"/>).
-    /// </remarks>
-    public Task<Database> GetDatabaseByIdAsync(string databaseId)
-    {
-        return GetDatabaseByIdAsync(databaseId, new DatabaseCommandOptions(), false);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, using the provided keyspace.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="keyspace">The keyspace to use for the database commands.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <exception cref="ArgumentException">Thrown when the database Id is not a valid Guid.</exception>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, string)"/>).
-    /// </remarks>
-    public Task<Database> GetDatabaseByIdAsync(string databaseId, string keyspace)
-    {
-        var dbOptions = new DatabaseCommandOptions() { Keyspace = keyspace };
-        return GetDatabaseByIdAsync(databaseId, dbOptions, false);
-    }
-
-    /// <summary>
-    /// Gets an instance of a <see cref="Database"/> based on the database Id, using the provided options.
-    /// 
-    /// Any options provided in the <paramref name="dbOptions"/> parameter will take precedence over the options from the <see cref="DataApiClient"/>.
-    /// </summary>
-    /// <param name="databaseId">The Guid of the database.</param>
-    /// <param name="dbOptions">The options to use for the database.</param>
-    /// <returns>An instance of the <see cref="Database"/> class.</returns>
-    /// <exception cref="ArgumentException">Thrown when the database Id is not a valid Guid.</exception>
-    /// <remarks>
-    ///      Using a Guid instead of the Database API endpoint requires an extra API call to lookup the appropriate database.
-    ///      If you want to avoid this, use an overload that accepts the API endpoint (<see cref="GetDatabase(string, DatabaseCommandOptions)"/>).
-    /// </remarks>
-    public Task<Database> GetDatabaseByIdAsync(string databaseId, DatabaseCommandOptions dbOptions)
-    {
-        return GetDatabaseByIdAsync(databaseId, dbOptions, false);
-    }
-
-    private Task<Database> GetDatabaseByIdAsync(string databaseId, DatabaseCommandOptions dbOptions, bool runSynchronously)
-    {
-        var parsed = Guid.TryParse(databaseId, out var guid);
-        if (!parsed)
-        {
-            throw new ArgumentException("Invalid database Id");
-        }
-        return GetDatabaseAsync(guid, dbOptions, runSynchronously);
-    }
-
-    private async Task<Database> GetDatabaseAsync(Guid databaseId, DatabaseCommandOptions dbOptions, bool runSynchronously)
-    {
-        DatabaseInfo dbInfo;
-        if (runSynchronously)
-        {
-            dbInfo = GetAstraDatabasesAdmin().GetDatabaseInfoAsync(databaseId, runSynchronously).ResultSync();
-        }
-        else
-        {
-            dbInfo = await GetAstraDatabasesAdmin().GetDatabaseInfoAsync(databaseId).ConfigureAwait(false);
-        }
-        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Info.Region}.apps.astra.datastax.com";
-        return GetDatabase(apiEndpoint, dbOptions);
-    }
 }

@@ -59,15 +59,6 @@ namespace DataStax.AstraDB.DataApi.Admin
         private readonly DataApiClient _client;
         private CommandOptions[] _optionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
 
-        internal DatabaseAdminAstra(Guid id, DataApiClient client, CommandOptions adminOptions)
-        {
-            Guard.NotNull(client, nameof(client));
-            _client = client;
-            _adminOptions = adminOptions;
-            _database = _client.GetDatabase(id);
-            _id = id;
-        }
-
         internal DatabaseAdminAstra(Database database, DataApiClient client, CommandOptions adminOptions)
         {
             Guard.NotNull(client, nameof(client));
@@ -172,8 +163,9 @@ namespace DataStax.AstraDB.DataApi.Admin
         }
 
         /// <summary>
-        /// Creates a new keyspace with the specified name.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string)"/>
         /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <example>
         /// <code>
@@ -182,12 +174,13 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public void CreateKeyspace(string keyspace)
         {
-            CreateKeyspaceAsync(keyspace, false, null, true).ResultSync();
+            CreateKeyspace(keyspace, false);
         }
 
         /// <summary>
-        /// Creates a new keyspace with the specified name and optionally updates the database's keyspace reference.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, bool)"/>
         /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, bool)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <example>
@@ -197,12 +190,13 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public void CreateKeyspace(string keyspace, bool updateDBKeyspace)
         {
-            CreateKeyspaceAsync(keyspace, updateDBKeyspace, null, true).ResultSync();
+            CreateKeyspace(keyspace, updateDBKeyspace, null);
         }
 
         /// <summary>
-        /// Creates a new keyspace with the specified name using the provided command options.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, CommandOptions)"/>
         /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, CommandOptions)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <example>
@@ -212,13 +206,13 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public void CreateKeyspace(string keyspace, CommandOptions options)
         {
-            CreateKeyspaceAsync(keyspace, false, options, true).ResultSync();
+            CreateKeyspace(keyspace, false, true, options);
         }
 
         /// <summary>
-        /// Creates a new keyspace with the specified name, optionally updating the database's keyspace reference,
-        /// and applying the given command options.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, bool, CommandOptions)"/>
         /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, bool, CommandOptions)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
@@ -229,14 +223,31 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public void CreateKeyspace(string keyspace, bool updateDBKeyspace, CommandOptions options)
         {
-            CreateKeyspaceAsync(keyspace, updateDBKeyspace, options, true).ResultSync();
+            CreateKeyspace(keyspace, updateDBKeyspace, true, options);
         }
 
         /// <summary>
-        /// Asynchronously creates a new keyspace with the specified name.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, bool, bool, CommandOptions)"/>
+        /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, bool, bool, CommandOptions)"/>
+        /// <param name="keyspace">The name of the keyspace to create.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
+        /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
+        /// <param name="options">Optional settings that influence request execution.</param>
+        /// <example>
+        /// <code>
+        /// admin.CreateKeyspace("myKeyspace", true, options);
+        /// </code>
+        /// </example>
+        public void CreateKeyspace(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options)
+        {
+            CreateKeyspaceAsync(keyspace, updateDBKeyspace, waitForCompletion, options).ResultSync();
+        }
+
+        /// <summary>
+        /// Creates a new keyspace with the specified name.
         /// </summary>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         /// <example>
         /// <code>
         /// await admin.CreateKeyspaceAsync("myKeyspace");
@@ -244,12 +255,10 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public Task CreateKeyspaceAsync(string keyspace)
         {
-            return CreateKeyspaceAsync(keyspace, false, null, false);
+            return CreateKeyspaceAsync(keyspace, false, true, null);
         }
 
-        /// <summary>
-        /// Asynchronously creates a new keyspace with the specified name and optionally updates the database's keyspace reference.
-        /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -260,12 +269,25 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace)
         {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, null, false);
+            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, false, null);
         }
 
-        /// <summary>
-        /// Asynchronously creates a new keyspace with the specified name using the provided command options.
-        /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <param name="keyspace">The name of the keyspace to create.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
+        /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <example>
+        /// <code>
+        /// await admin.CreateKeyspaceAsync("myKeyspace", true);
+        /// </code>
+        /// </example>
+        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion)
+        {
+            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, waitForCompletion, null);
+        }
+
+        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -276,15 +298,12 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public Task CreateKeyspaceAsync(string keyspace, CommandOptions options)
         {
-            return CreateKeyspaceAsync(keyspace, false, options, false);
+            return CreateKeyspaceAsync(keyspace, false, false, options, false);
         }
 
-        /// <summary>
-        /// Asynchronously creates a new keyspace with the specified name, optionally updating the database's keyspace reference,
-        /// and applying the given command options.
-        /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
+        /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         /// <example>
@@ -292,12 +311,28 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// await admin.CreateKeyspaceAsync("myKeyspace", true, options);
         /// </code>
         /// </example>
-        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, CommandOptions options)
+        public Task CreateKeyspaceAsync(string keyspace, bool waitForCompletion, CommandOptions options)
         {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, options, false);
+            return CreateKeyspaceAsync(keyspace, false, waitForCompletion, options, false);
         }
 
-        internal async Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, CommandOptions options, bool runSynchronously)
+        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <param name="keyspace">The name of the keyspace to create.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
+        /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
+        /// <param name="options">Optional settings that influence request execution.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <example>
+        /// <code>
+        /// await admin.CreateKeyspaceAsync("myKeyspace", true, true, options);
+        /// </code>
+        /// </example>
+        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options)
+        {
+            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, waitForCompletion, options, false);
+        }
+
+        internal async Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options, bool runSynchronously)
         {
             options ??= new CommandOptions();
             options.IncludeKeyspaceInUrl = false;
@@ -322,6 +357,69 @@ namespace DataStax.AstraDB.DataApi.Admin
             {
                 options.Keyspace = keyspace;
             }
+
+            if (waitForCompletion)
+            {
+                try
+                {
+                    await Wait.WaitForProcess(() => KeyspaceExistsAsync(keyspace, options, runSynchronously)).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Failed to create keyspace {keyspace} within the allotted time", e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Synchronous version of <see cref="DropKeyspaceAsync(string)"/>
+        /// </summary>
+        /// <inheritdoc cref="DropKeyspaceAsync(string)"/>
+        /// <example>
+        /// <code>
+        /// admin.DropKeyspace("myKeyspace");
+        /// </code>
+        /// </example>
+        public void DropKeyspace(string keyspace)
+        {
+            DropKeyspace(keyspace, true, null);
+        }
+
+        /// <summary>
+        /// Synchronous version of <see cref="DropKeyspaceAsync(string, bool)"/>
+        /// </summary>
+        /// <inheritdoc cref="DropKeyspaceAsync(string, bool)"/>
+        /// <example>
+        /// <code>
+        /// admin.DropKeyspace("myKeyspace", false);
+        /// </code>
+        /// </example>
+        public void DropKeyspace(string keyspace, bool waitForCompletion)
+        {
+            DropKeyspace(keyspace, waitForCompletion, null);
+        }
+
+        /// <summary>
+        /// Synchronous version of <see cref="DropKeyspaceAsync(string, CommandOptions)"/>
+        /// </summary>
+        /// <inheritdoc cref="DropKeyspaceAsync(string, CommandOptions)"/>
+        /// <example>
+        /// <code>
+        /// admin.DropKeyspace("myKeyspace", options);
+        /// </code>
+        /// </example>
+        public void DropKeyspace(string keyspace, CommandOptions options)
+        {
+            DropKeyspace(keyspace, true, options);
+        }
+
+        /// <summary>
+        /// Synchronous version of <see cref="DropKeyspaceAsync(string, bool, CommandOptions)"/>
+        /// </summary>
+        /// <inheritdoc cref="DropKeyspaceAsync(string, bool, CommandOptions)"/>
+        public void DropKeyspace(string keyspace, bool waitForCompletion, CommandOptions options)
+        {
+            DropKeyspaceAsync(keyspace, waitForCompletion, options, true).ResultSync();
         }
 
         /// <summary>
@@ -330,48 +428,31 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <param name="keyspace">The name of the keyspace to drop.</param>
         /// <example>
         /// <code>
-        /// admin.DropKeyspace("myKeyspace");
-        /// </code>
-        /// </example>
-        public void DropKeyspace(string keyspace)
-        {
-            DropKeyspaceAsync(keyspace, null, true).ResultSync();
-        }
-
-        /// <summary>
-        /// Asynchronously drops the keyspace with the specified name.
-        /// </summary>
-        /// <param name="keyspace">The name of the keyspace to drop.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <example>
-        /// <code>
         /// await admin.DropKeyspaceAsync("myKeyspace");
         /// </code>
         /// </example>
+        /// <remarks>
+        /// This method will wait for the keyspace to be dropped before returning.
+        /// If you do not want to wait for the keyspace to be dropped, use the <see cref="DropKeyspaceAsync(string, bool, CommandOptions)"/> method.
+        /// </remarks>
         public Task DropKeyspaceAsync(string keyspace)
         {
-            return DropKeyspaceAsync(keyspace, null, false);
+            return DropKeyspaceAsync(keyspace, true, null);
         }
 
-        /// <summary>
-        /// Drops the keyspace with the specified name using the provided command options.
-        /// </summary>
-        /// <param name="keyspace">The name of the keyspace to drop.</param>
-        /// <param name="options">Optional settings that influence request execution.</param>
+        /// <inheritdoc cref="DropKeyspaceAsync(string)"/>
+        /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be dropped before returning.</param>
         /// <example>
         /// <code>
-        /// admin.DropKeyspace("myKeyspace", options);
+        /// await admin.DropKeyspaceAsync("myKeyspace", false);
         /// </code>
         /// </example>
-        public void DropKeyspace(string keyspace, CommandOptions options)
+        public Task DropKeyspaceAsync(string keyspace, bool waitForCompletion)
         {
-            DropKeyspaceAsync(keyspace, options, true).ResultSync();
+            return DropKeyspaceAsync(keyspace, waitForCompletion, null);
         }
 
-        /// <summary>
-        /// Asynchronously drops the keyspace with the specified name using the provided command options.
-        /// </summary>
-        /// <param name="keyspace">The name of the keyspace to drop.</param>
+        /// <inheritdoc cref="DropKeyspaceAsync(string)"/>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         /// <example>
@@ -379,12 +460,28 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// await admin.DropKeyspaceAsync("myKeyspace", options);
         /// </code>
         /// </example>
+        /// <remarks>
+        /// This method will wait for the keyspace to be dropped before returning.
+        /// If you do not want to wait for the keyspace to be dropped, use the <see cref="DropKeyspaceAsync(string, bool, CommandOptions)"/> method.
+        /// </remarks>
         public Task DropKeyspaceAsync(string keyspace, CommandOptions options)
         {
-            return DropKeyspaceAsync(keyspace, options, false);
+            return DropKeyspaceAsync(keyspace, true, options, false);
         }
 
-        internal async Task DropKeyspaceAsync(string keyspace, CommandOptions options, bool runSynchronously)
+        /// <inheritdoc cref="DropKeyspaceAsync(string, CommandOptions)"/>
+        /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be dropped before returning.</param>
+        /// <example>
+        /// <code>
+        /// await admin.DropKeyspaceAsync("myKeyspace", true, options);
+        /// </code>
+        /// </example>
+        public Task DropKeyspaceAsync(string keyspace, bool waitForCompletion, CommandOptions options)
+        {
+            return DropKeyspaceAsync(keyspace, waitForCompletion, options, false);
+        }
+
+        internal async Task DropKeyspaceAsync(string keyspace, bool waitForCompletion, CommandOptions options, bool runSynchronously)
         {
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
 
@@ -394,6 +491,18 @@ namespace DataStax.AstraDB.DataApi.Admin
 
             await command.RunAsyncRaw<Command.EmptyResult>(HttpMethod.Delete, runSynchronously)
                 .ConfigureAwait(false);
+
+            if (waitForCompletion)
+            {
+                try
+                {
+                    await Wait.WaitForProcess(async () => !await KeyspaceExistsAsync(keyspace, options, runSynchronously).ConfigureAwait(false)).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Failed to drop keyspace {keyspace} within the allotted time", e);
+                }
+            }
         }
 
         /// <summary>

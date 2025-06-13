@@ -541,7 +541,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return Find(null, null, null);
     }
 
-    /// <inheritdoc cref="Find()"/>
+    /// <inheritdoc cref="Find()" path="/summary"/>
     /// <param name="filter"></param>
     /// <example>
     /// <code>
@@ -560,7 +560,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// As an alternative to <see cref="Find()"/>, this method allows for controlling the results
     /// by setting properties on the <paramref name="findOptions"/> parameter.
     /// </summary>
-    /// <inheritdoc cref="Find()"/>
+    /// <inheritdoc cref="Find()" path="/summary"/>
     /// <param name="findOptions"></param>
     /// <example>
     /// <code>
@@ -583,7 +583,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return Find(null, findOptions, null);
     }
 
-    /// <inheritdoc cref="Find()"/>
+    /// <inheritdoc cref="Find()" path="/summary"/>
     /// <param name="commandOptions"></param>
     public ResultSet<T, T, DocumentSortBuilder<T>> Find(CommandOptions commandOptions)
     {
@@ -619,7 +619,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return new ResultSet<T, T, DocumentSortBuilder<T>>(this, filter, findOptions, commandOptions);
     }
 
-    /// <inheritdoc cref="Find()"/>
+    /// <inheritdoc cref="Find()" path="/summary"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
@@ -1765,83 +1765,125 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Synchronous version of <see cref="CountDocumentsAsync()"/>
     /// </summary>
     /// <inheritdoc cref="CountDocumentsAsync()"/>
-    public DocumentsCountResult CountDocuments()
+    public int CountDocuments()
     {
-        return CountDocumentsAsync(null, null, true).ResultSync();
+        return CountDocuments(null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync(CountDocumentsCommandOptions)"/>
+    /// Synchronous version of <see cref="CountDocumentsAsync(int)"/>
     /// </summary>
-    /// <inheritdoc cref="CountDocumentsAsync(CommandOptions)"/>
-    public DocumentsCountResult CountDocuments(CountDocumentsCommandOptions commandOptions)
+    /// <inheritdoc cref="CountDocumentsAsync(int)"/>
+    public int CountDocuments(int maxDocumentsToCount)
     {
-        return CountDocumentsAsync(null, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Count the number of documents in the collection.
-    /// </summary>
-    /// <returns></returns>
-    public Task<DocumentsCountResult> CountDocumentsAsync()
-    {
-        return CountDocumentsAsync(null, null, false);
-    }
-
-    /// <summary>
-    /// Count the number of documents in the collection.
-    /// </summary>
-    /// <param name="commandOptions"></param>
-    /// <returns></returns>
-    public Task<DocumentsCountResult> CountDocumentsAsync(CountDocumentsCommandOptions commandOptions)
-    {
-        return CountDocumentsAsync(null, commandOptions, false);
+        return CountDocuments(null, maxDocumentsToCount);
     }
 
     /// <summary>
     /// Synchronous version of <see cref="CountDocumentsAsync(Filter{T})"/>
     /// </summary>
     /// <inheritdoc cref="CountDocumentsAsync(Filter{T})"/>
-    public DocumentsCountResult CountDocuments(Filter<T> filter)
+    public int CountDocuments(Filter<T> filter)
     {
-        return CountDocumentsAsync(filter, null, true).ResultSync();
+        return CountDocuments(filter, MaxDocumentsToCount);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync(Filter{T}, CountDocumentsCommandOptions)"/>
+    /// Synchronous version of <see cref="CountDocumentsAsync(Filter{T}, int)"/>
     /// </summary>
-    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}, CountDocumentsCommandOptions)"/>
-    public DocumentsCountResult CountDocuments(Filter<T> filter, CountDocumentsCommandOptions commandOptions)
+    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}, int)"/>
+    public int CountDocuments(Filter<T> filter, int maxDocumentsToCount)
     {
-        return CountDocumentsAsync(filter, commandOptions, true).ResultSync();
+        return CountDocuments(filter, maxDocumentsToCount, null);
     }
 
     /// <summary>
-    /// Count the number of documents in the collection that match the provided filter.
+    /// Synchronous version of <see cref="CountDocumentsAsync(Filter{T}, int, CommandOptions)"/>
     /// </summary>
+    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}, int, CommandOptions)"/>
+    public int CountDocuments(Filter<T> filter, int maxDocumentsToCount, CommandOptions commandOptions)
+    {
+        return CountDocumentsAsync(filter, maxDocumentsToCount, commandOptions, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Count the number of documents in the collection.
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>
+    /// Count operations are expensive: for this reason, the best practice is to provide a reasonable `upperBound`
+    /// according to the caller expectations. Moreover, indiscriminate usage of count operations for sizeable amounts
+    /// of documents is discouraged in favor of alternative application-specific
+    /// solutions. Keep in mind that the Data API has a hard upper limit on the amount of documents it will count (1000),
+    /// and that an exception will be thrown by this method if this limit is encountered.
+    /// </remarks>
+    /// <throws cref="DocumentCountExceedsMaxException">Thrown if the number of documents to count exceeds the limit</throws>
+    public Task<int> CountDocumentsAsync()
+    {
+        return CountDocumentsAsync(null);
+    }
+
+    /// <inheritdoc cref="CountDocumentsAsync()"/>
+    /// <param name="maxDocumentsToCount"></param>
+    /// <returns></returns>
+    public Task<int> CountDocumentsAsync(int maxDocumentsToCount)
+    {
+        return CountDocumentsAsync(null, maxDocumentsToCount);
+    }
+
+    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}"/>
     /// <param name="filter"></param>
     /// <returns></returns>
-    public Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter)
+    public Task<int> CountDocumentsAsync(Filter<T> filter)
     {
-        return CountDocumentsAsync(filter, null, false);
+        return CountDocumentsAsync(filter, null);
+    }
+
+    /// <inheritdoc cref="CountDocumentsAsync()"/>
+    /// <param name="filter"></param>
+    /// <param name="maxDocumentsToCount"></param>
+    public Task<int> CountDocumentsAsync(Filter<T> filter, int maxDocumentsToCount)
+    {
+        return CountDocumentsAsync(filter, maxDocumentsToCount, null);
     }
 
     /// <inheritdoc cref="CountDocumentsAsync(Filter{T}"/>
     /// <param name="commandOptions"></param>
-    public Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CountDocumentsCommandOptions commandOptions)
+    public Task<int> CountDocumentsAsync(Filter<T> filter, CommandOptions commandOptions)
     {
-        return CountDocumentsAsync(filter, commandOptions, false);
+        return CountDocumentsAsync(filter, MaxDocumentsToCount, commandOptions, false);
     }
 
-    internal async Task<DocumentsCountResult> CountDocumentsAsync(Filter<T> filter, CountDocumentsCommandOptions commandOptions, bool runSynchronously)
+    /// <inheritdoc cref="CountDocumentsAsync()"/>
+    /// <param name="filter"></param>
+    /// <param name="maxDocumentsToCount"></param>
+    /// <param name="commandOptions"></param>
+    public Task<int> CountDocumentsAsync(Filter<T> filter, int maxDocumentsToCount, CommandOptions commandOptions)
     {
+        return CountDocumentsAsync(filter, maxDocumentsToCount, commandOptions, false);
+    }
+
+    public const int MaxDocumentsToCount = 1000;
+    internal async Task<int> CountDocumentsAsync(Filter<T> filter, int maxDocumentsToCount, CommandOptions commandOptions, bool runSynchronously)
+    {
+        if (maxDocumentsToCount < 1 || maxDocumentsToCount > MaxDocumentsToCount)
+        {
+            throw new ArgumentException($"maxDocumentsToCount must be between 1 and {MaxDocumentsToCount}");
+        }
+        commandOptions ??= new CommandOptions();
         var findOptions = new DocumentFindOptions<T>()
         {
             Filter = filter,
         };
+
         var command = CreateCommand("countDocuments").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<DocumentsCountResult>(runSynchronously).ConfigureAwait(false);
-        return response.Result;
+        if (response.Result.Count >= maxDocumentsToCount || response.Result.MoreData)
+        {
+            throw new DocumentCountExceedsMaxException();
+        }
+
+        return response.Result.Count;
     }
 
     /// <summary>

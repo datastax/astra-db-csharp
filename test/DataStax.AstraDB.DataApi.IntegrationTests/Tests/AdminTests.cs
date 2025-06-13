@@ -26,17 +26,6 @@ public class AdminTests
 	}
 
 	[Fact]
-	public async Task ConnectViaDbId()
-	{
-		var dbGuid = fixture.DatabaseId;
-		var db = await fixture.Client.GetDatabaseAsync(dbGuid);
-		Assert.NotNull(db);
-
-		db = fixture.Client.GetDatabase(dbGuid);
-		Assert.NotNull(db);
-	}
-
-	[Fact]
 	public async Task GetDatabasesList()
 	{
 		var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync();
@@ -131,27 +120,27 @@ public class AdminTests
 	}
 
 	[Fact]
-	public async Task DatabaseAdminAstra_GetDatabaseAdminAstra()
+	public void DatabaseAdminAstra_GetDatabaseAdminAstra()
 	{
-		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 
 		Assert.IsType<DatabaseAdminAstra>(daa);
 	}
 
 	[Fact]
-	public async Task DatabaseAdminAstra_GetDatabase()
+	public void DatabaseAdminAstra_GetDatabase()
 	{
-		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 
 		Assert.IsType<Database>(daa.GetDatabase());
 	}
 
 	[Fact]
-	public async Task DatabaseAdminAstra_GetApiEndpoint()
+	public void DatabaseAdminAstra_GetApiEndpoint()
 	{
-		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 
 		Assert.Equal(fixture.DatabaseId, AdminFixture.GetDatabaseIdFromUrl(daa.GetApiEndpoint()));
@@ -160,7 +149,7 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_GetKeyspacesList()
 	{
-		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 
 		var names = await daa.ListKeyspaceNamesAsync();
@@ -177,7 +166,7 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist()
 	{
-		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 
 		var keyspaceExists = await daa.KeyspaceExistsAsync("default_keyspace");
@@ -190,7 +179,7 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist_Another()
 	{
-		var database = await fixture.Client.GetDatabaseAsync(fixture.DatabaseId);
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 		var keyspaceName = "another_keyspace";
 
@@ -218,7 +207,7 @@ public class AdminTests
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
-		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
 
 		var result = await daa.FindEmbeddingProvidersAsync(adminOptions, runSynchronously: false);
 		Assert.NotNull(result);
@@ -355,8 +344,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_CreateKeyspace_ExpectedError()
 	{
-		var databaseId = fixture.DatabaseId;
-		var database = await fixture.Client.GetDatabaseAsync(databaseId);
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var adminOptions = new CommandOptions();
 		var daa = new DatabaseAdminAstra(database, fixture.Client, adminOptions);
 
@@ -375,7 +363,7 @@ public class AdminTests
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
-		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
 
 		await daa.CreateKeyspaceAsync(keyspaceName, adminOptions);
 		Console.WriteLine($"DatabaseAdminAstra_CreateKeyspaceAsync > adminOptions.Keyspace: {adminOptions.Keyspace}");
@@ -392,7 +380,7 @@ public class AdminTests
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
-		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
 
 		await daa.CreateKeyspaceAsync(keyspaceName, true, adminOptions);
 
@@ -410,7 +398,7 @@ public class AdminTests
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
-		var daa = new DatabaseAdminAstra(fixture.DatabaseId, fixture.Client, adminOptions);
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
 
 		await daa.DropKeyspaceAsync(keyspaceName, adminOptions);
 		// todo: better test result here; for now we assume if no error, this was successful

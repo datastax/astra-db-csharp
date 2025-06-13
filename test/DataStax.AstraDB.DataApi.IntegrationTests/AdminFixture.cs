@@ -32,6 +32,7 @@ public class AdminFixture : IDisposable
 			RunMode = RunMode.Debug
 		};
 		Client = new DataApiClient(token, clientOptions, logger);
+		Database = Client.GetDatabase(DatabaseUrl);
 	}
 
 	public void Dispose()
@@ -44,6 +45,7 @@ public class AdminFixture : IDisposable
 	public string DatabaseName { get; private set; }
 	public DataApiClient Client { get; private set; }
 	public string DatabaseUrl { get; private set; }
+	public Database Database { get; private set; }
 
 	public Database GetDatabase()
 	{
@@ -62,7 +64,7 @@ public class AdminFixture : IDisposable
 
 	public DatabaseAdminAstra CreateAdmin(Database database = null)
 	{
-		database ??= Client.GetDatabaseAsync(DatabaseId).GetAwaiter().GetResult();
+		database ??= Database;
 
 		var adminOptions = new CommandOptions
 		{

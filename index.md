@@ -4,7 +4,7 @@ _layout: landing
 
 # Overview
 
-This C# Client Library simplifies using the DataStax Data API to manage and interact with AstraDB instances as well as other DataStax databases.
+This C# Client Library simplifies using the DataStax Data API to manage and interact with Astra DB instances as well as other DataStax databases.
 
 # Installation
 

@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using System;
 
-public class CountDocumentsCommandOptions : CommandOptions
+namespace DataStax.AstraDB.DataApi.Core.Results;
+
+/// <summary>
+/// Exception thrown from CountDocumentsAsync when the number of documents exceeds the maximum stated limit (or the internal limit of 1000).
+/// </summary>
+public class DocumentCountExceedsMaxException : Exception
 {
-  public int MaxDocumentsToCount { get; set; } = int.MaxValue;
+    public DocumentCountExceedsMaxException()
+    {
+
+    }
 }

@@ -723,7 +723,8 @@ public class SearchTests
             var result = list.First();
             Assert.Equal("This is about a dog.", result.Name);
             Assert.NotNull(result.Similarity);
-            Assert.NotNull(cursor.SortVectors);
+            Assert.NotNull(cursor.SortVector);
+            Assert.NotEmpty(cursor.SortVector);
         }
         finally
         {
@@ -778,7 +779,7 @@ public class SearchTests
             var result = list.First();
             Assert.Equal("This is about a dog.", result.Name);
             Assert.NotNull(result.Similarity);
-            Assert.NotNull(cursor.SortVectors);
+            Assert.NotNull(cursor.SortVector);
         }
         finally
         {

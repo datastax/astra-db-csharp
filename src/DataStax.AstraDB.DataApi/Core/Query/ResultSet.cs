@@ -158,13 +158,13 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     /// <param name="includeSortVector">Whether to include the sort vector in the result or not.</param>
     /// <returns>The ResultSet instance to continue specifying the find options.</returns>
     /// <example>
-    /// To access the sort vectors, you need to use <see cref="Cursor{T}.SortVectors"/> after calling <see cref="ToCursor()"/> on your ResultSet instance.
+    /// To access the sort vectors, you need to use <see cref="Cursor{T}.SortVector"/> after calling <see cref="ToCursor()"/> on your ResultSet instance.
     /// <code>
     /// var ResultSet = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
     ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
     ///     .IncludeSortVector(true);
     /// var cursor = ResultSet.ToCursor();
-    /// var sortVector = cursor.SortVectors;
+    /// var sortVector = cursor.SortVector;
     /// </code>
     /// </example>
     public ResultSet<T, TResult, TSort> IncludeSortVector(bool includeSortVector)
