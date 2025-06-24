@@ -33,7 +33,7 @@ jobs:
         run: dotnet build ./src/DataStax.AstraDB.DataApi/ --configuration Release --no-restore
 
       - name: Pack
-        run: dotnet pack ./src/DataStax.AstraDB.DataAPI/ --configuration Release --no-build --output nupkgs -p:Version=${{ env.PACKAGE_VERSION }}
+        run: dotnet pack ./src/DataStax.AstraDB.DataApi/ --configuration Release --no-build --output nupkgs -p:Version=${{ env.PACKAGE_VERSION }}
 
       # - name: Push to NuGet
       #   run: dotnet nuget push nupkgs/*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
