@@ -17,7 +17,14 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x" # Adjust to your .NET version
+          dotnet-version: "8.0.x"
+
+      - name: Extract version from tag
+        id: extract_version
+        run: |
+          TAG=${{ github.ref_name }}
+          VERSION=${TAG#v} # Removes 'v' prefix
+          echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Restore dependencies
         run: dotnet restore ./src/DataStax.AstraDB.DataApi/
@@ -26,9 +33,7 @@ jobs:
         run: dotnet build ./src/DataStax.AstraDB.DataApi/ --configuration Release --no-restore
 
       - name: Pack
-        run: dotnet pack ./src/DataStax.AstraDB.DataApi/ --configuration Release --no-build --output nupkgs -p:Version=${{ env.PACKAGE_VERSION }}
-        env:
-          PACKAGE_VERSION: ${{ replace(github.ref_name, 'v', '') }}
+        run: dotnet pack ./src/DataStax.AstraDB.DataAPI/ --configuration Release --no-build --output nupkgs -p:Version=${{ env.PACKAGE_VERSION }}
 
       # - name: Push to NuGet
       #   run: dotnet nuget push nupkgs/*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
