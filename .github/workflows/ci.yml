@@ -16,7 +16,7 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore dependencies
-        run: dotnet restore ./src/DataStax.AstraDB.DataAPI/
+        run: dotnet restore ./src/DataStax.AstraDB.DataApi/
 
       - name: Build
-        run: dotnet build ./src/DataStax.AstraDB.DataAPI/ --configuration Release --no-restore
+        run: dotnet build ./src/DataStax.AstraDB.DataApi/ --configuration Release --no-restore
