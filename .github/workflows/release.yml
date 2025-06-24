@@ -1,0 +1,46 @@
+name: Release to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'      # Matches stable versions like v1.2.3
+      - 'v*.*.*-*'    # Matches pre-release versions like v2.0.1-beta
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Adjust to your .NET version
+
+    - name: Restore dependencies
+      run: dotnet restore ./src/DataStax.AstraDB.DataApi/
+
+    - name: Build
+      run: dotnet build ./src/DataStax.AstraDB.DataApi/ --configuration Release --no-restore
+
+    - name: Pack
+      run: dotnet pack ./src/DataStax.AstraDB.DataApi/ --configuration Release --no-build --output nupkgs -p:Version=${{ env.PACKAGE_VERSION }}
+      env:
+        PACKAGE_VERSION: ${{ replace(github.ref_name, 'v', '') }}
+
+    # - name: Push to NuGet
+    #   run: dotnet nuget push nupkgs/*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+    #   env:
+    #     NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+    - name: Dry-run NuGet push
+      run: echo "Would run: dotnet nuget push nupkgs/*.nupkg --api-key [REDACTED] --source https://api.nuget.org/v3/index.json"
+
+    - name: Upload NuGet package as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: nupkgs/*.nupkg
+        retention-days: 1
