@@ -26,5 +26,9 @@ public enum DocumentMappingField
     /// <summary>Serializes as "$vector" for vector data.</summary>
     Vector,
     /// <summary>On read operations only, deserializes the similarity result for vector comparisons</summary>
-    Similarity
+    Similarity,
+    /// <summary>Serializes as "$lexical" for lexical data.</summary>
+    Lexical,
+    /// <summary>Serializes as "$hybrid" for hybrid data.</summary>
+    Hybrid
 }

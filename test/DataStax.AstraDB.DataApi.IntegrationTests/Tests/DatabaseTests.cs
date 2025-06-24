@@ -1,6 +1,7 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
 using System.Net;
 using System.Text;
@@ -196,7 +197,7 @@ public class DatabaseTests
         {
             Vector = new VectorOptions
             {
-                Dimension = 1536,
+                Dimension = 1024,
                 Metric = SimilarityMetric.Euclidean
             }
         };
@@ -273,16 +274,12 @@ public class DatabaseTests
         {
             Vector = new VectorOptions
             {
-                Dimension = 1536,
+                Dimension = 1024,
                 Metric = SimilarityMetric.DotProduct,
-                Service = new VectorServiceOptions
+                Service = new VectorServiceOptions()
                 {
-                    Provider = "openai",
-                    ModelName = "text-embedding-ada-002",
-                    Authentication = new Dictionary<string, string>
-                    {
-                        { "providerKey", fixture.OpenAiApiKey }
-                    }
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
                 }
             }
         };
@@ -300,16 +297,67 @@ public class DatabaseTests
         {
             Vector = new VectorOptions
             {
-                Dimension = 1536,
+                Dimension = 1024,
                 Metric = SimilarityMetric.DotProduct,
-                Service = new VectorServiceOptions
+                Service = new VectorServiceOptions()
                 {
-                    Provider = "openai",
-                    ModelName = "text-embedding-ada-002",
-                    Authentication = new Dictionary<string, string>
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                }
+            }
+        };
+        var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [Fact]
+    public async Task CreateCollection_ForHybridSearch()
+    {
+        var collectionName = "collectionHybridSearch";
+        var options = new CollectionDefinition
+        {
+            Vector = new VectorOptions
+            {
+                Dimension = 1024,
+                Metric = SimilarityMetric.DotProduct,
+                Service = new VectorServiceOptions()
+                {
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                }
+            },
+            Lexical = new LexicalOptions
+            {
+                Analyzer = new AnalyzerOptions
+                {
+                    Tokenizer = new TokenizerOptions
                     {
-                        { "providerKey", fixture.OpenAiApiKey }
-                    }
+                        Name = "standard",
+                        Arguments = new Dictionary<string, object>
+                        {
+                            { "name", "standard" }
+                        }
+                    },
+                    Filters = new List<string>
+                    {
+                        "lowercase",
+                        "stop",
+                        "porterstem",
+                        "asciifolding"
+                    },
+                    CharacterFilters = new List<string>()
+                },
+                Enabled = true
+            },
+            Rerank = new RerankOptions
+            {
+                Enabled = true,
+                Service = new RerankServiceOptions
+                {
+                    ModelName = "nvidia/llama-3.2-nv-rerankqa-1b-v2",
+                    Provider = "nvidia"
                 }
             }
         };
@@ -375,80 +423,82 @@ public class DatabaseTests
         }
     }
 
-    [Fact]
-    public async Task CreateTable_DataTypesTest_FromObject()
-    {
-        try
-        {
-            var table = await fixture.Database.CreateTableAsync<RowTestObject>();
-            Assert.NotNull(table);
-            var definitions = await fixture.Database.ListTablesAsync();
-            var definition = definitions.FirstOrDefault(d => d.Name == "testTable");
-            Assert.NotNull(definition);
-            Assert.Equal(4, (definition.TableDefinition.Columns["Vector"] as VectorColumn).Dimension);
+    //TODO re-enable this test once the api issue is fixed (https://github.com/stargate/data-api/issues/2141)
+    // [Fact]
+    // public async Task CreateTable_DataTypesTest_FromObject()
+    // {
+    //     const string tableName = "tableDataTypesTestFromObject";
+    //     try
+    //     {
+    //         var table = await fixture.Database.CreateTableAsync<RowTestObject>(tableName);
+    //         Assert.NotNull(table);
+    //         var definitions = await fixture.Database.ListTablesAsync();
+    //         var definition = definitions.FirstOrDefault(d => d.Name == tableName);
+    //         Assert.NotNull(definition);
+    //         Assert.Equal(4, (definition.TableDefinition.Columns["Vector"] as VectorColumn).Dimension);
 
-            var row = new RowTestObject
-            {
-                Name = "Test",
-                Vector = new float[4] { 1, 2, 3, 4 },
-                StringToVectorize = "TestStringToVectorize",
-                Text = "TestText",
-                Inet = IPAddress.Parse("192.168.0.1"),
-                Int = int.MaxValue,
-                TinyInt = byte.MaxValue,
-                SmallInt = short.MaxValue,
-                BigInt = long.MaxValue,
-                Decimal = decimal.MaxValue,
-                Double = double.MaxValue,
-                Float = float.MaxValue,
-                IntDictionary = new Dictionary<string, int>() { { "One", 1 }, { "Two", 2 } },
-                DecimalDictionary = new Dictionary<string, decimal>() { { "One", 1.11111m }, { "Two", 2.22222m } },
-                StringSet = new HashSet<string>() { "HashSetOne", "HashSetTwo" },
-                IntSet = new HashSet<int>() { 1, 2 },
-                StringList = new List<string>() { "One", "Two" },
-                ObjectList = new List<Properties>() {
-                    new Properties() { PropertyOne = "OneOne", PropertyTwo = "OneTwo" },
-                    new Properties() { PropertyOne = "TwoOne", PropertyTwo = "TwoTwo" } },
-                Boolean = false,
-                Date = DateTime.Now,
-                UUID = Guid.NewGuid(),
-                Blob = Encoding.ASCII.GetBytes("Test Blob"),
-                Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us1ns")
-            };
-            var result = await table.InsertManyAsync(new List<RowTestObject> { row });
-            Assert.Equal(1, result.InsertedCount);
-            var resultSet = table.Find();
-            var resultList = resultSet.ToList();
-            var resultRow = resultList.First();
-            Assert.Equal(row.Name, resultRow.Name);
-            Assert.Equal(row.Vector, resultRow.Vector);
-            Assert.Equal(row.Text, resultRow.Text);
-            Assert.Equal(row.Inet, resultRow.Inet);
-            Assert.Equal(row.Int, resultRow.Int);
-            Assert.Equal(row.TinyInt, resultRow.TinyInt);
-            Assert.Equal(row.SmallInt, resultRow.SmallInt);
-            Assert.Equal(row.BigInt, resultRow.BigInt);
-            Assert.Equal(row.Decimal, resultRow.Decimal);
-            Assert.Equal(row.Double, resultRow.Double);
-            Assert.Equal(row.Float, resultRow.Float);
-            Assert.Equal(row.IntDictionary, resultRow.IntDictionary);
-            Assert.Equal(row.DecimalDictionary, resultRow.DecimalDictionary);
-            Assert.Equal(row.StringSet, resultRow.StringSet);
-            Assert.Equal(row.IntSet, resultRow.IntSet);
-            Assert.Equal(row.StringList, resultRow.StringList);
-            Assert.Equal(JsonSerializer.Serialize(row.ObjectList), JsonSerializer.Serialize(resultRow.ObjectList));
-            Assert.Equal(row.Boolean, resultRow.Boolean);
-            Assert.Equal(row.Date.ToUniversalTime().ToString("MMddyyhhmmss"), resultRow.Date.ToUniversalTime().ToString("MMddyyhhmmss"));
-            Assert.Equal(row.UUID, resultRow.UUID);
-            Assert.Equal(row.Blob, resultRow.Blob);
-            Assert.Equal(row.Duration, resultRow.Duration);
+    //         var row = new RowTestObject
+    //         {
+    //             Name = "Test",
+    //             Vector = new float[4] { 1, 2, 3, 4 },
+    //             StringToVectorize = "TestStringToVectorize",
+    //             Text = "TestText",
+    //             Inet = IPAddress.Parse("192.168.0.1"),
+    //             Int = int.MaxValue,
+    //             TinyInt = byte.MaxValue,
+    //             SmallInt = short.MaxValue,
+    //             BigInt = long.MaxValue,
+    //             Decimal = decimal.MaxValue,
+    //             Double = double.MaxValue,
+    //             Float = float.MaxValue,
+    //             IntDictionary = new Dictionary<string, int>() { { "One", 1 }, { "Two", 2 } },
+    //             DecimalDictionary = new Dictionary<string, decimal>() { { "One", 1.11111m }, { "Two", 2.22222m } },
+    //             StringSet = new HashSet<string>() { "HashSetOne", "HashSetTwo" },
+    //             IntSet = new HashSet<int>() { 1, 2 },
+    //             StringList = new List<string>() { "One", "Two" },
+    //             ObjectList = new List<Properties>() {
+    //                 new Properties() { PropertyOne = "OneOne", PropertyTwo = "OneTwo" },
+    //                 new Properties() { PropertyOne = "TwoOne", PropertyTwo = "TwoTwo" } },
+    //             Boolean = false,
+    //             Date = DateTime.Now,
+    //             UUID = Guid.NewGuid(),
+    //             Blob = Encoding.ASCII.GetBytes("Test Blob"),
+    //             Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us1ns")
+    //         };
+    //         var result = await table.InsertManyAsync(new List<RowTestObject> { row });
+    //         Assert.Equal(1, result.InsertedCount);
+    //         var resultSet = table.Find();
+    //         var resultList = resultSet.ToList();
+    //         var resultRow = resultList.First();
+    //         Assert.Equal(row.Name, resultRow.Name);
+    //         Assert.Equal(row.Vector, resultRow.Vector);
+    //         Assert.Equal(row.Text, resultRow.Text);
+    //         Assert.Equal(row.Inet, resultRow.Inet);
+    //         Assert.Equal(row.Int, resultRow.Int);
+    //         Assert.Equal(row.TinyInt, resultRow.TinyInt);
+    //         Assert.Equal(row.SmallInt, resultRow.SmallInt);
+    //         Assert.Equal(row.BigInt, resultRow.BigInt);
+    //         Assert.Equal(row.Decimal, resultRow.Decimal);
+    //         Assert.Equal(row.Double, resultRow.Double);
+    //         Assert.Equal(row.Float, resultRow.Float);
+    //         Assert.Equal(row.IntDictionary, resultRow.IntDictionary);
+    //         Assert.Equal(row.DecimalDictionary, resultRow.DecimalDictionary);
+    //         Assert.Equal(row.StringSet, resultRow.StringSet);
+    //         Assert.Equal(row.IntSet, resultRow.IntSet);
+    //         Assert.Equal(row.StringList, resultRow.StringList);
+    //         Assert.Equal(JsonSerializer.Serialize(row.ObjectList), JsonSerializer.Serialize(resultRow.ObjectList));
+    //         Assert.Equal(row.Boolean, resultRow.Boolean);
+    //         Assert.Equal(row.Date.ToUniversalTime().ToString("MMddyyhhmmss"), resultRow.Date.ToUniversalTime().ToString("MMddyyhhmmss"));
+    //         Assert.Equal(row.UUID, resultRow.UUID);
+    //         Assert.Equal(row.Blob, resultRow.Blob);
+    //         Assert.Equal(row.Duration, resultRow.Duration);
 
-        }
-        finally
-        {
-            await fixture.Database.DropTableAsync<RowTestObject>();
-        }
-    }
+    //     }
+    //     finally
+    //     {
+    //         await fixture.Database.DropTableAsync(tableName);
+    //     }
+    // }
 
     [Fact]
     public async Task CreateTable_DataTypesTest_FromDefinition()

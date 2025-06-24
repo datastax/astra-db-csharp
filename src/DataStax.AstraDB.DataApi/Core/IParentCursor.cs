@@ -14,25 +14,10 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+namespace DataStax.AstraDB.DataApi.Core;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
-
-/// <summary>
-/// A list of documents returned from an operation.
-/// </summary>
-/// <typeparam name="T">The type of the documents</typeparam>
-internal class DocumentsResult<T>
+internal interface IParentCursor
 {
-    /// <summary>
-    /// The list of documents returned.
-    /// </summary>
-    [JsonInclude]
-    [JsonPropertyName("documents")]
-    internal List<T> Documents { get; set; }
-
-    [JsonInclude]
-    [JsonPropertyName("nextPageState")]
-    internal string NextPageState { get; set; }
+    void SetSortVector(float[] sortVector);
+    void SetStarted();
 }

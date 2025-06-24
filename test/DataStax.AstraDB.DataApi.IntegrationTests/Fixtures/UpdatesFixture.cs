@@ -1,26 +1,24 @@
-using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace DataStax.AstraDB.DataApi.IntegrationTests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
-[CollectionDefinition("ReplaceAndDelete")]
-public class ReplaceAndDeleteCollection : ICollectionFixture<ReplaceAndDeleteFixture>
+[CollectionDefinition("Updates")]
+public class UpdatesCollection : ICollectionFixture<UpdatesFixture>
 {
 
 }
 
-public class ReplaceAndDeleteFixture : IDisposable, IAsyncLifetime
+public class UpdatesFixture : IDisposable, IAsyncLifetime
 {
     public DataApiClient Client { get; private set; }
     public Database Database { get; private set; }
     public string OpenAiApiKey { get; set; }
 
-    public ReplaceAndDeleteFixture()
+    public UpdatesFixture()
     {
         IConfiguration configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -32,7 +30,7 @@ public class ReplaceAndDeleteFixture : IDisposable, IAsyncLifetime
         var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../replace_and_delete_latest_run.log"));
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/updates_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions
@@ -45,9 +43,9 @@ public class ReplaceAndDeleteFixture : IDisposable, IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await CreateReplaceCollection();
+        await CreateUpdatesCollection();
         var collection = Database.GetCollection<SimpleObject>(_queryCollectionName);
-        ReplaceCollection = collection;
+        UpdatesCollection = collection;
     }
 
     public async Task DisposeAsync()
@@ -55,17 +53,17 @@ public class ReplaceAndDeleteFixture : IDisposable, IAsyncLifetime
         await Database.DropCollectionAsync(_queryCollectionName);
     }
 
-    public Collection<SimpleObject> ReplaceCollection { get; private set; }
+    public Collection<SimpleObject> UpdatesCollection { get; private set; }
 
 
-    private const string _queryCollectionName = "replaceCollection";
-    private async Task CreateReplaceCollection()
+    private const string _queryCollectionName = "updatesCollection";
+    private async Task CreateUpdatesCollection()
     {
-        var collection = await CreateReplaceCollection(_queryCollectionName);
-        ReplaceCollection = collection;
+        var collection = await CreateUpdatesCollection(_queryCollectionName);
+        UpdatesCollection = collection;
     }
 
-    internal async Task<Collection<SimpleObject>> CreateReplaceCollection(string collectionName)
+    internal async Task<Collection<SimpleObject>> CreateUpdatesCollection(string collectionName)
     {
         List<SimpleObject> items = new List<SimpleObject>() {
                 new()

@@ -1,10 +1,12 @@
-using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Collections;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
+using MongoDB.Bson;
+using Xunit;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
-using MongoDB.Bson;
 using UUIDNext;
-using Xunit;
+using DataStax.AstraDB.DataApi.Core;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 

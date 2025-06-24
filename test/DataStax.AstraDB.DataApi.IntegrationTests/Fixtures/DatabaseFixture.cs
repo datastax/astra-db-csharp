@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace DataStax.AstraDB.DataApi.IntegrationTests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
 [CollectionDefinition("Database")]
 public class Databaseollection : ICollectionFixture<DatabaseFixture>
@@ -32,7 +32,7 @@ public class DatabaseFixture
         DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../database_fixture_latest_run.log"));
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/database_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions

@@ -422,17 +422,7 @@ public class Database
 
     private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options, bool runSynchronously) where T : class
     {
-        if (definition == null)
-        {
-
-        }
-        object payload = new
-        {
-            name = collectionName,
-            options = definition
-        };
-        var command = CreateCommand("createCollection").WithPayload(payload).AddCommandOptions(options);
-        await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
+        await CreateCollectionAsync<T, object>(collectionName, definition, options, runSynchronously);
         return GetCollection<T>(collectionName);
     }
 
@@ -441,6 +431,10 @@ public class Database
         if (definition == null)
         {
             definition = CollectionDefinition.Create<T>();
+        }
+        else
+        {
+            CollectionDefinition.CheckAddDefinitionsFromAttributes<T>(definition);
         }
         object payload = new
         {

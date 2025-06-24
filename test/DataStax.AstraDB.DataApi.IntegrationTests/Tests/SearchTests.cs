@@ -1,10 +1,8 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using MongoDB.Bson;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using UUIDNext;
 using Xunit;
 
@@ -360,14 +358,12 @@ public class SearchTests
         var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
-        var findOptions = new DocumentFindManyOptions<SimpleObject>()
-        {
-            Sort = sort,
-            Limit = 1,
-            Skip = 2,
-            Projection = inclusiveProjection
-        };
-        var results = collection.Find(filter, findOptions).ToList();
+        var results = collection.Find(filter)
+            .Sort(sort)
+            .Skip(2)
+            .Limit(1)
+            .Project(inclusiveProjection)
+            .ToList();
         var expectedArray = new[] { "alligator" };
         var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
         Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
@@ -667,9 +663,8 @@ public class SearchTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var result = collection.Find(new DocumentFindManyOptions<SimpleObjectWithVector>() { Sort = Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector) }, null);
+            var result = collection.Find().Sort(Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector));
             Assert.Equal("This is about a dog.", result.First().Name);
-
         }
         finally
         {
@@ -701,6 +696,14 @@ public class SearchTests
                 },
             };
             var dogQueryVectorString = "dog";
+            for (var i = 3; i < 100; i++)
+            {
+                items.Add(new SimpleObjectWithVectorize
+                {
+                    Id = i,
+                    Name = $"This is about a random object {i}."
+                });
+            }
 
             var options = new CollectionDefinition
             {
@@ -717,14 +720,17 @@ public class SearchTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var finder = collection.Find<SimpleObjectWithVectorizeResult>(new DocumentFindManyOptions<SimpleObjectWithVectorize>() { Sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString), IncludeSimilarity = true, IncludeSortVector = true }, null);
-            var cursor = finder.ToCursor();
-            var list = cursor.ToList();
+            var finder = collection.Find<SimpleObjectWithVectorizeResult>()
+                .Sort(Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString))
+                .IncludeSimilarity(true)
+                .IncludeSortVector(true);
+            var list = finder.ToList();
             var result = list.First();
             Assert.Equal("This is about a dog.", result.Name);
             Assert.NotNull(result.Similarity);
-            Assert.NotNull(cursor.SortVector);
-            Assert.NotEmpty(cursor.SortVector);
+            var sortVector = finder.GetSortVector();
+            Assert.NotNull(sortVector);
+            Assert.NotEmpty(sortVector);
         }
         finally
         {
@@ -774,12 +780,12 @@ public class SearchTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var finder = collection.Find<SimpleObjectWithVectorizeResult>().Sort(
                 Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString)).IncludeSimilarity(true).IncludeSortVector(true);
-            var cursor = finder.ToCursor();
-            var list = cursor.ToList();
-            var result = list.First();
+            var result = finder.First();
             Assert.Equal("This is about a dog.", result.Name);
             Assert.NotNull(result.Similarity);
-            Assert.NotNull(cursor.SortVector);
+            var sortVector = finder.GetSortVector();
+            Assert.NotNull(sortVector);
+            Assert.NotEmpty(sortVector);
         }
         finally
         {

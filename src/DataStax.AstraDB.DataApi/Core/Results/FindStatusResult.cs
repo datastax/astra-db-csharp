@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
@@ -23,4 +24,12 @@ internal class FindStatusResult
     [JsonInclude]
     [JsonPropertyName("sortVector")]
     internal float[] SortVector { get; set; }
+
+}
+
+internal class FindStatusResult<T> : FindStatusResult
+{
+    [JsonInclude]
+    [JsonPropertyName("documentResponses")]
+    internal List<T> DocumentResponses { get; set; }
 }

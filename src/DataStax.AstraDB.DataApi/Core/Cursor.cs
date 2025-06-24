@@ -14,31 +14,46 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Results;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using DataStax.AstraDB.DataApi.Core.Results;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// A cursor for iterating over the results of a query.
+/// A cursor for iterating over the results of a query in a streaming manner.
 ///  
 /// When multiple results are returned by the underlying API, they are returned in batches.
-/// You can use the <see cref="MoveNext()"/> or <see cref="MoveNextAsync()"/> methods to iterate over the batches
+/// You can use the <see cref="MoveNextAsync"/> method to iterate over the batches
 /// and <see cref="Current"/> to access the current batch of results.
 /// 
-/// In most situations, using the results of a query directly as an IEnumerable or IAsyncEnumerable is recommended.
+/// The <see cref="ToAsyncEnumerator"/> and <see cref="ToEnumerable"/> methods create a new cursor to ensure
+/// iteration starts from the first batch, allowing multiple enumerations of the same query.
 /// Use the cursor directly if you need access to the SortVector or want to manually control iterating over the batches.
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
-public class Cursor<T>
+public class Cursor<T> : IDisposable, IParentCursor
 {
-    private DocumentsResult<T> _currentBatch;
-    private Func<string, bool, Task<ApiResponseWithData<DocumentsResult<T>, FindStatusResult>>> FetchNextBatch { get; }
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+    private ApiFindResult<T> _currentBatch;
+    private readonly Func<string, bool, Task<ApiResponseWithData<ApiFindResult<T>, FindStatusResult>>> _fetchNextBatch;
+    private readonly IParentCursor _parentCursor;
+
+
+    internal Cursor(
+        Func<string, bool, Task<ApiResponseWithData<ApiFindResult<T>, FindStatusResult>>> fetchNextBatch,
+        IParentCursor parentCursor = null)
+    {
+        _fetchNextBatch = fetchNextBatch ?? throw new ArgumentNullException(nameof(fetchNextBatch));
+        _parentCursor = parentCursor;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the cursor has been started or not.
+    /// </summary>
+    public bool IsStarted { get; internal set; } = false;
 
     /// <summary>
     /// The current batch of results.
@@ -49,149 +64,128 @@ public class Cursor<T>
         {
             if (_currentBatch == null)
             {
-                throw new Exception("Cursor has not been started. Please call MoveNext()");
+                throw new InvalidOperationException("Cursor has not been started. Call MoveNextAsync first.");
             }
-            return _currentBatch.Documents;
+            return _currentBatch.Items;
         }
     }
 
     /// <summary>
-    /// An array containing the sort vectors used for this query.
+    /// An array containing the sort vectors used for the query that created this cursor.
     /// </summary>
-    public float[] SortVector { get; internal set; } = Array.Empty<float>();
-
-    internal Cursor(Func<string, bool, Task<ApiResponseWithData<DocumentsResult<T>, FindStatusResult>>> fetchNextBatch)
-    {
-        FetchNextBatch = fetchNextBatch;
-    }
+    public float[] SortVector { get; private set; }
 
     /// <summary>
     /// Synchronously moves the cursor to the next batch of results.
     /// </summary>
     /// <returns>True if there are more batches, false otherwise.</returns>
     /// <remarks>
-    /// The asynchronous version <see cref="MoveNextAsync()"/> of this method is recommended.
+    /// The asynchronous version <see cref="MoveNextAsync"/> is recommended to avoid potential deadlocks.
     /// </remarks>
     public bool MoveNext()
     {
-        ApiResponseWithData<DocumentsResult<T>, FindStatusResult> nextResult;
-        if (_currentBatch == null)
+        _semaphore.Wait();
+        try
         {
-            nextResult = FetchNextBatch(null, true).ResultSync();
-            if (nextResult.Data == null || nextResult.Data.Documents.Count == 0)
-            {
-                return false;
-            }
+            return MoveNextAsync(true).GetAwaiter().GetResult();
         }
-        else
+        finally
         {
-            if (string.IsNullOrEmpty(_currentBatch.NextPageState))
-            {
-                return false;
-            }
-            nextResult = FetchNextBatch(_currentBatch.NextPageState, true).ResultSync();
+            _semaphore.Release();
         }
-        if (nextResult.Status != null && nextResult.Status.SortVector != null)
-        {
-            SortVector = SortVector.Concat(nextResult.Status.SortVector).ToArray();
-        }
-        _currentBatch = nextResult.Data;
-        return true;
     }
 
     /// <summary>
-    /// Moves the cursor to the next batch of results.
+    /// Asynchronously moves the cursor to the next batch of results.
     /// </summary>
+    /// <param name="cancellationToken">An optional cancellation token to cancel the operation.</param>
     /// <returns>True if there are more batches, false otherwise.</returns>
-    public async Task<bool> MoveNextAsync()
+    public async Task<bool> MoveNextAsync(CancellationToken cancellationToken = default)
     {
-        ApiResponseWithData<DocumentsResult<T>, FindStatusResult> nextResult;
-        if (_currentBatch == null)
+        await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            nextResult = await FetchNextBatch(null, true).ConfigureAwait(false);
-            if (nextResult.Data == null || nextResult.Data.Documents.Count == 0)
-            {
-                return false;
-            }
+            return await MoveNextAsync(false, cancellationToken).ConfigureAwait(false);
         }
-        else
+        finally
         {
-            if (string.IsNullOrEmpty(_currentBatch.NextPageState))
-            {
-                return false;
-            }
-            nextResult = await FetchNextBatch(_currentBatch.NextPageState, true).ConfigureAwait(false);
+            _semaphore.Release();
         }
-        if (nextResult.Status != null && nextResult.Status.SortVector != null)
+    }
+
+    private async Task<bool> MoveNextAsync(bool runSynchronously, CancellationToken cancellationToken = default)
+    {
+        if (_currentBatch != null && string.IsNullOrEmpty(_currentBatch.NextPageState))
         {
-            SortVector = SortVector.Concat(nextResult.Status.SortVector).ToArray();
+            return false;
         }
-        _currentBatch = nextResult.Data;
+
+        _parentCursor?.SetStarted();
+
+        var nextPageState = _currentBatch?.NextPageState;
+        var nextBatch = await _fetchNextBatch(nextPageState, runSynchronously).ConfigureAwait(false);
+        if (nextBatch.Data == null || nextBatch.Data.Items == null || nextBatch.Data.Items.Count == 0)
+        {
+            return false;
+        }
+
+        var nextSortVector = nextBatch.Status?.SortVector;
+        _parentCursor?.SetSortVector(nextSortVector);
+
+        _currentBatch = nextBatch.Data;
         return true;
     }
-}
 
-/// <summary>
-/// Extensions for <see cref="Cursor{T}"/>.
-/// </summary>
-public static class CursorExtensions
-{
+    public void Dispose()
+    {
+        _semaphore.Dispose();
+    }
+
     /// <summary>
-    /// Converts the cursor to an IAsyncEnumerable.
+    /// Converts the cursor to an IAsyncEnumerator, starting from the first batch.
     /// </summary>
-    /// <typeparam name="TResult">The type of the documents in the collection.</typeparam>
-    /// <param name="cursor">The cursor to convert.</param>
     /// <param name="cancellationToken">An optional cancellation token.</param>
-    /// <returns>An IAsyncEnumerable containing all of the documents in the cursor.</returns>
-    public static async IAsyncEnumerable<TResult> ToAsyncEnumerable<TResult>(this Cursor<TResult> cursor, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    /// <returns>An IAsyncEnumerator containing all documents in the cursor.</returns>
+    public async IAsyncEnumerator<T> ToAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        bool hasNext;
-        do
+        using var newCursor = new Cursor<T>(_fetchNextBatch, this);
+        while (await newCursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            hasNext = await cursor.MoveNextAsync().ConfigureAwait(false);
-            if (!hasNext || cursor.Current == null)
+            foreach (var item in newCursor.Current)
             {
-                yield break;
-            }
-            foreach (var item in cursor.Current)
-            {
+                cancellationToken.ThrowIfCancellationRequested();
                 yield return item;
             }
-        } while (hasNext);
+        }
     }
 
     /// <summary>
-    /// Converts the cursor to an IEnumerable.
+    /// Converts the cursor to an IEnumerable, starting from the first batch.
     /// </summary>
-    /// <typeparam name="TResult">The type of the documents in the collection.</typeparam>
-    /// <param name="cursor">The cursor to convert.</param>
-    /// <returns>An IEnumerable containing all of the documents in the cursor.</returns>
-    public static IEnumerable<TResult> ToEnumerable<TResult>(this Cursor<TResult> cursor)
+    /// <returns>An IEnumerable containing all documents in the cursor.</returns>
+    public IEnumerable<T> ToEnumerable()
     {
-        bool hasNext;
-        do
+        using var newCursor = new Cursor<T>(_fetchNextBatch, this);
+        while (newCursor.MoveNext())
         {
-            hasNext = cursor.MoveNext();
-            if (!hasNext || cursor.Current == null)
-            {
-                yield break;
-            }
-            foreach (var item in cursor.Current)
+            foreach (var item in newCursor.Current)
             {
                 yield return item;
             }
-        } while (hasNext);
+        }
     }
 
-    /// <summary>
-    /// Returns all of the results of the cursor as a List.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the documents in the collection.</typeparam>
-    /// <param name="cursor">The cursor to convert.</param>
-    /// <returns>A List containing all of the documents in the cursor.</returns>
-    public static List<TResult> ToList<TResult>(this Cursor<TResult> cursor)
+    void IParentCursor.SetSortVector(float[] sortVector)
     {
-        return ToEnumerable(cursor).ToList();
+        if ((SortVector == null || SortVector.Length == 0) && sortVector != null && sortVector.Length > 0)
+        {
+            SortVector = sortVector;
+        }
     }
+
+    void IParentCursor.SetStarted()
+    {
+        IsStarted = true;
+    }
+
 }

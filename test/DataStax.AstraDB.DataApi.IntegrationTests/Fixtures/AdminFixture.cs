@@ -1,11 +1,10 @@
-using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
-namespace DataStax.AstraDB.DataApi.IntegrationTests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
 public class AdminFixture : IDisposable
 {
@@ -24,7 +23,7 @@ public class AdminFixture : IDisposable
 
 		_databaseId = GetDatabaseIdFromUrl(dbUrl) ?? throw new Exception("Database ID could not be extracted from ASTRA_DB_URL.");
 
-		using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../admin_tests_latest_run.log"));
+		using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/admin_tests_latest_run.log"));
 		ILogger logger = factory.CreateLogger("IntegrationTests");
 
 		var clientOptions = new CommandOptions

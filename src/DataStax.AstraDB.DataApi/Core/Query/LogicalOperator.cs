@@ -37,4 +37,14 @@ internal static class LogicalOperatorExtensions
             _ => throw new ArgumentException("Invalid Logical Operator"),
         };
     }
+    internal static LogicalOperator ToLogicalOperator(this string value)
+    {
+        return value switch
+        {
+            "$and" => LogicalOperator.And,
+            "$or" => LogicalOperator.Or,
+            "$not" => LogicalOperator.Not,
+            _ => throw new ArgumentException("Invalid API string for Logical Operator"),
+        };
+    }
 }

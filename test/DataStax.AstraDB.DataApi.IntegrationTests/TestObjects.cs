@@ -133,7 +133,7 @@ public class RowBook
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
     public int NumberOfPages { get; set; }
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
     public HashSet<string> Genres { get; set; }
     public float Rating { get; set; }
 }

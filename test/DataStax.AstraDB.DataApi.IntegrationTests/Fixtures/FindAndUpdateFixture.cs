@@ -1,12 +1,10 @@
-using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace DataStax.AstraDB.DataApi.IntegrationTests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
 [CollectionDefinition("FindAndUpdate")]
 public class FindAndUpdateCollection : ICollectionFixture<FindAndUpdateFixture>
@@ -32,7 +30,7 @@ public class FindAndUpdateFixture : IDisposable, IAsyncLifetime
         var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../findandupdate_latest_run.log"));
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/findandupdate_latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions

@@ -50,6 +50,8 @@ public class DocumentConverter<T> : JsonConverter<T>
                     DocumentMappingField.Vectorize => DataApiKeywords.Vectorize,
                     DocumentMappingField.Vector => DataApiKeywords.Vector,
                     DocumentMappingField.Similarity => DataApiKeywords.Similarity,
+                    DocumentMappingField.Lexical => DataApiKeywords.Lexical,
+                    DocumentMappingField.Hybrid => DataApiKeywords.Hybrid,
                     _ => prop.Name
                 };
                 FieldMappings[prop] = jsonName;

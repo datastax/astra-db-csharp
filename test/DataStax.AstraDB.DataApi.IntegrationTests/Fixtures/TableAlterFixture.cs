@@ -1,27 +1,24 @@
-using DataStax.AstraDB.DataApi;
-using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Tables;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Xunit.Abstractions;
 
-namespace DataStax.AstraDB.DataApi.IntegrationTests;
+namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
-[CollectionDefinition("TableIndexes")]
-public class TableIndexesCollection : ICollectionFixture<TableIndexesFixture>
+[CollectionDefinition("TableAlter")]
+public class TableAlterCollection : ICollectionFixture<TableAlterFixture>
 {
 
 }
 
-public class TableIndexesFixture : IDisposable, IAsyncLifetime
+public class TableAlterFixture
 {
     public DataApiClient Client { get; private set; }
     public Database Database { get; private set; }
     public string DatabaseUrl { get; set; }
 
-    public TableIndexesFixture()
+    public TableAlterFixture()
     {
         IConfiguration configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -32,7 +29,7 @@ public class TableIndexesFixture : IDisposable, IAsyncLifetime
         var token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
         DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
 
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../table_indexes_fixture_latest_run.log"));
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/table_Alter_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger("IntegrationTests");
 
         var clientOptions = new CommandOptions
@@ -55,21 +52,7 @@ public class TableIndexesFixture : IDisposable, IAsyncLifetime
 
     }
 
-    public async Task InitializeAsync()
-    {
-        await CreateTestTable();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await Database.DropTableAsync(_fixtureTableName);
-    }
-
-    public Table<RowEventByDay> FixtureTestTable { get; private set; }
-
-
-    private const string _fixtureTableName = "tableIndexesTest";
-    private async Task CreateTestTable()
+    public async Task<Table<RowEventByDay>> CreateTestTable(string tableName)
     {
         var startDate = DateTime.UtcNow.Date.AddDays(7);
 
@@ -102,14 +85,10 @@ public class TableIndexesFixture : IDisposable, IAsyncLifetime
         };
 
 
-        var table = await Database.CreateTableAsync<RowEventByDay>(_fixtureTableName);
+        var table = await Database.CreateTableAsync<RowEventByDay>(tableName);
         await table.InsertManyAsync(eventRows);
 
-        FixtureTestTable = table;
+        return table;
     }
 
-    public void Dispose()
-    {
-        // nothing needed
-    }
 }
