@@ -166,10 +166,10 @@ public class AdminTests
 		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 
-		var keyspaceExists = await daa.KeyspaceExistsAsync("default_keyspace");
+		var keyspaceExists = await daa.DoesKeyspaceExistAsync("default_keyspace");
 		Assert.True(keyspaceExists);
 
-		keyspaceExists = daa.KeyspaceExists("default_keyspace");
+		keyspaceExists = await daa.DoesKeyspaceExistAsync("default_keyspace");
 		Assert.True(keyspaceExists);
 	}
 
@@ -182,12 +182,12 @@ public class AdminTests
 
 		try
 		{
-			var keyspaceExists = await daa.KeyspaceExistsAsync(keyspaceName);
+			var keyspaceExists = await daa.DoesKeyspaceExistAsync(keyspaceName);
 			if (!keyspaceExists)
 			{
 				await daa.CreateKeyspaceAsync(keyspaceName);
 				Thread.Sleep(30 * 1000); //wait for keyspace to be created
-				keyspaceExists = await daa.KeyspaceExistsAsync(keyspaceName);
+				keyspaceExists = await daa.DoesKeyspaceExistAsync(keyspaceName);
 			}
 			Assert.True(keyspaceExists);
 		}

@@ -57,6 +57,54 @@ public class DatabaseTests
     }
 
     [Fact]
+    public async Task Create_And_Drop_Keyspace_DoesNotWaitForCompletion()
+    {
+        var keyspaceName = "dropAndDoNotWaitKeyspace";
+        var database = fixture.Database;
+        var admin = database.GetAdmin();
+
+        try
+        {
+            await admin.CreateKeyspaceAsync(keyspaceName, true, false);
+            var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
+            Assert.False(keyspaceExists, $"Keyspace '{keyspaceName}' should still be being created.");
+
+            var maxAttempts = 30;
+            while (!keyspaceExists && maxAttempts > 0)
+            {
+                maxAttempts--;
+                // Wait for the keyspace to be created
+                await Task.Delay(1000);
+                keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
+            }
+            Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist now.");
+
+            await admin.DropKeyspaceAsync(keyspaceName, false);
+            keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
+            Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should still be being dropped.");
+        }
+        catch (Exception ex)
+        {
+            await admin.DropKeyspaceAsync(keyspaceName, true);
+        }
+    }
+
+    [Fact]
+    public async Task Create_And_Drop_Keyspace_WaitsForCompletionWhenRequested()
+    {
+        var keyspaceName = "dropAndWaitKeyspace";
+        var database = fixture.Database;
+        var admin = database.GetAdmin();
+
+        await admin.CreateKeyspaceAsync(keyspaceName, true, true);
+        var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
+        Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist after creation.");
+        await admin.DropKeyspaceAsync(keyspaceName, true);
+        keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
+        Assert.False(keyspaceExists, $"Keyspace '{keyspaceName}' should not exist after drop.");
+    }
+
+    [Fact]
     public async Task PassTokenToDatabase()
     {
         var collectionName = "tokenToDbCollectionTest";

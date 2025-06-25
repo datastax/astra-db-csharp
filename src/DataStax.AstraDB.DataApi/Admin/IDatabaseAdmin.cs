@@ -28,11 +28,26 @@ public interface IDatabaseAdmin
     Task<IEnumerable<string>> ListKeyspaceNamesAsync();
 
     Database GetDatabase();
+    void CreateKeyspace(string keyspace);
+    void CreateKeyspace(string keyspace, CommandOptions options);
+    void CreateKeyspace(string keyspace, bool updateDBKeyspace);
+    void CreateKeyspace(string keyspace, bool updateDBKeyspace, CommandOptions options);
+    void CreateKeyspace(string keyspace, bool updateDBKeyspace, bool waitForCompletion);
+    void CreateKeyspace(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options);
+    Task CreateKeyspaceAsync(string keyspace);
+    Task CreateKeyspaceAsync(string keyspace, CommandOptions options);
+    Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace);
+    Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, CommandOptions options);
+    Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion);
+    Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options);
     void DropKeyspace(string keyspace);
     void DropKeyspace(string keyspace, CommandOptions options);
+    void DropKeyspace(string keyspace, bool waitForCompletion);
+    void DropKeyspace(string keyspace, bool waitForCompletion, CommandOptions options);
     Task DropKeyspaceAsync(string keyspace);
-    void CreateKeyspace(string keyspace, bool updateDBKeyspace);
-    void CreateKeyspace(string keyspace);
-    Task CreateKeyspaceAsync(string keyspace);
-    bool KeyspaceExists(string keyspace);
+    Task DropKeyspaceAsync(string keyspace, CommandOptions options);
+    Task DropKeyspaceAsync(string keyspace, bool waitForCompletion);
+    Task DropKeyspaceAsync(string keyspace, bool waitForCompletion, CommandOptions options);
+    bool DoesKeyspaceExist(string keyspace);
+    Task<bool> DoesKeyspaceExistAsync(string keyspace);
 }
