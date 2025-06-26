@@ -250,6 +250,16 @@ public class ReplaceAndDeleteTests
     }
 
     [Fact]
+    public void FindAndDeleteOne_ReturnsNull_WhenDocumentNotFound()
+    {
+        var collection = fixture.ReplaceCollection;
+        var filter = Builders<SimpleObject>.Filter
+            .Eq(so => so.Name, "ThisDocumentDoesNotExist");
+        var result = collection.FindOneAndDelete(filter);
+        Assert.Null(result);
+    }
+
+    [Fact]
     public async Task FindAndDeleteOne_WithSimpleSort()
     {
         var collection = fixture.ReplaceCollection;
@@ -554,7 +564,7 @@ public class ReplaceAndDeleteTests
                 | filters.Eq(so => so.Properties.PropertyOne, "group2");
             var result = await collection.DeleteManyAsync(filter);
             Assert.Equal(30, result.DeletedCount);
-            result = await collection.DeleteAllAsync();
+            result = await collection.DeleteManyAsync(null);
             Assert.Equal(-1, result.DeletedCount);
             Assert.Equal(0, await collection.CountDocumentsAsync());
         }

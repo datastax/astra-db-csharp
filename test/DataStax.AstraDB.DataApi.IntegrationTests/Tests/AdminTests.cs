@@ -110,10 +110,10 @@ public class AdminTests
 		var dbName = fixture.DatabaseName;
 
 		var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
-		Assert.Equal("ACTIVE", status);
+		Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 
 		status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
-		Assert.Equal("ACTIVE", status);
+		Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 	}
 
 	[Fact]
@@ -149,10 +149,10 @@ public class AdminTests
 		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var daa = fixture.CreateAdmin(database);
 
-		var names = await daa.ListKeyspaceNamesAsync();
+		var names = await daa.ListKeyspacesAsync();
 		Assert.NotNull(names);
 
-		names = daa.ListKeyspaceNames();
+		names = daa.ListKeyspaces();
 		Assert.NotNull(names);
 
 		var list = names.ToList();

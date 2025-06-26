@@ -40,4 +40,14 @@ public class VectorOptions
     /// </summary>
     [JsonPropertyName("service")]
     public VectorServiceOptions Service { get; set; }
+
+    /// <summary>
+    /// Configures the index with the fastest settings for a given source of embeddings vectors.
+    ///
+    /// As of time of writing, example sourceModels include 'openai-v3-large', 'cohere-v3', 'bert', and a handful of others.
+    ///
+    /// If no source model if provided, this setting will default to 'other'.
+    /// </summary>
+    [JsonPropertyName("sourceModel")]
+    public string SourceModel { get; set; }
 }

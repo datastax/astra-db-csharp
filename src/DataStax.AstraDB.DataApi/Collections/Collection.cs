@@ -716,7 +716,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// </summary>
     /// <param name="filter"></param>
     /// <param name="update"></param>
-    /// <returns></returns>
+    /// <returns>Updated document or null</returns>
     /// <example>
     /// <code>
     /// var updater = Builders&lt;SimpleObject&gt;.Update;
@@ -733,6 +733,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndUpdateAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// <remarks>
+    /// Use the <see cref="FindOneAndUpdateOptions{T}.ReturnDocument"/> parameter on <see cref="FindOneAndUpdateOptions{T}"/> to specify whether the original or updated document should be returned.
+    /// </remarks>
     /// <param name="updateOptions">Set Sort, Projection, Upsert options</param>
     public Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
     {
@@ -839,7 +842,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Find a document and replace it with the provided replacement
     /// </summary>
     /// <param name="replacement"></param>
-    /// <returns></returns>
+    /// <returns>The replaced document, or null if not found</returns>
     public Task<T> FindOneAndReplaceAsync(T replacement)
     {
         return FindOneAndReplaceAsync(replacement, new ReplaceOptions<T>(), null);
@@ -847,6 +850,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(T)"/>
     /// <param name="replaceOptions"></param>
+    /// <remarks>
+    /// Use the <see cref="ReplaceOptions{T}.ReturnDocument"/> parameter on <see cref="ReplaceOptions{T}"/> to specify whether the original or updated document should be returned.
+    /// </remarks>
     public Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions)
     {
         return FindOneAndReplaceAsync(replacement, replaceOptions, null);
@@ -1291,7 +1297,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <summary>
     /// Find a document and delete it from the collection
     /// </summary>
-    /// <returns>The deleted document</returns>
+    /// <returns>The deleted document, or null if not found</returns>
     public Task<T> FindOneAndDeleteAsync()
     {
         return FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<T>(), null);
@@ -1527,24 +1533,6 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DeleteAllAsync()"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteAllAsync()"/>
-    public DeleteResult DeleteAll()
-    {
-        return DeleteAll(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DeleteAllAsync(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteAllAsync(CommandOptions)"/>
-    public DeleteResult DeleteAll(CommandOptions commandOptions)
-    {
-        return DeleteMany(null, commandOptions);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="DeleteManyAsync(Filter{T})"/>
     /// </summary>
     /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
@@ -1564,26 +1552,19 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Delete all documents from the collection.
-    /// </summary>
-    /// <returns></returns>
-    public Task<DeleteResult> DeleteAllAsync()
-    {
-        return DeleteManyAsync(null, null);
-    }
-
-    /// <inheritdoc cref="DeleteAllAsync()"/>
-    /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteAllAsync(CommandOptions commandOptions)
-    {
-        return DeleteManyAsync(null, commandOptions);
-    }
-
-    /// <summary>
     /// Delete all documents matching the filter from the collection.
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    /// <remarks>
+    /// Deleting all documents in a collection is not recommended for large collections. However, if needed
+    /// you can pass null as the filter to delete all documents in the collection.
+    /// <example>
+    /// <code>
+    /// var deleteResult = await collection.DeleteManyAsync(null);
+    /// </code>
+    /// </example>
+    /// </remarks>
     public Task<DeleteResult> DeleteManyAsync(Filter<T> filter)
     {
         return DeleteManyAsync(filter, null);

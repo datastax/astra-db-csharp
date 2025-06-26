@@ -25,6 +25,20 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// </summary>
 public class DatabaseInfo
 {
+    internal DatabaseInfo(RawDatabaseInfo rawInfo)
+    {
+        Id = rawInfo.Id;
+        Name = rawInfo.Info.Name;
+        OrgId = rawInfo.OrgId;
+        OwnerId = rawInfo.OwnerId;
+        Status = Enum.TryParse<AstraDatabaseStatus>(rawInfo.Status, true, out var status) ? status : AstraDatabaseStatus.ERROR;
+        CloudProvider = Enum.TryParse<AstraDatabaseCloudProvider>(rawInfo.Info.CloudProvider, true, out var cloudProvider) ? cloudProvider : AstraDatabaseCloudProvider.AWS;
+        CreatedAt = rawInfo.CreationTime;
+        LastUsed = rawInfo.LastUsageTime;
+        Keyspaces = rawInfo.Info.Keyspaces;
+        RawDetails = rawInfo;
+    }
+
     public string Id { get; set; }
     public string Name { get; set; }
     public string OrgId { get; set; }
@@ -35,7 +49,7 @@ public class DatabaseInfo
     public DateTime LastUsed { get; set; }
     public List<string> Keyspaces { get; set; } = new();
     public List<AstraDatabaseRegionInfo> Regions { get; set; }
-    public string Environment { get; set; }
+    public string Environment { get; set; } = "prod";
     public RawDatabaseInfo RawDetails { get; set; }
 }
 

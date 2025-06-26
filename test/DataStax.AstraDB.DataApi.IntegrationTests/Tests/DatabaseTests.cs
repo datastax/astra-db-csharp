@@ -83,7 +83,7 @@ public class DatabaseTests
             keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should still be being dropped.");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await admin.DropKeyspaceAsync(keyspaceName, true);
         }

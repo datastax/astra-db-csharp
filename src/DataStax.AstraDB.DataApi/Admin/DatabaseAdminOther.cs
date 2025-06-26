@@ -44,17 +44,18 @@ namespace DataStax.AstraDB.DataApi.Admin
         {
             _id = id;
         }
-        public IEnumerable<string> ListKeyspaceNames()
+
+        public IEnumerable<string> ListKeyspaces()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<string>> ListKeyspacesAsync()
         {
             throw new NotImplementedException();
         }
 
         public FindEmbeddingProvidersResult FindEmbeddingProviders()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<string>> ListKeyspaceNamesAsync()
         {
             throw new NotImplementedException();
         }

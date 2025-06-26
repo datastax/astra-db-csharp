@@ -41,7 +41,7 @@ public class TableAlterFixture
 
         try
         {
-            var keyspaces = Database.GetAdmin().ListKeyspaceNames();
+            var keyspaces = Database.GetAdmin().ListKeyspaces();
             Console.WriteLine($"[Fixture] Connected. Keyspaces found: {keyspaces.Count()}");
         }
         catch (Exception ex)
