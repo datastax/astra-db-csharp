@@ -176,7 +176,7 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
         {
             return _cursor;
         }
-        _cursor = new Cursor<TResult>((string pageState, bool runSynchronously) => RunAsync(pageState, runSynchronously));
+        _cursor = new Cursor<TResult>((string pageState, CancellationToken cancellationToken, bool runSynchronously) => RunAsync(pageState, cancellationToken, runSynchronously));
         return _cursor;
     }
 
@@ -185,6 +185,12 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
     /// </summary>
     /// <param name="cancellationToken">An optional cancellation token to use for the operation.</param>
     /// <returns>An async enumerator</returns>
+    /// <remarks>
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="CommandOptions.TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="CommandOptions.TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API.
+    /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to this method.
+    /// <see cref="CommandOptions.BulkOperationCancellationToken"/> settings are ignored for this operation.
+    /// </remarks>
     public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         var cursor = ToCursor();
@@ -206,9 +212,13 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
         return GetEnumerator();
     }
 
-    private Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunAsync(string pageState = null, bool runSynchronously = false)
+    private Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunAsync(string pageState = null, CancellationToken cancellationToken = default, bool runSynchronously = false)
     {
         _findOptions.PageState = pageState;
+        if (cancellationToken != default && _commandOptions.BulkOperationCancellationToken == null)
+        {
+            _commandOptions.BulkOperationCancellationToken = cancellationToken;
+        }
         return _queryRunner.RunFindManyAsync<TResult>(_findOptions.Filter, _findOptions, _commandOptions, runSynchronously);
     }
 

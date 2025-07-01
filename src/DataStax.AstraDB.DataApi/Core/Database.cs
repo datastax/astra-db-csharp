@@ -225,7 +225,10 @@ public class Database
         {
             options = new { explain = includeDetails }
         };
-        var command = CreateCommand("findCollections").WithPayload(payload).AddCommandOptions(commandOptions);
+        var command = CreateCommand("findCollections")
+            .WithPayload(payload)
+            .WithTimeoutManager(new CollectionAdminTimeoutManager())
+            .AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<T>(runSynchronously).ConfigureAwait(false);
         return response.Result;
     }
@@ -441,7 +444,10 @@ public class Database
             name = collectionName,
             options = definition
         };
-        var command = CreateCommand("createCollection").WithPayload(payload).AddCommandOptions(options);
+        var command = CreateCommand("createCollection")
+            .WithPayload(payload)
+            .WithTimeoutManager(new CollectionAdminTimeoutManager())
+            .AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
         return GetCollection<T, TId>(collectionName);
     }
@@ -569,7 +575,10 @@ public class Database
         {
             name = collectionName
         };
-        var command = CreateCommand("deleteCollection").WithPayload(payload).AddCommandOptions(options);
+        var command = CreateCommand("deleteCollection")
+            .WithPayload(payload)
+            .WithTimeoutManager(new CollectionAdminTimeoutManager())
+            .AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
     }
 
@@ -617,7 +626,10 @@ public class Database
             Name = tableName,
             Definition = definition
         };
-        var command = CreateCommand("createTable").WithPayload(payload).AddCommandOptions(options);
+        var command = CreateCommand("createTable")
+            .WithPayload(payload)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
         return GetTable<TRow>(tableName, options);
     }
@@ -830,7 +842,10 @@ public class Database
                 ifExists = onlyIfExists
             }
         };
-        var command = CreateCommand("dropTable").WithPayload(payload).AddCommandOptions(options);
+        var command = CreateCommand("dropTable")
+            .WithPayload(payload)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
     }
 
@@ -881,7 +896,10 @@ public class Database
                 explain = includeDetails
             }
         };
-        var command = CreateCommand("listTables").WithPayload(payload).AddCommandOptions(options);
+        var command = CreateCommand("listTables")
+            .WithPayload(payload)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
         var result = await command.RunAsyncReturnStatus<ListTablesResult>(runSynchronously).ConfigureAwait(false);
         return result.Result.Tables;
     }
@@ -933,7 +951,10 @@ public class Database
                 explain = includeDetails
             }
         };
-        var command = CreateCommand("listTables").WithPayload(payload).AddCommandOptions(options);
+        var command = CreateCommand("listTables")
+            .WithPayload(payload)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
         var result = await command.RunAsyncReturnStatus<ListTableNamesResult>(runSynchronously).ConfigureAwait(false);
         return result.Result.Tables;
     }
@@ -983,7 +1004,10 @@ public class Database
                 ifExists = commandOptions?.SkipIfNotExists ?? false,
             }
         };
-        var command = CreateCommand("dropIndex").WithPayload(payload).AddCommandOptions(commandOptions);
+        var command = CreateCommand("dropIndex")
+            .WithPayload(payload)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(commandOptions);
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
 

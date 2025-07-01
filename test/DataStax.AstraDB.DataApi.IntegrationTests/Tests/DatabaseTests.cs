@@ -562,7 +562,7 @@ public class DatabaseTests
                     Provider = "nvidia",
                     ModelName = "NV-Embed-QA"
                 })
-                .AddPrimaryKey("Name");
+                .AddSinglePrimaryKey("Name");
 
             var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
             Assert.NotNull(table);

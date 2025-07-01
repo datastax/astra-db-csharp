@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Admin;
@@ -168,6 +167,7 @@ public class AstraDatabasesAdmin
     {
         var command = CreateCommand()
             .AddUrlPath("databases")
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
             .AddCommandOptions(options);
 
         var rawResults = await command.RunAsyncRaw<List<RawDatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
@@ -367,6 +367,7 @@ public class AstraDatabasesAdmin
         Command command = CreateCommand()
             .AddUrlPath("databases")
             .WithPayload(creationOptions)
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
             .AddCommandOptions(commandOptions);
 
         Guid newDbId = Guid.Empty;
@@ -593,6 +594,7 @@ public class AstraDatabasesAdmin
                 .AddUrlPath("databases")
                 .AddUrlPath(dbGuid.ToString())
                 .AddUrlPath("terminate")
+                .WithTimeoutManager(new DatabaseAdminTimeoutManager())
                 .AddCommandOptions(options);
 
             await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
@@ -675,6 +677,7 @@ public class AstraDatabasesAdmin
         var command = CreateCommand()
             .AddUrlPath("databases")
             .AddUrlPath(dbGuid.ToString())
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
             .AddCommandOptions(options);
 
         var rawInfo = await command.RunAsyncRaw<RawDatabaseInfo>(HttpMethod.Get, runSynchronously);

@@ -179,7 +179,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <inheritdoc cref="CreateKeyspaceAsync(string, bool, bool)"/>
         public void CreateKeyspace(string keyspace, bool updateDBKeyspace, bool waitForCompletion)
         {
-            throw new NotImplementedException();
+            CreateKeyspace(keyspace, updateDBKeyspace, waitForCompletion, null);
         }
 
         /// <summary>
@@ -300,6 +300,7 @@ namespace DataStax.AstraDB.DataApi.Admin
                 .AddUrlPath(_id.ToString())
                 .AddUrlPath("keyspaces")
                 .AddUrlPath(keyspace)
+                .WithTimeoutManager(new KeyspaceAdminTimeoutManager())
                 .AddCommandOptions(options);
 
             await command.RunAsyncRaw<Command.EmptyResult>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
@@ -438,6 +439,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
             var command = CreateCommandAdmin()
                 .AddUrlPath($"databases/{_id}/keyspaces/{keyspace}")
+                .WithTimeoutManager(new KeyspaceAdminTimeoutManager())
                 .AddCommandOptions(options);
 
             await command.RunAsyncRaw<Command.EmptyResult>(HttpMethod.Delete, runSynchronously)
@@ -560,6 +562,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         {
             var command = CreateCommandEmbedding()
                .AddCommandOptions(options)
+               .WithTimeoutManager(new DatabaseAdminTimeoutManager())
                .WithPayload(new { findEmbeddingProviders = new { } });
 
             var response = await command

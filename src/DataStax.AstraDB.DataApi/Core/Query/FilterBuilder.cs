@@ -486,6 +486,12 @@ public class FilterBuilder<T>
 
 public class PrimaryKeyFilter
 {
+    public PrimaryKeyFilter(string columnName, object value)
+    {
+        ColumnName = columnName;
+        Value = value;
+    }
+
     public string ColumnName { get; set; }
     public object Value { get; set; }
 }
@@ -493,8 +499,7 @@ public class PrimaryKeyFilter
 public class PrimaryKeyFilter<T, TValue> : PrimaryKeyFilter
 {
     public PrimaryKeyFilter(Expression<Func<T, TValue>> columnExpression, TValue value)
+        : base(columnExpression.GetMemberNameTree(), value)
     {
-        ColumnName = columnExpression.GetMemberNameTree();
-        Value = value;
     }
 }

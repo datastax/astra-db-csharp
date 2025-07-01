@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
+
 namespace DataStax.AstraDB.DataApi.Tables;
 
-
-public abstract class Row
+/// <summary>
+/// Represents a row in a table as a dictionary of column names and their corresponding values 
+/// (as untyped objects <see cref="object"/>).
+/// </summary>
+public class Row : Dictionary<string, object>
 {
 
 }

@@ -28,6 +28,11 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+
+/// <summary>
+/// This is the main entry point for interacting with a table in the Astra DB Data API.
+/// </summary>
+/// <typeparam name="T">The type to use for rows in the table (when not specified, defaults to <see cref="Row"/> </typeparam>
 public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
 {
     private readonly string _tableName;
@@ -255,6 +260,15 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return InsertManyAsync(rows, insertOptions, null, true).ResultSync();
     }
 
+    /// <summary>
+    /// Insert multiple rows into the table.
+    /// </summary>
+    /// <param name="rows"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// If you need to control concurrency, chunk size, or whether the insert is ordered or not, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
+    /// To additionally control timesouts, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions, CommandOptions)"/> overload.
+    /// </remarks>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows)
     {
         return InsertManyAsync(rows, null, null, false);
@@ -280,38 +294,66 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
 
-        var start = DateTime.Now;
+        var optionsTree = GetOptionsTree();
+        if (commandOptions != null)
+        {
+            optionsTree.Add(commandOptions);
+        }
+        var mergedOptions = CommandOptions.Merge(optionsTree.ToArray());
+
+        var timeout = new TimeoutManager().GetBulkOperationTimeout(mergedOptions);
+        using var cts = new CancellationTokenSource(timeout);
+        var bulkOperationTimeoutToken = cts.Token;
+
+        if (commandOptions == null)
+        {
+            commandOptions = new CommandOptions
+            {
+                BulkOperationCancellationToken = bulkOperationTimeoutToken
+            };
+        }
+        else
+        {
+            commandOptions.BulkOperationCancellationToken = bulkOperationTimeoutToken;
+        }
 
         var result = new TableInsertManyResult();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
 
-        var chunks = rows.CreateBatch(insertOptions.ChunkSize);
-
-        foreach (var chunk in chunks)
+        try
         {
-            tasks.Add(Task.Run(async () =>
-            {
-                await semaphore.WaitAsync();
-                try
-                {
-                    var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, insertOptions.ReturnDocumentResponses, commandOptions, runSynchronously).ConfigureAwait(false);
-                    lock (result.InsertedIds)
-                    {
-                        result.PrimaryKeys = runResult.PrimaryKeys;
-                        result.InsertedIds.AddRange(runResult.InsertedIds);
-                        result.DocumentResponses.AddRange(runResult.DocumentResponses);
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }));
-        }
+            var chunks = rows.CreateBatch(insertOptions.ChunkSize);
 
-        await Task.WhenAll(tasks);
-        return result;
+            foreach (var chunk in chunks)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    await semaphore.WaitAsync(bulkOperationTimeoutToken);
+                    try
+                    {
+                        var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, insertOptions.ReturnDocumentResponses, commandOptions, runSynchronously).ConfigureAwait(false);
+                        lock (result.InsertedIds)
+                        {
+                            result.PrimaryKeys = runResult.PrimaryKeys;
+                            result.InsertedIds.AddRange(runResult.InsertedIds);
+                            result.DocumentResponses.AddRange(runResult.DocumentResponses);
+                        }
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, bulkOperationTimeoutToken));
+            }
+
+            await Task.WhenAll(tasks).WithCancellation(bulkOperationTimeoutToken);
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            throw new TimeoutException($"InsertMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+        }
     }
 
     private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, bool insertOrdered, bool returnDocumentResponses, CommandOptions commandOptions, bool runSynchronously)
@@ -331,21 +373,36 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return response.Result;
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="InsertOneAsync(T)"/>
+    /// </summary>
+    /// <inheritdoc cref="InsertOneAsync(T)"/>
     public TableInsertManyResult InsertOne(T row)
     {
         return InsertOne(row, null);
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="InsertOneAsync(T, CommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="InsertOneAsync(T, CommandOptions)"/>
     public TableInsertManyResult InsertOne(T row, CommandOptions commandOptions)
     {
         return InsertOneAsync(row, commandOptions, true).ResultSync();
     }
 
+    /// <summary>
+    /// Insert a single row into the table.
+    /// </summary>
+    /// <param name="row"></param>
+    /// <returns></returns>
     public Task<TableInsertManyResult> InsertOneAsync(T row)
     {
         return InsertOneAsync(row, null);
     }
 
+    /// <inheritdoc cref="InsertOneAsync(T)"/>
+    /// <param name="commandOptions"></param>
     public Task<TableInsertManyResult> InsertOneAsync(T row, CommandOptions commandOptions)
     {
         return InsertOneAsync(row, commandOptions, false);
@@ -363,21 +420,80 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return response.Result;
     }
 
+    /// <summary>
+    /// Find rows in the table.
+    /// 
+    /// The Find() methods return a <see cref="FindEnumerator{T,T,SortBuilder{T}}"/> object that can be used to further structure the query
+    /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
+    /// 
+    /// The <see cref="FindEnumerator{T,T,SortBuilder{T}}"/> object can be directly enumerated both synchronously and asynchronously.
+    /// Secondarily, the results can be paged through manually by using the results of <see cref="FindEnumerator{T,T,SortBuilder{T}}.ToCursor()"/>.
+    /// </summary>
+    /// <returns></returns>
+    /// <example>
+    /// Synchronous Enumeration:
+    /// <code>
+    /// var FindEnumerator = table.Find();
+    /// foreach (var row in FindEnumerator)
+    /// {
+    ///     // Process row
+    /// }
+    /// </code>
+    /// </example>
+    /// <example>
+    /// Asynchronous Enumeration:
+    /// <code>
+    /// var results = table.Find();
+    /// await foreach (var row in results)
+    /// {
+    ///     // Process row
+    /// }
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="CommandOptions.TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="CommandOptions.TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
+    /// however <see cref="CommandOptions.TimeoutOptions.BulkOperationCancellationToken"/> settings are ignored due to the nature of Enueration.
+    /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
+    /// </remarks>
     public FindEnumerator<T, T, SortBuilder<T>> Find()
     {
         return Find(null, null);
     }
 
+    /// <inheritdoc cref="Find()"/>
+    /// <param name="filter">The filter(s) to apply to the query.</param>
+    /// <returns></returns>
+    /// <example>
+    /// <code>
+    /// var filterBuilder = Builders<BookRow>.Filter;
+    /// var filter = filterBuilder.Gt(x => x.NumberOfPages, 430);
+    /// var matchingBooks = table.Find(filter).ToList();
+    /// await foreach (var bookRow in matchingBooks)
+    /// {
+    ///     //handle each row
+    /// }
+    /// </code>
+    /// </example>
     public FindEnumerator<T, T, SortBuilder<T>> Find(Filter<T> filter)
     {
         return Find(filter, null);
     }
 
+    /// <inheritdoc cref="Find(Filter{T})"/>
+    /// <param name="commandOptions"></param>
     public FindEnumerator<T, T, SortBuilder<T>> Find(Filter<T> filter, CommandOptions commandOptions)
     {
         return Find<T>(filter, commandOptions);
     }
 
+    /// <inheritdoc cref="Find(Filter{T},CommandOptions)"/>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    /// <remarks>
+    /// This overload of Find() allows you to specify a different result class type <typeparamref name="TResult"/>
+    /// which the resultant rows will be deserialized into. This is generally used along with .Project() to limit the fields returned
+    /// </remarks>
     public FindEnumerator<T, TResult, SortBuilder<T>> Find<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
     {
         var findOptions = new TableFindManyOptions<T>
@@ -481,6 +597,10 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         commandOptions ??= new CommandOptions();
         commandOptions.SerializeGuidAsDollarUuid = false;
         commandOptions.SerializeDateAsDollarDate = false;
+        if (typeof(TResult) == typeof(Row))
+        {
+            return commandOptions;
+        }
         if (isInsert)
         {
             commandOptions.InputConverter = new RowConverter<T>();
@@ -809,9 +929,15 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return result.Result;
     }
 
+    private List<CommandOptions> GetOptionsTree()
+    {
+        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions });
+        return optionsTree.ToList();
+    }
+
     internal Command CreateCommand(string name)
     {
-        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions }).ToArray();
+        var optionsTree = GetOptionsTree().ToArray();
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _tableName));
     }
 

@@ -40,6 +40,7 @@ internal class Command
 
     internal object Payload { get; set; }
     internal string UrlPostfix { get; set; }
+    internal TimeoutManager TimeoutManager { get; set; } = new TimeoutManager();
 
     internal readonly struct EmptyResult { }
 
@@ -72,6 +73,12 @@ internal class Command
     internal Command WithPayload(object document)
     {
         Payload = document;
+        return this;
+    }
+
+    internal Command WithTimeoutManager(TimeoutManager timeoutManager)
+    {
+        TimeoutManager = timeoutManager;
         return this;
     }
 
@@ -228,9 +235,10 @@ internal class Command
             {
                 AllowAutoRedirect = commandOptions.HttpClientOptions.FollowRedirects
             };
-            if (commandOptions.TimeoutOptions != null && commandOptions.TimeoutOptions.ConnectTimeoutMillis != 0)
+            var connectTimeout = TimeoutManager.GetConnectionTimeout(commandOptions);
+            if (connectTimeout.TotalMilliseconds != 0)
             {
-                handler.ConnectTimeout = TimeSpan.FromMilliseconds(commandOptions.TimeoutOptions.ConnectTimeoutMillis);
+                handler.ConnectTimeout = connectTimeout;
             }
 
             httpClient = new HttpClient(handler);
@@ -263,13 +271,25 @@ internal class Command
         HttpResponseMessage response = null;
 
         var ctsForTimeout = new CancellationTokenSource();
-        if (commandOptions.TimeoutOptions != null && commandOptions.TimeoutOptions.RequestTimeoutMillis != 0)
+        var requestTimeout = TimeoutManager.GetRequestTimeout(commandOptions);
+        if (requestTimeout.Milliseconds > 0)
         {
-            ctsForTimeout.CancelAfter(TimeSpan.FromMilliseconds(commandOptions.TimeoutOptions.RequestTimeoutMillis));
+            ctsForTimeout.CancelAfter(requestTimeout);
         }
         var cancellationTokenForTimeout = ctsForTimeout.Token;
 
-        using (var linkedCts = commandOptions.CancellationToken == null ? ctsForTimeout : CancellationTokenSource.CreateLinkedTokenSource(commandOptions.CancellationToken.Value, cancellationTokenForTimeout))
+        List<CancellationToken> cancellationTokens = new();
+        cancellationTokens.Add(cancellationTokenForTimeout);
+        if (commandOptions.CancellationToken != null)
+        {
+            cancellationTokens.Add(commandOptions.CancellationToken.Value);
+        }
+        if (commandOptions.BulkOperationCancellationToken != null)
+        {
+            cancellationTokens.Add(commandOptions.BulkOperationCancellationToken.Value);
+        }
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens.ToArray());
+        try
         {
             if (runSynchronously)
             {
@@ -295,7 +315,7 @@ internal class Command
                     if (response.StatusCode == System.Net.HttpStatusCode.GatewayTimeout ||
                         response.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
                     {
-                        throw new TimeoutException($"Request to timed out. Consider increasing the timeout settings using the CommandOptions parameter.");
+                        throw new TimeoutException($"Request to timed out. Consider increasing the RequestTimeout settings using the CommandOptions parameter.");
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -311,31 +331,51 @@ internal class Command
                 }
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
-
-            if (_responseHandler != null)
-            {
-                if (runSynchronously)
-                {
-                    _responseHandler(response).ResultSync();
-                }
-                else
-                {
-                    await _responseHandler(response);
-                }
-            }
-
-            MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
-            MaybeLogDebugMessage("Content: {Content}", responseContent);
-
-            MaybeLogDebugMessage("Raw Response: {Response}", response);
-
-            if (string.IsNullOrEmpty(responseContent))
-            {
-                return default;
-            }
-
-            return Deserialize<T>(responseContent);
         }
+        catch (TaskCanceledException ex)
+        {
+            if (commandOptions.BulkOperationCancellationToken != null && commandOptions.BulkOperationCancellationToken.Value.IsCancellationRequested)
+            {
+                throw new TimeoutException($"Bulk operation timed out after {TimeoutManager.GetBulkOperationTimeout(commandOptions).TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.", ex);
+            }
+            if (cancellationTokenForTimeout.IsCancellationRequested)
+            {
+                throw new TimeoutException($"HTTP request timed out after {requestTimeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.RequestTimeout parameter.", ex);
+            }
+            throw; // Other cancellation sources (e.g., commandOptions.CancellationToken)
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP request failed.");
+            throw;
+        }
+        finally
+        {
+            httpClient.Dispose();
+        }
+        if (_responseHandler != null)
+        {
+            if (runSynchronously)
+            {
+                _responseHandler(response).ResultSync();
+            }
+            else
+            {
+                await _responseHandler(response);
+            }
+        }
+
+        MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
+        MaybeLogDebugMessage("Content: {Content}", responseContent);
+
+        MaybeLogDebugMessage("Raw Response: {Response}", response);
+
+        if (string.IsNullOrEmpty(responseContent))
+        {
+            return default;
+        }
+
+        return Deserialize<T>(responseContent);
     }
 
     private void MaybeLogDebugMessage(string message, params object[] args)

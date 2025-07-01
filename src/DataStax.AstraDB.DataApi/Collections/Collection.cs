@@ -213,36 +213,64 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
             InsertValidator.Validate(doc);
         }
 
-        var start = DateTime.Now;
+        var optionsTree = GetOptionsTree();
+        if (commandOptions != null)
+        {
+            optionsTree.Add(commandOptions);
+        }
+        var mergedOptions = CommandOptions.Merge(optionsTree.ToArray());
+
+        var timeout = new TimeoutManager().GetBulkOperationTimeout(mergedOptions);
+        using var cts = new CancellationTokenSource(timeout);
+        var bulkOperationTimeoutToken = cts.Token;
+
+        if (commandOptions == null)
+        {
+            commandOptions = new CommandOptions
+            {
+                BulkOperationCancellationToken = bulkOperationTimeoutToken
+            };
+        }
+        else
+        {
+            commandOptions.BulkOperationCancellationToken = bulkOperationTimeoutToken;
+        }
 
         var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
 
-        var chunks = documents.CreateBatch(insertOptions.ChunkSize);
-
-        foreach (var chunk in chunks)
+        try
         {
-            tasks.Add(Task.Run(async () =>
-            {
-                await semaphore.WaitAsync();
-                try
-                {
-                    var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, commandOptions, runSynchronously).ConfigureAwait(false);
-                    lock (result.InsertedIds)
-                    {
-                        result.InsertedIds.AddRange(runResult.InsertedIds);
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }));
-        }
+            var chunks = documents.CreateBatch(insertOptions.ChunkSize);
 
-        await Task.WhenAll(tasks);
-        return result;
+            foreach (var chunk in chunks)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    await semaphore.WaitAsync(bulkOperationTimeoutToken);
+                    try
+                    {
+                        var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, commandOptions, runSynchronously).ConfigureAwait(false);
+                        lock (result.InsertedIds)
+                        {
+                            result.InsertedIds.AddRange(runResult.InsertedIds);
+                        }
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, bulkOperationTimeoutToken));
+            }
+
+            await Task.WhenAll(tasks).WithCancellation(bulkOperationTimeoutToken);
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            throw new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+        }
     }
 
     private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
@@ -571,7 +599,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Find all documents in the collection.
+    /// Find documents in the collection.
     /// 
     /// The Find() methods return a <see cref="FindEnumerator{T,TProjection}"/> object that can be used to further structure the query
     /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
@@ -600,6 +628,12 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="CommandOptions.TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="CommandOptions.TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
+    /// however <see cref="CommandOptions.TimeoutOptions.BulkOperationCancellationToken"/> settings are ignored due to the nature of Enueration.
+    /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
+    /// </remarks>
     public FindEnumerator<T, T, DocumentSortBuilder<T>> Find()
     {
         return Find(null, null);
@@ -1995,9 +2029,15 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return command.Deserialize<T>(json);
     }
 
+    private List<CommandOptions> GetOptionsTree()
+    {
+        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions });
+        return optionsTree.ToList();
+    }
+
     internal Command CreateCommand(string name)
     {
-        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions }).ToArray();
+        var optionsTree = GetOptionsTree().ToArray();
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _collectionName));
     }
 

@@ -38,12 +38,12 @@ public class Cursor<T> : IDisposable, IParentCursor
 {
     private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
     private ApiFindResult<T> _currentBatch;
-    private readonly Func<string, bool, Task<ApiResponseWithData<ApiFindResult<T>, FindStatusResult>>> _fetchNextBatch;
+    private readonly Func<string, CancellationToken, bool, Task<ApiResponseWithData<ApiFindResult<T>, FindStatusResult>>> _fetchNextBatch;
     private readonly IParentCursor _parentCursor;
 
 
     internal Cursor(
-        Func<string, bool, Task<ApiResponseWithData<ApiFindResult<T>, FindStatusResult>>> fetchNextBatch,
+        Func<string, CancellationToken, bool, Task<ApiResponseWithData<ApiFindResult<T>, FindStatusResult>>> fetchNextBatch,
         IParentCursor parentCursor = null)
     {
         _fetchNextBatch = fetchNextBatch ?? throw new ArgumentNullException(nameof(fetchNextBatch));
@@ -123,7 +123,7 @@ public class Cursor<T> : IDisposable, IParentCursor
         _parentCursor?.SetStarted();
 
         var nextPageState = _currentBatch?.NextPageState;
-        var nextBatch = await _fetchNextBatch(nextPageState, runSynchronously).ConfigureAwait(false);
+        var nextBatch = await _fetchNextBatch(nextPageState, cancellationToken, runSynchronously).ConfigureAwait(false);
         if (nextBatch.Data == null || nextBatch.Data.Items == null || nextBatch.Data.Items.Count == 0)
         {
             return false;
