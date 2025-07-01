@@ -31,10 +31,10 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// Entrypoint for the interactions with a specific database such as creating/deleting collections/tables, 
 /// connecting to collections/tables, and executing arbitrary commands.
 /// 
-/// Note that creating an instance of a Db doesn't trigger actual database creation; the database must have already existed beforehand. If you need to create a new database, use the AstraAdmin class.
+/// Note that creating an instance of a Database doesn't trigger actual database creation; the database must have already existed beforehand. If you need to create a new database, use the AstraAdmin class.
 /// </summary>
 /// <remarks>
-/// The Database class has a concept of a "working keyspace", which is the keyspace used for all operations. This can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter,
+/// The Database class has a concept of a "current keyspace", which is the keyspace used for all operations. This can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter,
 /// or when creating the <see cref="Database"/> instance (see <see cref="DataApiClient.GetDatabase(string, DatabaseCommandOptions)"/>).
 /// If unset, the default keyspace will be used.
 /// </remarks>
@@ -101,7 +101,7 @@ public class Database
     }
 
     /// <summary>
-    /// Set the active keyspace to use for all subsequent operations (can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter)
+    /// Set the current keyspace to use for all subsequent operations (can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter)
     /// </summary>
     /// <param name="keyspace"></param>
     public void UseKeyspace(string keyspace)
@@ -293,7 +293,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync(string)" />
-    /// <param name="definition">Specify options to use when creating the collection (id, vector, and indexing).</param>
+    /// <param name="definition">Specify options to use when creating the collection.</param>
     public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition)
     {
         return CreateCollectionAsync<Document>(collectionName, definition, null);
@@ -355,7 +355,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
-    /// <param name="definition">Specify options to use when creating the collection (id, vector, and indexing).</param>
+    /// <param name="definition">Specify options to use when creating the collection.</param>
     public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition) where T : class
     {
         return CreateCollectionAsync<T>(collectionName, definition, null);
@@ -456,9 +456,6 @@ public class Database
     /// Returns an instance of <see cref="IDatabaseAdmin"/> that can be used to perform database management operations for this database
     /// </summary>
     /// <returns></returns>
-    /// <remarks>
-    /// If this database is not an Astra database, use <see cref="GetAdmin(CommandOptions)"/> instead, passing the appropriate destination to the Destination parameter on <see cref="CommandOptions"/>.
-    /// </remarks>
     public IDatabaseAdmin GetAdmin()
     {
         return GetAdmin(null);

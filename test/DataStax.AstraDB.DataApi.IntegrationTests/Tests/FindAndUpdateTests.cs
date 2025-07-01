@@ -1,6 +1,6 @@
 using DataStax.AstraDB.DataApi.Collections;
-using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -22,11 +22,9 @@ public class FindAndUpdateTests
         var filter = Builders<SimpleObject>.Filter
             .Eq(so => so.Name, "Cat");
         var updater = Builders<SimpleObject>.Update;
-        var combinedUpdate = updater.Combine(
-            updater.Set(so => so.Properties.PropertyTwo, "CatUpdated"),
-            updater.Unset("Properties.PropertyOne")
-        );
-        var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate);
+        var update = updater.Set(so => so.Properties.PropertyTwo, "CatUpdated")
+                .Unset("Properties.PropertyOne");
+        var result = await collection.FindOneAndUpdateAsync(filter, update);
         Assert.Equal("cat", result.Properties.PropertyTwo);
         Assert.NotNull(result.Properties.PropertyOne);
     }
@@ -38,12 +36,10 @@ public class FindAndUpdateTests
         var filter = Builders<SimpleObject>.Filter
             .Eq(so => so.Name, "Animal5");
         var updater = Builders<SimpleObject>.Update;
-        var combinedUpdate = updater.Combine(
-            updater.Set(so => so.Properties.PropertyTwo, "Animal5Updated"),
-            updater.Unset("Properties.PropertyOne")
-        );
+        var update = updater.Set(so => so.Properties.PropertyTwo, "Animal5Updated")
+            .Unset("Properties.PropertyOne");
         var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
-        var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate, options);
+        var result = await collection.FindOneAndUpdateAsync(filter, update, options);
         Assert.Equal("Animal5Updated", result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
     }
@@ -55,13 +51,11 @@ public class FindAndUpdateTests
         var filter = Builders<SimpleObject>.Filter
             .Eq(so => so.Name, "Horse");
         var updater = Builders<SimpleObject>.Update;
-        var combinedUpdate = updater.Combine(
-            updater.Set(so => so.Properties.PropertyTwo, "HorseUpdated")
-        );
+        var update = updater.Set(so => so.Properties.PropertyTwo, "HorseUpdated");
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
         var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = inclusiveProjection };
-        var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate, options);
+        var result = await collection.FindOneAndUpdateAsync(filter, update, options);
         Assert.Equal("HorseUpdated", result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
         Assert.True(string.IsNullOrEmpty(result.Name));

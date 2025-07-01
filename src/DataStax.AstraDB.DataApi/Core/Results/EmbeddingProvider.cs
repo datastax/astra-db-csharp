@@ -58,14 +58,10 @@ public class EmbeddingProvider
         public string Type { get; set; }
         public bool Required { get; set; }
         public string DefaultValue { get; set; }
-        public Validation Validation { get; set; }
+        public Dictionary<string, List<int>> Validation { get; set; }
         public string Help { get; set; }
         public string DisplayName { get; set; }
         public string Hint { get; set; }
     }
 
-    public class Validation
-    {
-        public List<int> NumericRange { get; set; }
-    }
 }

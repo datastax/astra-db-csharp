@@ -104,7 +104,7 @@ public class SerializationTests
 	public void IdList_Guid()
 	{
 		string serializationTestString = "{\"insertedIds\":[{\"$uuid\":\"315c2015-e404-432c-9c20-15e404532ceb\"}]}";
-		var collection = _database.GetCollection<InsertDocumentsCommandResponse<object>>("serializationTest");
+		var collection = _database.GetCollection<CollectionInsertManyResult<object>>("serializationTest");
 		var commandOptions = new CommandOptions()
 		{
 			OutputConverter = new IdListConverter()
@@ -116,7 +116,7 @@ public class SerializationTests
 	public void IdList_ObjectId()
 	{
 		string serializationTestString = "{\"insertedIds\":[{\"$objectId\":\"67eaab273cc8411120638d65\"}]}";
-		var collection = _database.GetCollection<InsertDocumentsCommandResponse<object>>("serializationTest");
+		var collection = _database.GetCollection<CollectionInsertManyResult<object>>("serializationTest");
 		var commandOptions = new CommandOptions()
 		{
 			OutputConverter = new IdListConverter()
@@ -134,27 +134,6 @@ public class SerializationTests
 		Assert.Equal("text", deserialized.PrimaryKeys["Name"].Type);
 		Assert.Equal("Test", deserialized.InsertedIds.First().First().ToString());
 	}
-
-	[Fact]
-	public void CompoundKeySerializationTest()
-	{
-		var filterBuilder = Builders<CompoundPrimaryKey>.Filter;
-		var filter = filterBuilder.CompoundKey(
-				new[] {
-					new PrimaryKeyFilter<CompoundPrimaryKey, string>(x => x.KeyOne, "KeyOne3"),
-					new PrimaryKeyFilter<CompoundPrimaryKey, string>(x => x.KeyTwo, "KeyTwo3")
-				},
-				new[] {
-					filterBuilder.Eq(x => x.SortOneAscending,"SortOneAscending3"),
-					filterBuilder.Eq(x => x.SortTwoDescending, "SortTwoDescending3")
-				});
-		var commandOptions = Array.Empty<CommandOptions>();
-		var command = new Command("deserializationTest", new DataApiClient(), commandOptions, null);
-		var serialized = command.Serialize(filter);
-		Console.WriteLine(serialized);
-	}
-
-	//{"data":{"documents":[{"_id":"3a0cdac3-679b-435a-8cda-c3679bf35a6b","title":"Test Book 1","author":"Test Author 1","number_of_pages":100}
 
 	[Fact]
 	public void BookDeserializationTest()

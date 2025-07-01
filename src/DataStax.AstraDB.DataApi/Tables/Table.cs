@@ -250,11 +250,19 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return InsertMany(rows, null as CommandOptions);
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, CommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CommandOptions)"/>
     public TableInsertManyResult InsertMany(IEnumerable<T> rows, CommandOptions commandOptions)
     {
         return InsertManyAsync(rows, null, commandOptions, true).ResultSync();
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
     public TableInsertManyResult InsertMany(IEnumerable<T> rows, InsertManyOptions insertOptions)
     {
         return InsertManyAsync(rows, insertOptions, null, true).ResultSync();
@@ -269,19 +277,32 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// If you need to control concurrency, chunk size, or whether the insert is ordered or not, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
     /// To additionally control timesouts, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions, CommandOptions)"/> overload.
     /// </remarks>
+    /// <throws cref="ArgumentException">Thrown if the rows collection is null or empty.</throws>
+    /// <throws cref="BulkOperationException{TableInsertManyResult}">Thrown if an error occurs during the bulk operation, with partial results returned in the <see cref="BulkOperationException{TableInsertManyResult}.PartialResult"/> property.</throws>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows)
     {
         return InsertManyAsync(rows, null, null, false);
     }
 
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    /// <param name="commandOptions"></param>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, CommandOptions commandOptions)
     {
         return InsertManyAsync(rows, null, commandOptions, false);
     }
 
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    /// <param name="insertOptions"></param>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions)
     {
         return InsertManyAsync(rows, insertOptions, null, false);
+    }
+
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CommandOptions)"/>
+    /// <param name="insertOptions"></param>
+    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, CommandOptions commandOptions)
+    {
+        return InsertManyAsync(rows, insertOptions, commandOptions, false);
     }
 
     private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
@@ -294,65 +315,53 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
 
-        var optionsTree = GetOptionsTree();
-        if (commandOptions != null)
-        {
-            optionsTree.Add(commandOptions);
-        }
-        var mergedOptions = CommandOptions.Merge(optionsTree.ToArray());
-
-        var timeout = new TimeoutManager().GetBulkOperationTimeout(mergedOptions);
-        using var cts = new CancellationTokenSource(timeout);
-        var bulkOperationTimeoutToken = cts.Token;
-
-        if (commandOptions == null)
-        {
-            commandOptions = new CommandOptions
-            {
-                BulkOperationCancellationToken = bulkOperationTimeoutToken
-            };
-        }
-        else
-        {
-            commandOptions.BulkOperationCancellationToken = bulkOperationTimeoutToken;
-        }
-
         var result = new TableInsertManyResult();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
 
-        try
+        using (cts)
         {
-            var chunks = rows.CreateBatch(insertOptions.ChunkSize);
-
-            foreach (var chunk in chunks)
+            var bulkOperationTimeoutToken = cts.Token;
+            try
             {
-                tasks.Add(Task.Run(async () =>
+                var chunks = rows.CreateBatch(insertOptions.ChunkSize);
+
+                foreach (var chunk in chunks)
                 {
-                    await semaphore.WaitAsync(bulkOperationTimeoutToken);
-                    try
+                    tasks.Add(Task.Run(async () =>
                     {
-                        var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, insertOptions.ReturnDocumentResponses, commandOptions, runSynchronously).ConfigureAwait(false);
-                        lock (result.InsertedIds)
+                        await semaphore.WaitAsync(bulkOperationTimeoutToken);
+                        try
                         {
-                            result.PrimaryKeys = runResult.PrimaryKeys;
-                            result.InsertedIds.AddRange(runResult.InsertedIds);
-                            result.DocumentResponses.AddRange(runResult.DocumentResponses);
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, insertOptions.ReturnDocumentResponses, commandOptions, runSynchronously).ConfigureAwait(false);
+                            lock (result.InsertedIds)
+                            {
+                                result.PrimaryKeys = runResult.PrimaryKeys;
+                                result.InsertedIds.AddRange(runResult.InsertedIds);
+                                result.DocumentResponses.AddRange(runResult.DocumentResponses);
+                            }
                         }
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }, bulkOperationTimeoutToken));
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }, bulkOperationTimeoutToken));
+                }
+
+                await Task.WhenAll(tasks).WithCancellation(bulkOperationTimeoutToken);
+            }
+            catch (OperationCanceledException)
+            {
+                var innerException = new TimeoutException($"InsertMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                throw new BulkOperationException<TableInsertManyResult>(innerException, result);
+            }
+            catch (Exception ex)
+            {
+                throw new BulkOperationException<TableInsertManyResult>(ex, result);
             }
 
-            await Task.WhenAll(tasks).WithCancellation(bulkOperationTimeoutToken);
             return result;
-        }
-        catch (OperationCanceledException)
-        {
-            throw new TimeoutException($"InsertMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
         }
     }
 
@@ -850,12 +859,30 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
 
         var keepProcessing = true;
         var deleteResult = new DeleteResult();
-        while (keepProcessing)
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+
+        using (cts)
         {
-            var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-            var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
-            deleteResult.DeletedCount += response.Result.DeletedCount;
-            keepProcessing = response.Result.MoreData;
+            var bulkOperationTimeoutToken = cts.Token;
+            try
+            {
+                while (keepProcessing)
+                {
+                    var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
+                    var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
+                    deleteResult.DeletedCount += response.Result.DeletedCount;
+                    keepProcessing = response.Result.MoreData;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                var innerException = new TimeoutException($"DeleteMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                throw new BulkOperationException<DeleteResult>(innerException, deleteResult);
+            }
+            catch (Exception ex)
+            {
+                throw new BulkOperationException<DeleteResult>(ex, deleteResult);
+            }
         }
 
         return deleteResult;
