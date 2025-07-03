@@ -11,7 +11,7 @@ public class TableAlterTests
 {
     private readonly TableAlterFixture fixture;
 
-    public TableAlterTests(TableAlterFixture fixture)
+    public TableAlterTests(AssemblyFixture assemblyFixture, TableAlterFixture fixture)
     {
         this.fixture = fixture;
     }

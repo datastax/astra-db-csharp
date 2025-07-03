@@ -11,7 +11,7 @@ public class AdditionalCollectionTests
 {
     DatabaseFixture fixture;
 
-    public AdditionalCollectionTests(DatabaseFixture fixture)
+    public AdditionalCollectionTests(AssemblyFixture assemblyFixture, DatabaseFixture fixture)
     {
         this.fixture = fixture;
     }

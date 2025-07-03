@@ -10,7 +10,7 @@ public class UpdateTests
 {
     UpdatesFixture fixture;
 
-    public UpdateTests(UpdatesFixture fixture)
+    public UpdateTests(AssemblyFixture assemblyFixture, UpdatesFixture fixture)
     {
         this.fixture = fixture;
     }

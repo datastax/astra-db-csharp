@@ -12,7 +12,7 @@ public class TableTests
 {
     TablesFixture fixture;
 
-    public TableTests(TablesFixture fixture)
+    public TableTests(AssemblyFixture assemblyFixture, TablesFixture fixture)
     {
         this.fixture = fixture;
     }

@@ -1,60 +1,33 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
 [CollectionDefinition("FindAndUpdate")]
-public class FindAndUpdateCollection : ICollectionFixture<FindAndUpdateFixture>
+public class FindAndUpdateCollection : ICollectionFixture<AssemblyFixture>, ICollectionFixture<FindAndUpdateFixture>
 {
-
 }
 
-public class FindAndUpdateFixture : IDisposable, IAsyncLifetime
+public class FindAndUpdateFixture : BaseFixture, IAsyncLifetime
 {
-    public DataApiClient Client { get; private set; }
-    public Database Database { get; private set; }
-    public string OpenAiApiKey { get; set; }
-
-    public FindAndUpdateFixture()
+    public FindAndUpdateFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "findAndUpdate")
     {
-        IConfiguration configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true)
-            .AddEnvironmentVariables(prefix: "ASTRA_DB_")
-            .Build();
-
-        var token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
-        var databaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
-        OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
-
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/findandupdate_latest_run.log"));
-        ILogger logger = factory.CreateLogger("IntegrationTests");
-
-        var clientOptions = new CommandOptions
-        {
-            RunMode = RunMode.Debug
-        };
-        Client = new DataApiClient(token, clientOptions, logger);
-        Database = Client.GetDatabase(databaseUrl);
     }
 
-    public async Task InitializeAsync()
+    public Collection<SimpleObject> UpdatesCollection { get; private set; }
+
+    public async ValueTask InitializeAsync()
     {
         await CreateUpdatesCollection();
         var collection = Database.GetCollection<SimpleObject>(_queryCollectionName);
         UpdatesCollection = collection;
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await Database.DropCollectionAsync(_queryCollectionName);
     }
-
-    public Collection<SimpleObject> UpdatesCollection { get; private set; }
-
 
     private const string _queryCollectionName = "findAndUpdateCollection";
     private async Task CreateUpdatesCollection()
@@ -151,8 +124,4 @@ public class FindAndUpdateFixture : IDisposable, IAsyncLifetime
         return collection;
     }
 
-    public void Dispose()
-    {
-        //nothing needed
-    }
 }

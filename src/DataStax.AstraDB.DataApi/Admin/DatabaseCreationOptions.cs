@@ -25,10 +25,10 @@ public class DatabaseCreationOptions
     public string Name { get; set; }
 
     [JsonPropertyName("cloudProvider")]
-    public CloudProviderType CloudProvider { get; set; } = CloudProviderType.GCP;
+    public CloudProviderType CloudProvider { get; set; }
 
     [JsonPropertyName("region")]
-    public string Region { get; set; } = "us-east1";
+    public string Region { get; set; }
 
     [JsonPropertyName("keyspace")]
     public string Keyspace { get; set; } = Database.DefaultKeyspace;
@@ -38,4 +38,7 @@ public class DatabaseCreationOptions
 
     [JsonPropertyName("tier")]
     public string Tier { get; set; } = "serverless";
+
+    [JsonPropertyName("dbType")]
+    public string DatabaseType { get; set; } = "vector";
 }

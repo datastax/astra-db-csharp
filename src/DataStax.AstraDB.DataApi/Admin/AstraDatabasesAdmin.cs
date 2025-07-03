@@ -687,7 +687,7 @@ public class AstraDatabasesAdmin
 
     private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
     {
-        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Regions.FirstOrDefault()?.Name}.apps.astra.datastax.com";
+        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.apps.astra.datastax.com";
         var database = _client.GetDatabase(apiEndpoint);
         return new DatabaseAdminAstra(database, _client, null);
     }
@@ -695,7 +695,7 @@ public class AstraDatabasesAdmin
     private async Task<DatabaseAdminAstra> GetDatabaseAdminAsync(Guid dbGuid)
     {
         var dbInfo = await GetDatabaseInfoAsync(dbGuid).ConfigureAwait(false);
-        var apiEndpoint = $"https://{dbGuid}-{dbInfo.Regions.FirstOrDefault()?.Name}.apps.astra.datastax.com";
+        var apiEndpoint = $"https://{dbGuid}-{dbInfo.Region}.apps.astra.datastax.com";
         var database = _client.GetDatabase(apiEndpoint);
         return new DatabaseAdminAstra(database, _client, null);
     }

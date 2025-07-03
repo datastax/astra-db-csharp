@@ -36,6 +36,7 @@ public class DatabaseInfo
         CreatedAt = rawInfo.CreationTime;
         LastUsed = rawInfo.LastUsageTime;
         Keyspaces = rawInfo.Info.Keyspaces;
+        Region = rawInfo.Info.Region;
         RawDetails = rawInfo;
     }
 
@@ -48,7 +49,7 @@ public class DatabaseInfo
     public DateTime CreatedAt { get; set; }
     public DateTime LastUsed { get; set; }
     public List<string> Keyspaces { get; set; } = new();
-    public List<AstraDatabaseRegionInfo> Regions { get; set; }
+    public string Region { get; set; }
     public string Environment { get; set; } = "prod";
     public RawDatabaseInfo RawDetails { get; set; }
 }

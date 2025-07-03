@@ -15,7 +15,7 @@ public class DatabaseTests
 {
     DatabaseFixture fixture;
 
-    public DatabaseTests(DatabaseFixture fixture)
+    public DatabaseTests(AssemblyFixture assemblyFixture, DatabaseFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -38,7 +38,7 @@ public class DatabaseTests
 
             //create keyspace
             await admin.CreateKeyspaceAsync(keyspaceName);
-            Thread.Sleep(30 * 1000);
+            await Task.Delay(30 * 1000, TestContext.Current.CancellationToken);
 
             //passed-in dboptions should override keyspace and creation should work
             await fixture.Database.CreateCollectionAsync(collectionName, dbOptions);
@@ -60,7 +60,7 @@ public class DatabaseTests
     public async Task Create_And_Drop_Keyspace_DoesNotWaitForCompletion()
     {
         var keyspaceName = "dropAndDoNotWaitKeyspace";
-        var database = fixture.Database;
+        var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
         var admin = database.GetAdmin();
 
         try
@@ -74,7 +74,7 @@ public class DatabaseTests
             {
                 maxAttempts--;
                 // Wait for the keyspace to be created
-                await Task.Delay(1000);
+                await Task.Delay(1000, TestContext.Current.CancellationToken);
                 keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             }
             Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist now.");
@@ -93,15 +93,29 @@ public class DatabaseTests
     public async Task Create_And_Drop_Keyspace_WaitsForCompletionWhenRequested()
     {
         var keyspaceName = "dropAndWaitKeyspace";
-        var database = fixture.Database;
+        var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
         var admin = database.GetAdmin();
 
-        await admin.CreateKeyspaceAsync(keyspaceName, true, true);
-        var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
-        Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist after creation.");
-        await admin.DropKeyspaceAsync(keyspaceName, true);
-        keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
-        Assert.False(keyspaceExists, $"Keyspace '{keyspaceName}' should not exist after drop.");
+        try
+        {
+            await admin.CreateKeyspaceAsync(keyspaceName, true, true);
+            var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
+            Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist after creation.");
+            await admin.DropKeyspaceAsync(keyspaceName, true);
+            keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
+            Assert.False(keyspaceExists, $"Keyspace '{keyspaceName}' should not exist after drop.");
+        }
+        finally
+        {
+            try
+            {
+                await admin.DropKeyspaceAsync(keyspaceName, true);
+            }
+            catch (Exception)
+            {
+                // Ignore any exceptions during drop, as the keyspace may not exist
+            }
+        }
     }
 
     [Fact]
@@ -657,7 +671,7 @@ public class DatabaseTests
                 {
                     return;
                 }
-                await Task.Delay(waitInSeconds * 1000);
+                await Task.Delay(waitInSeconds * 1000, TestContext.Current.CancellationToken);
                 tryNumber++;
             }
 

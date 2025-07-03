@@ -10,7 +10,7 @@ public class ReplaceAndDeleteTests
 {
     ReplaceAndDeleteFixture fixture;
 
-    public ReplaceAndDeleteTests(ReplaceAndDeleteFixture fixture)
+    public ReplaceAndDeleteTests(AssemblyFixture assemblyFixture, ReplaceAndDeleteFixture fixture)
     {
         this.fixture = fixture;
     }

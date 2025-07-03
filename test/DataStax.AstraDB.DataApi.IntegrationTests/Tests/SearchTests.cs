@@ -13,7 +13,7 @@ public class SearchTests
 {
     CollectionsFixture fixture;
 
-    public SearchTests(CollectionsFixture fixture)
+    public SearchTests(AssemblyFixture assemblyFixture, CollectionsFixture fixture)
     {
         this.fixture = fixture;
     }

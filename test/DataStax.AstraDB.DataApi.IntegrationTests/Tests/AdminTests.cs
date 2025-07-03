@@ -6,7 +6,7 @@ using Xunit;
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
 [CollectionDefinition("Admin Collection")]
-public class AdminCollection : ICollectionFixture<AdminFixture>
+public class AdminCollection : ICollectionFixture<AssemblyFixture>, ICollectionFixture<AdminFixture>
 {
 	public const string SkipMessage = "Please read 'How to run these skipped tests'";
 }
@@ -17,7 +17,7 @@ public class AdminTests
 {
 	AdminFixture fixture;
 
-	public AdminTests(AdminFixture fixture)
+	public AdminTests(AssemblyFixture assemblyFixture, AdminFixture fixture)
 	{
 		this.fixture = fixture;
 	}
@@ -119,17 +119,15 @@ public class AdminTests
 	[Fact]
 	public void DatabaseAdminAstra_GetDatabaseAdminAstra()
 	{
-		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
-		var daa = fixture.CreateAdmin(database);
+		var daa = fixture.Client.GetAstraDatabasesAdmin();
 
-		Assert.IsType<DatabaseAdminAstra>(daa);
+		Assert.IsType<AstraDatabasesAdmin>(daa);
 	}
 
 	[Fact]
 	public void DatabaseAdminAstra_GetDatabase()
 	{
-		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
-		var daa = fixture.CreateAdmin(database);
+		var daa = fixture.CreateAdmin(fixture.Database);
 
 		Assert.IsType<Database>(daa.GetDatabase());
 	}
@@ -137,8 +135,7 @@ public class AdminTests
 	[Fact]
 	public void DatabaseAdminAstra_GetApiEndpoint()
 	{
-		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
-		var daa = fixture.CreateAdmin(database);
+		var daa = fixture.CreateAdmin(fixture.Database);
 
 		Assert.Equal(fixture.DatabaseId, AdminFixture.GetDatabaseIdFromUrl(daa.GetApiEndpoint()));
 	}
@@ -146,8 +143,7 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_GetKeyspacesList()
 	{
-		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
-		var daa = fixture.CreateAdmin(database);
+		var daa = fixture.CreateAdmin(fixture.Database);
 
 		var names = await daa.ListKeyspacesAsync();
 		Assert.NotNull(names);
@@ -163,8 +159,7 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist()
 	{
-		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
-		var daa = fixture.CreateAdmin(database);
+		var daa = fixture.CreateAdmin(fixture.Database);
 
 		var keyspaceExists = await daa.DoesKeyspaceExistAsync("default_keyspace");
 		Assert.True(keyspaceExists);
@@ -176,8 +171,7 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist_Another()
 	{
-		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
-		var daa = fixture.CreateAdmin(database);
+		var daa = fixture.CreateAdmin(fixture.Database);
 		var keyspaceName = "another_keyspace";
 
 		try
@@ -186,7 +180,7 @@ public class AdminTests
 			if (!keyspaceExists)
 			{
 				await daa.CreateKeyspaceAsync(keyspaceName);
-				Thread.Sleep(30 * 1000); //wait for keyspace to be created
+				await Task.Delay(30 * 1000, TestContext.Current.CancellationToken); //wait for keyspace to be created
 				keyspaceExists = await daa.DoesKeyspaceExistAsync(keyspaceName);
 			}
 			Assert.True(keyspaceExists);
@@ -341,9 +335,8 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_CreateKeyspace_ExpectedError()
 	{
-		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl);
 		var adminOptions = new CommandOptions();
-		var daa = new DatabaseAdminAstra(database, fixture.Client, adminOptions);
+		var daa = fixture.CreateAdmin(fixture.Database);
 
 		var ex = await Assert.ThrowsAsync<InvalidOperationException>(
 			() => daa.CreateKeyspaceAsync("default_keyspace")

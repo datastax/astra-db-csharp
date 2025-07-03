@@ -14,18 +14,16 @@ namespace DataStax.AstraDB.DataApi.IntegrationTests;
 public class SerializationTests
 {
 	AdminFixture fixture;
-	readonly Database _database;
 
-	public SerializationTests(AdminFixture fixture)
+	public SerializationTests(AssemblyFixture assemblyFixture, AdminFixture fixture)
 	{
 		this.fixture = fixture;
-		_database = fixture.GetDatabase();
 	}
 
 	[Fact]
 	public void TestTypeSerializationDeserialization()
 	{
-		var collection = _database.GetCollection<SerializationTest>("serializationTest");
+		var collection = fixture.Database.GetCollection<SerializationTest>("serializationTest");
 		var testObject = new SerializationTest()
 		{
 			TestId = 1,
@@ -57,7 +55,7 @@ public class SerializationTests
 	[Fact]
 	public void TestTypeSerializationDeserialization_WithDocumentSerializer()
 	{
-		var collection = _database.GetCollection<SerializationTest>("serializationTest");
+		var collection = fixture.Database.GetCollection<SerializationTest>("serializationTest");
 		var testObject = new SerializationTest()
 		{
 			TestId = 1,
@@ -92,7 +90,7 @@ public class SerializationTests
 	public void TestSpecific()
 	{
 		string serializationTestString = "{\"_id\":19,\"Name\":\"Animal19\",\"Properties\":{\"PropertyOne\":\"groupthree\",\"PropertyTwo\":\"animal19\",\"IntProperty\":20,\"StringArrayProperty\":[\"animal19\",\"animal119\",\"animal219\"],\"BoolProperty\":true,\"DateTimeProperty\":\"2019-05-19T00:00:00\",\"DateTimeOffsetProperty\":\"0001-01-01T00:00:00+00:00\"}}";
-		var collection = _database.GetCollection<SimpleObject>("serializationTest2");
+		var collection = fixture.Database.GetCollection<SimpleObject>("serializationTest2");
 		var commandOptions = new CommandOptions()
 		{
 			OutputConverter = new DocumentConverter<SimpleObject>()
@@ -104,7 +102,7 @@ public class SerializationTests
 	public void IdList_Guid()
 	{
 		string serializationTestString = "{\"insertedIds\":[{\"$uuid\":\"315c2015-e404-432c-9c20-15e404532ceb\"}]}";
-		var collection = _database.GetCollection<CollectionInsertManyResult<object>>("serializationTest");
+		var collection = fixture.Database.GetCollection<CollectionInsertManyResult<object>>("serializationTest");
 		var commandOptions = new CommandOptions()
 		{
 			OutputConverter = new IdListConverter()
@@ -116,7 +114,7 @@ public class SerializationTests
 	public void IdList_ObjectId()
 	{
 		string serializationTestString = "{\"insertedIds\":[{\"$objectId\":\"67eaab273cc8411120638d65\"}]}";
-		var collection = _database.GetCollection<CollectionInsertManyResult<object>>("serializationTest");
+		var collection = fixture.Database.GetCollection<CollectionInsertManyResult<object>>("serializationTest");
 		var commandOptions = new CommandOptions()
 		{
 			OutputConverter = new IdListConverter()
@@ -139,7 +137,7 @@ public class SerializationTests
 	public void BookDeserializationTest()
 	{
 		var serializationTestString = "{\"_id\":\"3a0cdac3-679b-435a-8cda-c3679bf35a6b\",\"title\":\"Test Book 1\",\"author\":\"Test Author 1\",\"number_of_pages\":100}";
-		var collection = _database.GetCollection<Book>("bookTestTable");
+		var collection = fixture.Database.GetCollection<Book>("bookTestTable");
 		var commandOptions = new CommandOptions()
 		{
 			OutputConverter = new DocumentConverter<Book>()

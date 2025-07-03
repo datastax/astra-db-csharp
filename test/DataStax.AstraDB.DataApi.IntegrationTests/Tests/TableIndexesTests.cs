@@ -11,7 +11,7 @@ public class TableIndexesTests
 {
     private readonly TableIndexesFixture fixture;
 
-    public TableIndexesTests(TableIndexesFixture fixture)
+    public TableIndexesTests(AssemblyFixture assemblyFixture, TableIndexesFixture fixture)
     {
         this.fixture = fixture;
     }

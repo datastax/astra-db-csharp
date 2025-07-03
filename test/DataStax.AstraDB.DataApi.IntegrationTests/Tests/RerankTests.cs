@@ -16,7 +16,7 @@ public class RerankTests : IClassFixture<RerankFixture>
     private readonly RerankFixture _fixture;
     private readonly Collection<HybridSearchTestObject> _collection;
 
-    public RerankTests(RerankFixture fixture)
+    public RerankTests(AssemblyFixture assemblyFixture, RerankFixture fixture)
     {
         _fixture = fixture;
         _collection = fixture.HybridSearchCollection;
@@ -97,7 +97,7 @@ public class RerankTests : IClassFixture<RerankFixture>
             .Sort("cat")
             .IncludeScores(true);
 
-        await foreach (var result in results.WithScoresAsync())
+        await foreach (var result in results.WithScoresAsync(TestContext.Current.CancellationToken))
         {
             Assert.NotNull(result.Scores);
             Assert.NotEmpty(result.Scores);

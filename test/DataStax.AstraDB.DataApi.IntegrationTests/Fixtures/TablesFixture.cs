@@ -1,59 +1,18 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Tables;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
 [CollectionDefinition("Tables")]
-public class TablesCollection : ICollectionFixture<TablesFixture>
+public class TablesCollection : ICollectionFixture<AssemblyFixture>, ICollectionFixture<TablesFixture>
 {
-
 }
 
-public class TablesFixture : IDisposable, IAsyncLifetime
+public class TablesFixture : BaseFixture, IAsyncLifetime
 {
-    public DataApiClient Client { get; private set; }
-    public Database Database { get; private set; }
-    public string DatabaseUrl { get; set; }
-
-    public TablesFixture()
+    public TablesFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "tables")
     {
-        IConfiguration configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true)
-            .AddEnvironmentVariables(prefix: "ASTRA_DB_")
-            .Build();
-
-        var token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
-        DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
-
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/tables_fixture_latest_run.log"));
-        ILogger logger = factory.CreateLogger("IntegrationTests");
-
-        var clientOptions = new CommandOptions
-        {
-            RunMode = RunMode.Debug
-        };
-        Client = new DataApiClient(token, clientOptions, logger);
-        Database = Client.GetDatabase(DatabaseUrl);
-    }
-
-    public async Task InitializeAsync()
-    {
-        await CreateSearchTable();
-        await CreateDeleteTable();
-        await CreateTestTablesNotTyped();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await Database.DropTableAsync(_queryTableName);
-        await Database.DropTableAsync(_deleteTableName);
-        await Database.DropTableAsync(_untypedSinglePkTableName);
-        await Database.DropTableAsync(_untypedCompositePkTableName);
-        await Database.DropTableAsync(_untypedCompoundPkTableName);
     }
 
     public Table<RowBook> SearchTable { get; private set; }
@@ -62,10 +21,27 @@ public class TablesFixture : IDisposable, IAsyncLifetime
     public Table<Row> UntypedTableCompoundPrimaryKey { get; private set; }
     public Table<Row> UntypedTableCompositePrimaryKey { get; private set; }
 
+    public async ValueTask InitializeAsync()
+    {
+        await CreateSearchTable();
+        await CreateDeleteTable();
+        await CreateTestTablesNotTyped();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Database.DropTableAsync(_queryTableName);
+        await Database.DropTableAsync(_deleteTableName);
+        await Database.DropTableAsync(_untypedSinglePkTableName);
+        await Database.DropTableAsync(_untypedCompositePkTableName);
+        await Database.DropTableAsync(_untypedCompoundPkTableName);
+    }
+
     private const string _queryTableName = "tableQueryTests";
     private const string _untypedSinglePkTableName = "tableNotTyped_SinglePrimaryKey";
     private const string _untypedCompoundPkTableName = "tableNotTyped_CompoundPrimaryKey";
     private const string _untypedCompositePkTableName = "tableNotTyped_CompositePrimaryKey";
+    private const string _deleteTableName = "tableDeleteTests";
 
     private async Task CreateSearchTable()
     {
@@ -264,7 +240,6 @@ public class TablesFixture : IDisposable, IAsyncLifetime
         await UntypedTableCompoundPrimaryKey.InsertManyAsync(rows);
     }
 
-    private const string _deleteTableName = "tableDeleteTests";
     private async Task CreateDeleteTable()
     {
         var rows = new List<RowBook>();
@@ -327,8 +302,4 @@ public class TablesFixture : IDisposable, IAsyncLifetime
         DeleteTable = table;
     }
 
-    public void Dispose()
-    {
-        //nothing needed
-    }
 }

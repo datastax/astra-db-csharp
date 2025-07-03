@@ -10,7 +10,7 @@ public class FindAndUpdateTests
 {
     FindAndUpdateFixture fixture;
 
-    public FindAndUpdateTests(FindAndUpdateFixture fixture)
+    public FindAndUpdateTests(AssemblyFixture assemblyFixture, FindAndUpdateFixture fixture)
     {
         this.fixture = fixture;
     }
