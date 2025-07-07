@@ -18,6 +18,7 @@ using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
@@ -31,6 +32,24 @@ public class ProjectionBuilder<T> : IProjectionBuilder
     internal readonly List<Projection> _projections = new List<Projection>();
 
     List<Projection> IProjectionBuilder.Projections => _projections;
+
+    IProjectionBuilder IProjectionBuilder.Clone()
+    {
+        return Clone();
+    }
+
+    internal ProjectionBuilder<T> Clone()
+    {
+        var clone = new ProjectionBuilder<T>();
+        clone._projections.AddRange(_projections.Select(p => new Projection
+        {
+            FieldName = p.FieldName,
+            Include = p.Include,
+            SliceStart = p.SliceStart,
+            SliceLength = p.SliceLength
+        }));
+        return clone;
+    }
 
     /// <summary>
     /// Create an inclusive projection by specifying a field to include.
@@ -130,6 +149,8 @@ public class ProjectionBuilder<T> : IProjectionBuilder
 public interface IProjectionBuilder
 {
     internal List<Projection> Projections { get; }
+
+    internal IProjectionBuilder Clone();
 }
 
 /// <summary>
@@ -144,6 +165,7 @@ public abstract class ProjectionBuilderBase<T, TBuilder> : IProjectionBuilder wh
 
     List<Projection> IProjectionBuilder.Projections => _projections;
 
+    public abstract IProjectionBuilder Clone();
 }
 
 /// <summary>
@@ -251,6 +273,13 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
         _projections.Add(projection);
         return this;
     }
+
+    public override IProjectionBuilder Clone()
+    {
+        var clone = new InclusiveProjectionBuilder<T>();
+        clone._projections.AddRange(_projections.Select(p => p.Clone()));
+        return clone;
+    }
 }
 
 /// <summary>
@@ -357,5 +386,12 @@ public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveP
         }
         _projections.Add(new Projection() { FieldName = fieldName, Include = true });
         return this;
+    }
+
+    public override IProjectionBuilder Clone()
+    {
+        var clone = new ExclusiveProjectionBuilder<T>();
+        clone._projections.AddRange(_projections.Select(p => p.Clone()));
+        return clone;
     }
 }

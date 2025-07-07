@@ -202,6 +202,7 @@ internal class Command
             deserializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
         }
         deserializeOptions.Converters.Add(new IpAddressConverter());
+        deserializeOptions.Converters.Add(new AnalyzerOptionsConverter());
 
         return JsonSerializer.Deserialize<T>(input, deserializeOptions);
     }
@@ -289,6 +290,25 @@ internal class Command
             else
             {
                 response = await httpClient.SendAsync(request, linkedCts.Token).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.GatewayTimeout ||
+                        response.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
+                    {
+                        throw new TimeoutException($"Request to timed out. Consider increasing the timeout settings using the CommandOptions parameter.");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        throw new UnauthorizedAccessException("Unauthorized access. Please check your token.");
+                    }
+                    else
+                    {
+                        responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
+                        MaybeLogDebugMessage("Content: {Content}", responseContent);
+                        throw new HttpRequestException($"Request to failed with status code {response.StatusCode}.");
+                    }
+                }
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
 

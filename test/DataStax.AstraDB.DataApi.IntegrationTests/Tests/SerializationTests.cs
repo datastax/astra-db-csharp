@@ -1,12 +1,11 @@
-using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
-using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -156,6 +155,7 @@ public class SerializationTests
 	}
 
 	//{"data":{"documents":[{"_id":"3a0cdac3-679b-435a-8cda-c3679bf35a6b","title":"Test Book 1","author":"Test Author 1","number_of_pages":100}
+
 	[Fact]
 	public void BookDeserializationTest()
 	{
@@ -169,6 +169,26 @@ public class SerializationTests
 		Assert.Equal("Test Book 1", deserialized.Title);
 		Assert.Equal("Test Author 1", deserialized.Author);
 		Assert.Equal(100, deserialized.NumberOfPages);
+	}
+
+	[Fact]
+	public void HybridSearchResponseDeserializationTest()
+	{
+		var serializationTestString = "{\"data\":{\"documents\":[{\"_id\":\"f9bf6e20-6efd-421d-bf6e-206efdb21d49\",\"Name\":\"Cat\"},{\"_id\":\"a02bb811-98e6-416f-abb8-1198e6816fa5\",\"Name\":\"Cat\"},{\"_id\":\"03479720-4ba5-4928-8797-204ba5392893\",\"Name\":\"NotCat\"},{\"_id\":\"54726b36-8202-4f72-b26b-368202ef7209\",\"Name\":\"NotCat\"},{\"_id\":\"6d8ea948-7ac1-49f6-8ea9-487ac149f6d7\",\"Name\":\"Cow\"},{\"_id\":\"aeee0998-9941-4015-ae09-989941e0158d\",\"Name\":\"Cow\"},{\"_id\":\"817fbc98-13d0-4aca-bfbc-9813d0dacae9\",\"Name\":\"Horse\"},{\"_id\":\"8be82ac3-ff2c-4f2b-a82a-c3ff2cbf2bd7\",\"Name\":\"Horse\"}],\"nextPageState\":null},\"status\":{\"documentResponses\":[{\"scores\":{\"$rerank\":1.7070312,\"$vector\":0.75348675,\"$vectorRank\":1,\"$bm25Rank\":1,\"$rrf\":0.032786883}},{\"scores\":{\"$rerank\":1.7070312,\"$vector\":0.75348675,\"$vectorRank\":2,\"$bm25Rank\":2,\"$rrf\":0.032258064}},{\"scores\":{\"$rerank\":1.2802734,\"$vector\":0.71900904,\"$vectorRank\":5,\"$bm25Rank\":3,\"$rrf\":0.031257633}},{\"scores\":{\"$rerank\":1.2802734,\"$vector\":0.71900904,\"$vectorRank\":6,\"$bm25Rank\":4,\"$rrf\":0.030776516}},{\"scores\":{\"$rerank\":-3.4140625,\"$vector\":0.741625,\"$vectorRank\":3,\"$bm25Rank\":5,\"$rrf\":0.031257633}},{\"scores\":{\"$rerank\":-3.4140625,\"$vector\":0.741625,\"$vectorRank\":4,\"$bm25Rank\":6,\"$rrf\":0.030776516}},{\"scores\":{\"$rerank\":-9.1015625,\"$vector\":0.69422597,\"$vectorRank\":7,\"$bm25Rank\":null,\"$rrf\":0.014925373}},{\"scores\":{\"$rerank\":-9.1015625,\"$vector\":0.69422597,\"$vectorRank\":8,\"$bm25Rank\":null,\"$rrf\":0.014705882}}]}}";
+		var commandOptions = new List<CommandOptions>
+		{
+			new CommandOptions()
+			{
+				OutputConverter = new DocumentConverter<HybridSearchTestObject>()
+			}
+		};
+		var command = new Command("deserializationTest", new DataApiClient(), commandOptions.ToArray(), null);
+		var deserialized = command.Deserialize<ApiResponseWithData<ApiFindResult<HybridSearchTestObject>, FindStatusResult<RerankedResult<HybridSearchTestObject>>>>(serializationTestString);
+		Assert.NotNull(deserialized);
+		Assert.NotNull(deserialized.Data);
+		Assert.NotNull(deserialized.Status);
+		Assert.NotNull(deserialized.Status.DocumentResponses);
+		Assert.NotEmpty(deserialized.Status.DocumentResponses.First().Scores);
 	}
 
 }

@@ -284,6 +284,32 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
+    /// In operator -- Match where the specified array field contains the specified value.
+    /// </summary>
+    /// <param name="fieldName">The name of the field for this filter.</param>
+    /// <param name="value">The value to check for.</param>
+    /// <returns>The filter</returns>
+    /// <remarks>
+    /// We recommend using the <see cref="In{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// </remarks>
+    public Filter<T> In(string fieldName, object value)
+    {
+        return new Filter<T>(fieldName, FilterOperator.In, value);
+    }
+
+    /// <summary>
+    /// In operator -- Match where the specified array field contains the specified value.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field to check.</typeparam>
+    /// <param name="expression">An expression that represents the field for this filter.</param>
+    /// <param name="value">The value to check for.</param>
+    /// <returns>The filter</returns>
+    public Filter<T> In<TField>(Expression<Func<T, TField[]>> expression, TField value)
+    {
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, value);
+    }
+
+    /// <summary>
     /// Not in operator -- Match documents where the field does not match any of the specified values.
     /// </summary>
     /// <typeparam name="T2">The type of the values in the array to check</typeparam>

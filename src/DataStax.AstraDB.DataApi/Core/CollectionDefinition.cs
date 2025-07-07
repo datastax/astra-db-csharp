@@ -44,30 +44,48 @@ public class CollectionDefinition
     [JsonPropertyName("indexing")]
     public IndexingOptions Indexing { get; set; }
 
+    /// <summary>
+    /// Lexical analysis options for the collection
+    /// </summary>
+    [JsonPropertyName("lexical")]
+    public LexicalOptions Lexical { get; set; }
+
+    /// <summary>
+    /// Reranking options for the collection
+    /// </summary>
+    [JsonPropertyName("rerank")]
+    public RerankOptions Rerank { get; set; }
+
     internal static CollectionDefinition Create<T>()
+    {
+        return CheckAddDefinitionsFromAttributes<T>(new CollectionDefinition());
+    }
+
+    internal static CollectionDefinition CheckAddDefinitionsFromAttributes<T>(CollectionDefinition definition)
     {
         Type type = typeof(T);
         PropertyInfo idProperty = null;
         DocumentIdAttribute idAttribute = null;
 
-        CollectionDefinition definition = new();
-
-        foreach (var property in type.GetProperties())
+        if (definition.DefaultId == null)
         {
-            var attr = property.GetCustomAttribute<DocumentIdAttribute>();
-            if (attr != null)
+            foreach (var property in type.GetProperties())
             {
-                idProperty = property;
-                idAttribute = attr;
-                break;
+                var attr = property.GetCustomAttribute<DocumentIdAttribute>();
+                if (attr != null)
+                {
+                    idProperty = property;
+                    idAttribute = attr;
+                    break;
+                }
             }
-        }
 
-        if (idProperty != null)
-        {
-            if (idAttribute.DefaultIdType.HasValue)
+            if (idProperty != null)
             {
-                definition.DefaultId = new DefaultIdOptions() { Type = idAttribute.DefaultIdType.Value };
+                if (idAttribute.DefaultIdType.HasValue)
+                {
+                    definition.DefaultId = new DefaultIdOptions() { Type = idAttribute.DefaultIdType.Value };
+                }
             }
         }
 

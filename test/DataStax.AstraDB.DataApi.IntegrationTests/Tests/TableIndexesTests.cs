@@ -1,6 +1,7 @@
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
-using System.Data;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;

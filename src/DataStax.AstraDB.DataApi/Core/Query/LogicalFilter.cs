@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System;
+using System.Linq;
+
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 internal class LogicalFilter<T> : Filter<T>
@@ -26,5 +29,18 @@ internal class LogicalFilter<T> : Filter<T>
     internal LogicalFilter(LogicalOperator logicalOperator, Filter<T> filter) :
         base(logicalOperator.ToApiString(), filter)
     {
+    }
+
+    internal override Filter<T> Clone()
+    {
+        if (Value is Filter<T> nestedFilter)
+        {
+            return new LogicalFilter<T>(Name.ToLogicalOperator(), nestedFilter.Clone());
+        }
+        else if (Value is Filter<T>[] filtersArray)
+        {
+            return new LogicalFilter<T>(Name.ToLogicalOperator(), filtersArray.Select(f => f.Clone()).ToArray());
+        }
+        return base.Clone();
     }
 }

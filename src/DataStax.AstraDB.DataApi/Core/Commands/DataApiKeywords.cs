@@ -28,6 +28,8 @@ internal static class DataApiKeywords
     internal const string Slice = "$slice";
     internal const string Similarity = "$similarity";
     internal const string Vector = "$vector";
+    internal const string Lexical = "$lexical";
+    internal const string Hybrid = "$hybrid";
     internal const string SortVector = "sortVector";
     internal const string Vectorize = "$vectorize";
     internal const string Binary = "$binary";

@@ -1,11 +1,7 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
-using MongoDB.Bson;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using UUIDNext;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -81,11 +77,7 @@ public class AdditionalCollectionTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var inclusiveProjection = Builders<Book>.Projection
                 .Include(x => x.Author).Include(x => x.Title);
-            var findOptions = new DocumentFindManyOptions<Book>()
-            {
-                Projection = inclusiveProjection
-            };
-            var allBooks = collection.Find(findOptions).ToList();
+            var allBooks = collection.Find().Project(inclusiveProjection).ToList();
             Assert.Equal(items.Count, allBooks.Count);
             var book = allBooks.Find(book => book.Title.Equals("Test Book 1"));
             Assert.Equal("Test Book 1", book.Title);
@@ -94,11 +86,7 @@ public class AdditionalCollectionTests
             //Use property names instead of expressions
             inclusiveProjection = Builders<Book>.Projection
                 .Include("number_of_pages").Include("title");
-            findOptions = new DocumentFindManyOptions<Book>()
-            {
-                Projection = inclusiveProjection
-            };
-            allBooks = collection.Find(findOptions).ToList();
+            allBooks = collection.Find().Project(inclusiveProjection).ToList();
             Assert.Equal(items.Count, allBooks.Count);
             book = allBooks.Find(book => book.Title.Equals("Test Book 1"));
             Assert.Equal("Test Book 1", book.Title);

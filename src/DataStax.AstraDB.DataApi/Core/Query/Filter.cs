@@ -16,6 +16,7 @@
 
 using MongoDB.Bson;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
@@ -28,6 +29,19 @@ public class Filter<T>
 {
     internal virtual string Name { get; }
     internal virtual object Value { get; }
+
+    internal virtual Filter<T> Clone()
+    {
+        if (Value is Filter<T> nestedFilter)
+        {
+            return new Filter<T>(Name, nestedFilter.Clone());
+        }
+        else if (Value is Filter<T>[] filtersArray)
+        {
+            return new Filter<T>(Name, filtersArray.Select(f => f.Clone()).ToArray());
+        }
+        return new Filter<T>(Name, Value);
+    }
 
     internal Filter(string filterName, object value)
     {

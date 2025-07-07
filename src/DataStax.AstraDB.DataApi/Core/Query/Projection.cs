@@ -50,4 +50,15 @@ internal class Projection
             return Include;
         }
     }
+
+    internal Projection Clone()
+    {
+        return new Projection
+        {
+            FieldName = FieldName,
+            Include = Include,
+            SliceStart = SliceStart,
+            SliceLength = SliceLength
+        };
+    }
 }

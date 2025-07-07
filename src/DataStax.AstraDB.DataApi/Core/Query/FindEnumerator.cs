@@ -15,6 +15,7 @@
  */
 
 using DataStax.AstraDB.DataApi.Core.Results;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -22,44 +23,25 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
-public class DocumentResultSet<T, TResult> : ResultSet<T, TResult, DocumentSortBuilder<T>>
-    where T : class
-    where TResult : class
-{
-    internal DocumentResultSet(IQueryRunner<T, DocumentSortBuilder<T>> queryRunner, Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions)
-        : base(queryRunner, filter, findOptions, commandOptions)
-    {
-    }
-}
-
 /// <summary>
-/// A Fluent API for finding documents in a collection.
+/// A Fluent API for finding and enumerating documents or rows.
 /// </summary>
-/// <typeparam name="T">The type of the documents in the collection.</typeparam>
-/// <typeparam name="TResult">The type of the result.</typeparam>
-public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerable<TResult>
+/// <typeparam name="T">The type representing the document or row.</typeparam>
+/// <typeparam name="TResult">The type to deserialize the results to (i.e. if using <see cref="Projection"/>).</typeparam>
+public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerable<TResult>
     where T : class
     where TResult : class
     where TSort : SortBuilder<T>
 {
-    private readonly Filter<T> _filter;
     private readonly IQueryRunner<T, TSort> _queryRunner;
-    private IFindManyOptions<T, TSort> _findOptions;
-    private CommandOptions _commandOptions;
+    private readonly IFindManyOptions<T, TSort> _findOptions;
+    private readonly CommandOptions _commandOptions;
+    private Cursor<TResult> _cursor;
 
-    internal Filter<T> Filter => _filter;
-    internal IQueryRunner<T, TSort> QueryRunner => _queryRunner;
-
-    private IFindManyOptions<T, TSort> FindOptions
+    internal FindEnumerator(IQueryRunner<T, TSort> queryRunner, IFindManyOptions<T, TSort> findOptions, CommandOptions commandOptions)
     {
-        get { return _findOptions; }
-    }
-
-    internal ResultSet(IQueryRunner<T, TSort> queryRunner, Filter<T> filter, IFindManyOptions<T, TSort> findOptions, CommandOptions commandOptions)
-    {
-        _filter = filter;
         _queryRunner = queryRunner;
-        _findOptions = findOptions;
+        _findOptions = findOptions.Clone();
         _commandOptions = commandOptions;
     }
 
@@ -67,7 +49,7 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     /// Specify a Projection to apply to the results of the operation.
     /// </summary>
     /// <param name="projection">The projection to apply.</param>
-    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
+    /// <returns>The FindEnumerator instance to continue specifying the find options.</returns>
     /// <example>
     /// <code>
     /// // Inclusive Projection, return only the nested Properties.PropertyOne field
@@ -75,21 +57,19 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     /// var projection = projectionBuilder.Include(p =&gt; p.Properties.PropertyOne);
     /// </code>
     /// </example>
-    public ResultSet<T, TResult, TSort> Project(IProjectionBuilder projection)
+    public FindEnumerator<T, TResult, TSort> Project(IProjectionBuilder projection)
     {
-        FindOptions.Projection = projection;
-        return this;
+        return UpdateOptions(options => options.Projection = projection);
     }
 
     /// <summary>
     /// Specify the maximum number of documents to return.
     /// </summary>
     /// <param name="limit">The maximum number of documents to return.</param>
-    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
-    public ResultSet<T, TResult, TSort> Limit(int limit)
+    /// <returns>The FindEnumerator instance to continue specifying the find options.</returns>
+    public FindEnumerator<T, TResult, TSort> Limit(int limit)
     {
-        FindOptions.Limit = limit;
-        return this;
+        return UpdateOptions(options => options.Limit = limit);
     }
 
     /// <summary>
@@ -97,18 +77,17 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     /// Use in conjuction with <see cref="Sort"/> to determine the order to apply before skipping. 
     /// </summary>
     /// <param name="skip">The number of documents to skip.</param>
-    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
-    public ResultSet<T, TResult, TSort> Skip(int skip)
+    /// <returns>The FindEnumerator instance to continue specifying the find options.</returns>
+    public FindEnumerator<T, TResult, TSort> Skip(int skip)
     {
-        FindOptions.Skip = skip;
-        return this;
+        return UpdateOptions(options => options.Skip = skip);
     }
 
     /// <summary>
     /// Specify a Sort to use when running the find.
     /// </summary>
     /// <param name="sortBuilder">The sort to apply.</param>
-    /// <returns>The ResultSet instance to continue adding options.</returns>
+    /// <returns>The FindEnumerator instance to continue adding options.</returns>
     /// <example>
     /// <code>
     /// // Sort by the nested Properties.PropertyOne field
@@ -116,18 +95,16 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     /// var sort = sortBuilder.Ascending(p =&gt; p.Properties.PropertyOne);
     /// </code>
     /// </example>
-    public ResultSet<T, TResult, TSort> Sort(TSort sortBuilder)
+    public FindEnumerator<T, TResult, TSort> Sort(TSort sortBuilder)
     {
-        FindOptions.Sort = sortBuilder;
-        return this;
+        return UpdateOptions(options => options.Sort = sortBuilder);
     }
-
 
     /// <summary>
     /// Whether to include the similarity score in the result or not.
     /// </summary>
     /// <param name="includeSimilarity">Whether to include the similarity score in the result or not.</param>
-    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
+    /// <returns>The FindEnumerator instance to continue specifying the find options.</returns>
     /// <example>
     /// You can use the attribute <see cref="SerDes.DocumentMappingAttribute"/> to map the similarity score to the result class.
     /// <code>
@@ -137,46 +114,53 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     ///     public double? Similarity { get; set; }
     /// }
     /// 
-    /// var ResultSet = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
+    /// var FindEnumerator = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
     ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
     ///     .IncludeSimilarity(true);
-    /// var cursor = ResultSet.ToCursor();
+    /// var cursor = FindEnumerator.ToCursor();
     /// var list = cursor.ToList();
     /// var result = list.First();
     /// var similarity = result.Similarity;
     /// </code>
     /// </example>
-    public ResultSet<T, TResult, TSort> IncludeSimilarity(bool includeSimilarity)
+    public FindEnumerator<T, TResult, TSort> IncludeSimilarity(bool includeSimilarity)
     {
-        FindOptions.IncludeSimilarity = includeSimilarity;
-        return this;
+        return UpdateOptions(options => options.IncludeSimilarity = includeSimilarity);
     }
 
     /// <summary>
     /// Whether to include the sort vector in the result or not.
     /// </summary>
     /// <param name="includeSortVector">Whether to include the sort vector in the result or not.</param>
-    /// <returns>The ResultSet instance to continue specifying the find options.</returns>
+    /// <returns>The FindEnumerator instance to continue specifying the find options.</returns>
     /// <example>
-    /// To access the sort vectors, you need to use <see cref="Cursor{T}.SortVectors"/> after calling <see cref="ToCursor()"/> on your ResultSet instance.
     /// <code>
-    /// var ResultSet = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
+    /// var finder = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
     ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
     ///     .IncludeSortVector(true);
-    /// var cursor = ResultSet.ToCursor();
-    /// var sortVector = cursor.SortVectors;
+    /// //enumerate the results
+    /// var results = await finder.ToList();
+    /// var sortVector = finder.GetSortVector();
     /// </code>
     /// </example>
-    public ResultSet<T, TResult, TSort> IncludeSortVector(bool includeSortVector)
+    public FindEnumerator<T, TResult, TSort> IncludeSortVector(bool includeSortVector)
     {
-        FindOptions.IncludeSortVector = includeSortVector;
-        return this;
+        return UpdateOptions(options => options.IncludeSortVector = includeSortVector);
     }
 
-    internal Task<ApiResponseWithData<DocumentsResult<TResult>, FindStatusResult>> RunAsync(string pageState = null, bool runSynchronously = false)
+    /// <summary>
+    /// Returns the sort vector created by the vectorize sort.
+    /// </summary>
+    /// <returns>The sort vector.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the enumerator has not been started.</exception>
+    public float[] GetSortVector()
     {
-        FindOptions.PageState = pageState;
-        return _queryRunner.RunFindManyAsync<TResult>(_filter, FindOptions, _commandOptions, runSynchronously);
+        var cursor = ToCursor();
+        if (!cursor.IsStarted)
+        {
+            throw new InvalidOperationException("Enumerator has not been started. Enumerate the results first, call ToList(), or manually manage paging by calling ToCursor() and using MoveNextAsync() to iterate over the results.");
+        }
+        return cursor.SortVector;
     }
 
     /// <summary>
@@ -188,8 +172,12 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     /// <returns>A cursor to iterate over the results of the find operation page by page.</returns>
     public Cursor<TResult> ToCursor()
     {
-        var cursor = new Cursor<TResult>((string pageState, bool runSynchronously) => RunAsync(pageState, runSynchronously));
-        return cursor;
+        if (_cursor != null)
+        {
+            return _cursor;
+        }
+        _cursor = new Cursor<TResult>((string pageState, bool runSynchronously) => RunAsync(pageState, runSynchronously));
+        return _cursor;
     }
 
     /// <summary>
@@ -197,14 +185,10 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     /// </summary>
     /// <param name="cancellationToken">An optional cancellation token to use for the operation.</param>
     /// <returns>An async enumerator</returns>
-    public async IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         var cursor = ToCursor();
-        await foreach (var item in cursor.ToAsyncEnumerable(cancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            yield return item;
-        }
+        return cursor.ToAsyncEnumerator(cancellationToken);
     }
 
     /// <summary>
@@ -214,24 +198,24 @@ public class ResultSet<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerab
     public IEnumerator<TResult> GetEnumerator()
     {
         var cursor = ToCursor();
-        bool hasNext;
-        do
-        {
-            hasNext = cursor.MoveNext();
-            if (!hasNext || cursor.Current == null)
-            {
-                yield break;
-            }
-            foreach (var item in cursor.Current)
-            {
-                yield return item;
-            }
-        } while (hasNext);
+        return cursor.ToEnumerable().GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    private Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunAsync(string pageState = null, bool runSynchronously = false)
+    {
+        _findOptions.PageState = pageState;
+        return _queryRunner.RunFindManyAsync<TResult>(_findOptions.Filter, _findOptions, _commandOptions, runSynchronously);
+    }
+
+    private FindEnumerator<T, TResult, TSort> UpdateOptions(Action<IFindManyOptions<T, TSort>> optionsUpdater)
+    {
+        optionsUpdater(_findOptions);
+        return new FindEnumerator<T, TResult, TSort>(_queryRunner, _findOptions, _commandOptions);
     }
 
 }

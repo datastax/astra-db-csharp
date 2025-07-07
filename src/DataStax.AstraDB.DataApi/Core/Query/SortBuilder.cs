@@ -27,9 +27,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// <typeparam name="T">The type of the document</typeparam>
 public class SortBuilder<T>
 {
-    internal readonly List<Sort> _sorts = new();
-
-    internal List<Sort> Sorts => _sorts;
+    internal List<Sort> Sorts { get; set; } = new List<Sort>();
 
     /// <summary>
     /// Adds an ascending sort.
@@ -41,7 +39,7 @@ public class SortBuilder<T>
     /// </remarks>
     public SortBuilder<T> Ascending(string fieldName)
     {
-        _sorts.Add(Sort.Ascending(fieldName));
+        Sorts.Add(Sort.Ascending(fieldName));
         return this;
     }
 
@@ -53,7 +51,7 @@ public class SortBuilder<T>
     /// <returns>The sort builder.</returns>
     public SortBuilder<T> Ascending<TField>(Expression<Func<T, TField>> expression)
     {
-        _sorts.Add(Sort<T>.Ascending(expression));
+        Sorts.Add(Sort<T>.Ascending(expression));
         return this;
     }
 
@@ -67,7 +65,7 @@ public class SortBuilder<T>
     /// </remarks>
     public SortBuilder<T> Descending(string fieldName)
     {
-        _sorts.Add(Sort.Descending(fieldName));
+        Sorts.Add(Sort.Descending(fieldName));
         return this;
     }
 
@@ -79,140 +77,17 @@ public class SortBuilder<T>
     /// <returns>The sort builder.</returns>
     public SortBuilder<T> Descending<TField>(Expression<Func<T, TField>> expression)
     {
-        _sorts.Add(Sort<T>.Descending(expression));
-        return this;
-    }
-}
-
-public class DocumentSortBuilder<T> : SortBuilder<T>
-{
-    /// <summary>
-    /// Adds a vector sort.
-    /// </summary>
-    /// <param name="vector">The vector to sort by.</param>
-    /// <returns>The document sort builder.</returns>
-    public DocumentSortBuilder<T> Vector(float[] vector)
-    {
-        _sorts.Add(Sort.Vector(vector));
+        Sorts.Add(Sort<T>.Descending(expression));
         return this;
     }
 
-    /// <summary>
-    /// Adds a vector sort by specifying a string value to be vectorized using the collection's vectorizer.
-    /// </summary>
-    /// <param name="valueToVectorize">The string value to be vectorized.</param>
-    /// <returns>The document sort builder.</returns>
-    public DocumentSortBuilder<T> Vectorize(string valueToVectorize)
+    internal SortBuilder<T> Clone()
     {
-        _sorts.Add(Sort.Vectorize(valueToVectorize));
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new DocumentSortBuilder<T> Ascending(string fieldName)
-    {
-        base.Ascending(fieldName);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new DocumentSortBuilder<T> Ascending<TField>(Expression<Func<T, TField>> expression)
-    {
-        base.Ascending(expression);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new DocumentSortBuilder<T> Descending(string fieldName)
-    {
-        base.Descending(fieldName);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new DocumentSortBuilder<T> Descending<TField>(Expression<Func<T, TField>> expression)
-    {
-        base.Descending(expression);
-        return this;
-    }
-}
-
-public class TableSortBuilder<T> : SortBuilder<T>
-{
-    /// <summary>
-    /// Adds a vector sort.
-    /// </summary>
-    /// <param name="fieldName">The name of the field to sort by.</param>
-    /// <param name="vector">The vector to sort by.</param>
-    /// <returns>The table sort builder.</returns>
-    public TableSortBuilder<T> Vector(string fieldName, float[] vector)
-    {
-        _sorts.Add(new Sort(fieldName, vector));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a vector sort.
-    /// </summary>
-    /// <param name="expression">The expression representing the sort field.</param>
-    /// <param name="vector">The vector to sort by.</param>
-    /// <returns>The table sort builder.</returns>
-    public TableSortBuilder<T> Vector<TField>(Expression<Func<T, TField>> expression, float[] vector)
-    {
-        _sorts.Add(new Sort(expression.GetMemberNameTree(), vector));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a vector sort by specifying a string value to be vectorized using the collection's vectorizer.
-    /// </summary>
-    /// <param name="fieldName">The name of the field to sort by.</param>
-    /// <param name="valueToVectorize">The string value to be vectorized.</param>
-    /// <returns>The table sort builder.</returns>
-    public TableSortBuilder<T> Vectorize(string fieldName, string valueToVectorize)
-    {
-        _sorts.Add(new Sort(fieldName, valueToVectorize));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a vector sort by specifying a string value to be vectorized using the collection's vectorizer.
-    /// </summary>
-    /// <typeparam name="TField">The type of the field to sort by.</typeparam>
-    /// <param name="expression">The expression representing the sort field.</param>
-    /// <param name="valueToVectorize">The string value to be vectorized.</param>
-    /// <returns>The table sort builder.</returns>
-    public TableSortBuilder<T> Vectorize<TField>(Expression<Func<T, TField>> expression, string valueToVectorize)
-    {
-        _sorts.Add(new Sort(expression.GetMemberNameTree(), valueToVectorize));
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new TableSortBuilder<T> Ascending(string fieldName)
-    {
-        base.Ascending(fieldName);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new TableSortBuilder<T> Ascending<TField>(Expression<Func<T, TField>> expression)
-    {
-        base.Ascending(expression);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new TableSortBuilder<T> Descending(string fieldName)
-    {
-        base.Descending(fieldName);
-        return this;
-    }
-
-    /// <inheritdoc />
-    public new TableSortBuilder<T> Descending<TField>(Expression<Func<T, TField>> expression)
-    {
-        base.Descending(expression);
-        return this;
+        var clone = new SortBuilder<T>();
+        foreach (var sort in this.Sorts)
+        {
+            clone.Sorts.Add(sort.Clone());
+        }
+        return clone;
     }
 }

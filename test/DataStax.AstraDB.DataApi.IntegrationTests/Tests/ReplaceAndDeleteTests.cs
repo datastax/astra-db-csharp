@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -555,7 +556,7 @@ public class ReplaceAndDeleteTests
             Assert.Equal(30, result.DeletedCount);
             result = await collection.DeleteAllAsync();
             Assert.Equal(-1, result.DeletedCount);
-            Assert.Equal(0, (await collection.CountDocumentsAsync()).Count);
+            Assert.Equal(0, await collection.CountDocumentsAsync());
         }
         finally
         {

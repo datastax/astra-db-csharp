@@ -363,45 +363,37 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return response.Result;
     }
 
-    public ResultSet<T, T, SortBuilder<T>> Find()
+    public FindEnumerator<T, T, SortBuilder<T>> Find()
     {
-        return Find(null, null, null);
+        return Find(null, null);
     }
 
-    public ResultSet<T, T, SortBuilder<T>> Find(Filter<T> filter)
+    public FindEnumerator<T, T, SortBuilder<T>> Find(Filter<T> filter)
     {
-        return Find(filter, null, null);
+        return Find(filter, null);
     }
 
-    public ResultSet<T, T, SortBuilder<T>> Find(TableFindManyOptions<T> findOptions)
+    public FindEnumerator<T, T, SortBuilder<T>> Find(Filter<T> filter, CommandOptions commandOptions)
     {
-        return Find(null, findOptions, null);
+        return Find<T>(filter, commandOptions);
     }
 
-    public ResultSet<T, T, SortBuilder<T>> Find(Filter<T> filter, TableFindManyOptions<T> findOptions)
+    public FindEnumerator<T, TResult, SortBuilder<T>> Find<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
     {
-        return Find(filter, findOptions, null);
+        var findOptions = new TableFindManyOptions<T>
+        {
+            Filter = filter
+        };
+        return new FindEnumerator<T, TResult, SortBuilder<T>>(this, findOptions, commandOptions);
     }
 
-    public ResultSet<T, T, SortBuilder<T>> Find(Filter<T> filter, TableFindManyOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        findOptions ??= new TableFindManyOptions<T>();
-        return new ResultSet<T, T, SortBuilder<T>>(this, filter, findOptions, commandOptions);
-    }
-
-    public ResultSet<T, TResult, SortBuilder<T>> Find<TResult>(Filter<T> filter, TableFindManyOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
-    {
-        findOptions ??= new TableFindManyOptions<T>();
-        return new ResultSet<T, TResult, SortBuilder<T>>(this, filter, findOptions, commandOptions);
-    }
-
-    internal async Task<ApiResponseWithData<DocumentsResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(Filter<T> filter, IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(Filter<T> filter, IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
         where TResult : class
     {
         findOptions.Filter = filter;
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<DocumentsResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response;
     }
 
@@ -823,7 +815,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _tableName));
     }
 
-    Task<ApiResponseWithData<DocumentsResult<TProjected>, FindStatusResult>> IQueryRunner<T, SortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, SortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
         where TProjected : class
     {
         return RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously);
