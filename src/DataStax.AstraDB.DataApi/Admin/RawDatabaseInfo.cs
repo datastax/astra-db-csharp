@@ -20,13 +20,13 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
-public class DatabaseInfo
+public class RawDatabaseInfo
 {
     [JsonPropertyName("availableActions")]
     public List<string> AvailableActions { get; set; }
 
     [JsonPropertyName("cost")]
-    public DatabaseCost Cost { get; set; }
+    public RawDatabaseCost Cost { get; set; }
 
     [JsonPropertyName("cqlshUrl")]
     public string CqlshUrl { get; set; }
@@ -47,13 +47,13 @@ public class DatabaseInfo
     public string Id { get; set; }
 
     [JsonPropertyName("info")]
-    public DatabaseDetailsInfo Info { get; set; }
+    public RawDatabaseDetailsInfo Info { get; set; }
 
     [JsonPropertyName("lastUsageTime")]
     public DateTime LastUsageTime { get; set; }
 
     [JsonPropertyName("metrics")]
-    public DatabaseMetrics Metrics { get; set; }
+    public RawDatabaseMetrics Metrics { get; set; }
 
     [JsonPropertyName("observedStatus")]
     public string ObservedStatus { get; set; }
@@ -68,13 +68,13 @@ public class DatabaseInfo
     public string Status { get; set; }
 
     [JsonPropertyName("storage")]
-    public DatabaseStorage Storage { get; set; }
+    public RawDatabaseStorage Storage { get; set; }
 
     [JsonPropertyName("terminationTime")]
     public DateTime TerminationTime { get; set; }
 }
 
-public class DatabaseCost
+public class RawDatabaseCost
 {
     [JsonPropertyName("costPerDayCents")]
     public decimal CostPerDayCents { get; set; }
@@ -122,7 +122,7 @@ public class DatabaseCost
     public decimal CostPerWrittenGbCents { get; set; }
 }
 
-public class DatabaseDetailsInfo
+public class RawDatabaseDetailsInfo
 {
     [JsonPropertyName("capacityUnits")]
     public int CapacityUnits { get; set; }
@@ -131,7 +131,7 @@ public class DatabaseDetailsInfo
     public string CloudProvider { get; set; }
 
     [JsonPropertyName("datacenters")]
-    public List<DatacenterInfo> Datacenters { get; set; }
+    public List<RawDatacenterInfo> Datacenters { get; set; }
 
     [JsonPropertyName("dbType")]
     public string DbType { get; set; }
@@ -152,7 +152,7 @@ public class DatabaseDetailsInfo
     public string Tier { get; set; }
 }
 
-public class DatacenterInfo
+public class RawDatacenterInfo
 {
     [JsonPropertyName("capacityUnits")]
     public int CapacityUnits { get; set; }
@@ -173,7 +173,7 @@ public class DatacenterInfo
     public string Name { get; set; }
 }
 
-public class DatabaseMetrics
+public class RawDatabaseMetrics
 {
     [JsonPropertyName("errorsTotalCount")]
     public long ErrorsTotalCount { get; set; }
@@ -188,7 +188,7 @@ public class DatabaseMetrics
     public long WriteRequestsTotalCount { get; set; }
 }
 
-public class DatabaseStorage
+public class RawDatabaseStorage
 {
     [JsonPropertyName("displayStorage")]
     public int DisplayStorage { get; set; }

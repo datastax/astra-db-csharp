@@ -18,14 +18,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-/// <summary>
-/// The result object for an operation returning a list of collections.
-/// </summary>
-public class ListCollectionsResult
+internal class ListCollectionsResult
 {
-    /// <summary>
-    /// An array of <see cref="CollectionInfo"/> describing the collections.
-    /// </summary>
+    [JsonInclude]
     [JsonPropertyName("collections")]
     public CollectionInfo[] Collections { get; set; }
 }

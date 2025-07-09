@@ -10,7 +10,7 @@ public class ExamplesTests
 {
     DatabaseFixture fixture;
 
-    public ExamplesTests(DatabaseFixture fixture)
+    public ExamplesTests(AssemblyFixture assemblyFixture, DatabaseFixture fixture)
     {
         this.fixture = fixture;
     }

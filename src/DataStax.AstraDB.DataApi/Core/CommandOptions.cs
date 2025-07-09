@@ -63,11 +63,12 @@ public class CommandOptions
     public HttpClientOptions HttpClientOptions { get; set; }
 
     /// <summary>
-    /// Connection and request timeout options
-    /// 
-    /// Defaults to ConnectTimeoutMillis: 5000, RequestTimeoutMillis: 30000
+    /// Specify various timeout options to use for the command execution.
     /// </summary>
-    public TimeoutOptions TimeoutOptions { get; set; }
+    /// <remarks>
+    /// See <see cref="TimeoutOptions"/> for information.
+    /// </remarks>
+    public TimeoutOptions TimeoutOptions { get; set; } = new TimeoutOptions();
 
     /// <summary>
     /// API version to connect to
@@ -80,6 +81,8 @@ public class CommandOptions
     /// An optional CancellationToken to interrupt asynchronous operations
     /// </summary>
     public CancellationToken? CancellationToken { get; set; }
+
+    internal CancellationToken? BulkOperationCancellationToken { get; set; }
 
     internal void SetConvertersIfNull(JsonConverter inputConverter, JsonConverter outputConverter)
     {
@@ -104,7 +107,22 @@ public class CommandOptions
             RunMode = list.Select(o => o.RunMode).Merge(),
             Destination = list.Select(o => o.Destination).Merge(),
             HttpClientOptions = list.Select(o => o.HttpClientOptions).Merge(),
-            TimeoutOptions = list.Select(o => o.TimeoutOptions).Merge(),
+            TimeoutOptions = new TimeoutOptions
+            {
+                ConnectionTimeout = list.Select(o => o.TimeoutOptions?.ConnectionTimeout).Merge(),
+                RequestTimeout = list.Select(o => o.TimeoutOptions?.RequestTimeout).Merge(),
+                BulkOperationTimeout = list.Select(o => o.TimeoutOptions?.BulkOperationTimeout).Merge(),
+                Defaults = new TimeoutDefaults()
+                {
+                    RequestTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.RequestTimeout).Merge() ?? TimeoutDefaults.DefaultRequestTimeout,
+                    ConnectionTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.ConnectionTimeout).Merge() ?? TimeoutDefaults.DefaultConnectionTimeout,
+                    BulkOperationTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.BulkOperationTimeout).Merge() ?? TimeoutDefaults.DefaultBulkOperationTimeout,
+                    CollectionAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.CollectionAdminTimeout).Merge() ?? TimeoutDefaults.DefaultCollectionAdminTimeout,
+                    TableAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.TableAdminTimeout).Merge() ?? TimeoutDefaults.DefaultTableAdminTimeout,
+                    DatabaseAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.DatabaseAdminTimeout).Merge() ?? TimeoutDefaults.DefaultDatabaseAdminTimeout,
+                    KeyspaceAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.KeyspaceAdminTimeout).Merge() ?? TimeoutDefaults.DefaultKeyspaceAdminTimeout,
+                }
+            },
             ApiVersion = list.Select(o => o.ApiVersion).Merge(),
             CancellationToken = list.Select(o => o.CancellationToken).Merge(),
             Keyspace = list.Select(o => o.Keyspace).Merge(),
@@ -113,6 +131,7 @@ public class CommandOptions
             IncludeKeyspaceInUrl = FirstNonNull(x => x.IncludeKeyspaceInUrl) ?? Defaults().IncludeKeyspaceInUrl,
             SerializeGuidAsDollarUuid = FirstNonNull(x => x.SerializeGuidAsDollarUuid) ?? Defaults().SerializeGuidAsDollarUuid,
             SerializeDateAsDollarDate = FirstNonNull(x => x.SerializeDateAsDollarDate) ?? Defaults().SerializeDateAsDollarDate,
+            BulkOperationCancellationToken = list.Select(o => o.BulkOperationCancellationToken).Merge()
         };
         return options;
     }
@@ -134,8 +153,13 @@ public class CommandOptions
             IncludeKeyspaceInUrl = true,
             SerializeGuidAsDollarUuid = true,
             SerializeDateAsDollarDate = true,
+            TimeoutOptions = new TimeoutOptions
+            {
+                ConnectionTimeout = TimeoutDefaults.DefaultConnectionTimeout,
+                RequestTimeout = TimeoutDefaults.DefaultRequestTimeout,
+                BulkOperationTimeout = TimeoutDefaults.DefaultBulkOperationTimeout,
+                Defaults = new TimeoutDefaults()
+            }
         };
     }
 }
-
-

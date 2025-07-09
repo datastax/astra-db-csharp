@@ -12,7 +12,7 @@ public class TableTests
 {
     TablesFixture fixture;
 
-    public TableTests(TablesFixture fixture)
+    public TableTests(AssemblyFixture assemblyFixture, TablesFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -190,10 +190,10 @@ public class TableTests
     public async Task FindOne_Sort()
     {
         var table = fixture.SearchTable;
-        var sort = Builders<RowBook>.TableSort;
-        var filter = sort.Descending(b => b.Title);
+        var sorter = Builders<RowBook>.TableSort;
+        var sort = sorter.Descending(b => b.Title);
         var projection = Builders<RowBook>.Projection.Include(b => b.Title);
-        var result = await table.FindOneAsync(null, new TableFindOptions<RowBook>() { Sort = filter, Projection = projection });
+        var result = await table.FindOneAsync(null, new TableFindOptions<RowBook>() { Sort = sort, Projection = projection });
         Assert.Equal("Title 99", result.Title);
         Assert.Null(result.Author);
     }
@@ -463,5 +463,153 @@ public class TableTests
             await fixture.Database.DropTableAsync(tableName);
         }
     }
+
+    // same tests on untyped tables
+    [Fact]
+    public void LogicalAnd_MongoStyle_Untyped()
+    {
+        var builder = Builders<Row>.Filter;
+        var filter = builder.Gte("Id", 10);
+        //TODO: AND not working yet via API
+        //var filter = builder.Gte("Id", 10) & builder.Gt("IdTwo", "IdTwo_20");
+
+        var results = fixture.UntypedTableSinglePrimaryKey.Find(filter).ToList();
+        Assert.Equal(40, results.Count);
+        results = fixture.UntypedTableCompositePrimaryKey.Find(filter).ToList();
+        Assert.Equal(40, results.Count);
+        results = fixture.UntypedTableCompoundPrimaryKey.Find(filter).ToList();
+        Assert.Equal(40, results.Count);
+
+    }
+
+    [Fact]
+    public void LogicalAnd_AstraStyle_Untyped()
+    {
+        var builder = Builders<Row>.Filter;
+        //TODO: AND not working yet via API
+        //var filter = builder.And(builder.Gt("Id", 10), builder.Eq("IdTwo", "IdTwo_20"));
+        var filter = builder.Gt("Id", 20);
+
+        var results = fixture.UntypedTableSinglePrimaryKey.Find(filter).ToList();
+        Assert.Equal(29, results.Count);
+        results = fixture.UntypedTableCompositePrimaryKey.Find(filter).ToList();
+        Assert.Equal(29, results.Count);
+        results = fixture.UntypedTableCompoundPrimaryKey.Find(filter).ToList();
+        Assert.Equal(29, results.Count);
+    }
+
+    [Fact]
+    public void FindMany_RetrieveAll_Untyped()
+    {
+        var results = fixture.UntypedTableSinglePrimaryKey.Find().ToList();
+        Assert.Equal(50, results.Count);
+        results = fixture.UntypedTableCompositePrimaryKey.Find().ToList();
+        Assert.Equal(50, results.Count);
+        results = fixture.UntypedTableCompoundPrimaryKey.Find().ToList();
+        Assert.Equal(50, results.Count);
+    }
+
+    [Fact]
+    public void FindMany_Vectorize_Untyped()
+    {
+        var sorter = Builders<Row>.TableSort;
+        var sort = sorter.Vectorize("Vectorize", "String To Vectorize 12");
+        var results = fixture.UntypedTableSinglePrimaryKey.Find().Sort(sort).ToList();
+        Assert.Equal(50, results.Count);
+        Assert.Equal("Name_12", results.First()["Name"].ToString());
+        results = fixture.UntypedTableCompositePrimaryKey.Find().Sort(sort).ToList();
+        Assert.Equal("Name_12", results.First()["Name"].ToString());
+        Assert.Equal(50, results.Count);
+        results = fixture.UntypedTableCompoundPrimaryKey.Find().Sort(sort).ToList();
+        Assert.Equal("Name_12", results.First()["Name"].ToString());
+        Assert.Equal(50, results.Count);
+    }
+
+    [Fact]
+    public async Task FindOne_Vectorize_Untyped()
+    {
+        var sorter = Builders<Row>.TableSort;
+        var sort = sorter.Vectorize("Vectorize", "String To Vectorize 22");
+        var results = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(null,
+            new TableFindOptions<Row>() { Sort = sort, IncludeSimilarity = true });
+        Assert.Equal("Name_22", results["Name"].ToString());
+        results = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(null,
+            new TableFindOptions<Row>() { Sort = sort, IncludeSimilarity = true });
+        Assert.Equal("Name_22", results["Name"].ToString());
+        results = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(null,
+            new TableFindOptions<Row>() { Sort = sort, IncludeSimilarity = true });
+        Assert.Equal("Name_22", results["Name"].ToString());
+    }
+
+    [Fact]
+    public async Task FindOne_Sort_Untyped()
+    {
+        var sorter = Builders<Row>.TableSort;
+        var sort = sorter.Descending("Name");
+        var projection = Builders<Row>.Projection.Include("Name");
+        var result = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
+        Assert.Equal("Name_9", result["Name"].ToString());
+        Assert.False(result.ContainsKey("SortOneAscending"));
+        result = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
+        Assert.Equal("Name_9", result["Name"].ToString());
+        Assert.False(result.ContainsKey("SortOneAscending"));
+        result = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
+        Assert.Equal("Name_9", result["Name"].ToString());
+        Assert.False(result.ContainsKey("SortOneAscending"));
+    }
+
+    [Fact]
+    public void FindOne_Sort_Skip_Exclude_Untyped()
+    {
+        var sorter = Builders<Row>.TableSort;
+        var sort = sorter.Descending("Name");
+        var projection = Builders<RowBook>.Projection.Exclude("SortOneAscending");
+        var results = fixture.UntypedTableSinglePrimaryKey.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
+        Assert.Equal(5, results.Count());
+        Assert.Equal("Name_7", results.First()["Name"].ToString());
+        Assert.False(results.First().ContainsKey("SortOneAscending"));
+        results = fixture.UntypedTableCompositePrimaryKey.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
+        Assert.Equal(5, results.Count());
+        Assert.Equal("Name_7", results.First()["Name"].ToString());
+        Assert.False(results.First().ContainsKey("SortOneAscending"));
+        results = fixture.UntypedTableCompoundPrimaryKey.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
+        Assert.Equal(5, results.Count());
+        Assert.Equal("Name_7", results.First()["Name"].ToString());
+        Assert.False(results.First().ContainsKey("SortOneAscending"));
+    }
+
+    [Fact]
+    public async Task Update_Test_Untyped()
+    {
+        var filter = Builders<Row>.Filter.Eq("Id", 3);
+        var update = Builders<Row>.Update.Set("Name", "Name_3_Updated");
+        var result = await fixture.UntypedTableSinglePrimaryKey.UpdateOneAsync(filter, update);
+        Assert.Equal(1, result.ModifiedCount);
+        var updatedDocument = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(filter);
+        Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
+
+        filter = Builders<Row>.Filter.CompositeKey(
+            new PrimaryKeyFilter("Id", 3),
+            new PrimaryKeyFilter("IdTwo", "IdTwo_3"));
+        result = await fixture.UntypedTableCompositePrimaryKey.UpdateOneAsync(filter, update);
+        Assert.Equal(1, result.ModifiedCount);
+        updatedDocument = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(filter);
+        Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
+
+        filter = Builders<Row>.Filter.CompoundKey(
+                new[] {
+                    new PrimaryKeyFilter("Id", 3),
+                    new PrimaryKeyFilter("IdTwo", "IdTwo_3"),
+                },
+                new[] {
+                    Builders<Row>.Filter.Eq("SortOneAscending", "SortOneAscending3"),
+                    Builders<Row>.Filter.Eq("SortTwoDescending", "SortTwoDescending47")
+                });
+        result = await fixture.UntypedTableCompoundPrimaryKey.UpdateOneAsync(filter, update);
+        Assert.Equal(1, result.ModifiedCount);
+        updatedDocument = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(filter);
+        Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
+    }
+
 }
 

@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
@@ -23,7 +24,8 @@ public class CollectionInsertManyResult<T>
     /// <summary>
     /// A list of the Ids of the inserted documents
     /// </summary>
-    public List<T> InsertedIds { get; internal set; } = new List<T>();
+    [JsonPropertyName("insertedIds")]
+    public List<T> InsertedIds { get; set; } = new List<T>();
     /// <summary>
     /// The number of documents that were inserted
     /// </summary>

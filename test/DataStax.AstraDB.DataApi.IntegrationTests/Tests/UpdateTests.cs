@@ -1,6 +1,6 @@
 using DataStax.AstraDB.DataApi.Collections;
-using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -10,7 +10,7 @@ public class UpdateTests
 {
     UpdatesFixture fixture;
 
-    public UpdateTests(UpdatesFixture fixture)
+    public UpdateTests(AssemblyFixture assemblyFixture, UpdatesFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -22,11 +22,9 @@ public class UpdateTests
         var filter = Builders<SimpleObject>.Filter
             .Eq(so => so.Name, "Cat");
         var updater = Builders<SimpleObject>.Update;
-        var combinedUpdate = updater.Combine(
-            updater.Set(so => so.Properties.PropertyTwo, "CatUpdated"),
-            updater.Unset("Properties.PropertyOne")
-        );
-        var result = await collection.UpdateOneAsync(filter, combinedUpdate);
+        var update = updater.Set(so => so.Properties.PropertyTwo, "CatUpdated")
+            .Unset("Properties.PropertyOne");
+        var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
         Assert.Equal("CatUpdated", updatedDocument.Properties.PropertyTwo);

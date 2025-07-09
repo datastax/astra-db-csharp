@@ -127,7 +127,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
         commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
         var command = CreateCommand("insertOne").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<InsertDocumentsCommandResponse<TId>>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously).ConfigureAwait(false);
         return new CollectionInsertOneResult<TId> { InsertedId = response.Result.InsertedIds[0] };
     }
 
@@ -172,6 +172,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// </summary>
     /// <param name="documents">The list of documents to insert.</param>
     /// <returns></returns>
+    /// <throws cref="ArgumentException">Thrown if the documents list is null or empty.</throws>
+    /// <throws cref="BulkOperationException{CollectionInsertManyResult{TId}}">Thrown if an error occurs during the bulk operation, 
+    /// with partial results returned in the <see cref="BulkOperationException{CollectionInsertManyResult{TId}}.PartialResult"/> property.</throws>
     public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents)
     {
         return InsertManyAsync(documents, new CommandOptions());
@@ -213,36 +216,51 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
             InsertValidator.Validate(doc);
         }
 
-        var start = DateTime.Now;
-
         var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
 
-        var chunks = documents.CreateBatch(insertOptions.ChunkSize);
-
-        foreach (var chunk in chunks)
+        using (cts)
         {
-            tasks.Add(Task.Run(async () =>
+            var bulkOperationTimeoutToken = cts.Token;
+            try
             {
-                await semaphore.WaitAsync();
-                try
-                {
-                    var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, commandOptions, runSynchronously).ConfigureAwait(false);
-                    lock (result.InsertedIds)
-                    {
-                        result.InsertedIds.AddRange(runResult.InsertedIds);
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }));
-        }
+                var chunks = documents.CreateBatch(insertOptions.ChunkSize);
 
-        await Task.WhenAll(tasks);
-        return result;
+                foreach (var chunk in chunks)
+                {
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        await semaphore.WaitAsync(bulkOperationTimeoutToken);
+                        try
+                        {
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, commandOptions, runSynchronously).ConfigureAwait(false);
+                            lock (result.InsertedIds)
+                            {
+                                result.InsertedIds.AddRange(runResult.InsertedIds);
+                            }
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }, bulkOperationTimeoutToken));
+                }
+
+                await Task.WhenAll(tasks).WithCancellation(bulkOperationTimeoutToken);
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                throw new BulkOperationException<CollectionInsertManyResult<TId>>(innerException, result);
+            }
+            catch (Exception ex)
+            {
+                throw new BulkOperationException<CollectionInsertManyResult<TId>>(ex, result);
+            }
+        }
     }
 
     private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
@@ -259,8 +277,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
         commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
         var command = CreateCommand("insertMany").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<InsertDocumentsCommandResponse<TId>>(runSynchronously).ConfigureAwait(false);
-        return new CollectionInsertManyResult<TId> { InsertedIds = response.Result.InsertedIds.ToList() };
+        var response = await command.RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously).ConfigureAwait(false);
+        return response.Result;
     }
 
     /// <summary>
@@ -571,7 +589,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Find all documents in the collection.
+    /// Find documents in the collection.
     /// 
     /// The Find() methods return a <see cref="FindEnumerator{T,TProjection}"/> object that can be used to further structure the query
     /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
@@ -600,6 +618,12 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="CommandOptions.TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="CommandOptions.TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
+    /// however <see cref="CommandOptions.TimeoutOptions.BulkOperationCancellationToken"/> settings are ignored due to the nature of Enueration.
+    /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
+    /// </remarks>
     public FindEnumerator<T, T, DocumentSortBuilder<T>> Find()
     {
         return Find(null, null);
@@ -716,7 +740,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// </summary>
     /// <param name="filter"></param>
     /// <param name="update"></param>
-    /// <returns></returns>
+    /// <returns>Updated document or null</returns>
     /// <example>
     /// <code>
     /// var updater = Builders&lt;SimpleObject&gt;.Update;
@@ -733,6 +757,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndUpdateAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// <remarks>
+    /// Use the <see cref="FindOneAndUpdateOptions{T}.ReturnDocument"/> parameter on <see cref="FindOneAndUpdateOptions{T}"/> to specify whether the original or updated document should be returned.
+    /// </remarks>
     /// <param name="updateOptions">Set Sort, Projection, Upsert options</param>
     public Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
     {
@@ -839,7 +866,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Find a document and replace it with the provided replacement
     /// </summary>
     /// <param name="replacement"></param>
-    /// <returns></returns>
+    /// <returns>The replaced document, or null if not found</returns>
     public Task<T> FindOneAndReplaceAsync(T replacement)
     {
         return FindOneAndReplaceAsync(replacement, new ReplaceOptions<T>(), null);
@@ -847,6 +874,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(T)"/>
     /// <param name="replaceOptions"></param>
+    /// <remarks>
+    /// Use the <see cref="ReplaceOptions{T}.ReturnDocument"/> parameter on <see cref="ReplaceOptions{T}"/> to specify whether the original or updated document should be returned.
+    /// </remarks>
     public Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions)
     {
         return FindOneAndReplaceAsync(replacement, replaceOptions, null);
@@ -1027,7 +1057,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         replaceOptions.Filter = filter;
         replaceOptions.Replacement = replacement;
         var command = CreateCommand("findOneAndReplace").WithPayload(replaceOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, T, ReplaceResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, T, UpdateResult>(runSynchronously).ConfigureAwait(false);
         return response.Data.Document;
     }
 
@@ -1084,7 +1114,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Synchronous version of <see cref="ReplaceOneAsync(Filter{T}, T)"/>
     /// </summary>
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T)"/>
-    public ReplaceResult ReplaceOne(Filter<T> filter, T replacement)
+    public UpdateResult ReplaceOne(Filter<T> filter, T replacement)
     {
         return ReplaceOne(filter, replacement, new ReplaceOptions<T>(), null);
     }
@@ -1093,7 +1123,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Synchronous version of <see cref="ReplaceOneAsync(Filter{T}, T, ReplaceOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T, ReplaceOptions{T})"/>
-    public ReplaceResult ReplaceOne(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    public UpdateResult ReplaceOne(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
     {
         return ReplaceOne(filter, replacement, replaceOptions, null);
     }
@@ -1102,7 +1132,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Synchronous version of <see cref="ReplaceOneAsync(Filter{T}, T, ReplaceOptions{T}, CommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T, ReplaceOptions{T}, CommandOptions)"/>
-    public ReplaceResult ReplaceOne(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    public UpdateResult ReplaceOne(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
         var response = ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
         return response;
@@ -1115,32 +1145,32 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <param name="filter"></param>
     /// <param name="replacement"></param>
     /// <returns></returns>
-    public Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement)
+    public Task<UpdateResult> ReplaceOneAsync(Filter<T> filter, T replacement)
     {
         return ReplaceOneAsync(filter, replacement, new ReplaceOptions<T>(), null);
     }
 
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T)"/>
     /// <param name="replaceOptions"></param>
-    public Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    public Task<UpdateResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
     {
         return ReplaceOneAsync(filter, replacement, replaceOptions, null);
     }
 
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T, ReplaceOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
+    public Task<UpdateResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
         return ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, false);
     }
 
-    internal async Task<ReplaceResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<UpdateResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         replaceOptions.Filter = filter;
         replaceOptions.Replacement = replacement;
         replaceOptions.Projection = new ExclusiveProjectionBuilder<T>().Exclude("*");
         var command = CreateCommand("findOneAndReplace").WithPayload(replaceOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<ReplaceResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
         return response.Result;
     }
 
@@ -1291,7 +1321,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <summary>
     /// Find a document and delete it from the collection
     /// </summary>
-    /// <returns>The deleted document</returns>
+    /// <returns>The deleted document, or null if not found</returns>
     public Task<T> FindOneAndDeleteAsync()
     {
         return FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<T>(), null);
@@ -1527,24 +1557,6 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DeleteAllAsync()"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteAllAsync()"/>
-    public DeleteResult DeleteAll()
-    {
-        return DeleteAll(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DeleteAllAsync(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteAllAsync(CommandOptions)"/>
-    public DeleteResult DeleteAll(CommandOptions commandOptions)
-    {
-        return DeleteMany(null, commandOptions);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="DeleteManyAsync(Filter{T})"/>
     /// </summary>
     /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
@@ -1564,26 +1576,19 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Delete all documents from the collection.
-    /// </summary>
-    /// <returns></returns>
-    public Task<DeleteResult> DeleteAllAsync()
-    {
-        return DeleteManyAsync(null, null);
-    }
-
-    /// <inheritdoc cref="DeleteAllAsync()"/>
-    /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteAllAsync(CommandOptions commandOptions)
-    {
-        return DeleteManyAsync(null, commandOptions);
-    }
-
-    /// <summary>
     /// Delete all documents matching the filter from the collection.
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
+    /// <remarks>
+    /// Deleting all documents in a collection is not recommended for large collections. However, if needed
+    /// you can pass null as the filter to delete all documents in the collection.
+    /// <example>
+    /// <code>
+    /// var deleteResult = await collection.DeleteManyAsync(null);
+    /// </code>
+    /// </example>
+    /// </remarks>
     public Task<DeleteResult> DeleteManyAsync(Filter<T> filter)
     {
         return DeleteManyAsync(filter, null);
@@ -1603,14 +1608,33 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
             Filter = filter
         };
 
-        var keepProcessing = true;
         var deleteResult = new DeleteResult();
-        while (keepProcessing)
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+
+        using (cts)
         {
-            var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-            var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
-            deleteResult.DeletedCount += response.Result.DeletedCount;
-            keepProcessing = response.Result.MoreData;
+            var bulkOperationTimeoutToken = cts.Token;
+            var keepProcessing = true;
+
+            try
+            {
+                while (keepProcessing)
+                {
+                    var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
+                    var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
+                    deleteResult.DeletedCount += response.Result.DeletedCount;
+                    keepProcessing = response.Result.MoreData;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                throw new BulkOperationException<DeleteResult>(innerException, deleteResult);
+            }
+            catch (Exception ex)
+            {
+                throw new BulkOperationException<DeleteResult>(ex, deleteResult);
+            }
         }
 
         return deleteResult;
@@ -1779,19 +1803,38 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         var keepProcessing = true;
         var updateResult = new UpdateResult();
         string nextPageState = null;
-        while (keepProcessing)
+
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+
+        using (cts)
         {
-            updateOptions ??= new UpdateManyOptions<T>();
-            updateOptions.NextPageState = nextPageState;
-            var command = CreateCommand("updateMany").WithPayload(updateOptions).AddCommandOptions(commandOptions);
-            var response = await command.RunAsyncReturnStatus<PagedUpdateResult>(runSynchronously).ConfigureAwait(false);
-            updateResult.MatchedCount += response.Result.MatchedCount;
-            updateResult.ModifiedCount += response.Result.ModifiedCount;
-            updateResult.UpsertedId = response.Result.UpsertedId;
-            nextPageState = response.Result.NextPageState;
-            if (string.IsNullOrEmpty(nextPageState))
+            var bulkOperationTimeoutToken = cts.Token;
+            try
             {
-                keepProcessing = false;
+                while (keepProcessing)
+                {
+                    updateOptions ??= new UpdateManyOptions<T>();
+                    updateOptions.NextPageState = nextPageState;
+                    var command = CreateCommand("updateMany").WithPayload(updateOptions).AddCommandOptions(commandOptions);
+                    var response = await command.RunAsyncReturnStatus<PagedUpdateResult>(runSynchronously).ConfigureAwait(false);
+                    updateResult.MatchedCount += response.Result.MatchedCount;
+                    updateResult.ModifiedCount += response.Result.ModifiedCount;
+                    updateResult.UpsertedId = response.Result.UpsertedId;
+                    nextPageState = response.Result.NextPageState;
+                    if (string.IsNullOrEmpty(nextPageState))
+                    {
+                        keepProcessing = false;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                throw new BulkOperationException<UpdateResult>(innerException, updateResult);
+            }
+            catch (Exception ex)
+            {
+                throw new BulkOperationException<UpdateResult>(ex, updateResult);
             }
         }
         return updateResult;
@@ -1926,7 +1969,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Synchronous version of <see cref="EstimateDocumentCountAsync()"/>
     /// </summary>
     /// <inheritdoc cref="EstimateDocumentCountAsync()"/>
-    public EstimatedDocumentsCountResult EstimateDocumentCount()
+    public int EstimateDocumentCount()
     {
         return EstimateDocumentCountAsync(null, true).ResultSync();
     }
@@ -1935,7 +1978,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Synchronous version of <see cref="EstimateDocumentCountAsync(CommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="EstimateDocumentCountAsync(CommandOptions)"/>
-    public EstimatedDocumentsCountResult EstimateDocumentCount(CommandOptions commandOptions)
+    public int EstimateDocumentCount(CommandOptions commandOptions)
     {
         return EstimateDocumentCountAsync(commandOptions, true).ResultSync();
     }
@@ -1944,7 +1987,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// Estimate the number of documents in the collection.
     /// </summary>
     /// <returns></returns>
-    public Task<EstimatedDocumentsCountResult> EstimateDocumentCountAsync()
+    public Task<int> EstimateDocumentCountAsync()
     {
         return EstimateDocumentCountAsync(null, false);
     }
@@ -1954,16 +1997,16 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public Task<EstimatedDocumentsCountResult> EstimateDocumentCountAsync(CommandOptions commandOptions)
+    public Task<int> EstimateDocumentCountAsync(CommandOptions commandOptions)
     {
         return EstimateDocumentCountAsync(commandOptions, false);
     }
 
-    internal async Task<EstimatedDocumentsCountResult> EstimateDocumentCountAsync(CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<int> EstimateDocumentCountAsync(CommandOptions commandOptions, bool runSynchronously)
     {
         var command = CreateCommand("estimatedDocumentCount").WithPayload(new { }).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<EstimatedDocumentsCountResult>(runSynchronously).ConfigureAwait(false);
-        return response.Result;
+        return response.Result.Count;
     }
 
     /// <summary>
@@ -2014,9 +2057,15 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return command.Deserialize<T>(json);
     }
 
+    private List<CommandOptions> GetOptionsTree()
+    {
+        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions });
+        return optionsTree.ToList();
+    }
+
     internal Command CreateCommand(string name)
     {
-        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions }).ToArray();
+        var optionsTree = GetOptionsTree().ToArray();
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _collectionName));
     }
 

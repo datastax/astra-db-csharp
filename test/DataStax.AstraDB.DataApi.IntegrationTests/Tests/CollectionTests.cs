@@ -1,12 +1,13 @@
 using DataStax.AstraDB.DataApi.Collections;
-using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
-using MongoDB.Bson;
-using Xunit;
+using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.SerDes;
+using MongoDB.Bson;
+using System.Text;
 using UUIDNext;
-using DataStax.AstraDB.DataApi.Core;
+using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
@@ -15,7 +16,7 @@ public class CollectionTests
 {
     CollectionsFixture fixture;
 
-    public CollectionTests(CollectionsFixture fixture)
+    public CollectionTests(AssemblyFixture assemblyFixture, CollectionsFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -198,6 +199,14 @@ public class CollectionTests
         [DocumentId(DefaultIdType.ObjectId)]
         public ObjectId? Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class TestByteArray
+    {
+        [DocumentId]
+        public Guid? Id { get; set; }
+        public string Name { get; set; }
+        public byte[] Data { get; set; }
     }
 
     [Fact]
@@ -656,6 +665,32 @@ public class CollectionTests
             await collection.InsertManyAsync(items, new InsertManyOptions() { InsertInOrder = true });
             await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(50));
 
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task ByteArray_AsDollarBinary()
+    {
+        var collectionName = "byteArrayAsDollarBinary";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<TestByteArray, Guid>(collectionName);
+            var newObject = new TestByteArray()
+            {
+                Name = "Test Object 1",
+                Data = Encoding.UTF8.GetBytes("Test Data")
+            };
+
+            var result = await collection.InsertOneAsync(newObject);
+
+            var added = collection.Find(Builders<TestByteArray>.Filter.Eq(t => t.Name, "Test Object 1")).FirstOrDefault();
+            Assert.Equal("Test Object 1", added.Name);
+            Assert.NotNull(added.Data);
+            Assert.Equal("Test Data", Encoding.UTF8.GetString(added.Data));
         }
         finally
         {

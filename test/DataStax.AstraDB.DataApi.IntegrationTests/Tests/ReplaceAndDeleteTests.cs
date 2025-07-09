@@ -10,7 +10,7 @@ public class ReplaceAndDeleteTests
 {
     ReplaceAndDeleteFixture fixture;
 
-    public ReplaceAndDeleteTests(ReplaceAndDeleteFixture fixture)
+    public ReplaceAndDeleteTests(AssemblyFixture assemblyFixture, ReplaceAndDeleteFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -247,6 +247,16 @@ public class ReplaceAndDeleteTests
             .Eq(so => so.Name, "Animal8");
         var result = collection.FindOneAndDelete(filter);
         Assert.Equal("Animal8", result.Name);
+    }
+
+    [Fact]
+    public void FindAndDeleteOne_ReturnsNull_WhenDocumentNotFound()
+    {
+        var collection = fixture.ReplaceCollection;
+        var filter = Builders<SimpleObject>.Filter
+            .Eq(so => so.Name, "ThisDocumentDoesNotExist");
+        var result = collection.FindOneAndDelete(filter);
+        Assert.Null(result);
     }
 
     [Fact]
@@ -554,7 +564,7 @@ public class ReplaceAndDeleteTests
                 | filters.Eq(so => so.Properties.PropertyOne, "group2");
             var result = await collection.DeleteManyAsync(filter);
             Assert.Equal(30, result.DeletedCount);
-            result = await collection.DeleteAllAsync();
+            result = await collection.DeleteManyAsync(null);
             Assert.Equal(-1, result.DeletedCount);
             Assert.Equal(0, await collection.CountDocumentsAsync());
         }

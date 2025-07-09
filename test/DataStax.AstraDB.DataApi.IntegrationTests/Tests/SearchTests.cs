@@ -13,7 +13,7 @@ public class SearchTests
 {
     CollectionsFixture fixture;
 
-    public SearchTests(CollectionsFixture fixture)
+    public SearchTests(AssemblyFixture assemblyFixture, CollectionsFixture fixture)
     {
         this.fixture = fixture;
     }
@@ -571,6 +571,46 @@ public class SearchTests
         var filter = builder.In(so => so.Properties.StringArrayProperty, new[] { "cat1", "dog1" });
         var results = collection.Find(filter).ToList();
         Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
+    public void In_SingleValue()
+    {
+        var collection = fixture.SearchCollection;
+        var builder = Builders<SimpleObject>.Filter;
+        var filter = builder.In(so => so.Properties.StringArrayProperty, "cat1");
+        var results = collection.Find(filter).ToList();
+        Assert.Single(results);
+    }
+
+    [Fact]
+    public void In_SingleValue_StringFieldName()
+    {
+        var collection = fixture.SearchCollection;
+        var builder = Builders<SimpleObject>.Filter;
+        var filter = builder.In("Properties.StringArrayProperty", "cat1");
+        var results = collection.Find(filter).ToList();
+        Assert.Single(results);
+    }
+
+    [Fact]
+    public void NotIn_SingleValue()
+    {
+        var collection = fixture.SearchCollection;
+        var builder = Builders<SimpleObject>.Filter;
+        var filter = builder.Nin(so => so.Properties.StringArrayProperty, "cat1");
+        var results = collection.Find(filter).ToList();
+        Assert.Equal(32, results.Count);
+    }
+
+    [Fact]
+    public void NotIn_SingleValue_StringFieldName()
+    {
+        var collection = fixture.SearchCollection;
+        var builder = Builders<SimpleObject>.Filter;
+        var filter = builder.Nin("Properties.StringArrayProperty", "cat1");
+        var results = collection.Find(filter).ToList();
+        Assert.Equal(32, results.Count);
     }
 
     [Fact]

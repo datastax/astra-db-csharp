@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using DataStax.AstraDB.DataApi.Utils;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
@@ -41,17 +41,6 @@ public class UpdateBuilder<T>
             result[group.Key] = group.ToDictionary(k => k.FieldName, v => v.FieldValue);
         }
         return result;
-    }
-
-    /// <summary>
-    /// Noop, here for mongo compatibility
-    /// </summary>
-    /// <param name="updates"></param>
-    /// <returns></returns>
-    public UpdateBuilder<T> Combine(params UpdateBuilder<T>[] updates)
-    {
-        //noop, here for mongo compatibility
-        return this;
     }
 
     /// <summary>

@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Admin;
@@ -58,7 +57,7 @@ public class AstraDatabasesAdmin
     /// </example>
     public List<string> ListDatabaseNames()
     {
-        return ListDatabases().Select(db => db.Info.Name).ToList();
+        return ListDatabases().Select(db => db.Name).ToList();
     }
 
     /// <summary>
@@ -87,7 +86,7 @@ public class AstraDatabasesAdmin
     /// </example>
     public List<string> ListDatabaseNames(CommandOptions options)
     {
-        return ListDatabases(options).Select(db => db.Info.Name).ToList();
+        return ListDatabases(options).Select(db => db.Name).ToList();
     }
 
     /// <summary>
@@ -103,7 +102,7 @@ public class AstraDatabasesAdmin
     public async Task<List<string>> ListDatabaseNamesAsync(CommandOptions options)
     {
         var databases = await ListDatabasesAsync(options).ConfigureAwait(false);
-        return databases.Select(db => db.Info.Name).ToList();
+        return databases.Select(db => db.Name).ToList();
     }
 
     /// <summary>
@@ -164,14 +163,15 @@ public class AstraDatabasesAdmin
         return ListDatabasesAsync(options, false);
     }
 
-    internal Task<List<DatabaseInfo>> ListDatabasesAsync(CommandOptions options, bool runSynchronously)
+    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(CommandOptions options, bool runSynchronously)
     {
         var command = CreateCommand()
             .AddUrlPath("databases")
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
             .AddCommandOptions(options);
 
-        var response = command.RunAsyncRaw<List<DatabaseInfo>>(HttpMethod.Get, runSynchronously);
-        return response;
+        var rawResults = await command.RunAsyncRaw<List<RawDatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
+        return rawResults?.Select(db => new DatabaseInfo(db)).ToList() ?? new List<DatabaseInfo>();
     }
 
     /// <summary>
@@ -351,11 +351,11 @@ public class AstraDatabasesAdmin
 
         List<DatabaseInfo> dbList = await ListDatabasesAsync(commandOptions, runSynchronously).ConfigureAwait(false);
 
-        DatabaseInfo existingDb = dbList.FirstOrDefault(item => databaseName.Equals(item.Info.Name));
+        DatabaseInfo existingDb = dbList.FirstOrDefault(item => databaseName.Equals(item.Name));
 
         if (existingDb != null)
         {
-            if (existingDb.Status == "ACTIVE")
+            if (existingDb.Status == AstraDatabaseStatus.ACTIVE)
             {
                 Console.WriteLine($"Database {databaseName} already exists and is ACTIVE.");
                 return GetDatabaseAdmin(existingDb);
@@ -367,6 +367,7 @@ public class AstraDatabasesAdmin
         Command command = CreateCommand()
             .AddUrlPath("databases")
             .WithPayload(creationOptions)
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
             .AddCommandOptions(commandOptions);
 
         Guid newDbId = Guid.Empty;
@@ -396,7 +397,7 @@ public class AstraDatabasesAdmin
             }
         }
 
-        return GetDatabaseAdmin(newDbId);
+        return await GetDatabaseAdminAsync(newDbId);
     }
 
     private void WaitForDatabase(string databaseName)
@@ -414,8 +415,8 @@ public class AstraDatabasesAdmin
 
         while (secondsWaited < MAX_WAIT_IN_SECONDS)
         {
-            string status = await GetDatabaseStatusAsync(databaseName).ConfigureAwait(false);
-            if (status == "ACTIVE")
+            var status = await GetDatabaseStatusAsync(databaseName).ConfigureAwait(false);
+            if (status == AstraDatabaseStatus.ACTIVE)
             {
                 return;
             }
@@ -426,11 +427,11 @@ public class AstraDatabasesAdmin
         throw new Exception($"Database {databaseName} did not become ready within {MAX_WAIT_IN_SECONDS} seconds.");
     }
 
-    internal async Task<string> GetDatabaseStatusAsync(string databaseName)
+    internal async Task<AstraDatabaseStatus> GetDatabaseStatusAsync(string databaseName)
     {
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
         var dbList = await ListDatabasesAsync();
-        var db = dbList.FirstOrDefault(item => databaseName.Equals(item.Info.Name));
+        var db = dbList.FirstOrDefault(item => databaseName.Equals(item.Name));
 
         if (db == null)
         {
@@ -569,7 +570,7 @@ public class AstraDatabasesAdmin
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
         var dbList = await ListDatabasesAsync(options, runSynchronously).ConfigureAwait(false);
 
-        var dbInfo = dbList.FirstOrDefault(item => item.Info.Name.Equals(databaseName));
+        var dbInfo = dbList.FirstOrDefault(item => item.Name.Equals(databaseName));
         if (dbInfo == null)
         {
             return false;
@@ -593,6 +594,7 @@ public class AstraDatabasesAdmin
                 .AddUrlPath("databases")
                 .AddUrlPath(dbGuid.ToString())
                 .AddUrlPath("terminate")
+                .WithTimeoutManager(new DatabaseAdminTimeoutManager())
                 .AddCommandOptions(options);
 
             await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
@@ -600,21 +602,6 @@ public class AstraDatabasesAdmin
             return true;
         }
         return false;
-    }
-
-    private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
-    {
-        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Info.Region}.apps.astra.datastax.com";
-        var database = _client.GetDatabase(apiEndpoint);
-        return new DatabaseAdminAstra(database, _client, null);
-    }
-
-    private DatabaseAdminAstra GetDatabaseAdmin(Guid dbGuid)
-    {
-        var dbInfo = GetDatabaseInfo(dbGuid);
-        var apiEndpoint = $"https://{dbGuid}-{dbInfo.Info.Region}.apps.astra.datastax.com";
-        var database = _client.GetDatabase(apiEndpoint);
-        return new DatabaseAdminAstra(database, _client, null);
     }
 
     /// <summary>
@@ -684,16 +671,33 @@ public class AstraDatabasesAdmin
         return await GetDatabaseInfoAsync(dbGuid, null, runSynchronously).ConfigureAwait(false);
     }
 
-    internal Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, CommandOptions options, bool runSynchronously)
+    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(Guid dbGuid, CommandOptions options, bool runSynchronously)
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
         var command = CreateCommand()
             .AddUrlPath("databases")
             .AddUrlPath(dbGuid.ToString())
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
             .AddCommandOptions(options);
 
-        var response = command.RunAsyncRaw<DatabaseInfo>(HttpMethod.Get, runSynchronously);
+        var rawInfo = await command.RunAsyncRaw<RawDatabaseInfo>(HttpMethod.Get, runSynchronously);
+        var response = new DatabaseInfo(rawInfo);
         return response;
+    }
+
+    private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
+    {
+        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.apps.astra.datastax.com";
+        var database = _client.GetDatabase(apiEndpoint);
+        return new DatabaseAdminAstra(database, _client, null);
+    }
+
+    private async Task<DatabaseAdminAstra> GetDatabaseAdminAsync(Guid dbGuid)
+    {
+        var dbInfo = await GetDatabaseInfoAsync(dbGuid).ConfigureAwait(false);
+        var apiEndpoint = $"https://{dbGuid}-{dbInfo.Region}.apps.astra.datastax.com";
+        var database = _client.GetDatabase(apiEndpoint);
+        return new DatabaseAdminAstra(database, _client, null);
     }
 
     private Command CreateCommand()

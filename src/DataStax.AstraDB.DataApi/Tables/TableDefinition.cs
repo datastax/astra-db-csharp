@@ -379,19 +379,49 @@ internal class ColumnTypeConstants
 
 public static class TableDefinitionExtensions
 {
-  //NOTE: not thinking that this is a good idea because certain column types need additional properties
-  // public static TableDefinition AddColumn(this TableDefinition tableDefinition, string columnName, ColumnTypes columnType)
-  // {
-  //     tableDefinition.Columns.Add(columnName, new { type = columnType });
-  //     return tableDefinition;
-  // }
-  public static TableDefinition AddPrimaryKey(this TableDefinition tableDefinition, string keyName)
+
+  public static TableDefinition AddSinglePrimaryKey(this TableDefinition tableDefinition, string keyName)
   {
     return tableDefinition.AddCompoundPrimaryKey(keyName, 1);
   }
 
+  public static TableDefinition AddCompositePrimaryKey(this TableDefinition tableDefinition, string[] keyNames)
+  {
+    if (keyNames == null || keyNames.Length == 0)
+    {
+      throw new ArgumentException("Key names cannot be null or empty.", nameof(keyNames));
+    }
 
-  public static TableDefinition AddCompoundPrimaryKey(this TableDefinition tableDefinition, string keyName, int order)
+    var primaryKey = tableDefinition.PrimaryKey ?? new PrimaryKeyDefinition();
+    for (int i = 0; i < keyNames.Length; i++)
+    {
+      primaryKey.KeyList.Add(i + 1, keyNames[i]);
+    }
+    tableDefinition.PrimaryKey = primaryKey;
+    return tableDefinition;
+  }
+
+  public static TableDefinition AddCompoundPrimaryKey(this TableDefinition tableDefinition, string[] keyNames, PrimaryKeySort[] partitionSorts)
+  {
+    if (keyNames == null || keyNames.Length == 0)
+    {
+      throw new ArgumentException("Key names cannot be null or empty.", nameof(keyNames));
+    }
+
+    var primaryKey = tableDefinition.PrimaryKey ?? new PrimaryKeyDefinition();
+    for (int i = 0; i < keyNames.Length; i++)
+    {
+      primaryKey.KeyList.Add(i + 1, keyNames[i]);
+    }
+    for (int i = 0; i < partitionSorts.Length; i++)
+    {
+      primaryKey.SortList.Add(i + 1, partitionSorts[i]);
+    }
+    tableDefinition.PrimaryKey = primaryKey;
+    return tableDefinition;
+  }
+
+  internal static TableDefinition AddCompoundPrimaryKey(this TableDefinition tableDefinition, string keyName, int order)
   {
     var primaryKey = tableDefinition.PrimaryKey ?? new PrimaryKeyDefinition();
     primaryKey.KeyList.Add(order, keyName);
@@ -399,7 +429,7 @@ public static class TableDefinitionExtensions
     return tableDefinition;
   }
 
-  public static TableDefinition AddCompoundPrimaryKeySort(this TableDefinition tableDefinition, string keyName, int keyOrder, SortDirection direction)
+  internal static TableDefinition AddCompoundPrimaryKeySort(this TableDefinition tableDefinition, string keyName, int keyOrder, SortDirection direction)
   {
     var primaryKey = tableDefinition.PrimaryKey ?? new PrimaryKeyDefinition();
     primaryKey.SortList.Add(keyOrder, new PrimaryKeySort(keyName, direction));

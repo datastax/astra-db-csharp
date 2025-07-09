@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
@@ -26,5 +27,6 @@ public class FindEmbeddingProvidersResult
     /// <summary>
     /// A dictionary of embedding provider names to <see cref="EmbeddingProvider"/> details.
     /// </summary>
+    [JsonPropertyName("embeddingProviders")]
     public Dictionary<string, EmbeddingProvider> EmbeddingProviders { get; set; } = new();
 }

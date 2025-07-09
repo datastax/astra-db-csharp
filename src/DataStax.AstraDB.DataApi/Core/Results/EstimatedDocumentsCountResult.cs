@@ -18,14 +18,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
-/// <summary>
-/// The result of an estimated count operation.
-/// </summary>
-public class EstimatedDocumentsCountResult
+internal class EstimatedDocumentsCountResult
 {
-    /// <summary>
-    /// The estimated number of documents in the collection.
-    /// </summary>
+    [JsonInclude]
     [JsonPropertyName("count")]
-    public int Count { get; set; }
+    internal int Count { get; set; }
 }

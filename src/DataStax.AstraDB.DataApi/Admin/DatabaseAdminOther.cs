@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.Utils;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Admin
 {
@@ -44,17 +44,18 @@ namespace DataStax.AstraDB.DataApi.Admin
         {
             _id = id;
         }
-        public IEnumerable<string> ListKeyspaceNames()
+
+        public IEnumerable<string> ListKeyspaces()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<string>> ListKeyspacesAsync()
         {
             throw new NotImplementedException();
         }
 
         public FindEmbeddingProvidersResult FindEmbeddingProviders()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<string>> ListKeyspaceNamesAsync()
         {
             throw new NotImplementedException();
         }
@@ -104,7 +105,82 @@ namespace DataStax.AstraDB.DataApi.Admin
             throw new NotImplementedException();
         }
 
-        public bool KeyspaceExists(string keyspace)
+        public bool DoesKeyspaceExist(string keyspace)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateKeyspace(string keyspace, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateKeyspace(string keyspace, bool updateDBKeyspace, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateKeyspace(string keyspace, bool updateDBKeyspace, bool waitForCompletion)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateKeyspace(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateKeyspaceAsync(string keyspace, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DropKeyspace(string keyspace, bool waitForCompletion)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DropKeyspace(string keyspace, bool waitForCompletion, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DropKeyspaceAsync(string keyspace, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DropKeyspaceAsync(string keyspace, bool waitForCompletion)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DropKeyspaceAsync(string keyspace, bool waitForCompletion, CommandOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> DoesKeyspaceExistAsync(string keyspace)
         {
             throw new NotImplementedException();
         }

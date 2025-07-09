@@ -23,6 +23,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
@@ -101,6 +103,16 @@ internal static class Extensions
             }
         }
         sb.Append(name);
+    }
+
+    internal static async Task WithCancellation(this Task task, CancellationToken cancellationToken)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        using (cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).TrySetCanceled(), tcs))
+        {
+            var completedTask = await Task.WhenAny(task, tcs.Task);
+            await completedTask;
+        }
     }
 
 }

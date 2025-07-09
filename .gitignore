@@ -11,3 +11,5 @@ appsettings.json
 _site
 api
 api-docs
+test/DataStax.AstraDB.DataAPI.IntegrationTests/TestResults
+test/DataStax.AstraDB.DataAPI.IntegrationTests/coveragereport

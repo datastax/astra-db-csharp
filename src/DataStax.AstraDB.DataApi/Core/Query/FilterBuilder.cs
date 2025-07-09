@@ -294,7 +294,7 @@ public class FilterBuilder<T>
     /// </remarks>
     public Filter<T> In(string fieldName, object value)
     {
-        return new Filter<T>(fieldName, FilterOperator.In, value);
+        return new Filter<T>(fieldName, FilterOperator.In, new object[] { value });
     }
 
     /// <summary>
@@ -306,7 +306,7 @@ public class FilterBuilder<T>
     /// <returns>The filter</returns>
     public Filter<T> In<TField>(Expression<Func<T, TField[]>> expression, TField value)
     {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, value);
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, new object[] { value });
     }
 
     /// <summary>
@@ -346,6 +346,29 @@ public class FilterBuilder<T>
     public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
     {
         return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, array);
+    }
+
+    /// <summary>
+    /// Not in operator -- Match documents where the array field does not match the specified value.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field to check</typeparam>
+    /// <param name="expression">An expression that represents the field for this filter</param>
+    /// <param name="array">The value to not match</param>
+    /// <returns>The filter</returns>
+    public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField value)
+    {
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, new object[] { value });
+    }
+
+    /// <summary>
+    /// Not in operator -- Match documents where the array field does not match the specified value.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field to check</typeparam>
+    /// <param name="array">The value to not match</param>
+    /// <returns>The filter</returns>
+    public Filter<T> Nin(string field, object value)
+    {
+        return new Filter<T>(field, FilterOperator.NotIn, new object[] { value });
     }
 
     /// <summary>
@@ -463,6 +486,12 @@ public class FilterBuilder<T>
 
 public class PrimaryKeyFilter
 {
+    public PrimaryKeyFilter(string columnName, object value)
+    {
+        ColumnName = columnName;
+        Value = value;
+    }
+
     public string ColumnName { get; set; }
     public object Value { get; set; }
 }
@@ -470,8 +499,7 @@ public class PrimaryKeyFilter
 public class PrimaryKeyFilter<T, TValue> : PrimaryKeyFilter
 {
     public PrimaryKeyFilter(Expression<Func<T, TValue>> columnExpression, TValue value)
+        : base(columnExpression.GetMemberNameTree(), value)
     {
-        ColumnName = columnExpression.GetMemberNameTree();
-        Value = value;
     }
 }

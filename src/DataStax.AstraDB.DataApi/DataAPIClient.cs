@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Net.Http;
 
 namespace DataStax.AstraDB.DataApi;
 

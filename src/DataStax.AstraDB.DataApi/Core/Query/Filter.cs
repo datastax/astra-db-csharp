@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.SerDes;
 using MongoDB.Bson;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 /// <summary>
-/// Filters are used target specific documents in a collection. This class is not used directly,
+/// Filters are used to target specific documents in a collection. This class is not used directly,
 /// you can create filters using the <see cref="FilterBuilder{T}"/> class.
 /// </summary>
 /// <typeparam name="T">Type of document in the collection</typeparam>
+[JsonConverter(typeof(FilterConverterFactory))]
 public class Filter<T>
 {
     internal virtual string Name { get; }

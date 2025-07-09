@@ -1,68 +1,33 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
 [CollectionDefinition("DatabaseAndCollections")]
-public class DatabaseAndCollectionsCollection : ICollectionFixture<CollectionsFixture>
+public class DatabaseAndCollectionsCollection : ICollectionFixture<AssemblyFixture>, ICollectionFixture<CollectionsFixture>
 {
-
 }
 
-public class CollectionsFixture : IDisposable, IAsyncLifetime
+public class CollectionsFixture : BaseFixture, IAsyncLifetime
 {
-    public DataApiClient Client { get; private set; }
-    public DataApiClient ClientWithoutToken { get; private set; }
-    public Database Database { get; private set; }
-    public string OpenAiApiKey { get; set; }
-    public string DatabaseUrl { get; set; }
-    public string Token { get; set; }
-
-    public CollectionsFixture()
+    public CollectionsFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "collections")
     {
-        IConfiguration configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: true)
-            .AddEnvironmentVariables(prefix: "ASTRA_DB_")
-            .Build();
-
-        Token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
-        DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:DatabaseUrl"];
-        OpenAiApiKey = configuration["OPENAI_APIKEYNAME"];
-
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger("../../../_logs/collections_fixture_latest_run.log"));
-        ILogger logger = factory.CreateLogger("IntegrationTests");
-
-        var clientOptions = new CommandOptions
-        {
-            RunMode = RunMode.Debug
-        };
-        Client = new DataApiClient(Token, clientOptions, logger);
-        var noTokenClientOptions = new CommandOptions
-        {
-            RunMode = RunMode.Debug
-        };
-        ClientWithoutToken = new DataApiClient(null, noTokenClientOptions, logger);
-        Database = Client.GetDatabase(DatabaseUrl);
     }
 
-    public async Task InitializeAsync()
+    public Collection<SimpleObject> SearchCollection { get; private set; }
+
+    public async ValueTask InitializeAsync()
     {
         await CreateSearchCollection();
         var collection = Database.GetCollection<SimpleObject>(_queryCollectionName);
         SearchCollection = collection;
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await Database.DropCollectionAsync(_queryCollectionName);
     }
-
-    public Collection<SimpleObject> SearchCollection { get; private set; }
-
 
     private const string _queryCollectionName = "simpleObjectsQueryTests";
     private async Task CreateSearchCollection()
@@ -186,8 +151,4 @@ public class CollectionsFixture : IDisposable, IAsyncLifetime
         SearchCollection = collection;
     }
 
-    public void Dispose()
-    {
-        //nothing needed
-    }
 }
