@@ -280,7 +280,7 @@ public class TableTests
                 .Eq(so => so.Title, "Title 1");
             var findResult = await table.FindOneAsync(filter);
             Assert.Equal("Title 1", findResult.Title);
-            var result = await table.DeleteOneAsync(filter);
+            await table.DeleteOneAsync(filter);
             var deletedResult = await table.FindOneAsync(filter);
             Assert.Null(deletedResult);
         }
@@ -341,7 +341,7 @@ public class TableTests
             .Eq(so => so.Title, "Title 1");
             var findResult = table.Find(filter).ToList();
             Assert.Single(findResult);
-            var result = await table.DeleteManyAsync(filter);
+            await table.DeleteManyAsync(filter);
             var deletedResult = table.Find(filter).ToList();
             Assert.Empty(deletedResult);
         }
@@ -376,7 +376,7 @@ public class TableTests
                 });
             var findResult = table.Find(filter).ToList();
             Assert.Single(findResult);
-            var result = await table.DeleteManyAsync(filter);
+            await table.DeleteManyAsync(filter);
             var deletedResult = table.Find(filter).ToList();
             Assert.Empty(deletedResult);
         }
@@ -422,7 +422,7 @@ public class TableTests
                 });
             var findResult = table.Find(filter).ToList();
             Assert.Single(findResult);
-            var result = await table.DeleteManyAsync(filter);
+            await table.DeleteManyAsync(filter);
             var deletedResult = table.Find(filter).ToList();
             Assert.Empty(deletedResult);
         }
@@ -454,7 +454,7 @@ public class TableTests
             await table.InsertManyAsync(rows);
             var findResult = table.Find().ToList();
             Assert.Equal(rows.Count, findResult.Count);
-            var result = await table.DeleteAllAsync();
+            await table.DeleteAllAsync();
             var deletedResult = table.Find().ToList();
             Assert.Empty(deletedResult);
         }

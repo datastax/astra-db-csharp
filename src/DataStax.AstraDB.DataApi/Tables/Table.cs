@@ -522,51 +522,168 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return response;
     }
 
+    /// <inheritdoc cref="FindOneAsync()"/>
+    /// Synchronous version of <see cref="FindOneAsync()"/>
+    public T FindOne()
+    {
+        return FindOne(null, null, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(Filter{T})"/>
+    public T FindOne(Filter<T> filter)
+    {
+        return FindOne(filter, null, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync(Filter{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync(Filter{T}, CommandOptions)"/>
+    public T FindOne(Filter<T> filter, CommandOptions commandOptions)
+    {
+        return FindOne(filter, null, commandOptions);
+    }
+
+    /// <inheritdoc cref="FindOneAsync(TableFindOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFindOptions{T})"/>
+    public T FindOne(TableFindOptions<T> findOptions)
+    {
+        return FindOne<T>(null, findOptions, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync(Filter{T}, TableFindOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(Filter{T}, TableFindOptions{T})"/>
+    public T FindOne(Filter<T> filter, TableFindOptions<T> findOptions)
+    {
+        return FindOne<T>(filter, findOptions, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync(Filter{T}, TableFindOptions{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync(Filter{T}, TableFindOptions{T}, CommandOptions)"/> 
+    public T FindOne(Filter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions)
+    {
+        return FindOne<T>(filter, findOptions, commandOptions);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}()"/>
+    public TResult FindOne<TResult>() where TResult : class
+    {
+        return FindOne<TResult>(null, null, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T})"/>
+    public TResult FindOne<TResult>(Filter<T> filter) where TResult : class
+    {
+        return FindOne<TResult>(filter, null, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T}, CommandOptions)"/>
+    public TResult FindOne<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
+    {
+        return FindOne<TResult>(filter, null, commandOptions);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T})"/>
+    public TResult FindOne<TResult>(Filter<T> filter, TableFindOptions<T> findOptions) where TResult : class
+    {
+        return FindOne<TResult>(filter, findOptions, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T}, CommandOptions)"/>
+    public TResult FindOne<TResult>(Filter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
+    {
+        return FindOneAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Find a single row in the table.
+    /// </summary>
+    /// <returns></returns>
     public Task<T> FindOneAsync()
     {
         return FindOneAsync(null, null, null);
     }
 
+    /// <summary>
+    /// Find a single row in the table that matches the specified filter.
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
     public Task<T> FindOneAsync(Filter<T> filter)
     {
         return FindOneAsync(filter, null, null);
     }
 
+    /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(Filter<T> filter, CommandOptions commandOptions)
     {
         return FindOneAsync(filter, null, commandOptions);
     }
 
+    /// <summary>
+    /// Find a single row in the table using the specified find options.
+    /// </summary>
+    /// <param name="findOptions">Specify Sort options for the find operation.</param>
+    /// <returns></returns>
+    public Task<T> FindOneAsync(TableFindOptions<T> findOptions)
+    {
+        return FindOneAsync<T>(null, findOptions, null);
+    }
+
+    /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<T> FindOneAsync(Filter<T> filter, TableFindOptions<T> findOptions)
     {
         return FindOneAsync<T>(filter, findOptions, null);
     }
 
+    /// <inheritdoc cref="FindOneAsync(Filter{T}, TableFindOptions{T})"/>
+    /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(Filter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions)
     {
         return FindOneAsync<T>(filter, findOptions, commandOptions);
     }
 
+    /// <summary>
+    /// Find a single row in the table, specifying a different result row class type <typeparamref name="TResult"/>
+    ///  (useful when you want to project only certain fields).
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
     public Task<TResult> FindOneAsync<TResult>() where TResult : class
     {
         return FindOneAsync<TResult>(null, null, null);
     }
 
+    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
+    /// <param name="filter"></param>
+    /// <returns></returns>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter) where TResult : class
     {
         return FindOneAsync<TResult>(filter, null, null);
     }
 
+    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
     {
         return FindOneAsync<TResult>(filter, null, commandOptions);
     }
 
+    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, TableFindOptions<T> findOptions) where TResult : class
     {
         return FindOneAsync<TResult>(filter, findOptions, null);
     }
 
+    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T})"/>
+    /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
     {
         return FindOneAsync<TResult>(filter, findOptions, commandOptions, false);
@@ -725,8 +842,8 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <summary>
     /// This is a synchronous version of <see cref="DeleteOneAsync(DeleteOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(DeleteOptions{T})"/>
-    public DeleteResult DeleteOne(DeleteOptions<T> deleteOptions)
+    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
+    public DeleteResult DeleteOne(TableDeleteOptions<T> deleteOptions)
     {
         return DeleteOne(null, deleteOptions, null);
     }
@@ -737,7 +854,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
     public DeleteResult DeleteOne(Filter<T> filter)
     {
-        return DeleteOne(filter, new DeleteOptions<T>(), null);
+        return DeleteOne(filter, null, null);
     }
 
     /// <summary>
@@ -746,32 +863,32 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <inheritdoc cref="DeleteOneAsync(Filter{T}, CommandOptions)"/>
     public DeleteResult DeleteOne(Filter<T> filter, CommandOptions commandOptions)
     {
-        return DeleteOne(filter, new DeleteOptions<T>(), commandOptions);
+        return DeleteOne(filter, null, commandOptions);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(DeleteOptions{T}, CommandOptions)"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(DeleteOptions{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
+    public DeleteResult DeleteOne(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
         return DeleteOne(null, deleteOptions, commandOptions);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T}, DeleteOptions{T})"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, DeleteOptions{T})"/>
-    public DeleteResult DeleteOne(Filter<T> filter, DeleteOptions<T> deleteOptions)
+    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T})"/>
+    public DeleteResult DeleteOne(Filter<T> filter, TableDeleteOptions<T> deleteOptions)
     {
         return DeleteOne(filter, deleteOptions, null);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T}, DeleteOptions{T}, CommandOptions)"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T}, CommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, DeleteOptions{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(Filter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T}, CommandOptions)"/>
+    public DeleteResult DeleteOne(Filter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
         var response = DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
         return response;
@@ -782,7 +899,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// </summary>
     /// <param name="deleteOptions"></param>
     /// <returns></returns>
-    public Task<DeleteResult> DeleteOneAsync(DeleteOptions<T> deleteOptions)
+    public Task<DeleteResult> DeleteOneAsync(TableDeleteOptions<T> deleteOptions)
     {
         return DeleteOneAsync(null, deleteOptions, null);
     }
@@ -794,38 +911,38 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// <returns></returns>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter)
     {
-        return DeleteOneAsync(filter, new DeleteOptions<T>(), null);
+        return DeleteOneAsync(filter, null, null);
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, CommandOptions commandOptions)
     {
-        return DeleteOneAsync(filter, new DeleteOptions<T>(), commandOptions);
+        return DeleteOneAsync(filter, null, commandOptions);
     }
 
-    /// <inheritdoc cref="DeleteOneAsync(DeleteOptions{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    public Task<DeleteResult> DeleteOneAsync(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
         return DeleteOneAsync(null, deleteOptions, commandOptions);
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
     /// <param name="deleteOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions)
+    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, TableDeleteOptions<T> deleteOptions)
     {
         return DeleteOneAsync(filter, deleteOptions, null);
     }
 
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, DeleteOptions{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
         return DeleteOneAsync(filter, deleteOptions, commandOptions, false);
     }
 
-    internal async Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<DeleteResult> DeleteOneAsync(Filter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         deleteOptions.Filter = filter;
         var command = CreateCommand("deleteOne").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
@@ -833,24 +950,38 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return response.Result;
     }
 
+    /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
+    /// Synchronous version of <see cref="DeleteManyAsync(Filter{T})"/>
+    public void DeleteMany(Filter<T> filter)
+    {
+        DeleteMany(filter, null);
+    }
+
+    /// <inheritdoc cref="DeleteManyAsync(Filter{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="DeleteManyAsync(Filter{T}, CommandOptions)"/>
+    public void DeleteMany(Filter<T> filter, CommandOptions commandOptions)
+    {
+        DeleteManyAsync(filter, commandOptions, true).ResultSync();
+    }
+
     /// <summary>
     /// Delete all documents matching the filter from the table.
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    public Task<DeleteResult> DeleteManyAsync(Filter<T> filter)
+    public Task DeleteManyAsync(Filter<T> filter)
     {
         return DeleteManyAsync(filter, null);
     }
 
     /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
     /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions)
+    public Task DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions)
     {
         return DeleteManyAsync(filter, commandOptions, false);
     }
 
-    internal async Task<DeleteResult> DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions, bool runSynchronously)
     {
         var deleteOptions = new DeleteManyOptions<T>
         {
@@ -884,23 +1015,21 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
                 throw new BulkOperationException<DeleteResult>(ex, deleteResult);
             }
         }
-
-        return deleteResult;
     }
 
     /// <summary>
     /// Synchronous version of <see cref="DeleteAllAsync()"/>
     /// </summary>
     /// <inheritdoc cref="DeleteAllAsync()"/>
-    public DeleteResult DeleteAll()
+    public void DeleteAll()
     {
-        return DeleteAllAsync().ResultSync();
+        DeleteAllAsync().ResultSync();
     }
 
     /// <summary>
     /// Delete all rows from the table.
     /// </summary>
-    public Task<DeleteResult> DeleteAllAsync()
+    public Task DeleteAllAsync()
     {
         return DeleteManyAsync(null, null);
     }
@@ -909,7 +1038,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
     /// </summary>
     /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    public Dictionary<string, int> Alter(IAlterTableOperation operation)
+    public Table<T> Alter(IAlterTableOperation operation)
     {
         return Alter(operation, null);
     }
@@ -918,9 +1047,9 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>.
     /// </summary>
     /// <inheritdoc cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>
-    public Dictionary<string, int> Alter(IAlterTableOperation operation, CommandOptions commandOptions)
+    public Table<T> Alter(IAlterTableOperation operation, CommandOptions commandOptions)
     {
-        var response = AlterAsync(operation, commandOptions, true).ResultSync();
+        var response = AlterAsync<T>(operation, commandOptions, true).ResultSync();
         return response;
     }
 
@@ -929,19 +1058,62 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// </summary>
     /// <param name="operation">The alteration operation to apply.</param>
     /// <returns>The status result of the alterTable command.</returns>
-    public Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation)
+    public Task<Table<T>> AlterAsync(IAlterTableOperation operation)
     {
-        return AlterAsync(operation, null, false);
+        return AlterAsync<T>(operation, null, false);
     }
 
     /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
+    /// <param name="operation">The alteration operation to apply.</param>
     /// <param name="commandOptions">Options to customize the command execution.</param>
-    public Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions)
+    public Task<Table<T>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions)
     {
-        return AlterAsync(operation, commandOptions, false);
+        return AlterAsync<T>(operation, commandOptions, false);
     }
 
-    internal async Task<Dictionary<string, int>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions, bool runSynchronously)
+    /// <summary>
+    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
+    /// </summary>
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
+    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation)
+        where TRowAfterAlter : class
+    {
+        return Alter<TRowAfterAlter>(operation, null);
+    }
+
+    /// <summary>
+    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>.
+    /// </summary>
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>
+    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions)
+        where TRowAfterAlter : class
+    {
+        var response = AlterAsync<TRowAfterAlter>(operation, commandOptions, true).ResultSync();
+        return response;
+    }
+
+    /// <summary>
+    /// Alters a table using the specified operation.
+    /// </summary>
+    /// <param name="operation">The alteration operation to apply.</param>
+    /// <returns>The status result of the alterTable command.</returns>
+    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation)
+        where TRowAfterAlter : class
+    {
+        return AlterAsync<TRowAfterAlter>(operation, null, false);
+    }
+
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
+    /// <param name="operation">The alteration operation to apply.</param>
+    /// <param name="commandOptions">Options to customize the command execution.</param>
+    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions)
+        where TRowAfterAlter : class
+    {
+        return AlterAsync<TRowAfterAlter>(operation, commandOptions, false);
+    }
+
+    internal async Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions, bool runSynchronously)
+        where TRowAfterAlter : class
     {
         var payload = new
         {
@@ -952,8 +1124,10 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
             .WithPayload(payload)
             .AddCommandOptions(commandOptions);
 
-        var result = await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
-        return result.Result;
+        await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
+
+        return new Table<TRowAfterAlter>(_tableName, _database, _commandOptions);
+
     }
 
     private List<CommandOptions> GetOptionsTree()

@@ -25,7 +25,11 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
     [JsonIgnore]
     public IProjectionBuilder Projection { get; set; }
 
-    internal bool? IncludeSimilarity { get; set; }
+    /// <summary>
+    /// Whether to include a similarity score in the results or not (when performing a vector sort).
+    /// </summary>
+    [JsonIgnore]
+    public bool? IncludeSimilarity { get; set; }
 
     protected bool? _includeSortVector;
 

@@ -96,7 +96,8 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 IndexName = "author_index",
                 Definition = new TableVectorIndexDefinition<RowBook, object>()
                 {
-                    Column = (b) => b.Author
+                    Column = (b) => b.Author,
+                    Metric = SimilarityMetric.Cosine,
                 }
             });
             await table.CreateIndexAsync(new TableIndex()

@@ -30,11 +30,11 @@ public class TableAlterTests
                 ["review_notes"] = new AlterTableColumnDefinition { Type = "text" }
             };
 
-            await table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false);
+            await table.AlterAsync(new AlterTableAddColumns(newColumns), null);
 
             //throws error on dupe
             var ex = await Assert.ThrowsAsync<DataStax.AstraDB.DataApi.Core.Commands.CommandException>(() =>
-                     table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false));
+                     table.AlterAsync(new AlterTableAddColumns(newColumns), null));
 
             Assert.Contains("unique", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
@@ -68,7 +68,7 @@ public class TableAlterTests
 
             };
 
-            await table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false);
+            await table.AlterAsync(new AlterTableAddColumns(newColumns));
         }
         finally
         {
@@ -97,7 +97,7 @@ public class TableAlterTests
                         ModelName = "NV-Embed-QA"
                     }
                 }
-            }), null, false);
+            }));
         }
         finally
         {
@@ -119,7 +119,7 @@ public class TableAlterTests
                 {
                     VectorDimension = 2
                 }
-            }), null, false);
+            }));
         }
         finally
         {
@@ -140,9 +140,9 @@ public class TableAlterTests
                 ["is_archived_drop"] = new AlterTableColumnDefinition { Type = "boolean" }
             };
 
-            await table.AlterAsync(new AlterTableAddColumns(newColumns), null, runSynchronously: false);
+            await table.AlterAsync(new AlterTableAddColumns(newColumns));
 
-            await table.AlterAsync(new AlterTableDropColumns(new[] { "is_archived_drop" }), null, runSynchronously: false);
+            await table.AlterAsync(new AlterTableDropColumns(new[] { "is_archived_drop" }));
         }
         finally
         {
@@ -164,10 +164,10 @@ public class TableAlterTests
                 {
                     VectorDimension = 2
                 }
-            }), null, false);
+            }), null);
 
             var dropColumn = new AlterTableDropColumns(new[] { "plot_synopsis_drop" });
-            await table.AlterAsync(dropColumn, null, runSynchronously: false);
+            await table.AlterAsync(dropColumn, null);
         }
         finally
         {
@@ -189,7 +189,7 @@ public class TableAlterTests
                 {
                     VectorDimension = 1024
                 }
-            }), null, false);
+            }), null);
 
             await table.AlterAsync(new AlterTableAddVectorize(new Dictionary<string, VectorServiceOptions>
             {
@@ -199,7 +199,7 @@ public class TableAlterTests
                     ModelName = "NV-Embed-QA"
                 }
 
-            }), null, false);
+            }));
         }
         finally
         {
@@ -217,27 +217,29 @@ public class TableAlterTests
 
             await table.AlterAsync(new AlterTableAddVectorColumns(new Dictionary<string, AlterTableVectorColumnDefinition>
             {
-                ["plot_synopsis_vectorize_drop"] = new AlterTableVectorColumnDefinition
+                ["plot_synopsis_vector_drop"] = new AlterTableVectorColumnDefinition
                 {
                     VectorDimension = 1024
                 }
-            }), null, false);
+            }));
 
             await table.AlterAsync(new AlterTableAddVectorize(new Dictionary<string, VectorServiceOptions>
             {
-                ["plot_synopsis_vectorize_drop"] = new VectorServiceOptions
+                ["plot_synopsis_vector_drop"] = new VectorServiceOptions
                 {
                     Provider = "nvidia",
                     ModelName = "NV-Embed-QA"
                 }
+            }));
 
-            }), null, false);
+            var dropVectorize = new AlterTableDropVectorize(new[] { "plot_synopsis_vector_drop" });
+            await table.AlterAsync(dropVectorize);
 
-            var dropVectorize = new AlterTableDropVectorize(new[] { "plot_synopsis_vectorize_drop" });
-            await table.AlterAsync(dropVectorize, null, runSynchronously: false);
-
-            var dropColumn = new AlterTableDropColumns(new[] { "plot_synopsis_vectorize_drop" });
-            await table.AlterAsync(dropColumn, null, runSynchronously: false);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
         }
         finally
         {
