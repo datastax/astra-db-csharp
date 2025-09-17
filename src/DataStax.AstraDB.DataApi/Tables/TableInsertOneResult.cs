@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.SerDes;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
+namespace DataStax.AstraDB.DataApi.Tables;
 
-/// <summary>
-/// The result object for an operation returning a list of table names.
-/// </summary>
-public class ListTableNamesResult
+[JsonConverter(typeof(TableInsertOneResultConverter))]
+public class TableInsertOneResult : TableInsertManyResult
 {
-    /// <summary>
-    /// The list of table names.
-    /// </summary>
-    [JsonPropertyName("tables")]
-    public List<string> Tables { get; set; }
+
+  /// <summary>
+  /// A list of the Ids of the inserted documents
+  /// </summary>
+  [JsonPropertyName("insertedIds")]
+  public object InsertedId => InsertedIds.Count > 0 ? InsertedIds[0] : null;
+
 }

@@ -905,7 +905,7 @@ public class Database
     /// Synchronous version of <see cref="ListTableNamesAsync()"/>
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<string> ListTableNames()
+    public List<string> ListTableNames()
     {
         return ListTableNames(null);
     }
@@ -915,7 +915,7 @@ public class Database
     /// </summary>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public IEnumerable<string> ListTableNames(DatabaseCommandOptions options)
+    public List<string> ListTableNames(DatabaseCommandOptions options)
     {
         return ListTableNamesAsync(options, true, true).ResultSync();
     }
@@ -924,7 +924,7 @@ public class Database
     /// List the tables in the database.
     /// </summary>
     /// <returns></returns>
-    public Task<IEnumerable<string>> ListTableNamesAsync()
+    public Task<List<string>> ListTableNamesAsync()
     {
         return ListTableNamesAsync(null);
     }
@@ -934,12 +934,12 @@ public class Database
     /// </summary>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public Task<IEnumerable<string>> ListTableNamesAsync(DatabaseCommandOptions options)
+    public Task<List<string>> ListTableNamesAsync(DatabaseCommandOptions options)
     {
         return ListTableNamesAsync(options, true, false);
     }
 
-    private async Task<IEnumerable<string>> ListTableNamesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
+    private async Task<List<string>> ListTableNamesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
     {
         var payload = new
         {

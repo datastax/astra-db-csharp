@@ -221,8 +221,7 @@ public class TableTests
         var update = Builders<RowBook>.Update.Set(x => x.Rating, 3.07)
             .Set(x => x.Genres, new HashSet<string> { "SetItem1", "SetItem2" })
             .Unset(x => x.DueDate);
-        var result = await table.UpdateOneAsync(filter, update);
-        Assert.Equal(1, result.ModifiedCount);
+        await table.UpdateOneAsync(filter, update);
         var updatedDocument = await table.FindOneAsync(filter);
         Assert.Equal(3.07f, updatedDocument.Rating);
         Assert.Equal(new HashSet<string> { "SetItem1", "SetItem2" }, updatedDocument.Genres);
@@ -583,16 +582,14 @@ public class TableTests
     {
         var filter = Builders<Row>.Filter.Eq("Id", 3);
         var update = Builders<Row>.Update.Set("Name", "Name_3_Updated");
-        var result = await fixture.UntypedTableSinglePrimaryKey.UpdateOneAsync(filter, update);
-        Assert.Equal(1, result.ModifiedCount);
+        await fixture.UntypedTableSinglePrimaryKey.UpdateOneAsync(filter, update);
         var updatedDocument = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
 
         filter = Builders<Row>.Filter.CompositeKey(
             new PrimaryKeyFilter("Id", 3),
             new PrimaryKeyFilter("IdTwo", "IdTwo_3"));
-        result = await fixture.UntypedTableCompositePrimaryKey.UpdateOneAsync(filter, update);
-        Assert.Equal(1, result.ModifiedCount);
+        await fixture.UntypedTableCompositePrimaryKey.UpdateOneAsync(filter, update);
         updatedDocument = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
 
@@ -605,8 +602,7 @@ public class TableTests
                     Builders<Row>.Filter.Eq("SortOneAscending", "SortOneAscending3"),
                     Builders<Row>.Filter.Eq("SortTwoDescending", "SortTwoDescending47")
                 });
-        result = await fixture.UntypedTableCompoundPrimaryKey.UpdateOneAsync(filter, update);
-        Assert.Equal(1, result.ModifiedCount);
+        await fixture.UntypedTableCompoundPrimaryKey.UpdateOneAsync(filter, update);
         updatedDocument = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
     }

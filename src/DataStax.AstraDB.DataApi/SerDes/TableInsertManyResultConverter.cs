@@ -14,24 +14,33 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Results;
+using DataStax.AstraDB.DataApi.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DataStax.AstraDB.DataApi.Core.Results;
-using DataStax.AstraDB.DataApi.Tables;
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
-public class TableInsertManyResultConverter : JsonConverter<TableInsertManyResult>
+internal class TableInsertOneResultConverter : TableInsertResultConverter<TableInsertOneResult>
 {
-    public override TableInsertManyResult Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+}
+
+internal class TableInsertManyResultConverter : TableInsertResultConverter<TableInsertManyResult>
+{
+}
+
+internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableInsertManyResult, new()
+{
+
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException("Expected StartObject token");
 
-        var result = new TableInsertManyResult();
+        var result = new T();
         JsonDocument insertedIdsDoc = null;
         JsonDocument documentResponsesDoc = null;
 
@@ -207,7 +216,7 @@ public class TableInsertManyResultConverter : JsonConverter<TableInsertManyResul
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, TableInsertManyResult value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         throw new NotSupportedException("Serialization is not implemented for TableInsertManyResult");
     }

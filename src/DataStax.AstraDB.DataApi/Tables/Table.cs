@@ -386,7 +386,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// Synchronous version of <see cref="InsertOneAsync(T)"/>
     /// </summary>
     /// <inheritdoc cref="InsertOneAsync(T)"/>
-    public TableInsertManyResult InsertOne(T row)
+    public TableInsertOneResult InsertOne(T row)
     {
         return InsertOne(row, null);
     }
@@ -395,7 +395,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// Synchronous version of <see cref="InsertOneAsync(T, CommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="InsertOneAsync(T, CommandOptions)"/>
-    public TableInsertManyResult InsertOne(T row, CommandOptions commandOptions)
+    public TableInsertOneResult InsertOne(T row, CommandOptions commandOptions)
     {
         return InsertOneAsync(row, commandOptions, true).ResultSync();
     }
@@ -405,19 +405,19 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     /// </summary>
     /// <param name="row"></param>
     /// <returns></returns>
-    public Task<TableInsertManyResult> InsertOneAsync(T row)
+    public Task<TableInsertOneResult> InsertOneAsync(T row)
     {
         return InsertOneAsync(row, null);
     }
 
     /// <inheritdoc cref="InsertOneAsync(T)"/>
     /// <param name="commandOptions"></param>
-    public Task<TableInsertManyResult> InsertOneAsync(T row, CommandOptions commandOptions)
+    public Task<TableInsertOneResult> InsertOneAsync(T row, CommandOptions commandOptions)
     {
         return InsertOneAsync(row, commandOptions, false);
     }
 
-    private async Task<TableInsertManyResult> InsertOneAsync(T row, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<TableInsertOneResult> InsertOneAsync(T row, CommandOptions commandOptions, bool runSynchronously)
     {
         var payload = new
         {
@@ -425,7 +425,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         };
         commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
         var command = CreateCommand("insertOne").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnStatus<TableInsertOneResult>(runSynchronously).ConfigureAwait(false);
         return response.Result;
     }
 
@@ -739,104 +739,51 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    public UpdateResult UpdateOne(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
-    {
-        return UpdateOne(null, update, updateOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    public UpdateResult UpdateOne(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        return UpdateOne(null, update, updateOptions, commandOptions);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
     /// </summary>
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
-    public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update)
+    public void UpdateOne(Filter<T> filter, UpdateBuilder<T> update)
     {
-        return UpdateOne(filter, update, new UpdateOneOptions<T>(), null);
+        UpdateOne(filter, update, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
+    /// Synchronous version of <see cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, CommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
+    /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, CommandOptions)"/>
+    public void UpdateOne(Filter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
     {
-        return UpdateOne(filter, update, updateOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    public UpdateResult UpdateOne(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        var response = UpdateOneAsync(filter, update, updateOptions, commandOptions, true).ResultSync();
-        return response;
-    }
-
-    /// <summary>
-    /// Update a single row in the table using the provided update builder and options.
-    ///</summary>
-    /// <param name="update"></param>
-    /// <param name="updateOptions"></param>
-    /// <returns></returns>
-    public Task<UpdateResult> UpdateOneAsync(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
-    {
-        return UpdateOneAsync(null, update, updateOptions, null);
-    }
-
-    /// <inheritdoc cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    /// <param name="commandOptions"></param>
-    public Task<UpdateResult> UpdateOneAsync(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        return UpdateOneAsync(null, update, updateOptions, commandOptions);
+        UpdateOneAsync(filter, update, commandOptions, true).ResultSync();
     }
 
     /// <summary>
     /// Update a single row in the table using the provided filter and update builder.
     /// 
-    /// This is similar to <see cref="FindOneAndUpdateAsync(Filter{T}, UpdateBuilder{T})"/> but does not return the updated document.
     /// </summary>
     /// <param name="filter"></param>
     /// <param name="update"></param>
     /// <returns></returns>
-    public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update)
+    public Task UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update)
     {
-        return UpdateOneAsync(filter, update, null, null);
+        return UpdateOneAsync(filter, update, null);
     }
 
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
-    /// <param name="updateOptions"></param>
-    public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
-    {
-        return UpdateOneAsync(filter, update, updateOptions, null);
-    }
-
-    /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
     /// <param name="commandOptions"></param>
-    public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
+    public Task UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
     {
-        return UpdateOneAsync(filter, update, updateOptions, commandOptions, false);
+        return UpdateOneAsync(filter, update, commandOptions, false);
     }
 
-    internal async Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions, bool runSynchronously)
     {
-        updateOptions = updateOptions ?? new UpdateOneOptions<T>();
-        updateOptions.Filter = filter;
-        updateOptions.Update = update;
+        var updateOptions = new UpdateOneOptions<T>
+        {
+            Filter = filter,
+            Update = update
+        };
         var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
-        return response.Result;
+        await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -944,6 +891,7 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
 
     internal async Task<DeleteResult> DeleteOneAsync(Filter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
     {
+        deleteOptions ??= new TableDeleteOptions<T>();
         deleteOptions.Filter = filter;
         var command = CreateCommand("deleteOne").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
