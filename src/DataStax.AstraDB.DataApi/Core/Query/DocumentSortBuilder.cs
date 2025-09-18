@@ -75,6 +75,13 @@ public class DocumentSortBuilder<T> : SortBuilder<T>
         return this;
     }
 
+    /// <inheritdoc />
+    public new DocumentSortBuilder<T> Lexical(string value)
+    {
+        Sorts.Add(Sort.Lexical(value));
+        return this;
+    }
+
     internal new DocumentSortBuilder<T> Clone()
     {
         var clone = new DocumentSortBuilder<T>();

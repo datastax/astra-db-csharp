@@ -80,6 +80,17 @@ public class SortBuilder<T>
         return this;
     }
 
+    /// <summary>
+    /// Adds a lexical sort.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public SortBuilder<T> Lexical(string value)
+    {
+        Sorts.Add(Sort.Lexical(value));
+        return this;
+    }
+
     internal SortBuilder<T> Clone()
     {
         var clone = new SortBuilder<T>();

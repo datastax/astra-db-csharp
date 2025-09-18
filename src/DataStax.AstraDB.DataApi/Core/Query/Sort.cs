@@ -75,6 +75,8 @@ internal class Sort
     internal static Sort Hybrid(string lexical, string vectorize) => new(DataApiKeywords.Hybrid, new Dictionary<string, object> { { DataApiKeywords.Lexical, lexical }, { DataApiKeywords.Vectorize, vectorize } });
 
     internal static Sort Hybrid(string lexical, float[] vector) => new(DataApiKeywords.Hybrid, new Dictionary<string, object> { { DataApiKeywords.Lexical, lexical }, { DataApiKeywords.Vector, vector } });
+
+    internal static Sort Lexical(string value) => new(DataApiKeywords.Lexical, value);
 }
 
 internal class Sort<T> : Sort

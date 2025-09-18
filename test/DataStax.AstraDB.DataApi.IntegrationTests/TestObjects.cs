@@ -24,6 +24,20 @@ public class SimpleObjectWithVectorize
     public string StringToVectorize => Name;
 }
 
+public class SimpleObjectWithLexical
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Lexical)]
+    [LexicalOptions(
+        TokenizerName = "standard",
+        Filters = new[] { "lowercase", "stop", "porterstem", "asciifolding" },
+        CharacterFilters = new string[] { }
+    )]
+    public string LexicalValue => Name;
+}
+
 public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
 {
     [DocumentMapping(DocumentMappingField.Similarity)]

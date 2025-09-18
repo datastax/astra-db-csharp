@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
@@ -480,6 +481,16 @@ public class FilterBuilder<T>
             }
         }
         return new Filter<T>(null, dictionary);
+    }
+
+    /// <summary>
+    /// Lexical match operator -- Matches documents where the document's lexical field value is a exicographical match to the specified string of space-separated keywords or terms
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public Filter<T> LexicalMatch(string value)
+    {
+        return new Filter<T>(DataApiKeywords.Lexical, FilterOperator.Match, value);
     }
 
 }
