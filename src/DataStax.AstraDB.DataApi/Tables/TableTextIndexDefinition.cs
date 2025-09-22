@@ -23,33 +23,27 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-
-/// <summary>
-/// Definition of a vector index on a table
-/// </summary>
-public class TableVectorIndexDefinition : TableIndexDefinition
+public class TableTextIndexDefinition : TableIndexDefinition
 {
 
-  /// <summary>
-  /// The similarity metric to use
-  /// </summary>
-  [JsonIgnore]
-  public SimilarityMetric Metric
-  {
-    get { return (SimilarityMetric)Options["metric"]; }
-    set { Options["metric"] = value; }
-  }
+  [JsonInclude]
+  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+  [JsonPropertyName("analyzer")]
+  internal object Analyzer { get; set; }
 
+  internal override string IndexCreationCommandName => "createTextIndex";
 
-  /// <summary>
-  /// The source model
-  /// </summary>
-  [JsonIgnore]
-  public string SourceModel
-  {
-    get { return (string)Options["sourceModel"]; }
-    set { Options["sourceModel"] = value; }
-  }
-
-  internal override string IndexCreationCommandName => "createVectorIndex";
 }
+
+// public class TableTextIndexDefinition<TRow, TColumn> : TableTextIndexDefinition
+// {
+//   public Expression<Func<TRow, TColumn>> Column
+//   {
+//     set
+//     {
+
+//       ColumnName = value.GetMemberNameTree();
+//     }
+//   }
+
+// }

@@ -266,14 +266,7 @@ public class TableTests
                 rows.Add(row);
             }
             var table = await fixture.Database.CreateTableAsync<RowBookSinglePrimaryKey>(tableName);
-            await table.CreateIndexAsync(new TableIndex()
-            {
-                IndexName = "testDeleteOne_number_of_pages_index",
-                Definition = new TableIndexDefinition<RowBookSinglePrimaryKey, int>()
-                {
-                    Column = (b) => b.NumberOfPages
-                }
-            });
+            await table.CreateIndexAsync("testDeleteOne_number_of_pages_index", (b) => b.NumberOfPages);
             await table.InsertManyAsync(rows);
             var filter = Builders<RowBookSinglePrimaryKey>.Filter
                 .Eq(so => so.Title, "Title 1");
@@ -327,14 +320,7 @@ public class TableTests
                 rows.Add(row);
             }
             var table = await fixture.Database.CreateTableAsync<RowBookSinglePrimaryKey>(tableName);
-            await table.CreateIndexAsync(new TableIndex()
-            {
-                IndexName = "testDeleteOne_number_of_pages_index",
-                Definition = new TableIndexDefinition<RowBookSinglePrimaryKey, int>()
-                {
-                    Column = (b) => b.NumberOfPages
-                }
-            });
+            await table.CreateIndexAsync("testDeleteOne_number_of_pages_index", (b) => b.NumberOfPages);
             await table.InsertManyAsync(rows);
             var filter = Builders<RowBookSinglePrimaryKey>.Filter
             .Eq(so => so.Title, "Title 1");
@@ -382,6 +368,7 @@ public class TableTests
         catch (Exception ex)
         {
             var msg = ex.Message;
+            throw;
         }
         finally
         {
@@ -605,6 +592,55 @@ public class TableTests
         await fixture.UntypedTableCompoundPrimaryKey.UpdateOneAsync(filter, update);
         updatedDocument = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
+    }
+
+    [Fact]
+    public async Task FindOne_Lexical()
+    {
+        var tableName = "tableFindOneWithLexical";
+        try
+        {
+            List<SimpleObjectWithLexical> items = new List<SimpleObjectWithLexical>() {
+                new()
+                {
+                    Id = 0,
+                    Name = "This is about a cat.",
+                },
+                new()
+                {
+                    Id = 1,
+                    Name = "This is about a dog.",
+                },
+                new()
+                {
+                    Id = 2,
+                    Name = "This is about a horse.",
+                },
+            };
+
+            var table = await fixture.Database.CreateTableAsync<SimpleObjectWithLexical>(tableName);
+            await table.CreateIndexAsync((b) => b.LexicalValue, Builders.TableIndex.Text());
+            var insertResult = await table.InsertManyAsync(items);
+            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
+            {
+                Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
+                Filter = Builders<SimpleObjectWithLexical>.Filter.LexicalMatch("dog"),
+            };
+
+            var result = await table.FindOneAsync(findOptions);
+            Assert.NotNull(result);
+            Assert.Equal(1, result.Id);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
     }
 
 }

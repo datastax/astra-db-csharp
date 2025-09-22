@@ -131,6 +131,30 @@ public class BooleanColumn : Column
 }
 
 /// <summary>
+/// A column that holds date values (i.e. DateOnly)
+/// </summary>
+public class DateColumn : Column
+{
+    /// <summary>
+    /// Defines the column as type timestamp
+    /// </summary>
+    [JsonPropertyName("type")]
+    public override string Type => "date";
+}
+
+/// <summary>
+/// A column that holds time values (i.e. TimeOnly)
+/// </summary>
+public class TimeColumn : Column
+{
+    /// <summary>
+    /// Defines the column as type timestamp
+    /// </summary>
+    [JsonPropertyName("type")]
+    public override string Type => "time";
+}
+
+/// <summary>
 /// A column that holds date/time values
 /// </summary>
 public class DateTimeColumn : Column

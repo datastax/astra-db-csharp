@@ -75,8 +75,8 @@ public class DocumentSortBuilder<T> : SortBuilder<T>
         return this;
     }
 
-    /// <inheritdoc />
-    public new DocumentSortBuilder<T> Lexical(string value)
+
+    public DocumentSortBuilder<T> Lexical(string value)
     {
         Sorts.Add(Sort.Lexical(value));
         return this;

@@ -608,6 +608,7 @@ public class DatabaseTests
         catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
+            throw;
         }
         finally
         {

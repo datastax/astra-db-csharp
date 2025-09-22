@@ -102,4 +102,25 @@ public class TableSortBuilder<T> : SortBuilder<T>
         base.Descending(expression);
         return this;
     }
+
+    /// <summary>
+    /// Adds a lexical sort.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public TableSortBuilder<T> Lexical<TField>(Expression<Func<T, TField>> column, string value)
+    {
+        Sorts.Add(Sort<T>.TableLexical(column, value));
+        return this;
+    }
+
+    internal new TableSortBuilder<T> Clone()
+    {
+        var clone = new TableSortBuilder<T>();
+        foreach (var sort in this.Sorts)
+        {
+            clone.Sorts.Add(sort.Clone());
+        }
+        return clone;
+    }
 }

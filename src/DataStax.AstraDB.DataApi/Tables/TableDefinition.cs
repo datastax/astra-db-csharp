@@ -114,7 +114,6 @@ public class TableDefinition
           case ColumnVectorAttribute vector:
             if (columnType != typeof(float[]) && columnType != typeof(double[]) && columnType != typeof(string))
             {
-              //TODO: change to check for all numeric array types?
               throw new InvalidOperationException($"Vector Column {columnName} must be either float[], double[] or string (if sending already binary-encoded string)");
             }
             createColumn = false;
@@ -153,7 +152,7 @@ public class TableDefinition
         definition.AddBooleanColumn(columnName);
         break;
       case TypeCode.DateTime:
-        definition.AddDateColumn(columnName);
+        definition.AddDateTimeColumn(columnName);
         break;
       case TypeCode.Decimal:
         definition.AddDecimalColumn(columnName);
@@ -168,19 +167,29 @@ public class TableDefinition
         definition.AddFloatColumn(columnName);
         break;
       case TypeCode.Object:
-        if (propertyType.IsArray)
+        if (propertyType.FullName == "System.DateOnly")
+        {
+          definition.AddDateColumn(columnName);
+        }
+        else if (propertyType.FullName == "System.TimeOnly")
+        {
+          definition.AddTimeColumn(columnName);
+        }
+        else if (propertyType.IsArray)
         {
           Type elementType = propertyType.GetElementType();
           if (elementType == typeof(byte))
           {
             definition.AddBlobColumn(columnName);
           }
-          //TODO: other array types
+          else
+          {
+            definition.AddListColumn(columnName, elementType);
+          }
         }
         else if (propertyType.IsEnum)
         {
-          //TODO (int??)
-          break;
+          throw new NotSupportedException($"Enum types are not currently supported for column: {columnName}. Consider using a string or int property instead.");
         }
         else if (propertyType == typeof(Guid))
         {
@@ -410,6 +419,18 @@ public static class TableDefinitionExtensions
   }
 
   /// <summary>
+  /// Add a date/time (timestamp) column to the table definition
+  /// </summary>
+  /// <param name="tableDefinition"></param>
+  /// <param name="columnName"></param>
+  /// <returns></returns>
+  public static TableDefinition AddDateTimeColumn(this TableDefinition tableDefinition, string columnName)
+  {
+    tableDefinition.Columns.Add(columnName, new DateTimeColumn());
+    return tableDefinition;
+  }
+
+  /// <summary>
   /// Add a date column to the table definition
   /// </summary>
   /// <param name="tableDefinition"></param>
@@ -417,7 +438,19 @@ public static class TableDefinitionExtensions
   /// <returns></returns>
   public static TableDefinition AddDateColumn(this TableDefinition tableDefinition, string columnName)
   {
-    tableDefinition.Columns.Add(columnName, new DateTimeColumn());
+    tableDefinition.Columns.Add(columnName, new DateColumn());
+    return tableDefinition;
+  }
+
+  /// <summary>
+  /// Add a time column to the table definition
+  /// </summary>
+  /// <param name="tableDefinition"></param>
+  /// <param name="columnName"></param>
+  /// <returns></returns>
+  public static TableDefinition AddTimeColumn(this TableDefinition tableDefinition, string columnName)
+  {
+    tableDefinition.Columns.Add(columnName, new TimeColumn());
     return tableDefinition;
   }
 

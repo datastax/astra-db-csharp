@@ -34,11 +34,11 @@ public class DatabaseCreationOptions
     public string Keyspace { get; set; } = Database.DefaultKeyspace;
 
     [JsonPropertyName("capacityUnits")]
-    public int CapacityUnits { get; set; } = 1;
+    internal int CapacityUnits { get; set; } = 1;
 
     [JsonPropertyName("tier")]
-    public string Tier { get; set; } = "serverless";
+    internal string Tier { get; set; } = "serverless";
 
     [JsonPropertyName("dbType")]
-    public string DatabaseType { get; set; } = "vector";
+    internal string DatabaseType { get; set; } = "vector";
 }

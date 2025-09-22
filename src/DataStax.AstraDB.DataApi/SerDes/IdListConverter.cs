@@ -32,7 +32,7 @@ public class IdListConverter : JsonConverter<List<object>>
 {
     private static readonly GuidConverter _guidConverter = new();
     private static readonly ObjectIdConverter _objectIdConverter = new();
-    private static readonly DateTimeConverter<DateTime> _dateTimeConverter = new();
+    private static readonly DateTimeAsDollarDateConverter<DateTime> _dateTimeConverter = new();
 
     public override List<object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

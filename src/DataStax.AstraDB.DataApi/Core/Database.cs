@@ -22,6 +22,7 @@ using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -954,6 +955,51 @@ public class Database
             .AddCommandOptions(options);
         var result = await command.RunAsyncReturnStatus<ListTableNamesResult>(runSynchronously).ConfigureAwait(false);
         return result.Result.Tables;
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableIndexAsync(Expression{Func{T, TColumn})"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableIndexAsync(Expression{Func{T, TColumn})"/>
+    public void DropTableIndex<T, TColumn>(Expression<Func<T, TColumn>> column)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        DropTableIndex(indexName, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableIndexAsync(Expression{Func{T, TColumn}, DropIndexCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableIndexAsync(string, DropIndexCommandOptions)"/>
+    public void DropTableIndex<T, TColumn>(Expression<Func<T, TColumn>> column, DropIndexCommandOptions commandOptions)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        DropTableIndexAsync(indexName, commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Drops an index on the table.
+    /// </summary>
+    /// <param name="column">The column to drop the index from</param>
+    /// <remarks>
+    /// Index name will be generated as "{columnName}_idx". Use an overload that accepts an index name if the index was created with a custom name.
+    /// </remarks>
+    public Task DropTableIndexAsync<T, TColumn>(Expression<Func<T, TColumn>> column)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        return DropTableIndexAsync(indexName, null, false);
+    }
+
+    /// <inheritdoc cref="DropTableIndexAsync(string)"/>
+    /// <param name="column">The column to drop the index from</param>
+    /// <param name="commandOptions"></param>
+    /// <remarks>
+    /// Index name will be generated as "{columnName}_idx". Use an overload that accepts an index name if the index was created with a custom name.
+    /// </remarks>
+    public Task DropTableIndexAsync<T, TColumn>(Expression<Func<T, TColumn>> column, DropIndexCommandOptions commandOptions)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        return DropTableIndexAsync(indexName, commandOptions, false);
     }
 
 

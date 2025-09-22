@@ -163,8 +163,13 @@ internal class Command
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         if (commandOptions.SerializeDateAsDollarDate == true)
         {
-            serializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
-            serializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+            serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset>());
+            serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime>());
+        }
+        else
+        {
+            serializeOptions.Converters.Add(new DateTimeConverter());
+            serializeOptions.Converters.Add(new DateTimeNullableConverter());
         }
         if (commandOptions.SerializeGuidAsDollarUuid == true)
         {
@@ -205,8 +210,13 @@ internal class Command
         }
         if (commandOptions.SerializeDateAsDollarDate == true)
         {
-            deserializeOptions.Converters.Add(new DateTimeConverter<DateTimeOffset>());
-            deserializeOptions.Converters.Add(new DateTimeConverter<DateTime>());
+            deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset>());
+            deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime>());
+        }
+        else
+        {
+            deserializeOptions.Converters.Add(new DateTimeConverter());
+            deserializeOptions.Converters.Add(new DateTimeNullableConverter());
         }
         deserializeOptions.Converters.Add(new IpAddressConverter());
         deserializeOptions.Converters.Add(new AnalyzerOptionsConverter());
