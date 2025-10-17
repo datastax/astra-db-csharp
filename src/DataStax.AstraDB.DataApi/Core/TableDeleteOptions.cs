@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Query;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
+namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// The result object for an operation returning a list of table names.
+/// Options for deleting a row from a table
 /// </summary>
-public class ListTableNamesResult
+/// <typeparam name="T"></typeparam>
+public class TableDeleteOptions<T> where T : class
 {
-    /// <summary>
-    /// The list of table names.
-    /// </summary>
-    [JsonPropertyName("tables")]
-    public List<string> Tables { get; set; }
+  internal Filter<T> Filter { get; set; }
+
+  [JsonInclude]
+  [JsonPropertyName("filter")]
+  internal Dictionary<string, object> FilterMap => Filter == null ? new Dictionary<string, object>() : Filter.Serialize();
 }

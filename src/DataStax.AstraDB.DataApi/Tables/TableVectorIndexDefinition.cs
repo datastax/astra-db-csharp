@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
@@ -22,8 +23,16 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Definition of a vector index on a table
+/// </summary>
+/// <typeparam name="TRow"></typeparam>
+/// <typeparam name="TColumn"></typeparam>
 public class TableVectorIndexDefinition<TRow, TColumn> : TableVectorIndexDefinition
 {
+  /// <summary>
+  /// The column to create the vector index on
+  /// </summary>
   public Expression<Func<TRow, TColumn>> Column
   {
     set
@@ -33,38 +42,39 @@ public class TableVectorIndexDefinition<TRow, TColumn> : TableVectorIndexDefinit
   }
 }
 
+/// <summary>
+/// Definition of a vector index on a table
+/// </summary>
 public class TableVectorIndexDefinition
 {
-  /*
-  {
-  "definition": {
-    "column": "example_column",
-    "options": {
-      "caseSensitive": false,
-      "normalize": true,
-      "ascii": false
-    }
-  }
-}
-  */
+  /// <summary>
+  /// The name of the column to create the vector index on
+  /// </summary>
   [JsonPropertyName("column")]
   public string ColumnName { get; set; }
 
   [JsonInclude]
   [JsonPropertyName("options")]
-  internal Dictionary<string, string> Options { get; set; } = new Dictionary<string, string>();
+  internal Dictionary<string, object> Options { get; set; } = new Dictionary<string, object>();
 
+  /// <summary>
+  /// The similarity metric to use
+  /// </summary>
   [JsonIgnore]
-  public string Metric
+  public SimilarityMetric Metric
   {
-    get { return Options["metric"]; }
+    get { return (SimilarityMetric)Options["metric"]; }
     set { Options["metric"] = value; }
   }
 
+
+  /// <summary>
+  /// The source model
+  /// </summary>
   [JsonIgnore]
   public string SourceModel
   {
-    get { return Options["sourceModel"]; }
+    get { return (string)Options["sourceModel"]; }
     set { Options["sourceModel"] = value; }
   }
 

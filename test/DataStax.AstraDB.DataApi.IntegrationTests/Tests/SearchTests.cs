@@ -163,6 +163,62 @@ public class SearchTests
     }
 
     [Fact]
+    public async Task VectorizeFindOne()
+    {
+        var collectionName = "collectionFindOneWithVectorize";
+        try
+        {
+            List<SimpleObjectWithVectorize> items = new List<SimpleObjectWithVectorize>() {
+                new()
+                {
+                    Id = 0,
+                    Name = "This is about a cat.",
+                },
+                new()
+                {
+                    Id = 1,
+                    Name = "This is about a dog.",
+                },
+                new()
+                {
+                    Id = 2,
+                    Name = "This is about a horse.",
+                },
+            };
+
+            var options = new CollectionDefinition
+            {
+                Vector = new VectorOptions
+                {
+                    Metric = SimilarityMetric.Cosine,
+                    Service = new VectorServiceOptions
+                    {
+                        Provider = "nvidia",
+                        ModelName = "NV-Embed-QA"
+                    }
+                }
+            };
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
+            var insertResult = await collection.InsertManyAsync(items);
+            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            var findOptions = new DocumentFindOptions<SimpleObjectWithVectorize>()
+            {
+                Sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize("dog"),
+                IncludeSimilarity = true
+            };
+
+            var result = await collection.FindOneAsync<SimpleObjectWithVectorizeResult>(findOptions);
+            Assert.NotNull(result);
+            Assert.NotNull(result.Similarity);
+            Assert.Equal(1, result.Id);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
     public void Limit_RunsAsync_ReturnsLimitedResult()
     {
         var collection = fixture.SearchCollection;

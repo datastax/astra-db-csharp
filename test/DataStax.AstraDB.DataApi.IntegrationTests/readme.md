@@ -6,7 +6,7 @@ export ASTRA_DB_TOKEN="your_token_here"
 export ASTRA_DB_URL="your_db_url_here"
 ```
 
-dotnet test --collect:"XPlat Code Coverage" 
+dotnet test -- "xUnit.MaxParallelThreads=4"
 
 reportgenerator
 -reports:"Path\To\TestProject\TestResults\{guid}\coverage.cobertura.xml"

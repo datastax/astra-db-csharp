@@ -20,6 +20,10 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 public class DocumentFindOptions<T> : FindOptions<T, DocumentSortBuilder<T>>
 {
+    /// <summary>
+    /// The sort to apply when running the query.
+    /// </summary>
     [JsonIgnore]
     public override DocumentSortBuilder<T> Sort { get; set; }
+
 }
