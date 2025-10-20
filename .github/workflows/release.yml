@@ -5,7 +5,7 @@ on:
     tags:
       - "v*.*.*" # Matches stable versions like v1.2.3
       - "v*.*.*-*" # Matches pre-release versions like v2.0.1-beta
-
+  workflow_dispatch:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
