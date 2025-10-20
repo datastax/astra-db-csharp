@@ -1084,12 +1084,6 @@ public class Table<T> : IQueryRunner<T, SortBuilder<T>> where T : class
         return optionsTree.ToList();
     }
 
-    private List<CommandOptions> GetOptionsTree()
-    {
-        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions });
-        return optionsTree.ToList();
-    }
-
     internal Command CreateCommand(string name)
     {
         var optionsTree = GetOptionsTree().ToArray();
