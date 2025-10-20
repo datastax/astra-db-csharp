@@ -1,7 +1,18 @@
+name: Continuous Integration
+
+# runs on
+# * pushes and pull requests on the "main" (pull request only for specific paths)
+# * manual trigger
+
 on:
   push:
-    branches:
-      - main
+    branches: [ "main", "feature/*" ]
+
+  pull_request:
+    branches: [ "main", "feature/*" ]
+
+  workflow_dispatch:
+  
 jobs:
   build:
     runs-on: ubuntu-latest
