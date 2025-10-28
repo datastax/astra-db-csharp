@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Tables;
+using System.ComponentModel.DataAnnotations;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
@@ -124,11 +125,11 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
     {
         // Create a table with a single primary key
         var createDefinition = new TableDefinition()
-                .AddIntColumn("Id")
-                .AddTextColumn("IdTwo")
-                .AddTextColumn("Name")
-                .AddTextColumn("SortOneAscending")
-                .AddTextColumn("SortTwoDescending")
+                .AddColumn("Id", DataApiType.Int)
+                .AddColumn("IdTwo", DataApiType.Text)
+                .AddColumn("Name", DataApiType.Text)
+                .AddColumn("SortOneAscending", DataApiType.Text)
+                .AddColumn("SortTwoDescending", DataApiType.Text)
                 .AddVectorizeColumn("Vectorize", 1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
@@ -143,11 +144,11 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
 
         // Create a table with a composite primary key
         createDefinition = new TableDefinition()
-                .AddIntColumn("Id")
-                .AddTextColumn("IdTwo")
-                .AddTextColumn("Name")
-                .AddTextColumn("SortOneAscending")
-                .AddTextColumn("SortTwoDescending")
+                .AddColumn("Id", DataApiType.Text)
+                .AddColumn("IdTwo", DataApiType.Text)
+                .AddColumn("Name", DataApiType.Text)
+                .AddColumn("SortOneAscending", DataApiType.Text)
+                .AddColumn("SortTwoDescending", DataApiType.Text)
                 .AddVectorizeColumn("Vectorize", 1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
@@ -161,11 +162,11 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
 
         // Create a table with a compound primary key
         createDefinition = new TableDefinition()
-                .AddIntColumn("Id")
-                .AddTextColumn("IdTwo")
-                .AddTextColumn("Name")
-                .AddTextColumn("SortOneAscending")
-                .AddTextColumn("SortTwoDescending")
+                .AddColumn("Id", DataApiType.Int)
+                .AddColumn("IdTwo", DataApiType.Text)
+                .AddColumn("Name", DataApiType.Text)
+                .AddColumn("SortOneAscending", DataApiType.Text)
+                .AddColumn("SortTwoDescending", DataApiType.Text)
                 .AddVectorizeColumn("Vectorize", 1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",

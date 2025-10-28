@@ -111,6 +111,8 @@ public class ProjectionBuilder<T> : IProjectionBuilder
     /// Specify a field to include in the projection.
     /// </summary>
     /// <param name="fieldName">The name of the field to include.</param>
+    /// <param name="start"></param>
+    /// <param name="length"></param>
     /// <returns>The projection builder.</returns>
     public ProjectionBuilder<T> Slice(string fieldName, int start, int length = 0)
     {
@@ -128,6 +130,8 @@ public class ProjectionBuilder<T> : IProjectionBuilder
     /// </summary>
     /// <typeparam name="TField">The type of the field to include.</typeparam>
     /// <param name="fieldExpression">The field to include in the projection.</param>
+    /// <param name="start"></param>
+    /// <param name="length"></param>
     /// <returns>The projection builder.</returns>
     public ProjectionBuilder<T> Slice<TField>(Expression<Func<T, TField>> fieldExpression, int start, int length = 0)
     {
@@ -214,6 +218,7 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
     /// <summary>
     /// Specify a special field to exclude from the projection.
     /// </summary>
+    /// <param name="fieldExpression"></param>
     /// <param name="fieldName">The name of the field to exclude.</param>
     /// <returns>The projection builder.</returns>
     public InclusiveProjectionBuilder<T> ExcludeSpecial<TField>(Expression<Func<T, TField>> fieldExpression)
@@ -244,6 +249,8 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
     /// Specify a field to include in the projection.
     /// </summary>
     /// <param name="fieldName">The name of the field to include.</param>
+    /// <param name="start"></param>
+    /// <param name="length"></param>
     /// <returns>The projection builder.</returns>
     public InclusiveProjectionBuilder<T> Slice(string fieldName, int start, int length = 0)
     {
@@ -261,6 +268,8 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
     /// </summary>
     /// <typeparam name="TField">The type of the field to include.</typeparam>
     /// <param name="fieldExpression">The field to include in the projection.</param>
+    /// <param name="start"></param>
+    /// <param name="length"></param>
     /// <returns>The projection builder.</returns>
     public InclusiveProjectionBuilder<T> Slice<TField>(Expression<Func<T, TField>> fieldExpression, int start, int length = 0)
     {
@@ -318,6 +327,8 @@ public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveP
     /// Specify a field to include in the projection.
     /// </summary>
     /// <param name="fieldName">The name of the field to include.</param>
+    /// <param name="start"></param>
+    /// <param name="length"></param>
     /// <returns>The projection builder.</returns>
     public ExclusiveProjectionBuilder<T> Slice(string fieldName, int start, int length = 0)
     {
@@ -335,6 +346,8 @@ public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveP
     /// </summary>
     /// <typeparam name="TField">The type of the field to include.</typeparam>
     /// <param name="fieldExpression">The field to include in the projection.</param>
+    /// <param name="start"></param>
+    /// <param name="length"></param>
     /// <returns>The projection builder.</returns>
     public ExclusiveProjectionBuilder<T> Slice<TField>(Expression<Func<T, TField>> fieldExpression, int start, int length = 0)
     {
@@ -362,6 +375,7 @@ public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveP
     /// <summary>
     /// Specify a special field to include in the projection.
     /// </summary>
+    /// <param name="fieldExpression"></param>
     /// <param name="fieldName">The name of the field to include.</param>
     /// <returns>The projection builder.</returns>
     public ExclusiveProjectionBuilder<T> IncludeSpecial<TField>(Expression<Func<T, TField>> fieldExpression)

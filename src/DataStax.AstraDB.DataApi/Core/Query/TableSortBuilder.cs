@@ -106,6 +106,7 @@ public class TableSortBuilder<T> : SortBuilder<T>
     /// <summary>
     /// Adds a lexical sort.
     /// </summary>
+    /// <param name="column"></param>
     /// <param name="value"></param>
     /// <returns></returns>
     public TableSortBuilder<T> Lexical<TField>(Expression<Func<T, TField>> column, string value)

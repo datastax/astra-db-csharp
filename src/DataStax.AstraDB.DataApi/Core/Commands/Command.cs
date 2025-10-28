@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

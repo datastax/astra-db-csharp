@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -30,6 +32,33 @@ namespace DataStax.AstraDB.DataApi.Utils;
 
 internal static class Extensions
 {
+    internal static string ToUrlString(this ApiVersion apiVersion)
+    {
+        return apiVersion switch
+        {
+            ApiVersion.V1 => "v1",
+            _ => "v1",
+        };
+    }
+
+    internal static TResult ResultSync<TResult>(this Task<TResult> task)
+    {
+        return task.GetAwaiter().GetResult();
+    }
+
+    internal static void ResultSync(this Task task)
+    {
+        task.GetAwaiter().GetResult();
+    }
+
+    internal static IEnumerable<IEnumerable<T>> CreateBatch<T>(this IEnumerable<T> list, int chunkSize)
+    {
+        for (int i = 0; i < list.Count(); i += chunkSize)
+        {
+            yield return list.Skip(i).Take(Math.Min(chunkSize, list.Count() - i));
+        }
+    }
+
     internal static string OrIfEmpty(this string str, string alternate)
     {
         return string.IsNullOrEmpty(str) ? alternate : str;
@@ -99,7 +128,7 @@ internal static class Extensions
             var columnNameAttribute = propertyInfo.GetCustomAttribute<ColumnNameAttribute>();
             if (columnNameAttribute != null)
             {
-                name = columnNameAttribute.ColumnName;
+                name = columnNameAttribute.Name;
             }
         }
         sb.Append(name);

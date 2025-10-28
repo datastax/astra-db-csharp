@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-using System;
+namespace DataStax.AstraDB.DataApi.Core;
 
-namespace DataStax.AstraDB.DataApi.Tables;
-
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-public class ColumnNameAttribute : Attribute
+/// <summary>
+/// Additional command options for the Database.CreateType commands.
+/// </summary>
+public class CreateTypeCommandOptions : CommandOptions
 {
-    public string Name { get; set; }
-
-    public ColumnNameAttribute(string columnName)
-    {
-        Name = columnName;
-    }
+  /// <summary>
+  /// Skip creating the type if one with the same name already exists
+  /// </summary>
+  public bool SkipIfExists { get; set; } = false;
 }

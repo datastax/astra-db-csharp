@@ -3,6 +3,7 @@ using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -569,7 +570,7 @@ public class DatabaseTests
         try
         {
             var createDefinition = new TableDefinition()
-                .AddTextColumn("Name")
+                .AddColumn("Name", DataApiType.Text)
                 .AddVectorColumn("Vector", 1024)
                 .AddVectorizeColumn("StringToVectorize", 1024, new VectorServiceOptions
                 {
@@ -646,11 +647,11 @@ public class DatabaseTests
         try
         {
             var createDefinition = new TableDefinition()
-                .AddTextColumn("KeyOne")
-                .AddTextColumn("KeyTwo")
-                .AddTextColumn("Name")
-                .AddTextColumn("SortOneAscending")
-                .AddTextColumn("SortTwoDescending")
+                .AddColumn("KeyOne", DataApiType.Text)
+                .AddColumn("KeyTwo", DataApiType.Text)
+                .AddColumn("Name", DataApiType.Text)
+                .AddColumn("SortOneAscending", DataApiType.Text)
+                .AddColumn("SortTwoDescending", DataApiType.Text)
                 .AddCompoundPrimaryKey("KeyOne", 1)
                 .AddCompoundPrimaryKey("KeyTwo", 2)
                 .AddCompoundPrimaryKeySort("SortOneAscending", 1, SortDirection.Ascending)

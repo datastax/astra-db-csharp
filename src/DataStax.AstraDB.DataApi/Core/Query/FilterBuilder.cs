@@ -354,6 +354,7 @@ public class FilterBuilder<T>
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
+    /// <param name="value"></param>
     /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField value)
@@ -365,6 +366,8 @@ public class FilterBuilder<T>
     /// Not in operator -- Match documents where the array field does not match the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
+    /// <param name="field"></param>
+    /// <param name="value"></param>
     /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin(string field, object value)

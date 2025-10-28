@@ -381,3 +381,50 @@ public class DateTypeTest
     public TimeOnly? MaybeTime { get; set; }
     public DateTime TimestampWithKind { get; set; }
 }
+
+public class UdtTest
+{
+    [ColumnPrimaryKey()]
+    public int Id { get; set; }
+    public TypesTester Udt { get; set; }
+    public List<SimpleUdt> UdtList { get; set; }
+}
+
+[UserDefinedType()]
+public class SimpleUdt
+{
+    public int Number { get; set; }
+    public string Name { get; set; }
+}
+
+[UserDefinedType()]
+public class TypesTester
+{
+    [ColumnName("string_col")]
+    public string String { get; set; }
+    public float[] Vector { get; set; }
+    public System.Net.IPAddress Inet { get; set; }
+    public int Int { get; set; }
+    public byte TinyInt { get; set; }
+    public short SmallInt { get; set; }
+    public long BigInt { get; set; }
+    public decimal Decimal { get; set; }
+    public double Double { get; set; }
+    public float Float { get; set; }
+    public bool Boolean { get; set; }
+    public Guid UUID { get; set; }
+    public byte[] Blob { get; set; }
+    public Duration Duration { get; set; }
+    public DateTime Timestamp { get; set; }
+    public DateOnly Date { get; set; }
+    public TimeOnly Time { get; set; }
+    public DateTime? MaybeTimestamp { get; set; }
+    public DateOnly? MaybeDate { get; set; }
+    public TimeOnly? MaybeTime { get; set; }
+    public DateTime TimestampWithKind { get; set; }
+    public Dictionary<string, int> IntDictionary { get; set; }
+    public Dictionary<string, decimal> DecimalDictionary { get; set; }
+    public HashSet<string> StringSet { get; set; }
+    public HashSet<int> IntSet { get; set; }
+    public List<string> StringList { get; set; }
+}

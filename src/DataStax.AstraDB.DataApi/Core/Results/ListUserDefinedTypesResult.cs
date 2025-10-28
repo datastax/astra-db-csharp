@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-using System;
+using DataStax.AstraDB.DataApi.Tables;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Tables;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-public class ColumnNameAttribute : Attribute
+/// <summary>
+/// The result object for an operation returning a list of table names.
+/// </summary>
+public class ListUserDefinedTypesResult
 {
-    public string Name { get; set; }
-
-    public ColumnNameAttribute(string columnName)
-    {
-        Name = columnName;
-    }
+    /// <summary>
+    /// The list of table names.
+    /// </summary>
+    [JsonPropertyName("types")]
+    public List<UserDefinedTypeInfo> Types { get; set; }
 }

@@ -553,6 +553,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    /// <param name="rows"></param>
     /// <param name="commandOptions"></param>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, CommandOptions commandOptions)
     {
@@ -560,6 +561,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    /// <param name="rows"></param>
     /// <param name="insertOptions"></param>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions)
     {
@@ -567,7 +569,9 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CommandOptions)"/>
+    /// <param name="rows"></param>
     /// <param name="insertOptions"></param>
+    /// <param name="commandOptions"></param>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, CommandOptions commandOptions)
     {
         return InsertManyAsync(rows, insertOptions, commandOptions, false);
@@ -679,6 +683,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="InsertOneAsync(T)"/>
+    /// <param name="row"></param>
     /// <param name="commandOptions"></param>
     public Task<TableInsertOneResult> InsertOneAsync(T row, CommandOptions commandOptions)
     {
@@ -758,6 +763,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="Find(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public FindEnumerator<T, T, TableSortBuilder<T>> Find(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -887,6 +893,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -904,6 +911,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<T> FindOneAsync(Filter<T> filter, TableFindOptions<T> findOptions)
     {
@@ -911,6 +919,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="FindOneAsync(Filter{T}, TableFindOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(Filter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -937,6 +947,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
     {
@@ -944,6 +955,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, TableFindOptions<T> findOptions) where TResult : class
     {
@@ -951,6 +963,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
     {
@@ -1037,6 +1051,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
     /// <param name="commandOptions"></param>
     public Task UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
     {
@@ -1130,6 +1146,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -1137,6 +1154,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
+    /// <param name="deleteOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
@@ -1144,6 +1162,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="deleteOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, TableDeleteOptions<T> deleteOptions)
     {
@@ -1151,6 +1170,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="deleteOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
@@ -1191,6 +1212,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions)
     {

@@ -139,6 +139,6 @@ public class RowConverter<T> : JsonConverter<T> where T : class
         }
 
         var nameAttribute = property.GetCustomAttribute<ColumnNameAttribute>();
-        return nameAttribute == null ? property.Name : nameAttribute.ColumnName;
+        return nameAttribute == null ? property.Name : nameAttribute.Name;
     }
 }
