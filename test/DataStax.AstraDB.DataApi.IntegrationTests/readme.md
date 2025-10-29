@@ -8,3 +8,5 @@ export ASTRA_DB_DATABASE_NAME="your_db_name"
 ```
 
 dotnet test -p:TestTfmsInParallel=false -- "xUnit.MaxParallelThreads=1"
+
+dotnet test --filter "FullyQualifiedName~DataStax.AstraDB.DataApi.IntegrationTests.CollectionTests"

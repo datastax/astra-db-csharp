@@ -277,6 +277,7 @@ public class DataApiType
     public static DataApiType Map(DataApiType valueType) => new MapDataApiType(valueType);
     public static DataApiType Set(DataApiType valueType) => new ListDataApiType("set", valueType);
     public static DataApiType Vector(int dimension) => new VectorDataApiType(dimension);
+    public static DataApiType Vectorize(int dimensions, VectorServiceOptions serviceOptions) => new VectorizeDataApiType(dimensions, serviceOptions);
     public static DataApiType UserDefined(string name) => new UserDefinedDataApiType(name);
 }
 
