@@ -50,6 +50,9 @@ jobs:
         docker compose up -d
       working-directory: docker-compose
 
+    - name: A few seconds for the Data API to fully start
+      run: sleep 10
+
     # TODO remove this mock step
     - name: Issue a request to the Data API
       run: |
