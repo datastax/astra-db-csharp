@@ -3,6 +3,8 @@ using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
 using Microsoft.VisualBasic;
+using System.Net;
+using System.Text;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -598,55 +600,6 @@ public class TableTests
     public async Task FindOne_Lexical()
     {
         var tableName = "tableFindOneWithLexical";
-        try
-        {
-            List<SimpleObjectWithLexical> items = new List<SimpleObjectWithLexical>() {
-                new()
-                {
-                    Id = 0,
-                    Name = "This is about a cat.",
-                },
-                new()
-                {
-                    Id = 1,
-                    Name = "This is about a dog.",
-                },
-                new()
-                {
-                    Id = 2,
-                    Name = "This is about a horse.",
-                },
-            };
-
-            var table = await fixture.Database.CreateTableAsync<SimpleObjectWithLexical>(tableName);
-            await table.CreateIndexAsync((b) => b.LexicalValue, Builders.TableIndex.Text());
-            var insertResult = await table.InsertManyAsync(items);
-            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
-            {
-                Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
-                Filter = Builders<SimpleObjectWithLexical>.Filter.LexicalMatch("dog"),
-            };
-
-            var result = await table.FindOneAsync(findOptions);
-            Assert.NotNull(result);
-            Assert.Equal(1, result.Id);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            throw;
-        }
-        finally
-        {
-            await fixture.Database.DropTableAsync(tableName);
-        }
-    }
-
-    [Fact]
-    public async Task UserDefinedTypes_CreateFromClasses()
-    {
-        var tableName = "userDefinedTypesFromClasses";
         try
         {
             List<SimpleObjectWithLexical> items = new List<SimpleObjectWithLexical>() {

@@ -94,11 +94,6 @@ public class AdditionalTableTests
 
             Assert.Equal(100, result.InsertedCount);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            throw;
-        }
         finally
         {
             await fixture.Database.DropTableAsync(tableName);

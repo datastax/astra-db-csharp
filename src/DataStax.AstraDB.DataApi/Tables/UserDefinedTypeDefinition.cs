@@ -29,11 +29,12 @@ public class UserDefinedTypeDefinition
 {
     [JsonPropertyName("fields")]
     [JsonInclude]
-    private Dictionary<string, string> FieldTypes => Fields.ToDictionary(x => x.Key, x => x.Value.ToString().ToLowerInvariant());
+    private Dictionary<string, string> FieldTypes => Fields.ToDictionary(x => x.Key, x => x.Value.Key.ToLowerInvariant());
 
     /// <summary>
     /// List of fields (field name, field type) for this User Defined Type
     /// </summary>
+    [JsonIgnore]
     public Dictionary<string, DataApiType> Fields { get; set; } = new Dictionary<string, DataApiType>();
 
 }
@@ -82,9 +83,13 @@ internal class UserDefinedTypeRequest
 
         foreach (var property in wrapperType.GetProperties())
         {
-            var propertyType = property.GetType();
+            var propertyType = property.PropertyType;
             var typeInfo = TypeUtilities.GetDataApiType(propertyType);
-            definition.Fields.Add(GetColumnName(propertyType), typeInfo);
+            if (typeInfo.IsSimpleType == false)
+            {
+                throw new ArgumentException($"Property '{property.Name}' in type '{wrapperType.Name}' is not a supported simple type for UDTs.");
+            }
+            definition.Fields.Add(GetColumnName(property), typeInfo);
         }
 
         return definition;
@@ -110,14 +115,14 @@ internal class UserDefinedTypeRequest
         return type.Name;
     }
 
-    internal static string GetColumnName(Type type)
+    internal static string GetColumnName(PropertyInfo property)
     {
-        var nameAttribute = type.GetCustomAttribute<ColumnNameAttribute>();
+        var nameAttribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
         if (nameAttribute != null)
         {
             return nameAttribute.Name;
         }
-        return type.Name;
+        return property.Name;
     }
 }
 

@@ -12,6 +12,31 @@ using System.Text.Json.Serialization;
 
 public class TypeUtilities
 {
+    internal static Type GetUnderlyingType(Type propertyType, int dictionaryPosition = 1)
+    {
+        if (propertyType.IsGenericType)
+        {
+            if (propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                return Nullable.GetUnderlyingType(propertyType);
+            }
+            Type genericTypeDefinition = propertyType.GetGenericTypeDefinition();
+            Type[] genericArguments = propertyType.GetGenericArguments();
+
+            if (genericArguments.Length > 1)
+            {
+                return genericArguments[dictionaryPosition];
+            }
+
+            return genericArguments[0];
+        }
+        if (propertyType.IsArray)
+        {
+            return propertyType.GetElementType();
+        }
+        return propertyType;
+    }
+
     public static DataApiType GetDataApiType(Type propertyType)
     {
         Type underlyingType;
@@ -149,7 +174,7 @@ public class TypeUtilities
             var attribute = property.PropertyType.GetCustomAttribute<UserDefinedTypeAttribute>();
             if (attribute != null)
             {
-                yield return new UserDefinedProperty() { Property = property, Attribute = attribute };
+                yield return new UserDefinedProperty() { Property = property, Attribute = attribute, UnderlyingType = GetUnderlyingType(property.PropertyType) };
                 continue;
             }
 
@@ -157,7 +182,7 @@ public class TypeUtilities
             attribute = elementType == null ? null : elementType.GetCustomAttribute<UserDefinedTypeAttribute>();
             if (elementType != null && attribute != null)
             {
-                yield return new UserDefinedProperty() { Property = property, Attribute = attribute };
+                yield return new UserDefinedProperty() { Property = property, Attribute = attribute, UnderlyingType = elementType };
             }
         }
     }
@@ -197,42 +222,8 @@ internal class UserDefinedProperty
 {
     public PropertyInfo Property { get; set; }
     public UserDefinedTypeAttribute Attribute { get; set; }
+    public Type UnderlyingType { get; set; }
 }
-
-// public class TypesInfo
-// {
-//     public DataApiType Type { get; set; }
-//     public DataApiType KeyType { get; set; }
-//     public DataApiType ValueType { get; set; }
-
-//     internal bool IsComplexType => KeyType != DataApiType.None || ValueType != DataApiType.None;
-// }
-
-// public enum DataApiType
-// {
-//     None,
-//     Ascii,
-//     BigInt,
-//     Blob,
-//     Boolean,
-//     Date,
-//     Decimal,
-//     Double,
-//     Duration,
-//     Float,
-//     Inet,
-//     Int,
-//     List,
-//     Map,
-//     Set,
-//     Text,
-//     Time,
-//     Timestamp,
-//     Uuid,
-//     Vector,
-//     UserDefined
-// }
-
 
 public class DataApiType
 {
@@ -244,17 +235,11 @@ public class DataApiType
     [JsonPropertyName("type")]
     public string Key { get; set; }
 
-    // internal virtual Column CreateColumn()
-    // {
-    //     return new Column()
-    //     {
-    //         TypeKey = Key
-    //     };
-    // }
-
     internal virtual object AsValueType => Key;
 
     internal virtual object AsColumnType => this;
+
+    internal virtual bool IsSimpleType => true;
 
     public static DataApiType Ascii() => new DataApiType("ascii");
     public static DataApiType BigInt() => new DataApiType("bigint");
@@ -297,6 +282,8 @@ public class VectorDataApiType : DataApiType
     internal override object AsValueType => this;
 
     internal override object AsColumnType => this;
+
+    internal override bool IsSimpleType => false;
 }
 
 public class VectorizeDataApiType : VectorDataApiType
@@ -315,6 +302,7 @@ public class VectorizeDataApiType : VectorDataApiType
     internal override object AsValueType => this;
 
     internal override object AsColumnType => this;
+
 }
 
 public class UserDefinedDataApiType : DataApiType
@@ -330,6 +318,8 @@ public class UserDefinedDataApiType : DataApiType
     internal override object AsValueType => this;
 
     internal override object AsColumnType => this;
+
+    internal override bool IsSimpleType => false;
 }
 
 public class ListDataApiType : DataApiType
@@ -338,6 +328,7 @@ public class ListDataApiType : DataApiType
     [JsonPropertyName("valueType")]
     internal object ValueTypeObject => ValueType.AsValueType;
 
+    [JsonIgnore]
     public DataApiType ValueType { get; set; }
 
     public ListDataApiType(DataApiType valueType) : base("list")
@@ -353,13 +344,16 @@ public class ListDataApiType : DataApiType
     internal override object AsValueType => this;
 
     internal override object AsColumnType => this;
+
+    internal override bool IsSimpleType => false;
+
 }
 
 public class MapDataApiType : ListDataApiType
 {
     [JsonInclude]
     [JsonPropertyName("keyType")]
-    internal object KeyType => "string";
+    internal object KeyType => "text";
 
     public MapDataApiType(DataApiType valueType) : base("map", valueType)
     {

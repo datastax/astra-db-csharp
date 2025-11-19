@@ -638,6 +638,19 @@ public class AstraDatabasesAdmin
         return false;
     }
 
+
+    /// <summary>
+    /// Returns an IDatabaseAdmin instance for the database at the specified URL.
+    /// </summary>
+    /// <param name="dbUrl"></param>
+    /// <returns></returns>
+    public IDatabaseAdmin GetDatabaseAdmin(string dbUrl)
+    {
+        var database = _client.GetDatabase(dbUrl);
+        return new DatabaseAdminAstra(database, _client, null);
+    }
+
+
     /// <summary>
     /// Retrieves database information for the specified GUID.
     /// </summary>
