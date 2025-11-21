@@ -77,6 +77,18 @@ public class CommandOptions
     /// </summary>
     public ApiVersion? ApiVersion { get; set; }
 
+    internal string ApiUrlBase
+    {
+        get
+        {
+            if (Destination == DataApiDestination.ASTRA)
+            {
+                return "api/json";
+            }
+            return "";
+        }
+    }
+
     /// <summary>
     /// An optional CancellationToken to interrupt asynchronous operations
     /// </summary>

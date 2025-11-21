@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
-using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+using Xunit;
 
 namespace DataStax.AstraDB.DataApi.UnitTests.Core.Query;
 
@@ -28,6 +29,7 @@ public class FindAndRerankOptionsTests
     [Fact]
     public void Clone_WithAllPropertiesSet_ShouldCreateExactCopy()
     {
+        var filterBuilder = Builders<TestDocument>.Filter;
         // Arrange
         var original = new FindAndRerankOptions<TestDocument>
         {
@@ -37,10 +39,11 @@ public class FindAndRerankOptionsTests
             RerankQuery = "test query",
             Limit = 10,
             HybridLimits = new Dictionary<string, int> { { "vector", 5 }, { "text", 15 } },
-            Filter = Filter<TestDocument>.Eq("field1", "value1") & Filter<TestDocument>.Neq("field2", 42),
-            Projection = new ProjectionBuilder<TestDocument>().Include("field1").Exclude("field2"),
-            Sorts = new List<Sort> 
-            { 
+            Filter = filterBuilder.Eq("field1", "value1") & filterBuilder.Ne("field2", 42),
+            Projection = new ProjectionBuilder<TestDocument>().Include("field1").ExcludeSpecial("field2"),
+            Sorts = new List<Sort>
+            {
+
                 Sort.Ascending("field1"),
                 Sort.Descending("field2"),
                 Sort.Vector(new float[] { 1.0f, 2.0f, 3.0f })
@@ -56,8 +59,9 @@ public class FindAndRerankOptionsTests
         Assert.Equal(original.IncludeSortVector, clone.IncludeSortVector);
         Assert.Equal(original.RerankQuery, clone.RerankQuery);
         Assert.Equal(original.Limit, clone.Limit);
-        
+
         // Verify HybridLimits is a deep copy
+
         Assert.NotNull(clone.HybridLimits);
         Assert.NotSame(original.HybridLimits, clone.HybridLimits);
         Assert.Equal(original.HybridLimits.Count, clone.HybridLimits.Count);
@@ -70,13 +74,15 @@ public class FindAndRerankOptionsTests
         // Verify Filter is a deep copy
         Assert.NotNull(clone.Filter);
         Assert.NotSame(original.Filter, clone.Filter);
-        
+
         // Verify Projection is a deep copy
+
         Assert.NotNull(clone.Projection);
         Assert.NotSame(original.Projection, clone.Projection);
         Assert.Equal(original.Projection.Projections.Count, clone.Projection.Projections.Count);
-        
+
         // Verify Sorts is a deep copy
+
         Assert.NotNull(clone.Sorts);
         Assert.NotSame(original.Sorts, clone.Sorts);
         Assert.Equal(original.Sorts.Count, clone.Sorts.Count);
@@ -154,9 +160,12 @@ public class FindAndRerankOptionsTests
     public void Clone_WithComplexFilter_ShouldDeepCloneFilter()
     {
         // Arrange
-        var filter = Filter<TestDocument>.Eq("field1", "value1") | 
-                    (Filter<TestDocument>.Gt("field2", 10) & Filter<TestDocument>.Lt("field2", 20));
-        
+        var filterBuilder = Builders<TestDocument>.Filter;
+        var filter = filterBuilder.Eq("field1", "value1") |
+
+                    (filterBuilder.Gt("field2", 10) & filterBuilder.Lt("field2", 20));
+
+
         var original = new FindAndRerankOptions<TestDocument>
         {
             Filter = filter
@@ -187,7 +196,8 @@ public class FindAndRerankOptionsTests
         // Assert
         var originalVector = (float[])original.Sorts[0].Value;
         var cloneVector = (float[])clone.Sorts[0].Value;
-        
+
+
         Assert.Equal(originalVector, cloneVector);
         Assert.NotSame(originalVector, cloneVector);
     }
