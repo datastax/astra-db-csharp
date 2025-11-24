@@ -29,17 +29,17 @@ public class TableIndexesFixture : BaseFixture, IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        await CreateTestTable();
+
     }
 
     public async ValueTask DisposeAsync()
     {
-        await Database.DropTableAsync(_fixtureTableName);
+
     }
 
-    private const string _fixtureTableName = "tableIndexesTest";
-    private async Task CreateTestTable()
+    public static async Task<TableInsertManyResult> AddTableRows(Table<RowEventByDay> table)
     {
+
         var startDate = DateTime.UtcNow.Date.AddDays(7);
 
         var eventRows = new List<RowEventByDay>
@@ -70,11 +70,8 @@ public class TableIndexesFixture : BaseFixture, IAsyncLifetime
             }
         };
 
+        return await table.InsertManyAsync(eventRows);
 
-        var table = await Database.CreateTableAsync<RowEventByDay>(_fixtureTableName);
-        await table.InsertManyAsync(eventRows);
-
-        FixtureTestTable = table;
     }
 
 }

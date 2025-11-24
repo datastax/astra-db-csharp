@@ -112,6 +112,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="InsertOneAsync(T)"/>
+    /// <param name="document"></param>
     /// <param name="commandOptions"></param>
     public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CommandOptions commandOptions)
     {
@@ -181,6 +182,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="InsertManyAsync(List{T})"/>
+    /// <param name="documents"></param>
     /// <param name="insertOptions">Allows specifying whether the documents should be inserted in order as well as the chunk size.</param>
     public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions)
     {
@@ -188,6 +190,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="InsertManyAsync(List{T})"/>
+    /// <param name="documents"></param>
     /// <param name="commandOptions"></param>
     public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, CommandOptions commandOptions)
     {
@@ -195,6 +198,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="InsertManyAsync(List{T}, insertOptions)"/>
+    /// <param name="documents"></param>
+    /// <param name="insertOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions)
     {
@@ -470,6 +475,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync(DocumentFindOptions{T})"/>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(DocumentFindOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -493,6 +499,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -500,6 +507,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     public Task<T> FindOneAsync(Filter<T> filter, DocumentFindOptions<T> findOptions)
     {
@@ -507,6 +515,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync(Filter{T}, DocumentFindOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(Filter<T> filter, DocumentFindOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -553,6 +563,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(DocumentFindOptions{T})"/>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(DocumentFindOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -560,6 +571,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}()"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -567,6 +579,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, DocumentFindOptions<T> findOptions)
     {
@@ -574,6 +587,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, DocumentFindOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(Filter<T> filter, DocumentFindOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -652,6 +667,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="Find(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public FindEnumerator<T, T, DocumentSortBuilder<T>> Find(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -689,6 +705,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="Find{TResult}(Filter{T}, DocumentFindManyOptions{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public FindEnumerator<T, TResult, DocumentSortBuilder<T>> Find<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
     {
@@ -760,6 +777,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <remarks>
     /// Use the <see cref="FindOneAndUpdateOptions{T}.ReturnDocument"/> parameter on <see cref="FindOneAndUpdateOptions{T}"/> to specify whether the original or updated document should be returned.
     /// </remarks>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
     /// <param name="updateOptions">Set Sort, Projection, Upsert options</param>
     public Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
     {
@@ -767,6 +786,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndUpdateAsync(Filter{T}, UpdateBuilder{T}, FindOneAndUpdateOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
+    /// <param name="updateOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAndUpdateAsync(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
     {
@@ -812,6 +834,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndUpdateAsync{TResult}(Filter{T}, UpdateBuilder{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
     /// <param name="updateOptions">Set Sort, Projection, Upsert options</param>
     public Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions)
     {
@@ -819,6 +843,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndUpdateAsync{TResult}(Filter{T}, UpdateBuilder{T}, FindOneAndUpdateOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
+    /// <param name="updateOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAndUpdateAsync<TResult>(Filter<T> filter, UpdateBuilder<T> update, FindOneAndUpdateOptions<T> updateOptions, CommandOptions commandOptions)
     {
@@ -873,6 +900,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(T)"/>
+    /// <param name="replacement"></param>
     /// <param name="replaceOptions"></param>
     /// <remarks>
     /// Use the <see cref="ReplaceOptions{T}.ReturnDocument"/> parameter on <see cref="ReplaceOptions{T}"/> to specify whether the original or updated document should be returned.
@@ -883,6 +911,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(T, ReplaceOptions{T})"/>
+    /// <param name="replacement"></param>
+    /// <param name="replaceOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
@@ -928,6 +958,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T)"/>
+    /// <param name="replacement"></param>
     /// <param name="replaceOptions"></param>
     public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions)
     {
@@ -935,6 +966,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T, ReplaceOptions{T})"/>
+    /// <param name="replacement"></param>
+    /// <param name="replaceOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
@@ -981,6 +1014,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(Filter{T}, T)"/>
+    /// <param name="filter"></param>
+    /// <param name="replacement"></param>
     /// <param name="replaceOptions"></param>
     public Task<T> FindOneAndReplaceAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
     {
@@ -988,6 +1023,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndReplaceAsync(Filter{T}, T, ReplaceOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="replacement"></param>
+    /// <param name="replaceOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAndReplaceAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
@@ -1151,6 +1189,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T)"/>
+    /// <param name="filter"></param>
+    /// <param name="replacement"></param>
     /// <param name="replaceOptions"></param>
     public Task<UpdateResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
     {
@@ -1158,6 +1198,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T, ReplaceOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="replacement"></param>
+    /// <param name="replaceOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<UpdateResult> ReplaceOneAsync(Filter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
     {
@@ -1342,6 +1385,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync(FindOneAndDeleteOptions{T})"/>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAndDeleteAsync(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -1356,6 +1400,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAndDeleteAsync(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -1363,6 +1408,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     public Task<T> FindOneAndDeleteAsync(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions)
     {
@@ -1370,6 +1416,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync(Filter{T}, FindOneAndDeleteOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAndDeleteAsync(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -1401,6 +1449,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(FindOneAndDeleteOptions{T})"/>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAndDeleteAsync<TResult>(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -1415,6 +1464,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -1422,6 +1472,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     public Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions)
     {
@@ -1429,6 +1480,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(Filter{T}, FindOneAndDeleteOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAndDeleteAsync<TResult>(Filter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -1521,6 +1574,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -1528,6 +1582,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="DeleteOneAsync(DeleteOptions{T})"/>
+    /// <param name="deleteOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
@@ -1535,6 +1590,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="deleteOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions)
     {
@@ -1542,6 +1598,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="DeleteOneAsync(Filter{T}, DeleteOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="deleteOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(Filter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
@@ -1595,6 +1653,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteManyAsync(Filter<T> filter, CommandOptions commandOptions)
     {
@@ -1700,6 +1759,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T})"/>
+    /// <param name="update"></param>
+    /// <param name="updateOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<UpdateResult> UpdateOneAsync(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
     {
@@ -1720,6 +1781,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
     /// <param name="updateOptions"></param>
     public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
     {
@@ -1727,6 +1790,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
+    /// <param name="updateOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<UpdateResult> UpdateOneAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
     {
@@ -1782,6 +1848,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="UpdateManyAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
     /// <param name="updateOptions"></param>
     public Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions)
     {
@@ -1789,6 +1857,9 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="UpdateManyAsync(Filter{T}, UpdateBuilder{T}, UpdateManyOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="update"></param>
+    /// <param name="updateOptions"></param>
     /// <param name="commandOptions"></param>
     public Task<UpdateResult> UpdateManyAsync(Filter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
     {
@@ -1927,6 +1998,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <inheritdoc cref="CountDocumentsAsync(Filter{T}"/>
+    /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<int> CountDocumentsAsync(Filter<T> filter, CommandOptions commandOptions)
     {

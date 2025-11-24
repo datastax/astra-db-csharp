@@ -80,7 +80,20 @@ public class SortBuilder<T>
         return this;
     }
 
-    internal SortBuilder<T> Clone()
+    // /// <summary>
+    // /// Adds a lexical sort (for documents).
+    // /// </summary>
+    // /// <param name="value"></param>
+    // /// <returns></returns>
+    // public SortBuilder<T> Lexical(string value)
+    // {
+    //     Sorts.Add(Sort.Lexical(value));
+    //     return this;
+    // }
+
+
+
+    internal virtual SortBuilder<T> Clone()
     {
         var clone = new SortBuilder<T>();
         foreach (var sort in this.Sorts)

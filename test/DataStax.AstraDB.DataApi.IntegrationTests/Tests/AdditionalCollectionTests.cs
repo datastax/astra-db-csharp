@@ -99,5 +99,58 @@ public class AdditionalCollectionTests
         }
     }
 
+    [Fact]
+    public async Task Test_DateTimeTypes()
+    {
+        var collectionName = "collectionTestDateTimeTypes";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<DateTypeTest>(collectionName);
+
+            List<DateTypeTest> documents = new List<DateTypeTest>();
+            for (var i = 0; i < 5; i++)
+            {
+                documents.Add(new DateTypeTest()
+                {
+                    Id = i,
+                    Timestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
+                    Date = new DateOnly(2000, 1, i + 1),
+                    Time = new TimeOnly(12, i),
+                    TimestampWithKind = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Local),
+                });
+            }
+            for (var i = 5; i < 10; i++)
+            {
+                documents.Add(new DateTypeTest()
+                {
+                    Id = i,
+                    Timestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
+                    Date = new DateOnly(2000, 1, i + 1),
+                    Time = new TimeOnly(12, i),
+                    TimestampWithKind = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Local),
+                    MaybeDate = new DateOnly(2000, 1, i + 1),
+                    MaybeTime = new TimeOnly(12, i),
+                    MaybeTimestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
+                });
+            }
+
+            // Insert the data
+            var result = await collection.InsertManyAsync(documents);
+
+            Console.WriteLine($"Inserted {result.InsertedCount} rows");
+
+            Assert.Equal(10, result.InsertedCount);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(collectionName);
+        }
+    }
+
 }
 

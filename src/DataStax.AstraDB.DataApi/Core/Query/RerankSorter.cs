@@ -36,6 +36,7 @@ public class RerankSorter<T, TResult> where T : class where TResult : class
     /// <summary>
     /// Adds a hybrid sort using a combined string to use for lexical and vectorize parameters.
     /// </summary>
+    /// <param name="combinedSearchString"></param>
     /// <param name="searchString">Combined string to use for lexical and vectorize parameters.</param>
     /// <returns>The document sort builder.</returns>
     public RerankEnumerator<T, TResult> Sort(string combinedSearchString)

@@ -18,13 +18,31 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-public class ColumnNameAttribute : Attribute
+/// <summary>
+/// Attribute to annotate a class as being a User Defined Type
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public class UserDefinedTypeAttribute : Attribute
 {
+    /// <summary>
+    /// Name of this type (will default to the class name if left null)
+    /// </summary>
     public string Name { get; set; }
 
-    public ColumnNameAttribute(string columnName)
+    /// <summary>
+    /// Construct without a name (will default to class name)
+    /// </summary>
+    public UserDefinedTypeAttribute()
     {
-        Name = columnName;
+    }
+
+    /// <summary>
+    /// Construct and specify the name to use for the User Defined Type
+    /// </summary>
+    /// <param name="name"></param>
+    public UserDefinedTypeAttribute(string name)
+    {
+        Name = name;
     }
 }
+

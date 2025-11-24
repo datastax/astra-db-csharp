@@ -15,8 +15,27 @@
  */
 
 using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.Tables;
 
 namespace DataStax.AstraDB.DataApi.Core;
+
+/// <summary>
+/// A collection of builders for interacting with tables and collections
+/// <seealso cref="Builders{T}"/> 
+/// </summary>
+public class Builders
+{
+    /// <summary>
+    /// A builder for creating table indexes
+    /// <example>
+    /// <code>
+    /// var index = Builders.TableIndex.Text();
+    /// table.CreateTextIndex("index_name", r => r.SomeTextProperty, index);
+    /// </code>
+    /// </example>
+    /// </summary>
+    public static TableIndexBuilder TableIndex => new();
+}
 
 /// <summary>
 /// A collection of builders for creating filter, projection, sort, and update definitions
@@ -74,4 +93,15 @@ public class Builders<T>
     /// </code>
     /// </example>
     public static UpdateBuilder<T> Update => new();
+
+    /// <summary>
+    /// A builder for creating table indexes
+    /// <example>
+    /// <code>
+    /// var index = Builders.TableIndex.Text();
+    /// table.CreateTextIndex("index_name", r => r.SomeTextProperty, index);
+    /// </code>
+    /// </example>
+    /// </summary>
+    public static TableIndexBuilder TableIndex => new();
 }

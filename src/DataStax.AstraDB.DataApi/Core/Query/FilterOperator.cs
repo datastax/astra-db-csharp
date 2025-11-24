@@ -30,4 +30,5 @@ public class FilterOperator
     public const string All = "$all";
     public const string Size = "$size";
     public const string Contains = "$contains";
+    public const string Match = "$match";
 }

@@ -1,11 +1,12 @@
 using DataStax.AstraDB.DataApi.Collections;
-using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
 [Collection("Database")]
+[Trait("Category", "Examples")]
 public class ExamplesTests
 {
     DatabaseFixture fixture;
