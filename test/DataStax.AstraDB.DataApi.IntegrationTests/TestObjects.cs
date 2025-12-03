@@ -24,6 +24,21 @@ public class SimpleObjectWithVectorize
     public string StringToVectorize => Name;
 }
 
+public class SimpleObjectWithLexical
+{
+    [DocumentId]
+    [ColumnPrimaryKey]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Lexical)]
+    [LexicalOptions(
+        TokenizerName = "standard",
+        Filters = new[] { "lowercase", "stop", "porterstem", "asciifolding" },
+        CharacterFilters = new string[] { }
+    )]
+    public string LexicalValue => Name;
+}
+
 public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
 {
     [DocumentMapping(DocumentMappingField.Similarity)]
@@ -225,6 +240,14 @@ public class RowTestObject
     public Duration Duration { get; set; }
 }
 
+[TableName("testTable")]
+public class ArrayTestRow
+{
+    [ColumnPrimaryKey(1)]
+    public int Id { get; set; }
+    public string[]? StringArray { get; set; }
+}
+
 public class CompositePrimaryKey
 {
     [ColumnPrimaryKey(2)]
@@ -290,4 +313,124 @@ public class Book
 
     [DocumentMapping(DocumentMappingField.Vectorize)]
     public string? StringToVectorize { get; set; }
+}
+
+
+public class TestDataBook
+{
+    // This table uses a composite primary key
+    // with 'title' as the first column in the key
+    [ColumnPrimaryKey(1)]
+    [ColumnName("title")]
+    public string Title { get; set; } = null!;
+
+    // This table uses a composite primary key
+    // with 'author' as the second column in the key
+    [ColumnPrimaryKey(2)]
+    [ColumnName("author")]
+    public string Author { get; set; } = null!;
+
+    [ColumnName("number_of_pages")]
+    public int? NumberOfPages { get; set; }
+
+    [ColumnName("rating")]
+    public float? Rating { get; set; }
+
+    [ColumnName("publication_year")]
+    public int? PublicationYear { get; set; }
+
+    [ColumnName("summary")]
+    public string? Summary { get; set; }
+
+    [ColumnName("genres")]
+    public HashSet<string>? Genres { get; set; }
+
+    [ColumnName("metadata")]
+    public Dictionary<string, string>? Metadata { get; set; }
+
+    [ColumnName("is_checked_out")]
+    public bool? IsCheckedOut { get; set; }
+
+    [ColumnName("borrower")]
+    public string? Borrower { get; set; }
+
+    [ColumnName("due_date")]
+    public DateTime? DueDate { get; set; }
+
+    // This column will store vector embeddings.
+    // The column will use an embedding model from NVIDIA to generate the
+    // vector embeddings when data is inserted to the column. 
+    [ColumnVectorize(
+      1024,
+      serviceProvider: "nvidia",
+      serviceModelName: "NV-Embed-QA"
+    )]
+    [ColumnName("summary_genres_vector")]
+    public object? SummaryGenresVector { get; set; }
+}
+
+public class DateTypeTest
+{
+    [ColumnPrimaryKey()]
+    public int Id { get; set; }
+    public DateTime Timestamp { get; set; }
+    public DateOnly Date { get; set; }
+    public TimeOnly Time { get; set; }
+    public DateTime? MaybeTimestamp { get; set; }
+    public DateOnly? MaybeDate { get; set; }
+    public TimeOnly? MaybeTime { get; set; }
+    public DateTime TimestampWithKind { get; set; }
+}
+
+public class UdtTest
+{
+    [ColumnPrimaryKey()]
+    public int Id { get; set; }
+    public TypesTester Udt { get; set; }
+    public List<SimpleUdt> UdtList { get; set; }
+}
+
+public class UdtTestMinimal
+{
+    [ColumnPrimaryKey()]
+    public int Id { get; set; }
+    public SimpleUdtTwo Udt { get; set; }
+}
+
+[UserDefinedType()]
+public class SimpleUdt
+{
+    public int Number { get; set; }
+    public string Name { get; set; }
+}
+
+[UserDefinedType()]
+public class SimpleUdtTwo
+{
+    public int Number { get; set; }
+    public string Name { get; set; }
+}
+
+[UserDefinedType()]
+public class TypesTester
+{
+    public string String { get; set; }
+    //public System.Net.IPAddress Inet { get; set; }
+    public int Int { get; set; }
+    public byte TinyInt { get; set; }
+    public short SmallInt { get; set; }
+    public long BigInt { get; set; }
+    public decimal Decimal { get; set; }
+    public double Double { get; set; }
+    public float Float { get; set; }
+    public bool Boolean { get; set; }
+    public Guid UUID { get; set; }
+    public Duration Duration { get; set; }
+    public DateTime Timestamp { get; set; }
+    public DateOnly Date { get; set; }
+    public TimeOnly Time { get; set; }
+    public DateTime? MaybeTimestamp { get; set; }
+    public DateOnly? MaybeDate { get; set; }
+    public TimeOnly? MaybeTime { get; set; }
+    public DateTime TimestampWithKind { get; set; }
 }

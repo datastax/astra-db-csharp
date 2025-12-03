@@ -14,87 +14,76 @@
  * limitations under the License.
  */
 
+
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.SerDes;
-
 /// <summary>
-/// A custom converter to handle DataApi DateTime values
+/// Handle serialization of DateTime when Kind is Unspecified
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public class DateTimeConverter<T> : JsonConverter<T>
+public class DateTimeConverter : JsonConverter<DateTime>
 {
-    private static readonly DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
-
-    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    /// <summary>
+    /// Default read handling
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <param name="typeToConvert"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.Null)
-            return default;
-
-        if (reader.TokenType == JsonTokenType.StartObject)
-        {
-            if (reader.Read() && reader.TokenType == JsonTokenType.PropertyName && reader.GetString() == "$date")
-            {
-                reader.Read();
-                if (reader.TokenType != JsonTokenType.Number)
-                {
-                    throw new JsonException("Expected number for Unix timestamp");
-                }
-
-                long unixTimeMilliseconds = reader.GetInt64();
-                reader.Read();
-                if (reader.TokenType != JsonTokenType.EndObject)
-                {
-                    throw new JsonException("Expected end of object");
-                }
-
-                DateTimeOffset dto = UnixEpoch.AddMilliseconds(unixTimeMilliseconds);
-
-                if (typeof(T) == typeof(DateTimeOffset))
-                {
-                    return (T)(object)dto;
-                }
-                else if (typeof(T) == typeof(DateTime))
-                {
-                    return (T)(object)dto.UtcDateTime;
-                }
-                else
-                {
-                    throw new JsonException($"Cannot convert Unix timestamp to {typeof(T)}");
-                }
-            }
-            else
-            {
-                throw new JsonException("Expected '$date' property.");
-            }
-        }
-        else if (reader.TokenType == JsonTokenType.Number)
-        {
-            long unixTimeMilliseconds = reader.GetInt64();
-            DateTimeOffset dto = UnixEpoch.AddMilliseconds(unixTimeMilliseconds);
-
-            if (typeof(T) == typeof(DateTimeOffset))
-            {
-                return (T)(object)dto;
-            }
-            else if (typeof(T) == typeof(DateTime))
-            {
-                return (T)(object)dto.UtcDateTime;
-            }
-            else
-            {
-                throw new JsonException($"Cannot convert Unix timestamp to {typeof(T)}");
-            }
-        }
-        else
-        {
-            return default;
-        }
+        return reader.GetDateTime();
     }
 
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    /// <summary>
+    /// Set Kind to Local when Unspecified
+    /// </summary>
+    /// <param name="writer"></param>
+    /// <param name="value"></param>
+    /// <param name="options"></param>
+    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+    {
+        DateTime dateTimeToWrite = value;
+
+        if (value.Kind == DateTimeKind.Unspecified)
+        {
+            dateTimeToWrite = DateTime.SpecifyKind(value, DateTimeKind.Local);
+        }
+
+        writer.WriteStringValue(dateTimeToWrite);
+    }
+}
+
+/// <summary>
+/// Handle serialization of DateTime? when Kind is Unspecified
+/// </summary>
+public class DateTimeNullableConverter : JsonConverter<DateTime?>
+{
+    /// <summary>
+    /// Use default deserialization
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <param name="typeToConvert"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+
+        return reader.GetDateTime();
+    }
+
+    /// <summary>
+    /// If Kind is Unspecified, use Local
+    /// </summary>
+    /// <param name="writer"></param>
+    /// <param name="value"></param>
+    /// <param name="options"></param>
+    public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
     {
         if (value == null)
         {
@@ -102,21 +91,13 @@ public class DateTimeConverter<T> : JsonConverter<T>
             return;
         }
 
-        long timestampMilliseconds;
-        switch (value)
+        DateTime dateTimeToWrite = value.Value;
+
+        if (value.Value.Kind == DateTimeKind.Unspecified)
         {
-            case DateTime dt:
-                timestampMilliseconds = (long)(dt.ToUniversalTime() - UnixEpoch).TotalMilliseconds;
-                break;
-            case DateTimeOffset dto:
-                timestampMilliseconds = (long)(dto - UnixEpoch).TotalMilliseconds;
-                break;
-            default:
-                throw new JsonException($"Unsupported type: {value.GetType()}");
+            dateTimeToWrite = DateTime.SpecifyKind(value.Value, DateTimeKind.Local);
         }
 
-        writer.WriteStartObject();
-        writer.WriteNumber("$date", timestampMilliseconds);
-        writer.WriteEndObject();
+        writer.WriteStringValue(dateTimeToWrite);
     }
 }

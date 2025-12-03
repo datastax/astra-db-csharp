@@ -18,7 +18,6 @@ using DataStax.AstraDB.DataApi.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -34,7 +33,7 @@ public class TableDefinition
   /// </summary>
   [JsonPropertyName("columns")]
   [JsonInclude]
-  public Dictionary<string, Column> Columns { get; set; } = new Dictionary<string, Column>();
+  internal Dictionary<string, object> Columns { get; set; } = new Dictionary<string, object>();
 
   /// <summary>
   /// The primary key definition for this table
@@ -79,7 +78,7 @@ public class TableDefinition
       var columnNameAttribute = attributes.OfType<ColumnNameAttribute>().FirstOrDefault();
       if (columnNameAttribute != null)
       {
-        columnName = columnNameAttribute.ColumnName;
+        columnName = columnNameAttribute.Name;
       }
 
       foreach (var attribute in attributes)
@@ -96,29 +95,36 @@ public class TableDefinition
 
           case ColumnJsonStringAttribute json:
             createColumn = false;
-            definition.AddTextColumn(columnName);
+            definition.AddColumn(columnName, DataApiType.Text());
             break;
 
           case ColumnVectorizeAttribute vectorize:
             createColumn = false;
-            definition.AddVectorizeColumn(
-                            columnName,
-                            vectorize.Dimension,
-                            vectorize.ServiceProvider,
-                            vectorize.ServiceModelName,
-                            vectorize.AuthenticationPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1]),
-                            vectorize.ParameterPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1])
-                        );
+            definition.AddColumn(columnName, new VectorizeDataApiType(vectorize.Dimension, new VectorServiceOptions()
+            {
+              Provider = vectorize.ServiceProvider,
+              ModelName = vectorize.ServiceModelName,
+              Authentication = vectorize.AuthenticationPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1]),
+              Parameters = vectorize.ParameterPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1])
+            }));
+            // definition.AddVectorizeColumn(
+            //                 columnName,
+            //                 vectorize.Dimension,
+            //                 vectorize.ServiceProvider,
+            //                 vectorize.ServiceModelName,
+            //                 vectorize.AuthenticationPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1]),
+            //                 vectorize.ParameterPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1])
+            //             );
             break;
 
           case ColumnVectorAttribute vector:
             if (columnType != typeof(float[]) && columnType != typeof(double[]) && columnType != typeof(string))
             {
-              //TODO: change to check for all numeric array types?
               throw new InvalidOperationException($"Vector Column {columnName} must be either float[], double[] or string (if sending already binary-encoded string)");
             }
             createColumn = false;
-            definition.AddVectorColumn(columnName, vector.Dimension);
+            definition.AddColumn(columnName, DataApiType.Vector(vector.Dimension));
+            //definition.AddVectorColumn(columnName, vector.Dimension);
             break;
         }
       }
@@ -139,98 +145,10 @@ public class TableDefinition
 
   private static void CreateColumnFromPropertyType(string columnName, Type propertyType, TableDefinition definition)
   {
-    switch (Type.GetTypeCode(propertyType))
+    var type = TypeUtilities.GetDataApiTypeFromUnderlyingType(propertyType);
+    if (type != null)
     {
-      case TypeCode.Int32:
-      case TypeCode.Int16:
-      case TypeCode.Byte:
-        definition.AddIntColumn(columnName);
-        break;
-      case TypeCode.String:
-        definition.AddTextColumn(columnName);
-        break;
-      case TypeCode.Boolean:
-        definition.AddBooleanColumn(columnName);
-        break;
-      case TypeCode.DateTime:
-        definition.AddDateColumn(columnName);
-        break;
-      case TypeCode.Decimal:
-        definition.AddDecimalColumn(columnName);
-        break;
-      case TypeCode.Double:
-        definition.AddDoubleColumn(columnName);
-        break;
-      case TypeCode.Int64:
-        definition.AddLongColumn(columnName);
-        break;
-      case TypeCode.Single:
-        definition.AddFloatColumn(columnName);
-        break;
-      case TypeCode.Object:
-        if (propertyType.IsArray)
-        {
-          Type elementType = propertyType.GetElementType();
-          if (elementType == typeof(byte))
-          {
-            definition.AddBlobColumn(columnName);
-          }
-          //TODO: other array types
-        }
-        else if (propertyType.IsEnum)
-        {
-          //TODO (int??)
-          break;
-        }
-        else if (propertyType == typeof(Guid))
-        {
-          definition.AddGuidColumn(columnName);
-        }
-        else if (propertyType == typeof(Duration))
-        {
-          definition.AddDurationColumn(columnName);
-        }
-        else if (propertyType == typeof(IPAddress))
-        {
-          definition.AddIPAddressColumn(columnName);
-        }
-        else if (propertyType.IsGenericType)
-        {
-          Type genericTypeDefinition = propertyType.GetGenericTypeDefinition();
-          Type[] genericArguments = propertyType.GetGenericArguments();
-
-          if (genericTypeDefinition == typeof(Dictionary<,>))
-          {
-            if (genericArguments.Length == 2 && genericArguments[0] == typeof(string))
-            {
-              definition.AddDictionaryColumn(columnName, genericArguments[0], genericArguments[1]);
-            }
-            else
-            {
-              Console.WriteLine($"Warning: Unhandled Dictionary type for column: {columnName}. Only string keys are supported.");
-            }
-          }
-          else if (genericTypeDefinition == typeof(List<>))
-          {
-            definition.AddListColumn(columnName, genericArguments[0]);
-          }
-          else if (genericTypeDefinition == typeof(HashSet<>))
-          {
-            definition.AddSetColumn(columnName, genericArguments[0]);
-          }
-          else
-          {
-            Console.WriteLine($"Warning: Unhandled generic type: {propertyType.Name} for column: {columnName}");
-          }
-        }
-        else
-        {
-          Console.WriteLine($"Warning: Unhandled type: {propertyType.Name} for column: {columnName}");
-        }
-        break;
-      default:
-        Console.WriteLine($"Warning: Unhandled type code: {Type.GetTypeCode(propertyType)} for column: {columnName}");
-        break;
+      definition.AddColumn(columnName, type);
     }
   }
 
@@ -245,24 +163,6 @@ public class TableDefinition
     return type.Name;
   }
 
-  internal static string GetColumnTypeName(Type type)
-  {
-    return Type.GetTypeCode(type) switch
-    {
-      TypeCode.Int32 => "int",
-      TypeCode.String => "text",
-      TypeCode.Boolean => "boolean",
-      TypeCode.DateTime => "date",
-      TypeCode.Decimal => "decimal",
-      _ => "text",
-    };
-  }
-
-}
-
-internal class ColumnTypeConstants
-{
-  internal const string Text = "text";
 }
 
 /// <summary>
@@ -349,264 +249,89 @@ public static class TableDefinitionExtensions
     return tableDefinition;
   }
 
-  /// <summary>
-  /// Add a text column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddTextColumn(this TableDefinition tableDefinition, string columnName)
+  public static TableDefinition AddColumn(this TableDefinition tableDefinition, string columnName, DataApiType columnType)
   {
-    tableDefinition.Columns.Add(columnName, new TextColumn());
+    tableDefinition.Columns.Add(columnName, columnType.AsColumnType);
     return tableDefinition;
   }
 
-  /// <summary>
-  /// Add an int column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddIntColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new IntColumn());
-    return tableDefinition;
-  }
+  // /// <summary>
+  // /// Add a text column to the table definition
+  // /// </summary>
+  // /// <param name="tableDefinition"></param>
+  // /// <param name="columnName"></param>
+  // /// <param name="columnType"></param>
+  // /// <param name="keyType">(Optional) Type of the keys for this column (e.g. for map columns)</param>
+  // /// <param name="valueType">(Optional) Type of the values to be stored in this column (e.g. for list types)</param>
+  // /// <returns></returns>
+  // public static TableDefinition AddColumn(this TableDefinition tableDefinition, string columnName, DataApiType columnType, DataApiType keyType = default, DataApiType valueType = default)
+  // {
+  //   tableDefinition.Columns.Add(columnName, new Column() { Type = columnType, KeyType = keyType, ValueType = valueType });
+  //   return tableDefinition;
+  // }
 
-  /// <summary>
-  /// Add a long column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddLongColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new LongColumn());
-    return tableDefinition;
-  }
+  // /// <summary>
+  // /// Add a vector column to the table definition
+  // /// </summary>
+  // /// <param name="tableDefinition"></param>
+  // /// <param name="columnName"></param>
+  // /// <param name="dimension"></param>
+  // /// <returns></returns>
+  // public static TableDefinition AddVectorColumn(this TableDefinition tableDefinition, string columnName, int dimension)
+  // {
+  //   tableDefinition.Columns.Add(columnName, new VectorColumn(dimension));
+  //   return tableDefinition;
+  // }
 
-  /// <summary>
-  /// Add a float column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddFloatColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new FloatColumn());
-    return tableDefinition;
-  }
+  // /// <summary>
+  // /// Add a vectorize column to the table definition
+  // /// </summary>
+  // /// <param name="tableDefinition"></param>
+  // /// <param name="columnName"></param>
+  // /// <param name="dimension"></param>
+  // /// <param name="provider"></param>
+  // /// <param name="modelName"></param>
+  // /// <param name="authentication"></param>
+  // /// <param name="parameters"></param>
+  // /// <returns></returns>
+  // public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, int dimension, string provider, string modelName, Dictionary<string, string> authentication, Dictionary<string, string> parameters)
+  // {
+  //   tableDefinition.Columns.Add(columnName, new VectorizeColumn(dimension, new VectorServiceOptions
+  //   {
+  //     Provider = provider,
+  //     ModelName = modelName,
+  //     Authentication = authentication,
+  //     Parameters = parameters
+  //   }
+  //   ));
+  //   return tableDefinition;
+  // }
 
-  /// <summary>
-  /// Add a boolean column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddBooleanColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new BooleanColumn());
-    return tableDefinition;
-  }
+  // /// <summary>
+  // /// Add a vectorize column to the table definition
+  // /// </summary>
+  // /// <param name="tableDefinition"></param>
+  // /// <param name="columnName"></param>
+  // /// <param name="dimension"></param>
+  // /// <param name="options"></param>
+  // /// <returns></returns>
+  // public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, int dimension, VectorServiceOptions options)
+  // {
+  //   tableDefinition.Columns.Add(columnName, new VectorizeColumn(dimension, options));
+  //   return tableDefinition;
+  // }
 
-  /// <summary>
-  /// Add a date column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddDateColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new DateTimeColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a vector column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <param name="dimension"></param>
-  /// <returns></returns>
-  public static TableDefinition AddVectorColumn(this TableDefinition tableDefinition, string columnName, int dimension)
-  {
-    tableDefinition.Columns.Add(columnName, new VectorColumn(dimension));
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a vectorize column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <param name="dimension"></param>
-  /// <param name="provider"></param>
-  /// <param name="modelName"></param>
-  /// <param name="authentication"></param>
-  /// <param name="parameters"></param>
-  /// <returns></returns>
-  public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, int dimension, string provider, string modelName, Dictionary<string, string> authentication, Dictionary<string, string> parameters)
-  {
-    tableDefinition.Columns.Add(columnName, new VectorizeColumn(dimension, new VectorServiceOptions
-    {
-      Provider = provider,
-      ModelName = modelName,
-      Authentication = authentication,
-      Parameters = parameters
-    }
-    ));
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a vectorize column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <param name="dimension"></param>
-  /// <param name="options"></param>
-  /// <returns></returns>
-  public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, int dimension, VectorServiceOptions options)
-  {
-    tableDefinition.Columns.Add(columnName, new VectorizeColumn(dimension, options));
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a vectorize column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <param name="options"></param>
-  /// <returns></returns>
-  public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, VectorServiceOptions options)
-  {
-    tableDefinition.Columns.Add(columnName, new VectorizeColumn(options));
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a decimal column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddDecimalColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new DecimalColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a double column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddDoubleColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new DoubleColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a UUID column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddUUIDColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new GuidColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a blob column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddBlobColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new BlobColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a GUID column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddGuidColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new GuidColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add an IP Address column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddIPAddressColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new IPAddressColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a Duration column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <returns></returns>
-  public static TableDefinition AddDurationColumn(this TableDefinition tableDefinition, string columnName)
-  {
-    tableDefinition.Columns.Add(columnName, new DurationColumn());
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a dictionary column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <param name="keyType"></param>
-  /// <param name="valueType"></param>
-  /// <returns></returns>
-  public static TableDefinition AddDictionaryColumn(this TableDefinition tableDefinition, string columnName, Type keyType, Type valueType)
-  {
-    tableDefinition.Columns.Add(columnName, new DictionaryColumn(TableDefinition.GetColumnTypeName(keyType), TableDefinition.GetColumnTypeName(valueType)));
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a set column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <param name="valueType"></param>
-  /// <returns></returns>
-  public static TableDefinition AddSetColumn(this TableDefinition tableDefinition, string columnName, Type valueType)
-  {
-    tableDefinition.Columns.Add(columnName, new SetColumn(TableDefinition.GetColumnTypeName(valueType)));
-    return tableDefinition;
-  }
-
-  /// <summary>
-  /// Add a list column to the table definition
-  /// </summary>
-  /// <param name="tableDefinition"></param>
-  /// <param name="columnName"></param>
-  /// <param name="valueType"></param>
-  /// <returns></returns>
-  public static TableDefinition AddListColumn(this TableDefinition tableDefinition, string columnName, Type valueType)
-  {
-    tableDefinition.Columns.Add(columnName, new ListColumn(TableDefinition.GetColumnTypeName(valueType)));
-    return tableDefinition;
-  }
+  // /// <summary>
+  // /// Add a vectorize column to the table definition
+  // /// </summary>
+  // /// <param name="tableDefinition"></param>
+  // /// <param name="columnName"></param>
+  // /// <param name="options"></param>
+  // /// <returns></returns>
+  // public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, VectorServiceOptions options)
+  // {
+  //   tableDefinition.Columns.Add(columnName, new VectorizeColumn(options));
+  //   return tableDefinition;
+  // }
 
 }

@@ -22,7 +22,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// A set of options to be used when finding rows in a table.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, SortBuilder<T>>
+public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, TableSortBuilder<T>>
 {
 
     /// <summary>
@@ -63,9 +63,9 @@ public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, 
     /// </example>
     [JsonIgnore]
     internal bool? IncludeSortVector { get => _includeSortVector; set => _includeSortVector = value; }
-    bool? IFindManyOptions<T, SortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
+    bool? IFindManyOptions<T, TableSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
-    IFindManyOptions<T, SortBuilder<T>> IFindManyOptions<T, SortBuilder<T>>.Clone()
+    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
     {
         var clone = new TableFindManyOptions<T>
         {

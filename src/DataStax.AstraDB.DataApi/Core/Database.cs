@@ -22,6 +22,9 @@ using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -140,6 +143,7 @@ public class Database
     }
 
     /// <inheritdoc cref="DoesCollectionExistAsync(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="commandOptions">The options to use for the command, useful for overriding the keyspace.</param>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, DatabaseCommandOptions commandOptions)
     {
@@ -286,6 +290,8 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync(string)" />
+    /// <param name="collectionName"></param>
+    /// <param name="commandOptions"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Task<Collection<Document>> CreateCollectionAsync(string collectionName, DatabaseCommandOptions commandOptions)
     {
@@ -293,6 +299,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="definition">Specify options to use when creating the collection.</param>
     public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition)
     {
@@ -300,6 +307,8 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync(string, CollectionDefinition)" />
+    /// <param name="collectionName"></param>
+    /// <param name="definition"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options)
     {
@@ -355,6 +364,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="definition">Specify options to use when creating the collection.</param>
     public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition) where T : class
     {
@@ -362,6 +372,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, DatabaseCommandOptions options) where T : class
     {
@@ -369,6 +380,8 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    /// <param name="collectionName"></param>
+    /// <param name="definition"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options) where T : class
     {
@@ -494,6 +507,7 @@ public class Database
     }
 
     /// <inheritdoc cref="GetCollection(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Collection<Document> GetCollection(string collectionName, DatabaseCommandOptions options)
     {
@@ -508,6 +522,7 @@ public class Database
     }
 
     /// <inheritdoc cref="GetCollection{T}(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Collection<T> GetCollection<T>(string collectionName, DatabaseCommandOptions options) where T : class
     {
@@ -523,6 +538,7 @@ public class Database
     }
 
     /// <inheritdoc cref="GetCollection{T, TId}(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Collection<T, TId> GetCollection<T, TId>(string collectionName, DatabaseCommandOptions options) where T : class
     {
@@ -559,6 +575,7 @@ public class Database
     }
 
     /// <inheritdoc cref="DropCollectionAsync(string)" />
+    /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
     public Task DropCollectionAsync(string collectionName, DatabaseCommandOptions options)
     {
@@ -595,10 +612,23 @@ public class Database
         return CreateTableAsync<TRow>(tableName, null);
     }
 
-    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class, new()
+    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class, new()
     {
+        var udtProperties = TypeUtilities.FindPropertiesWithUserDefinedTypeAttribute(typeof(TRow));
+        if (udtProperties.Any())
+        {
+            var existingTypes = await ListTypeNamesAsync();
+            foreach (var udtProperty in udtProperties)
+            {
+                var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName(udtProperty.UnderlyingType, udtProperty.Attribute);
+                if (!existingTypes.Contains(typeName))
+                {
+                    await CreateTypeAsync(typeName, UserDefinedTypeRequest.CreateDefinitionFromType(udtProperty.UnderlyingType), new CreateTypeCommandOptions() { SkipIfExists = true });
+                }
+            }
+        }
         var definition = TableDefinition.CreateTableDefinition<TRow>();
-        return CreateTableAsync<TRow>(tableName, definition, options, false);
+        return await CreateTableAsync<TRow>(tableName, definition, options, false);
     }
 
     public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition)
@@ -660,6 +690,7 @@ public class Database
     }
 
     /// <inheritdoc cref="GetTable(string)" />
+    /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Table<Row> GetTable(string tableName, DatabaseCommandOptions options)
     {
@@ -674,6 +705,7 @@ public class Database
     }
 
     /// <inheritdoc cref="GetTable{T}(string)" />
+    /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Table<TRow> GetTable<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class
     {
@@ -785,6 +817,7 @@ public class Database
     }
 
     /// <inheritdoc cref="DropTableAsync(string)" />
+    /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Task DropTableAsync(string tableName, DatabaseCommandOptions options)
     {
@@ -956,6 +989,51 @@ public class Database
         return result.Result.Tables;
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableIndexAsync{T, TColumn}(Expression{Func{T, TColumn}})"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableIndexAsync{T, TColumn}(Expression{Func{T, TColumn}})"/>
+    public void DropTableIndex<T, TColumn>(Expression<Func<T, TColumn>> column)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        DropTableIndex(indexName, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTableIndexAsync{T, TColumn}(Expression{Func{T, TColumn}}, DropIndexCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropTableIndexAsync(string, DropIndexCommandOptions)"/>
+    public void DropTableIndex<T, TColumn>(Expression<Func<T, TColumn>> column, DropIndexCommandOptions commandOptions)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        DropTableIndexAsync(indexName, commandOptions, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Drops an index on the table.
+    /// </summary>
+    /// <param name="column">The column to drop the index from</param>
+    /// <remarks>
+    /// Index name will be generated as "{columnName}_idx". Use an overload that accepts an index name if the index was created with a custom name.
+    /// </remarks>
+    public Task DropTableIndexAsync<T, TColumn>(Expression<Func<T, TColumn>> column)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        return DropTableIndexAsync(indexName, null, false);
+    }
+
+    /// <inheritdoc cref="DropTableIndexAsync(string)"/>
+    /// <param name="column">The column to drop the index from</param>
+    /// <param name="commandOptions"></param>
+    /// <remarks>
+    /// Index name will be generated as "{columnName}_idx". Use an overload that accepts an index name if the index was created with a custom name.
+    /// </remarks>
+    public Task DropTableIndexAsync<T, TColumn>(Expression<Func<T, TColumn>> column, DropIndexCommandOptions commandOptions)
+    {
+        var indexName = $"{column.GetMemberNameTree()}_idx";
+        return DropTableIndexAsync(indexName, commandOptions, false);
+    }
+
 
     /// <summary>
     /// Synchronous version of <see cref="DropTableIndexAsync(string)"/>
@@ -985,6 +1063,7 @@ public class Database
     }
 
     /// <inheritdoc cref="DropTableIndexAsync(string)"/>
+    /// <param name="indexName"></param>
     /// <param name="commandOptions"></param>
     public Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions)
     {
@@ -1007,6 +1086,390 @@ public class Database
             .AddCommandOptions(commandOptions);
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTypeAsync{T}()"/> 
+    /// </summary>
+    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
+    public void CreateType<T>() where T : new()
+    {
+        CreateType<T>(null as CreateTypeCommandOptions);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTypeAsync{T}(string)"/> 
+    /// </summary>
+    /// <inheritdoc cref="CreateTypeAsync{T}(string)"/>
+    public void CreateType<T>(string typeName) where T : new()
+    {
+        CreateType<T>(typeName, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/>
+    public void CreateType<T>(CreateTypeCommandOptions options)
+    {
+        var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        var definition = UserDefinedTypeRequest.CreateDefinitionFromType<T>();
+        CreateType(typeName, definition, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/>
+    public void CreateType<T>(string typeName, CreateTypeCommandOptions options)
+    {
+        var definition = UserDefinedTypeRequest.CreateDefinitionFromType<T>();
+        CreateType(typeName, definition, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTypeAsync(string, UserDefinedTypeDefinition)"/> 
+    /// </summary>
+    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition)"/>
+    public void CreateType(string typeName, UserDefinedTypeDefinition definition)
+    {
+        CreateType(typeName, definition, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTypeAsync(string, UserDefinedTypeDefinition, CreateTypeCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition, CreateTypeCommandOptions)"/>
+    public void CreateType(string typeName, UserDefinedTypeDefinition definition, CreateTypeCommandOptions options)
+    {
+        CreateTypeAsync(typeName, definition, options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Create a User Defined Type dynamically by specifying the class that defines the type
+    /// </summary>
+    /// <remarks>
+    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
+    /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
+    /// </remarks>
+    /// <typeparam name="T"></typeparam>
+    public Task CreateTypeAsync<T>() where T : new()
+    {
+        return CreateTypeAsync<T>(null as CreateTypeCommandOptions);
+    }
+
+    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
+    /// <param name="typeName"></param>
+    public Task CreateTypeAsync<T>(string typeName)
+    {
+        return CreateTypeAsync<T>(typeName, null);
+    }
+
+    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
+    /// <param name="options"></param>
+    public Task CreateTypeAsync<T>(CreateTypeCommandOptions options)
+    {
+        string typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        return CreateTypeAsync<T>(typeName, options);
+    }
+
+    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
+    /// <param name="typeName"></param>
+    /// <param name="options"></param>
+    public Task CreateTypeAsync<T>(string typeName, CreateTypeCommandOptions options)
+    {
+        var definition = UserDefinedTypeRequest.CreateDefinitionFromType<T>();
+        return CreateTypeAsync(typeName, definition, options);
+    }
+
+    /// <summary>
+    /// Create a User Defined Type given the <see cref="UserDefinedTypeDefinition"/> 
+    /// </summary>
+    /// <param name="typeName"></param>
+    /// <param name="definition"></param>
+    public Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition)
+    {
+        return CreateTypeAsync(typeName, definition, null);
+    }
+
+    /// <inheritdoc cref="CreateTypeAsync(UserDefinedTypeDefinition)"/>
+    /// <param name="typeName"></param>
+    /// <param name="definition"></param>
+    /// <param name="options"></param>
+    public Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition, CreateTypeCommandOptions options)
+    {
+        return CreateTypeAsync(typeName, definition, options, false);
+    }
+
+    private async Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition, CreateTypeCommandOptions options, bool runSynchronously)
+    {
+        if (options == null)
+        {
+            options = new CreateTypeCommandOptions();
+        }
+        var request = new UserDefinedTypeRequest()
+        {
+            Name = typeName,
+            TypeDefinition = definition
+        };
+        request.SetSkipIfExists(options.SkipIfExists);
+        var command = CreateCommand("createType")
+            .WithPayload(request)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
+        await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTypeAsync{T}()"/> 
+    /// </summary>
+    /// <inheritdoc cref="DropTypeAsync{T}()"/>
+    public void DropType<T>() where T : new()
+    {
+        DropType<T>(null as DropTypeCommandOptions);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTypeAsync{T}(string)"/> 
+    /// </summary>
+    /// <inheritdoc cref="DropTypeAsync(string)"/>
+    public void DropType(string typeName)
+    {
+        DropType(typeName, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTypeAsync{T}(DropTypeCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="DropTypeAsync{T}(DropTypeCommandOptions)"/>
+    public void DropType<T>(DropTypeCommandOptions options)
+    {
+        var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        DropType(typeName, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTypeAsync{T}(DropTypeCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="DropTypeAsync{T}(DropTypeCommandOptions)"/>
+    public void DropType<T>(string typeName, DropTypeCommandOptions options)
+    {
+        DropType(typeName, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropTypeAsync(string, DropTypeCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="DropTypeAsync(string, DropTypeCommandOptions)"/>
+    public void DropType(string typeName, DropTypeCommandOptions options)
+    {
+        DropTypeAsync(typeName, options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Drop a User Defined Type dynamically by specifying the class that defines the type
+    /// </summary>
+    /// <remarks>
+    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
+    /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
+    /// </remarks>
+    /// <typeparam name="T"></typeparam>
+    public Task DropTypeAsync<T>() where T : new()
+    {
+        return DropTypeAsync<T>(null as DropTypeCommandOptions);
+    }
+
+    /// <inheritdoc cref="DropTypeAsync{T}()"/>
+    /// <param name="typeName"></param>
+    public Task DropTypeAsync(string typeName)
+    {
+        return DropTypeAsync(typeName, null);
+    }
+
+    /// <inheritdoc cref="DropTypeAsync{T}()"/>
+    /// <param name="options"></param>
+    public Task DropTypeAsync<T>(DropTypeCommandOptions options)
+    {
+        string typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        return DropTypeAsync(typeName, options);
+    }
+
+    /// <inheritdoc cref="DropTypeAsync(string)"/>
+    /// <param name="typeName"></param>
+    /// <param name="options"></param>
+    public Task DropTypeAsync(string typeName, DropTypeCommandOptions options)
+    {
+        return DropTypeAsync(typeName, options, false);
+    }
+
+    private async Task DropTypeAsync(string typeName, DropTypeCommandOptions options, bool runSynchronously)
+    {
+        if (options == null)
+        {
+            options = new DropTypeCommandOptions();
+        }
+        var request = new DropUserDefinedTypeRequest()
+        {
+            Name = typeName
+        };
+        request.SetSkipIfExists(options.SkipIfExists);
+        var command = CreateCommand("dropType")
+            .WithPayload(request)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
+        await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/> 
+    /// </summary>
+    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/>
+    public void AlterType(AlterUserDefinedTypeDefinition definition)
+    {
+        AlterType(definition, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="AlterTypeAsync(AlterUserDefinedTypeDefinition, CommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition, CommandOptions)"/>
+    public void AlterType(AlterUserDefinedTypeDefinition definition, CommandOptions options)
+    {
+        AlterTypeAsync(definition, options, true).ResultSync();
+    }
+
+
+    /// <summary>
+    /// Alter a User Defined Type given the <see cref="AlterUserDefinedTypeDefinition"/> 
+    /// </summary>
+    /// <param name="definition">The definition of the User Defined Type to alter.</param>
+    public Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition)
+    {
+        return AlterTypeAsync(definition, null);
+    }
+
+    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/>
+    /// <param name="definition"></param>
+    /// <param name="options"></param>
+    public Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition, CommandOptions options)
+    {
+        return AlterTypeAsync(definition, options, false);
+    }
+
+    private async Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition, CommandOptions options, bool runSynchronously)
+    {
+        if (options == null)
+        {
+            options = new CommandOptions();
+        }
+        var command = CreateCommand("alterType")
+            .WithPayload(definition)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
+        await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListTypesAsync()"/> 
+    /// </summary>
+    /// <inheritdoc cref="ListTypesAsync()"/>
+    public IEnumerable<string> ListTypeNames()
+    {
+        return ListTypeNames(null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListTypesAsync(DatabaseCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="ListTypesAsync(DatabaseCommandOptions)"/>
+    public IEnumerable<string> ListTypeNames(DatabaseCommandOptions options)
+    {
+        return ListTypeNamesAsync(options).ResultSync();
+    }
+
+    /// <summary>
+    /// List User Defined Types
+    /// </summary>
+    /// <returns></returns>
+    public Task<IEnumerable<string>> ListTypeNamesAsync()
+    {
+        return ListTypeNamesAsync(null);
+    }
+
+    /// <summary>
+    /// List User Defined Type names
+    /// </summary>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<string>> ListTypeNamesAsync(DatabaseCommandOptions options)
+    {
+        var typeInfos = await ListTypesAsync(options, false, false);
+        return typeInfos.Select(x => x.Name);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListTypesAsync()"/> 
+    /// </summary>
+    /// <inheritdoc cref="ListTypesAsync()"/>
+    public List<UserDefinedTypeInfo> ListTypes()
+    {
+        return ListTypes(null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListTypesAsync(DatabaseCommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="ListTypesAsync(DatabaseCommandOptions)"/>
+    public List<UserDefinedTypeInfo> ListTypes(DatabaseCommandOptions options)
+    {
+        return ListTypesAsync(options, true, true).ResultSync();
+    }
+
+    /// <summary>
+    /// List User Defined Types
+    /// </summary>
+    /// <returns></returns>
+    public Task<List<UserDefinedTypeInfo>> ListTypesAsync()
+    {
+        return ListTypesAsync(null);
+    }
+
+    /// <summary>
+    /// List User Defined Types
+    /// </summary>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public Task<List<UserDefinedTypeInfo>> ListTypesAsync(DatabaseCommandOptions options)
+    {
+        return ListTypesAsync(options, true, false);
+    }
+
+    private async Task<List<UserDefinedTypeInfo>> ListTypesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
+    {
+        var payload = new
+        {
+            options = new
+            {
+                explain = includeDetails
+            }
+        };
+        var command = CreateCommand("listTypes")
+            .WithPayload(payload)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
+        if (includeDetails)
+        {
+            var result = await command.RunAsyncReturnStatus<ListUserDefinedTypesResult>(runSynchronously).ConfigureAwait(false);
+            return result.Result.Types;
+        }
+        else
+        {
+            var result = await command.RunAsyncReturnStatus<ListUserDefinedTypeNamesResult>(runSynchronously).ConfigureAwait(false);
+            return result.Result.Types.Select(name => new UserDefinedTypeInfo { Name = name }).ToList();
+        }
+    }
+
 
     internal static Guid? GetDatabaseIdFromUrl(string url)
     {

@@ -22,11 +22,11 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// A set of options to be used when finding a row in a table.
 /// </summary>
 /// <typeparam name="T">The type of the row in the table.</typeparam>
-public class TableFindOptions<T> : FindOptions<T, SortBuilder<T>>
+public class TableFindOptions<T> : FindOptions<T, TableSortBuilder<T>>
 {
     /// <summary>
     /// The builder used to define the sort to apply when running the query.
     /// </summary>
     [JsonIgnore]
-    public override SortBuilder<T> Sort { get; set; }
+    public override TableSortBuilder<T> Sort { get; set; }
 }

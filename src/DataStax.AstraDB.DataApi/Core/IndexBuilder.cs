@@ -15,16 +15,13 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
-namespace DataStax.AstraDB.DataApi.Tables;
+namespace DataStax.AstraDB.DataApi.Core;
 
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-public class ColumnNameAttribute : Attribute
+
+public class IndexBuilder<T>
 {
-    public string Name { get; set; }
 
-    public ColumnNameAttribute(string columnName)
-    {
-        Name = columnName;
-    }
 }

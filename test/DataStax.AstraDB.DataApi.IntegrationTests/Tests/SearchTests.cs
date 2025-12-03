@@ -914,5 +914,48 @@ public class SearchTests
         var distinct = collection.Find(filter).DistinctBy(so => so.Properties.PropertyOne);
         Assert.Equal(3, distinct.Count());
     }
+
+    [Fact]
+    public async Task LexicalFindOne()
+    {
+        var collectionName = "collectionFindOneWithLexical";
+        try
+        {
+            List<SimpleObjectWithLexical> items = new List<SimpleObjectWithLexical>() {
+                new()
+                {
+                    Id = 0,
+                    Name = "This is about a cat.",
+                },
+                new()
+                {
+                    Id = 1,
+                    Name = "This is about a dog.",
+                },
+                new()
+                {
+                    Id = 2,
+                    Name = "This is about a horse.",
+                },
+            };
+
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithLexical>(collectionName);
+            var insertResult = await collection.InsertManyAsync(items);
+            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            var findOptions = new DocumentFindOptions<SimpleObjectWithLexical>()
+            {
+                Sort = Builders<SimpleObjectWithLexical>.Sort.Lexical("dog"),
+                Filter = Builders<SimpleObjectWithLexical>.Filter.LexicalMatch("dog"),
+            };
+
+            var result = await collection.FindOneAsync(findOptions);
+            Assert.NotNull(result);
+            Assert.Equal(1, result.Id);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
 }
 

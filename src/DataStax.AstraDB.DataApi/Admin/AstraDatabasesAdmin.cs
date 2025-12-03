@@ -106,17 +106,39 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Returns a list of database info objects.
+    /// Synchronous version of <see cref="ListDatabasesAsync()"/>
     /// </summary>
-    /// <returns>A list of DatabaseInfo objects.</returns>
-    /// <example>
-    /// <code>
-    /// var databases = admin.ListDatabases();
-    /// </code>
-    /// </example>
+    /// <inheritdoc cref="ListDatabasesAsync()"/>
     public List<DatabaseInfo> ListDatabases()
     {
-        return ListDatabasesAsync(null, true).ResultSync();
+        return ListDatabases(null, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListDatabasesAsync(CommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="ListDatabasesAsync(CommandOptions)"/>
+    public List<DatabaseInfo> ListDatabases(CommandOptions options)
+    {
+        return ListDatabases(null, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListDatabasesAsync(ListDatabaseOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="ListDatabasesAsync(ListDatabaseOptions)"/>
+    public List<DatabaseInfo> ListDatabases(ListDatabaseOptions listOptions)
+    {
+        return ListDatabases(listOptions, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="ListDatabasesAsync(ListDatabaseOptions, CommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="ListDatabasesAsync(ListDatabaseOptions, CommandOptions)"/>
+    public List<DatabaseInfo> ListDatabases(ListDatabaseOptions listOptions, CommandOptions options)
+    {
+        return ListDatabasesAsync(null, options, true).ResultSync();
     }
 
     /// <summary>
@@ -130,22 +152,7 @@ public class AstraDatabasesAdmin
     /// </example>
     public Task<List<DatabaseInfo>> ListDatabasesAsync()
     {
-        return ListDatabasesAsync(null, false);
-    }
-
-    /// <summary>
-    /// Returns a list of database info objects using specified command options.
-    /// </summary>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>A list of DatabaseInfo objects.</returns>
-    /// <example>
-    /// <code>
-    /// var databases = admin.ListDatabases(options);
-    /// </code>
-    /// </example>
-    public List<DatabaseInfo> ListDatabases(CommandOptions options)
-    {
-        return ListDatabasesAsync(options, true).ResultSync();
+        return ListDatabasesAsync(null, null);
     }
 
     /// <summary>
@@ -160,14 +167,41 @@ public class AstraDatabasesAdmin
     /// </example>
     public Task<List<DatabaseInfo>> ListDatabasesAsync(CommandOptions options)
     {
-        return ListDatabasesAsync(options, false);
+        return ListDatabasesAsync(null, options, false);
     }
 
-    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(CommandOptions options, bool runSynchronously)
+    /// <summary>
+    ///  Asynchronously returns a list of database info objects using specified filtering options
+    /// </summary>
+    /// <param name="listOptions"></param>
+    /// <returns></returns>
+    public Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions listOptions)
     {
+        return ListDatabasesAsync(listOptions, null, false);
+    }
+
+    /// <summary>
+    ///  Asynchronously returns a list of database info objects using specified command options and filtering options
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="listOptions"></param>
+    /// <returns></returns>
+    public Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions listOptions, CommandOptions options)
+    {
+        return ListDatabasesAsync(listOptions, options, false);
+    }
+
+    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions listOptions, CommandOptions options, bool runSynchronously)
+    {
+        if (listOptions == null)
+        {
+            listOptions = new ListDatabaseOptions();
+        }
+
         var command = CreateCommand()
             .AddUrlPath("databases")
             .WithTimeoutManager(new DatabaseAdminTimeoutManager())
+            .WithPayload(listOptions)
             .AddCommandOptions(options);
 
         var rawResults = await command.RunAsyncRaw<List<RawDatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
@@ -349,7 +383,7 @@ public class AstraDatabasesAdmin
         var databaseName = creationOptions.Name;
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
 
-        List<DatabaseInfo> dbList = await ListDatabasesAsync(commandOptions, runSynchronously).ConfigureAwait(false);
+        List<DatabaseInfo> dbList = await ListDatabasesAsync(null, commandOptions, runSynchronously).ConfigureAwait(false);
 
         DatabaseInfo existingDb = dbList.FirstOrDefault(item => databaseName.Equals(item.Name));
 
@@ -568,7 +602,7 @@ public class AstraDatabasesAdmin
     internal async Task<bool> DropDatabaseAsync(string databaseName, CommandOptions options, bool runSynchronously)
     {
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-        var dbList = await ListDatabasesAsync(options, runSynchronously).ConfigureAwait(false);
+        var dbList = await ListDatabasesAsync(null, options, runSynchronously).ConfigureAwait(false);
 
         var dbInfo = dbList.FirstOrDefault(item => item.Name.Equals(databaseName));
         if (dbInfo == null)
@@ -603,6 +637,19 @@ public class AstraDatabasesAdmin
         }
         return false;
     }
+
+
+    /// <summary>
+    /// Returns an IDatabaseAdmin instance for the database at the specified URL.
+    /// </summary>
+    /// <param name="dbUrl"></param>
+    /// <returns></returns>
+    public IDatabaseAdmin GetDatabaseAdmin(string dbUrl)
+    {
+        var database = _client.GetDatabase(dbUrl);
+        return new DatabaseAdminAstra(database, _client, null);
+    }
+
 
     /// <summary>
     /// Retrieves database information for the specified GUID.

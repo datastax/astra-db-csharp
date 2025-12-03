@@ -393,6 +393,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         }
 
         /// <inheritdoc cref="DropKeyspaceAsync(string)"/>
+        /// <param name="keyspace"></param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be dropped before returning.</param>
         /// <example>
         /// <code>
@@ -405,8 +406,8 @@ namespace DataStax.AstraDB.DataApi.Admin
         }
 
         /// <inheritdoc cref="DropKeyspaceAsync(string)"/>
+        /// <param name="keyspace"></param>
         /// <param name="options">Optional settings that influence request execution.</param>
-
         /// <example>
         /// <code>
         /// await admin.DropKeyspaceAsync("myKeyspace", options);
@@ -422,7 +423,9 @@ namespace DataStax.AstraDB.DataApi.Admin
         }
 
         /// <inheritdoc cref="DropKeyspaceAsync(string, CommandOptions)"/>
+        /// <param name="keyspace"></param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be dropped before returning.</param>
+        /// <param name="options"></param>
         /// <example>
         /// <code>
         /// await admin.DropKeyspaceAsync("myKeyspace", true, options);

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
@@ -353,6 +354,7 @@ public class FilterBuilder<T>
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
+    /// <param name="value"></param>
     /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField value)
@@ -364,6 +366,8 @@ public class FilterBuilder<T>
     /// Not in operator -- Match documents where the array field does not match the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
+    /// <param name="field"></param>
+    /// <param name="value"></param>
     /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin(string field, object value)
@@ -480,6 +484,16 @@ public class FilterBuilder<T>
             }
         }
         return new Filter<T>(null, dictionary);
+    }
+
+    /// <summary>
+    /// Lexical match operator -- Matches documents where the document's lexical field value is a exicographical match to the specified string of space-separated keywords or terms
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public Filter<T> LexicalMatch(string value)
+    {
+        return new Filter<T>(DataApiKeywords.Lexical, FilterOperator.Match, value);
     }
 
 }

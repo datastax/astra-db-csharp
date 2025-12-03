@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.SerDes;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -66,28 +67,48 @@ public class CollectionDefinition
         Type type = typeof(T);
         PropertyInfo idProperty = null;
         DocumentIdAttribute idAttribute = null;
+        LexicalOptionsAttribute lexicalAttribute = null;
 
-        if (definition.DefaultId == null)
+        foreach (var property in type.GetProperties())
         {
-            foreach (var property in type.GetProperties())
+            var attr = property.GetCustomAttribute<DocumentIdAttribute>();
+            if (attr != null)
             {
-                var attr = property.GetCustomAttribute<DocumentIdAttribute>();
-                if (attr != null)
-                {
-                    idProperty = property;
-                    idAttribute = attr;
-                    break;
-                }
+                idProperty = property;
+                idAttribute = attr;
             }
-
-            if (idProperty != null)
+            var checkLexicalAttribute = property.GetCustomAttribute<LexicalOptionsAttribute>();
+            if (checkLexicalAttribute != null)
             {
-                if (idAttribute.DefaultIdType.HasValue)
-                {
-                    definition.DefaultId = new DefaultIdOptions() { Type = idAttribute.DefaultIdType.Value };
-                }
+                lexicalAttribute = checkLexicalAttribute;
             }
         }
+
+        if (definition.DefaultId == null && idProperty != null)
+        {
+            if (idAttribute.DefaultIdType.HasValue)
+            {
+                definition.DefaultId = new DefaultIdOptions() { Type = idAttribute.DefaultIdType.Value };
+            }
+        }
+
+        if (definition.Lexical == null && lexicalAttribute != null)
+        {
+            definition.Lexical = new LexicalOptions()
+            {
+                Analyzer = new AnalyzerOptions()
+                {
+                    Tokenizer = new TokenizerOptions()
+                    {
+                        Name = lexicalAttribute.TokenizerName,
+                        Arguments = lexicalAttribute.GetArguments()
+                    },
+                    Filters = lexicalAttribute.Filters != null ? new List<string>(lexicalAttribute.Filters) : new List<string>(),
+                    CharacterFilters = lexicalAttribute.CharacterFilters != null ? new List<string>(lexicalAttribute.CharacterFilters) : new List<string>()
+                }
+            };
+        }
+
 
         return definition;
     }

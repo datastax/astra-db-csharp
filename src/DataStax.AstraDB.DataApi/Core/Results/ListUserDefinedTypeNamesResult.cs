@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Tables;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Tables;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
-
-public class TableVectorIndex
+/// <summary>
+/// The result object for an operation returning a list of table names.
+/// </summary>
+public class ListUserDefinedTypeNamesResult
 {
-  /*
-  "name": example_index_name",
-    "definition": {
-      "column": "example_vector_column",
-      "options": {
-        "metric": "dot_product",
-        "sourceModel": "ada002"
-      }
-    }
-  */
-  [JsonPropertyName("name")]
-  public string IndexName { get; set; }
-
-  [JsonPropertyName("definition")]
-  public TableVectorIndexDefinition Definition { get; set; }
-
+    /// <summary>
+    /// The list of table names.
+    /// </summary>
+    [JsonPropertyName("types")]
+    public List<string> Types { get; set; }
 }

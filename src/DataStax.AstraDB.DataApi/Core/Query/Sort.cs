@@ -75,6 +75,11 @@ internal class Sort
     internal static Sort Hybrid(string lexical, string vectorize) => new(DataApiKeywords.Hybrid, new Dictionary<string, object> { { DataApiKeywords.Lexical, lexical }, { DataApiKeywords.Vectorize, vectorize } });
 
     internal static Sort Hybrid(string lexical, float[] vector) => new(DataApiKeywords.Hybrid, new Dictionary<string, object> { { DataApiKeywords.Lexical, lexical }, { DataApiKeywords.Vector, vector } });
+
+    internal static Sort Lexical(string value) => new(DataApiKeywords.Lexical, value);
+
+    internal static Sort TableLexical(string columnName, string value) => new Sort(columnName, value);
+
 }
 
 internal class Sort<T> : Sort
@@ -89,5 +94,10 @@ internal class Sort<T> : Sort
     internal static Sort Descending<TField>(Expression<Func<T, TField>> expression)
     {
         return new Sort<T>(expression.GetMemberNameTree(), DataApiKeywords.SortDescending);
+    }
+
+    internal static Sort TableLexical<TField>(Expression<Func<T, TField>> expression, string value)
+    {
+        return new Sort<T>(expression.GetMemberNameTree(), value);
     }
 }
