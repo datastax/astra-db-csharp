@@ -9,8 +9,8 @@ on:
       - main
 
 permissions:
-  id-token: write          # required for OIDC
-  contents: read           # required for actions/checkout if you use it
+  id-token: write # required for OIDC
+  contents: read # required for actions/checkout if you use it
 
 env:
   AWS_ECR_REGION: ${{ secrets.AWS_ECR_REGION }}
@@ -23,45 +23,55 @@ env:
 jobs:
   test:
     env:
-      # template: some might be needed (OpenAI API Key, "reranking API Key" ?)
-      VAR_NAME: ${{ secrets.VAR_NAME }}
+      ASTRA_DB_TOKEN: "Cassandra:Y2Fzc2FuZHJh:Y2Fzc2FuZHJh"
+      ASTRA_DB_URL: "http://localhost:8181"
+      ASTRA_DB_DESTINATION: "hcd"
+
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Configure AWS credentials from OIDC
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::${{ env.AWS_ECR_ACCOUNT_ID }}:role/${{ env.AWS_ECR_ROLE_NAME }}
-        aws-region: ${{ env.AWS_ECR_REGION }}
+      - name: Configure AWS credentials from OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ECR_ACCOUNT_ID }}:role/${{ env.AWS_ECR_ROLE_NAME }}
+          aws-region: ${{ env.AWS_ECR_REGION }}
 
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Pull the image
-      run: |
-        docker pull $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$AWS_ECR_HCD_IMAGE_TAG
+      - name: Pull the image
+        run: |
+          docker pull $AWS_ECR_REGISTRY/$AWS_ECR_REPOSITORY:$AWS_ECR_HCD_IMAGE_TAG
 
-    # TODO maybe replace this step with 'testcontainers' ?
-    - name: Start HCD + Data API
-      run: |
-        docker compose up -d
-      working-directory: docker-compose
+      # TODO maybe replace this step with 'testcontainers' ?
+      - name: Start HCD + Data API
+        run: |
+          docker compose up -d
+        working-directory: docker-compose
 
-    - name: A few seconds for the Data API to fully start
-      run: sleep 10
+      - name: A few seconds for the Data API to fully start
+        run: sleep 10
 
-    # TODO remove this mock step
-    - name: Issue a request to the Data API
-      run: |
-        curl -XPOST \
-        http://localhost:8181/v1/ \
-        -H "token: Cassandra:Y2Fzc2FuZHJh:Y2Fzc2FuZHJh" \
-        -H "Content-Type: application/json" \
-        -d '{"findKeyspaces": {}}'
+      # TODO remove this mock step
+      - name: Issue a request to the Data API
+        run: |
+          curl -XPOST \
+          http://localhost:8181/v1/ \
+          -H "token: Cassandra:Y2Fzc2FuZHJh:Y2Fzc2FuZHJh" \
+          -H "Content-Type: application/json" \
+          -d '{"findKeyspaces": {}}'
 
-    # TODO set up runtime, dependencies, whatever is needed to run the c# tests
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
 
-    # TODO run the tests
+      - name: Run integration tests
+        run: |
+          dotnet restore ./src/DataStax.AstraDB.DataApi/
+          dotnet build ./src/DataStax.AstraDB.DataApi/
+          cd ./test/DataStax.AstraDB.DataApi.IntegrationTests/
+          dotnet test
