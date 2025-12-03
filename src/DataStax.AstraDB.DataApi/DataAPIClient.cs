@@ -205,4 +205,21 @@ public class DataApiClient
         return new Database(apiEndpoint, this, dbOptions);
     }
 
+    /// <summary>
+    /// Generate a db token given a username and password (used for non-Astra instances only)
+    /// </summary>
+    /// <param name="username"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
+    public static string UsernamePasswordTokenProvider(string username, string password)
+    {
+        return $"Cassandra:{Base64Encode(username)}:{Base64Encode(password)}";
+    }
+
+    internal static string Base64Encode(string input)
+    {
+        byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes(input);
+        return System.Convert.ToBase64String(stringBytes);
+    }
+
 }
