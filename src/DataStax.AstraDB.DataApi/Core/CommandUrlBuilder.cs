@@ -37,7 +37,7 @@ internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
 
     internal override string BuildUrl(CommandOptions options)
     {
-        var url = $"{_database.ApiEndpoint}/{options.ApiUrlBase}/{options.ApiVersion.Value.ToUrlString()}" +
+        var url = $"{_database.ApiEndpoint}/{options.ApiUrlBase}{options.ApiVersion.Value.ToUrlString()}" +
             $"/{options.Keyspace}/{_urlPostfix}";
         return url;
     }

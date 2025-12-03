@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+using DataStax.AstraDB.DataApi.Core;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using DataStax.AstraDB.DataApi.Core;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
-/// Represents an alter table operation that can be converted to a JSON fragment for transmission.
+/// Represents operations that can be applied to an existing table.
 /// </summary>
+/// <remarks>
+/// The following operations are available:
+/// <list type="bullet">
+///   <item><see cref="AlterTableAddColumns"/> - Adds new columns to a table.</item>
+///   <item><see cref="AlterTableAddVectorColumns"/> - Adds vector columns to a table.</item>
+///   <item><see cref="AlterTableDropColumns"/> - Drops columns from a table.</item>
+///   <item><see cref="AlterTableAddVectorize"/> - Adds vectorization services to specific columns.</item>
+///   <item><see cref="AlterTableDropVectorize"/> - Removes vectorization from specific columns.</item>
+/// </list>
+/// </remarks>
 public interface IAlterTableOperation
 {
   /// <summary>

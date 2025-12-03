@@ -83,7 +83,7 @@ public class CommandOptions
         {
             if (Destination == DataApiDestination.ASTRA)
             {
-                return "api/json";
+                return "api/json/";
             }
             return "";
         }
