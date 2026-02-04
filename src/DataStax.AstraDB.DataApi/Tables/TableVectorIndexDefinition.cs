@@ -15,10 +15,6 @@
  */
 
 using DataStax.AstraDB.DataApi.Core;
-using DataStax.AstraDB.DataApi.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;

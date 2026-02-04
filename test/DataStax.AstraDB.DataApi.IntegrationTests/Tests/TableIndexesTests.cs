@@ -1,8 +1,9 @@
 using DataStax.AstraDB.DataApi.Collections;
+using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
-using System.Runtime.CompilerServices;
+
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -82,6 +83,66 @@ public class TableIndexesTests
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_MapIndex_Entries()
+    {
+        var tableName = "tableIndexesTest_MapIndex_Entries";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
+
+            await table.CreateIndexAsync("map_idx", (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Entries));
+
+            var result = await table.ListIndexMetadataAsync();
+            Assert.Contains(result.Indexes, i => i.Name == "map_idx");
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_MapIndex_Keys()
+    {
+        var tableName = "tableIndexesTest_MapIndex_Keys";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
+
+            await table.CreateIndexAsync("map_idx", (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Keys));
+
+            var result = await table.ListIndexMetadataAsync();
+            Assert.Contains(result.Indexes, i => i.Name == "map_idx");
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_MapIndex_Values()
+    {
+        var tableName = "tableIndexesTest_MapIndex_Values";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
+
+            await table.CreateIndexAsync("map_idx", (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Values));
+
+            var result = await table.ListIndexMetadataAsync();
+            Assert.Contains(result.Indexes, i => i.Name == "map_idx");
+
         }
         finally
         {

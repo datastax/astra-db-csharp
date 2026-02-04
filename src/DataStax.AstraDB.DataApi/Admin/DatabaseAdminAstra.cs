@@ -46,10 +46,14 @@ namespace DataStax.AstraDB.DataApi.Admin
         internal DatabaseAdminAstra(Database database, DataApiClient client, CommandOptions adminOptions)
         {
             Guard.NotNull(client, nameof(client));
+            if (database.DatabaseId == null)
+            {
+                throw new ArgumentException("Database must have a valid DatabaseId to use DatabaseAdminAstra", nameof(database));
+            }
             _client = client;
             _adminOptions = adminOptions;
             _database = database;
-            _id = _database.DatabaseId;
+            _id = _database.DatabaseId.Value;
         }
 
         /// <summary>
@@ -575,6 +579,97 @@ namespace DataStax.AstraDB.DataApi.Admin
             return response.Result;
         }
 
+        /// <summary>
+        /// Finds and returns available reranking providers for the current database.
+        /// </summary>
+        /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
+        /// <example>
+        /// <code>
+        /// var providers = admin.FindRerankingProviders();
+        /// </code>
+        /// </example>
+        public FindRerankingProvidersResult FindRerankingProviders()
+        {
+            return FindRerankingProvidersAsync(null, true).ResultSync();
+        }
+
+        /// <summary>
+        /// Asynchronously finds and returns available reranking providers for the current database.
+        /// </summary>
+        /// <returns>
+        /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var providers = await admin.FindRerankingProvidersAsync();
+        /// </code>
+        /// </example>
+        public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync()
+        {
+            return FindRerankingProvidersAsync(null, false);
+        }
+
+        /// <summary>
+        /// Finds and returns available reranking providers for the current database using the specified command options.
+        /// </summary>
+        /// <param name="options">Optional settings that influence request execution.</param>
+        /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
+        /// <example>
+        /// <code>
+        /// var providers = admin.FindRerankingProviders(options);
+        /// </code>
+        /// </example>
+        public FindRerankingProvidersResult FindRerankingProviders(FindRerankingProvidersCommandOptions options)
+        {
+            return FindRerankingProvidersAsync(options, true).ResultSync();
+        }
+
+        /// <summary>
+        /// Asynchronously finds and returns available reranking providers for the current database
+        /// using the specified command options.
+        /// </summary>
+        /// <param name="options">Optional settings that influence request execution.</param>
+        /// <returns>
+        /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var providers = await admin.FindRerankingProvidersAsync(options);
+        /// </code>
+        /// </example>
+        public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options)
+        {
+            return FindRerankingProvidersAsync(options, false);
+        }
+
+        internal async Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options, bool runSynchronously)
+        {
+            if (options == null)
+            {
+                options = new FindRerankingProvidersCommandOptions();
+            }
+            options.DeserializeToObjectDictionary = true;
+            var command = CreateCommandEmbedding()
+               .AddCommandOptions(options)
+               .WithTimeoutManager(new DatabaseAdminTimeoutManager())
+               .WithPayload(new
+               {
+                   findRerankingProviders = new
+                   {
+                       options = new
+                       {
+                           filterModelStatus = options.StatusString
+                       }
+                   }
+               });
+
+            var response = await command
+                .RunAsyncReturnStatus<FindRerankingProvidersResult>(runSynchronously)
+                .ConfigureAwait(false);
+
+            return response.Result;
+        }
+
         private Command CreateCommandAdmin()
         {
             return new Command(_database.Client, _optionsTree, new AdminCommandUrlBuilder());
@@ -584,6 +679,5 @@ namespace DataStax.AstraDB.DataApi.Admin
         {
             return new Command(_database.Client, _optionsTree, new EmbeddingCommandUrlBuilder(_database));
         }
-
     }
 }

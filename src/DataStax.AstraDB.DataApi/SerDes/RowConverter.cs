@@ -82,8 +82,42 @@ public class RowConverter<T> : JsonConverter<T> where T : class
                 }
                 else
                 {
-                    object value = JsonSerializer.Deserialize(ref reader, property.PropertyType, options);
-                    property.SetValue(instance, value);
+                    var type = property.PropertyType;
+                    if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.Dictionary<,>))
+                    {
+                        var keyType = type.GetGenericArguments()[0];
+                        var valueType = type.GetGenericArguments()[1];
+                        if (keyType == typeof(string))
+                        {
+                            // Default: object
+                            object value = JsonSerializer.Deserialize(ref reader, type, options);
+                            property.SetValue(instance, value);
+                        }
+                        else
+                        {
+                            // Expect array of [key, value] pairs
+                            if (reader.TokenType != JsonTokenType.StartArray)
+                                throw new JsonException($"Expected StartArray for non-string-keyed dictionary property '{propertyName}'");
+                            var dict = (System.Collections.IDictionary)Activator.CreateInstance(type);
+                            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                            {
+                                if (reader.TokenType != JsonTokenType.StartArray)
+                                    throw new JsonException($"Expected StartArray for key-value pair in dictionary property '{propertyName}'");
+                                reader.Read();
+                                var key = JsonSerializer.Deserialize(ref reader, keyType, options);
+                                reader.Read();
+                                var val = JsonSerializer.Deserialize(ref reader, valueType, options);
+                                reader.Read(); // EndArray
+                                dict.Add(key, val);
+                            }
+                            property.SetValue(instance, dict);
+                        }
+                    }
+                    else
+                    {
+                        object value = JsonSerializer.Deserialize(ref reader, property.PropertyType, options);
+                        property.SetValue(instance, value);
+                    }
                 }
             }
             else
@@ -116,6 +150,38 @@ public class RowConverter<T> : JsonConverter<T> where T : class
             {
                 string jsonString = JsonSerializer.Serialize(propertyValue, property.PropertyType, options);
                 writer.WriteStringValue(jsonString);
+            }
+            else if (propertyValue != null)
+            {
+                var type = property.PropertyType;
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.Dictionary<,>))
+                {
+                    var keyType = type.GetGenericArguments()[0];
+                    var valueType = type.GetGenericArguments()[1];
+                    // If key is string, serialize as object (default)
+                    if (keyType == typeof(string))
+                    {
+                        JsonSerializer.Serialize(writer, propertyValue, type, options);
+                    }
+                    else
+                    {
+                        // Serialize as array of [key, value] pairs
+                        writer.WriteStartArray();
+                        var dict = (System.Collections.IDictionary)propertyValue;
+                        foreach (var key in dict.Keys)
+                        {
+                            writer.WriteStartArray();
+                            JsonSerializer.Serialize(writer, key, keyType, options);
+                            JsonSerializer.Serialize(writer, dict[key], valueType, options);
+                            writer.WriteEndArray();
+                        }
+                        writer.WriteEndArray();
+                    }
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, propertyValue, type, options);
+                }
             }
             else
             {

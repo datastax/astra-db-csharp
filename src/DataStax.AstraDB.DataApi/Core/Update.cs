@@ -24,6 +24,7 @@ internal class Update<T>
     internal string UpdateOperator { get; set; }
     internal string FieldName { get; set; }
     internal object FieldValue { get; set; }
+    internal bool ForTablesOnly { get; set; } = false;
 
     internal Update(string updateOperator, string fieldName, object value)
     {

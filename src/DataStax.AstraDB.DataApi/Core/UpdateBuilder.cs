@@ -464,4 +464,44 @@ public class UpdateBuilder<T>
         return this;
     }
 
+    /// <summary>
+    /// Remove all instances matching the specified values (list/set) or keys (dictionary/map).
+    /// </summary>
+    /// <typeparam name="TField"></typeparam>
+    /// <param name="fieldName"></param>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public UpdateBuilder<T> PullAll<TField>(string fieldName, IEnumerable<TField> values)
+    {
+        _updates.Add(new Update<T>(UpdateOperator.PullAll, fieldName, values) { ForTablesOnly = true });
+        return this;
+    }
+
+    /// <summary>
+    /// Remove all instances matching the specified values (list/set).
+    /// </summary>
+    /// <typeparam name="TField"></typeparam>
+    /// <param name="expression"></param>  
+    /// <param name="values"></param>
+    /// <returns></returns>     
+    public UpdateBuilder<T> PullAll<TField>(Expression<Func<T, IEnumerable<TField>>> expression, IEnumerable<TField> values)
+    {
+        _updates.Add(new Update<T>(UpdateOperator.PullAll, expression.GetMemberNameTree(), values) { ForTablesOnly = true });
+        return this;
+    }
+
+    /// <summary>
+    /// Remove all instances matching the specified keys (dictionary/map).
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TVal"></typeparam>
+    /// <param name="expression"></param>  
+    /// <param name="keys"></param>
+    /// <returns></returns>     
+    public UpdateBuilder<T> PullAll<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IEnumerable<TKey> keys)
+    {
+        _updates.Add(new Update<T>(UpdateOperator.PullAll, expression.GetMemberNameTree(), keys) { ForTablesOnly = true });
+        return this;
+    }
+
 }

@@ -3,6 +3,7 @@ using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
+using DataStax.AstraDB.DataApi.Utils;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text;

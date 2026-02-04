@@ -24,7 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -77,13 +76,13 @@ public class Database
     private readonly string _apiEndpoint;
     private readonly DataApiClient _client;
     private readonly string _urlPostfix = "";
-    private readonly Guid _id;
+    private readonly Guid? _id;
 
     private DatabaseCommandOptions _dbCommandOptions;
 
     internal string ApiEndpoint => _apiEndpoint;
     internal DataApiClient Client => _client;
-    internal Guid DatabaseId => _id;
+    internal Guid? DatabaseId => _id;
 
     internal CommandOptions[] OptionsTree
     {
@@ -100,7 +99,7 @@ public class Database
         _apiEndpoint = apiEndpoint;
         _client = client;
         _dbCommandOptions = dbCommandOptions;
-        _id = (Guid)GetDatabaseIdFromUrl(_apiEndpoint);
+        _id = GetDatabaseIdFromUrl(_apiEndpoint);
     }
 
     /// <summary>
@@ -598,10 +597,10 @@ public class Database
 
     public Task<Table<TRow>> CreateTableAsync<TRow>() where TRow : class, new()
     {
-        return CreateTableAsync<TRow>(null as DatabaseCommandOptions);
+        return CreateTableAsync<TRow>(null as CreateTableCommandOptions);
     }
 
-    public Task<Table<TRow>> CreateTableAsync<TRow>(DatabaseCommandOptions options) where TRow : class, new()
+    public Task<Table<TRow>> CreateTableAsync<TRow>(CreateTableCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
         return CreateTableAsync<TRow>(tableName, options);
@@ -612,7 +611,7 @@ public class Database
         return CreateTableAsync<TRow>(tableName, null);
     }
 
-    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class, new()
+    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CreateTableCommandOptions options) where TRow : class, new()
     {
         var udtProperties = TypeUtilities.FindPropertiesWithUserDefinedTypeAttribute(typeof(TRow));
         if (udtProperties.Any())
@@ -636,7 +635,7 @@ public class Database
         return CreateTableAsync(tableName, definition, null);
     }
 
-    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, DatabaseCommandOptions options)
+    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, CreateTableCommandOptions options)
     {
         if (definition.PrimaryKey == null)
         {
@@ -645,9 +644,17 @@ public class Database
         return CreateTableAsync<Row>(tableName, definition, options, false);
     }
 
-    private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, DatabaseCommandOptions options, bool runSynchronously) where TRow : class
+    private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableCommandOptions options, bool runSynchronously) where TRow : class
     {
-
+        options = options ?? new CreateTableCommandOptions();
+        if (options.SkipIfExists)
+        {
+            var existingTables = await ListTableNamesAsync().ConfigureAwait(false);
+            if (existingTables.Contains(tableName))
+            {
+                return GetTable<TRow>(tableName, options);
+            }
+        }
         var payload = new TableCommandPayload
         {
             Name = tableName,
@@ -969,7 +976,7 @@ public class Database
     /// <returns></returns>
     public Task<List<string>> ListTableNamesAsync(DatabaseCommandOptions options)
     {
-        return ListTableNamesAsync(options, true, false);
+        return ListTableNamesAsync(options, false, false);
     }
 
     private async Task<List<string>> ListTableNamesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
@@ -1313,7 +1320,7 @@ public class Database
         {
             Name = typeName
         };
-        request.SetSkipIfExists(options.SkipIfExists);
+        request.SetSkipIfNotExists(options.SkipIfNotExists);
         var command = CreateCommand("dropType")
             .WithPayload(request)
             .WithTimeoutManager(new TableAdminTimeoutManager())

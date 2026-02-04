@@ -975,7 +975,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         where TResult : class
     {
         findOptions ??= new TableFindOptions<T>();
-        findOptions.Filter = filter;
+        if (findOptions.Filter == null && filter != null)
+        {
+            findOptions.Filter = filter;
+        }
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<DocumentResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);

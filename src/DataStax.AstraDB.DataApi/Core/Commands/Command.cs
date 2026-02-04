@@ -38,6 +38,7 @@ internal class Command
     private readonly CommandUrlBuilder _urlBuilder;
     private readonly string _name;
     private List<string> _urlPaths = new();
+    private Dictionary<string, string> _queryParameters = new();
 
     internal object Payload { get; set; }
     internal string UrlPostfix { get; set; }
@@ -86,6 +87,21 @@ internal class Command
     internal Command AddUrlPath(string path)
     {
         _urlPaths.Add(path);
+        return this;
+    }
+
+    internal Command AddQueryParameters(Dictionary<string, string> queryParameters)
+    {
+        foreach (var kvp in queryParameters)
+        {
+            _queryParameters[kvp.Key] = kvp.Value;
+        }
+        return this;
+    }
+
+    internal Command AddQueryParameter(string key, string value)
+    {
+        _queryParameters[key] = value;
         return this;
     }
 
@@ -219,6 +235,10 @@ internal class Command
             deserializeOptions.Converters.Add(new DateTimeConverter());
             deserializeOptions.Converters.Add(new DateTimeNullableConverter());
         }
+        if (commandOptions.DeserializeToObjectDictionary == true)
+        {
+            deserializeOptions.Converters.Add(new SimpleDictionaryConverter());
+        }
         deserializeOptions.Converters.Add(new IpAddressConverter());
         deserializeOptions.Converters.Add(new AnalyzerOptionsConverter());
 
@@ -235,6 +255,11 @@ internal class Command
         {
             // Join the URL parts, ensuring that no additional slashes are introduced
             url += "/" + string.Join("/", _urlPaths.Select(part => part.Trim('/')));
+        }
+        if (_queryParameters.Any())
+        {
+            var queryString = string.Join("&", _queryParameters.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+            url += "?" + queryString;
         }
 
         await MaybeLogRequestDebug(url, content, runSynchronously).ConfigureAwait(false);

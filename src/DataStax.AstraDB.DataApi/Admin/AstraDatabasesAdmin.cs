@@ -732,6 +732,71 @@ public class AstraDatabasesAdmin
         return response;
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="FindAvailableRegionsAsync()"/>
+    /// </summary>
+    /// <returns></returns>
+    public List<RegionInfo> FindAvailableRegions()
+    {
+        return FindAvailableRegions(new FindAvailableRegionsCommandOptions());
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="FindAvailableRegionsAsync(FindAvailableRegionsCommandOptions)"/>
+    /// </summary>
+    /// <returns></returns>
+    public List<RegionInfo> FindAvailableRegions(FindAvailableRegionsCommandOptions options)
+    {
+        return FindAvailableRegionsAsync(options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Gets a list of available regions for database creation.
+    /// </summary>
+    /// <returns></returns>
+    public Task<List<RegionInfo>> FindAvailableRegionsAsync()
+    {
+        return FindAvailableRegionsAsync(new FindAvailableRegionsCommandOptions());
+    }
+
+    /// <summary>
+    /// Gets a list of available regions for database creation.
+    /// </summary>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public Task<List<RegionInfo>> FindAvailableRegionsAsync(FindAvailableRegionsCommandOptions options)
+    {
+        return FindAvailableRegionsAsync(options, false);
+    }
+
+    internal async Task<List<RegionInfo>> FindAvailableRegionsAsync(FindAvailableRegionsCommandOptions options, bool runSynchronously)
+    {
+        Dictionary<string, string> parms = new Dictionary<string, string>();
+        string regionType = "";
+        switch (options.RegionType)
+        {
+            case RegionTypeFilter.All:
+                regionType = "all";
+                break;
+            case RegionTypeFilter.Serverless:
+                regionType = "";
+                break;
+            case RegionTypeFilter.Vector:
+                regionType = "vector";
+                break;
+        }
+        parms.Add("region-type", regionType);
+        parms.Add("filter-by-org", options.OnlyOrgEnabledRegions ? "enabled" : "disabled");
+        var command = CreateCommand()
+            .AddUrlPath("regions/serverless")
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
+            .AddQueryParameters(parms)
+            .AddCommandOptions(options);
+
+        var response = await command.RunAsyncRaw<List<RegionInfo>>(HttpMethod.Get, runSynchronously);
+        return response;
+    }
+
     private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
     {
         var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.apps.astra.datastax.com";

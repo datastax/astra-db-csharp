@@ -25,12 +25,20 @@ namespace DataStax.AstraDB.DataApi.Core.Commands;
 /// </summary>
 public class CommandException : Exception
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CommandException"/> class.
+    /// </summary>
     public CommandException()
     {
     }
 
+    /// <summary>
+    /// Gets the list of errors returned from the API.
+    /// </summary>
+    public List<ApiError> Errors { get; set; }
 
-    internal CommandException(List<ApiError> errors) : base(string.Join(", ", errors.Select(e => $"[{e.Code}] {e.Message}")))
+    internal CommandException(List<ApiError> errors) : base(string.Join(", ", errors.Select(e => $"[{e.ErrorCode}] {e.Message}")))
     {
+        Errors = errors;
     }
 }

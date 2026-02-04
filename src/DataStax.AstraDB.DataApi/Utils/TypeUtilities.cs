@@ -5,10 +5,11 @@ using DataStax.AstraDB.DataApi.Tables;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
+
+namespace DataStax.AstraDB.DataApi.Utils;
 
 public class TypeUtilities
 {
@@ -119,13 +120,9 @@ public class TypeUtilities
 
                     if (genericTypeDefinition == typeof(Dictionary<,>))
                     {
-                        if (genericArguments.Length == 2 && genericArguments[0] == typeof(string))
+                        if (genericArguments.Length == 2)
                         {
-                            return DataApiType.Map(GetDataApiTypeFromUnderlyingType(genericArguments[1]));
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Warning: Unhandled Dictionary type. Only string keys are supported.");
+                            return DataApiType.Map(GetDataApiTypeFromUnderlyingType(genericArguments[0]), GetDataApiTypeFromUnderlyingType(genericArguments[1]));
                         }
                     }
                     else if (genericTypeDefinition == typeof(List<>))
@@ -260,21 +257,31 @@ public class DataApiType
 
     public static DataApiType List(DataApiType valueType) => new ListDataApiType(valueType);
     public static DataApiType Map(DataApiType valueType) => new MapDataApiType(valueType);
+    public static DataApiType Map(DataApiType keyType, DataApiType valueType) => new MapDataApiType(keyType, valueType);
     public static DataApiType Set(DataApiType valueType) => new ListDataApiType("set", valueType);
     public static DataApiType Vector(int dimension) => new VectorDataApiType(dimension);
+    public static DataApiType Vectorize(VectorServiceOptions serviceOptions) => new VectorizeDataApiType(serviceOptions);
     public static DataApiType Vectorize(int dimensions, VectorServiceOptions serviceOptions) => new VectorizeDataApiType(dimensions, serviceOptions);
     public static DataApiType UserDefined(string name) => new UserDefinedDataApiType(name);
 }
 
+/// <summary>
+/// Vector data type
+/// </summary>
 public class VectorDataApiType : DataApiType
 {
     /// <summary>
     /// The dimension of the vector
     /// </summary>
     [JsonPropertyName("dimension")]
-    public int Dimension { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Dimension { get; set; }
 
-    public VectorDataApiType(int dimension) : base("vector")
+    /// <summary>
+    /// Vector data type
+    /// </summary>
+    /// <param name="dimension"></param>
+    public VectorDataApiType(int? dimension) : base("vector")
     {
         Dimension = dimension;
     }
@@ -286,6 +293,9 @@ public class VectorDataApiType : DataApiType
     internal override bool IsSimpleType => false;
 }
 
+/// <summary>
+/// Vectorize data type
+/// </summary>
 public class VectorizeDataApiType : VectorDataApiType
 {
     /// <summary>
@@ -294,6 +304,20 @@ public class VectorizeDataApiType : VectorDataApiType
     [JsonPropertyName("service")]
     public VectorServiceOptions ServiceOptions { get; set; }
 
+    /// <summary>
+    /// Construct a Vectorize data type
+    /// </summary>
+    /// <param name="serviceOptions"></param>
+    public VectorizeDataApiType(VectorServiceOptions serviceOptions) : base(null)
+    {
+        ServiceOptions = serviceOptions;
+    }
+
+    /// <summary>
+    /// Construct a Vectorize data type with dimensions
+    /// </summary>
+    /// <param name="dimensions"></param>
+    /// <param name="serviceOptions"></param>
     public VectorizeDataApiType(int dimensions, VectorServiceOptions serviceOptions) : base(dimensions)
     {
         ServiceOptions = serviceOptions;
@@ -349,13 +373,30 @@ public class ListDataApiType : DataApiType
 
 }
 
+/// <summary>
+/// Definition for a Map data type
+/// </summary>
 public class MapDataApiType : ListDataApiType
 {
     [JsonInclude]
     [JsonPropertyName("keyType")]
-    internal object KeyType => "text";
+    internal object KeyType { get; set; } = "text";
 
+    /// <summary>
+    /// Construct a Map data type with string keys and the specified value type
+    /// </summary>
+    /// <param name="valueType"></param>
     public MapDataApiType(DataApiType valueType) : base("map", valueType)
     {
+    }
+
+    /// <summary>
+    /// Construct a Map data type with the specified key and value types
+    /// </summary>
+    /// <param name="keyType"></param>
+    /// <param name="valueType"></param>
+    public MapDataApiType(DataApiType keyType, DataApiType valueType) : base("map", valueType)
+    {
+        KeyType = keyType.AsValueType;
     }
 }

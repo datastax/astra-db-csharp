@@ -14,27 +14,43 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Utils;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-
+/// <summary>
+/// Configuration used to create an index on a table column
+/// </summary>
 public class TableIndexDefinition
 {
+    [JsonIgnore]
+    internal string ColumnName { get; set; }
+
+    private object _column;
+
     [JsonInclude]
     [JsonPropertyName("column")]
-    internal string ColumnName { get; set; }
+    internal virtual object Column
+    {
+        get
+        {
+            if (_column == null)
+            {
+                return ColumnName;
+            }
+            return _column;
+        }
+    }
 
     [JsonInclude]
     [JsonPropertyName("options")]
-    //[JsonConverter(typeof(StringBoolDictionaryConverter))]
-    internal Dictionary<string, object> Options { get; set; } = new Dictionary<string, object>();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    internal Dictionary<string, object> Options { get; set; }
 
+    /// <summary>
+    /// Should the index be case sensitive?
+    /// </summary>
     [JsonIgnore]
     public bool CaseSensitive
     {
@@ -42,6 +58,9 @@ public class TableIndexDefinition
         set => Options["caseSensitive"] = value.ToString().ToLowerInvariant();
     }
 
+    /// <summary>
+    /// Should the index normalize the text?
+    /// </summary>
     [JsonIgnore]
     public bool Normalize
     {
@@ -49,6 +68,9 @@ public class TableIndexDefinition
         set => Options["normalize"] = value.ToString().ToLowerInvariant();
     }
 
+    /// <summary>
+    /// Should the index use ASCII conversion?
+    /// </summary>
     [JsonIgnore]
     public bool Ascii
     {
@@ -58,75 +80,3 @@ public class TableIndexDefinition
 
     internal virtual string IndexCreationCommandName => "createIndex";
 }
-
-// public class TableIndexDefinition<TRow, TColumn> : TableIndexDefinition
-// {
-//     public Expression<Func<TRow, TColumn>> Column
-//     {
-//         set
-//         {
-//             ColumnName = value.GetMemberNameTree();
-//         }
-//     }
-// }
-
-// public class StringBoolDictionaryConverter : JsonConverter<Dictionary<string, string>>
-// {
-//     public override Dictionary<string, string> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-//     {
-//         if (reader.TokenType != JsonTokenType.StartObject)
-//         {
-//             throw new JsonException("Expected StartObject token.");
-//         }
-
-//         var dictionary = new Dictionary<string, string>();
-
-//         while (reader.Read())
-//         {
-//             if (reader.TokenType == JsonTokenType.EndObject)
-//             {
-//                 return dictionary;
-//             }
-
-//             if (reader.TokenType != JsonTokenType.PropertyName)
-//             {
-//                 throw new JsonException("Expected PropertyName token.");
-//             }
-
-//             string propertyName = reader.GetString();
-
-//             reader.Read(); // Move to the value
-
-//             string value;
-//             switch (reader.TokenType)
-//             {
-//                 case JsonTokenType.True:
-//                 case JsonTokenType.False:
-//                     value = reader.GetBoolean().ToString().ToLowerInvariant();
-//                     break;
-//                 case JsonTokenType.String:
-//                     value = reader.GetString();
-//                     break;
-//                 default:
-//                     throw new JsonException($"Unexpected token type {reader.TokenType} for property {propertyName}.");
-//             }
-
-//             dictionary[propertyName] = value;
-//         }
-
-//         throw new JsonException("Unexpected end of JSON.");
-//     }
-
-//     public override void Write(Utf8JsonWriter writer, Dictionary<string, string> value, JsonSerializerOptions options)
-//     {
-//         writer.WriteStartObject();
-
-//         foreach (var kvp in value)
-//         {
-//             writer.WritePropertyName(kvp.Key);
-//             writer.WriteStringValue(kvp.Value);
-//         }
-
-//         writer.WriteEndObject();
-//     }
-// }

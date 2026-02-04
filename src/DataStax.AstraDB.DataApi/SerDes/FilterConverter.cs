@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
 using System;
 using System.Text.Json;

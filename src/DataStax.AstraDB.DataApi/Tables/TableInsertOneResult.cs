@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;

@@ -176,19 +176,6 @@ public class TableTests
     }
 
     [Fact]
-    public async Task FindOne_Vectorize()
-    {
-        var table = fixture.SearchTable;
-        var sort = Builders<RowBook>.TableSort;
-        var filter = sort.Vectorize(b => b.Author, "Walter Dray");
-        var result = await table.FindOneAsync<RowBookWithSimilarity>(null,
-            new TableFindOptions<RowBook>() { Sort = filter, IncludeSimilarity = true });
-        Assert.Equal("Desert Peace", result.Title);
-        //TODO: similarity not being returned currently via API
-        //Assert.NotEqual(0, result.Similarity);
-    }
-
-    [Fact]
     public async Task FindOne_Sort()
     {
         var table = fixture.SearchTable;

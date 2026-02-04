@@ -100,4 +100,14 @@ public class TableIndexBuilder
             SourceModel = sourceModel
         };
     }
+
+    /// <summary>
+    /// Create a table index for a map column.
+    /// </summary>
+    /// <param name="mapIndexType"></param>
+    /// <returns></returns>
+    public TableIndexDefinition Map(MapIndexType mapIndexType)
+    {
+        return new TableMapIndexDefinition(mapIndexType);
+    }
 }

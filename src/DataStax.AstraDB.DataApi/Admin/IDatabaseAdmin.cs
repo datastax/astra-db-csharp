@@ -26,6 +26,7 @@ public interface IDatabaseAdmin
     IEnumerable<string> ListKeyspaces();
     Task<IEnumerable<string>> ListKeyspacesAsync();
     FindEmbeddingProvidersResult FindEmbeddingProviders();
+    FindRerankingProvidersResult FindRerankingProviders();
     Database GetDatabase();
     void CreateKeyspace(string keyspace);
     void CreateKeyspace(string keyspace, CommandOptions options);
