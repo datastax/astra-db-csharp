@@ -9,9 +9,11 @@ namespace DataStax.AstraDB.DataApi.IntegrationTests;
 public class SimpleObjectWithVector
 {
     [DocumentId]
+    [ColumnPrimaryKey]
     public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vector)]
+    [ColumnVector(384)]
     public float[] VectorEmbeddings { get; set; }
 }
 
