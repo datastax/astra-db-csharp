@@ -609,5 +609,68 @@ public class AdditionalTableTests
         }
     }
 
+    [Fact]
+    public async Task Test_EmptyColumnValues()
+    {
+        var tableName = "tableTestEmptyColumnValues";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TestDataBook>(tableName);
+
+            List<TestDataBook> rows = new List<TestDataBook>();
+            for (var i = 0; i < 5; i++)
+            {
+                rows.Add(new TestDataBook()
+                {
+                    Title = $"Book {i}",
+                    Author = $"Author {i}"
+                });
+            }
+
+            var result = await table.InsertManyAsync(rows);
+
+            Console.WriteLine($"Inserted {result.InsertedCount} rows");
+
+            Assert.Equal(5, result.InsertedCount);
+
+            var findResult = await table.FindOneAsync();
+
+            Assert.NotNull(findResult);
+            Assert.NotNull(findResult.Title);
+            Assert.Null(findResult.Rating);
+            Assert.Null(findResult.Genres);
+
+            //Test the non-typed version
+            var tableNotTyped = fixture.Database.GetTable(tableName);
+            var findUntyped = await tableNotTyped.FindOneAsync();
+            Assert.NotNull(findUntyped["title"]);
+            Assert.Contains("rating", findUntyped);
+            Assert.Null(findUntyped["rating"]);
+            Assert.Contains("genres", findUntyped);
+            Assert.NotNull(findUntyped["genres"]);
+            Assert.Empty(findUntyped["genres"] as List<object>);
+
+            var findManyUntypedResult = tableNotTyped.Find().ToList();
+            foreach (var item in findManyUntypedResult)
+            {
+                Assert.NotNull(item["title"]);
+                Assert.Contains("rating", item);
+                Assert.Null(item["rating"]);
+                Assert.Contains("genres", item);
+                Assert.NotNull(item["genres"]);
+                Assert.Empty(item["genres"] as List<object>);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
 }
 
