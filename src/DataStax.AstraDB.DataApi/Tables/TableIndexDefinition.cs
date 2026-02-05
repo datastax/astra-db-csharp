@@ -46,7 +46,7 @@ public class TableIndexDefinition
     [JsonInclude]
     [JsonPropertyName("options")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    internal Dictionary<string, object> Options { get; set; } = new Dictionary<string, object>();
+    internal Dictionary<string, object> Options { get; set; }
 
     /// <summary>
     /// Should the index be case sensitive?
@@ -54,8 +54,12 @@ public class TableIndexDefinition
     [JsonIgnore]
     public bool CaseSensitive
     {
-        get => Options.ContainsKey("caseSensitive") && bool.TryParse((string)Options["caseSensitive"], out var result) && result;
-        set => Options["caseSensitive"] = value.ToString().ToLowerInvariant();
+        get => Options != null && Options.ContainsKey("caseSensitive") && bool.TryParse((string)Options["caseSensitive"], out var result) && result;
+        set
+        {
+            Options ??= new Dictionary<string, object>();
+            Options["caseSensitive"] = value.ToString().ToLowerInvariant();
+        }
     }
 
     /// <summary>
@@ -64,8 +68,12 @@ public class TableIndexDefinition
     [JsonIgnore]
     public bool Normalize
     {
-        get => Options.ContainsKey("normalize") && bool.TryParse((string)Options["normalize"], out var result) && result;
-        set => Options["normalize"] = value.ToString().ToLowerInvariant();
+        get => Options != null && Options.ContainsKey("normalize") && bool.TryParse((string)Options["normalize"], out var result) && result;
+        set
+        {
+            Options ??= new Dictionary<string, object>();
+            Options["normalize"] = value.ToString().ToLowerInvariant();
+        }
     }
 
     /// <summary>
@@ -74,8 +82,12 @@ public class TableIndexDefinition
     [JsonIgnore]
     public bool Ascii
     {
-        get => Options.ContainsKey("ascii") && bool.TryParse((string)Options["ascii"], out var result) && result;
-        set => Options["ascii"] = value.ToString().ToLowerInvariant();
+        get => Options != null && Options.ContainsKey("ascii") && bool.TryParse((string)Options["ascii"], out var result) && result;
+        set
+        {
+            Options ??= new Dictionary<string, object>();
+            Options["ascii"] = value.ToString().ToLowerInvariant();
+        }
     }
 
     internal virtual string IndexCreationCommandName => "createIndex";
