@@ -926,6 +926,11 @@ public class Database
 
     private async Task<IEnumerable<TableInfo>> ListTablesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
     {
+        if (options == null)
+        {
+            options = new DatabaseCommandOptions();
+        }
+        options.DeserializeToObjectDictionary = true;
         var payload = new
         {
             options = new

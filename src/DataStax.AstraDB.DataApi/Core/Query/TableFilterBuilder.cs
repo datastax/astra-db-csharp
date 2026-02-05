@@ -161,4 +161,26 @@ public class TableFilterBuilder<T> : FilterBuilder<T>
     {
         return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.Values, new Filter<T>(FilterOperator.NotIn, array));
     }
+
+    /// <summary>
+    /// Lexical match operator -- Matches rows where the rows's lexical field value is a lexicographical match to the specified string of space-separated keywords or terms
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public Filter<T> TableLexicalMatch(string fieldName, string value)
+    {
+        return new Filter<T>(fieldName, FilterOperator.Match, value);
+    }
+
+    /// <summary>
+    /// Lexical match operator -- Matches rows where the rows's lexical field value is a lexicographical match to the specified string of space-separated keywords or terms
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="expression"></param>
+    /// <returns></returns>
+    public Filter<T> TableLexicalMatch<TKey, TValue>(Expression<Func<T, TValue>> expression, string value)
+    {
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.Match, value);
+    }
+
 }

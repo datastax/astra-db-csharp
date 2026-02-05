@@ -487,11 +487,11 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Lexical match operator -- Matches documents where the document's lexical field value is a exicographical match to the specified string of space-separated keywords or terms
+    /// Lexical match operator -- Matches documents where the document's lexical field value is a lexicographical match to the specified string of space-separated keywords or terms
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public Filter<T> LexicalMatch(string value)
+    public Filter<T> CollectionLexicalMatch(string value)
     {
         return new Filter<T>(DataApiKeywords.Lexical, FilterOperator.Match, value);
     }

@@ -962,7 +962,7 @@ public class SearchTests
             var findOptions = new DocumentFindOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.Sort.Lexical("dog"),
-                Filter = Builders<SimpleObjectWithLexical>.Filter.LexicalMatch("dog"),
+                Filter = Builders<SimpleObjectWithLexical>.Filter.CollectionLexicalMatch("dog"),
             };
 
             var result = await collection.FindOneAsync(findOptions);

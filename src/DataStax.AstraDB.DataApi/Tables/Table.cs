@@ -793,6 +793,17 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        if (typeof(Row).IsAssignableFrom(typeof(TResult)))
+        {
+            // we are going to get the table definition and handle null values for missing columns
+            var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
+            var tableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
+            foreach (var row in response.Data.Items)
+            {
+                PopulateMissingColumnsInRow(row as Row, tableInfo);
+            }
+
+        }
         return response;
     }
 
@@ -982,7 +993,38 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<DocumentResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        if (typeof(Row).IsAssignableFrom(typeof(TResult)))
+        {
+            // we are going to get the table definition and handle null values for missing columns
+            var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
+            var tableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
+            PopulateMissingColumnsInRow(response.Data.Document as Row, tableInfo);
+
+        }
         return response.Data.Document;
+    }
+
+    private void PopulateMissingColumnsInRow(Row row, TableInfo tableInfo)
+    {
+        foreach (var column in tableInfo.TableDefinition.Columns)
+        {
+            if (!row.ContainsKey(column.Key))
+            {
+                object value = null;
+                var columnType = ((Dictionary<string, object>)column.Value)["type"];
+                switch (columnType)
+                {
+                    case "map":
+                        value = new Dictionary<object, object>();
+                        break;
+                    case "set":
+                    case "list":
+                        value = new List<object>();
+                        break;
+                }
+                row[column.Key] = value;
+            }
+        }
     }
 
     /// <summary>
