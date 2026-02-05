@@ -50,7 +50,7 @@ public class TableIndexDefinition
     [JsonInclude]
     [JsonPropertyName("options")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    internal Dictionary<string, object> Options { get; set; } = new Dictionary<string, object>();
+    internal Dictionary<string, object> Options { get; set; }
 
     /// <summary>
     /// Should the index be case sensitive?
