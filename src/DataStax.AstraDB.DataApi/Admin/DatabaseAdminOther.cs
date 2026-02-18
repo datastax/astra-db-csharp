@@ -25,7 +25,6 @@ namespace DataStax.AstraDB.DataApi.Admin
 {
     public class DatabaseAdminOther : IDatabaseAdmin
     {
-        private readonly Guid _id;
         private readonly Database _database;
         private readonly CommandOptions _adminOptions;
         private readonly DataApiClient _client;
@@ -37,16 +36,17 @@ namespace DataStax.AstraDB.DataApi.Admin
             _client = client;
             _adminOptions = adminOptions;
             _database = database;
-            _id = _database.DatabaseId;
-        }
-
-        public DatabaseAdminOther(Guid id)
-        {
-            _id = id;
         }
 
         public IEnumerable<string> ListKeyspaces()
         {
+            /*
+            const resp = await this.#httpClient.executeCommand({ findKeyspaces: {} }, {
+      timeoutManager: this.#httpClient.tm.single('keyspaceAdminTimeoutMs', options),
+      methodName: 'dbAdmin.listKeyspaces',
+      keyspace: null,
+    });
+            */
             throw new NotImplementedException();
         }
 
@@ -184,5 +184,11 @@ namespace DataStax.AstraDB.DataApi.Admin
         {
             throw new NotImplementedException();
         }
+
+        public FindRerankingProvidersResult FindRerankingProviders()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

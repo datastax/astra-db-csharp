@@ -1,6 +1,8 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
@@ -148,7 +150,41 @@ public class AdditionalCollectionTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(collectionName);
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task TestInsertError()
+    {
+        var collectionName = "insertErrorTest";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
+            var row1 = new SimpleObject()
+            {
+                _id = 1,
+                Name = "Test 1"
+
+            };
+            var row2 = new SimpleObject()
+            {
+                _id = 2,
+                Name = "Test 2"
+            };
+
+            var insertOneResult = await collection.InsertOneAsync(row1);
+            Assert.NotNull(insertOneResult.InsertedId);
+
+            await Assert.ThrowsAsync<BulkOperationException<CollectionInsertManyResult<object>>>(async () =>
+            {
+                await collection.InsertManyAsync(new List<SimpleObject> { row1, row2 });
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
         }
     }
 

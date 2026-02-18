@@ -115,6 +115,18 @@ public class TableSortBuilder<T> : SortBuilder<T>
         return this;
     }
 
+    /// <summary>
+    /// Adds a lexical sort.
+    /// </summary>
+    /// <param name="columnName"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public TableSortBuilder<T> Lexical(string columnName, string value)
+    {
+        Sorts.Add(Sort.TableLexical(columnName, value));
+        return this;
+    }
+
     internal new TableSortBuilder<T> Clone()
     {
         var clone = new TableSortBuilder<T>();

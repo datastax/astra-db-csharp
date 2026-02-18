@@ -1,3 +1,4 @@
+using DataStax.AstraDB.DataApi.Utils;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -36,6 +37,7 @@ public class AlterUserDefinedTypeDefinition
     /// Adds a field to the User Defined Type.
     /// </summary>
     /// <param name="field">The field to add.</param>
+    /// <param name="fieldType">The type of the field to add.</param>
     /// <returns>The current instance of <see cref="AlterUserDefinedTypeDefinition"/>.</returns>
     public AlterUserDefinedTypeDefinition AddField(string field, DataApiType fieldType)
     {

@@ -9,10 +9,18 @@ namespace DataStax.AstraDB.DataApi.IntegrationTests;
 public class SimpleObjectWithVector
 {
     [DocumentId]
+    [ColumnPrimaryKey]
     public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Vector)]
+    [ColumnVector(384)]
     public float[] VectorEmbeddings { get; set; }
+}
+
+public class SimpleObjectWithVectorSearchResult : SimpleObjectWithVector
+{
+    [DocumentMapping(DocumentMappingField.Similarity)]
+    public double? Similarity { get; set; }
 }
 
 public class SimpleObjectWithVectorize
@@ -61,6 +69,7 @@ public class SimpleObjectWithGuidId
 
 public class SimpleObject
 {
+    [ColumnPrimaryKey]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? _id { get; set; }
     public string Name { get; set; }
@@ -163,6 +172,13 @@ public class RowBookSinglePrimaryKey
     public DateTime DueDate { get; set; }
     public HashSet<string> Genres { get; set; }
     public float Rating { get; set; }
+}
+
+public class TableMapTest
+{
+    [ColumnPrimaryKey(1)]
+    public Guid Id { get; set; }
+    public Dictionary<string, string> StringMap { get; set; }
 }
 
 public class RowEventByDay
@@ -380,6 +396,17 @@ public class DateTypeTest
     public DateOnly? MaybeDate { get; set; }
     public TimeOnly? MaybeTime { get; set; }
     public DateTime TimestampWithKind { get; set; }
+}
+
+public class DictionaryTypeTest
+{
+    [ColumnPrimaryKey()]
+    public int Id { get; set; }
+    public Dictionary<string, string> StringDictionary { get; set; }
+    public Dictionary<string, int> IntDictionary { get; set; }
+    public Dictionary<DateTime, string> DateTimeKey { get; set; }
+    public Dictionary<int, string> IntKey { get; set; }
+    public Dictionary<decimal, string> DecimalKey { get; set; }
 }
 
 public class UdtTest

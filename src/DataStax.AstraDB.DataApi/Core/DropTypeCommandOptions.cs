@@ -22,7 +22,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class DropTypeCommandOptions : CommandOptions
 {
   /// <summary>
-  /// Skip creating the type if one with the same name already exists
+  /// Skip dropping the type if it does not exist (instead of throwing an error).
   /// </summary>
-  public bool SkipIfExists { get; set; } = false;
+  public bool SkipIfNotExists { get; set; } = false;
 }

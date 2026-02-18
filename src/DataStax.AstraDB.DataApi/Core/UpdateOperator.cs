@@ -32,4 +32,5 @@ internal class UpdateOperator
     internal const string Push = "$push";
     internal const string Each = "$each";
     internal const string Position = "$position";
+    internal const string PullAll = "$pullAll";
 }

@@ -510,6 +510,23 @@ public class SearchTests
     }
 
     [Fact]
+    public async Task Test_Manual_Paging()
+    {
+        var collection = fixture.SearchCollection;
+        var results = collection.Find();
+        var firstPage = await results.GetPageAsync();
+        Assert.NotNull(firstPage);
+        Assert.NotEmpty(firstPage.Items);
+        Assert.NotNull(firstPage.NextPageState);
+        Assert.Equal(20, firstPage.Items.Count);
+        var nextPage = await results.GetPageAsync(firstPage.NextPageState);
+        Assert.NotNull(nextPage);
+        Assert.NotEmpty(nextPage.Items);
+        Assert.Null(nextPage.NextPageState);
+        Assert.Equal(13, nextPage.Items.Count);
+    }
+
+    [Fact]
     public void LogicalNot_MongoStyle()
     {
         var collection = fixture.SearchCollection;
@@ -945,7 +962,7 @@ public class SearchTests
             var findOptions = new DocumentFindOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.Sort.Lexical("dog"),
-                Filter = Builders<SimpleObjectWithLexical>.Filter.LexicalMatch("dog"),
+                Filter = Builders<SimpleObjectWithLexical>.Filter.CollectionLexicalMatch("dog"),
             };
 
             var result = await collection.FindOneAsync(findOptions);

@@ -31,12 +31,16 @@ public class AssemblyFixture
         DatabaseName = configuration["DATABASE_NAME"] ?? configuration["AstraDB:DatabaseName"];
         DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:Url"];
         Destination = configuration["DESTINATION"] ?? configuration["AstraDB:Destination"];
+
     }
 
     public DataApiClient CreateApiClient(string fixtureName, bool useToken = true)
     {
         using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger($"../../../_logs/{fixtureName}_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger(fixtureName);
+
+        logger.LogInformation("Database URL: {DatabaseUrl}", DatabaseUrl);
+        logger.LogInformation("Database Destination: {Destination}", Destination);
 
         DataApiDestination? destination = DataApiDestination.ASTRA;
         switch (Destination?.ToLower())

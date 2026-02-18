@@ -30,7 +30,7 @@ public class Builders
     /// <example>
     /// <code>
     /// var index = Builders.TableIndex.Text();
-    /// table.CreateTextIndex("index_name", r => r.SomeTextProperty, index);
+    /// table.CreateIndex("index_name", r => r.SomeTextProperty, index);
     /// </code>
     /// </example>
     /// </summary>
@@ -93,15 +93,24 @@ public class Builders<T>
     /// </code>
     /// </example>
     public static UpdateBuilder<T> Update => new();
-
     /// <summary>
     /// A builder for creating table indexes
     /// <example>
     /// <code>
     /// var index = Builders.TableIndex.Text();
-    /// table.CreateTextIndex("index_name", r => r.SomeTextProperty, index);
+    /// table.CreateIndex("index_name", r => r.SomeTextProperty, index);
     /// </code>
     /// </example>
     /// </summary>
     public static TableIndexBuilder TableIndex => new();
+    /// <summary>
+    /// A builder for creating sort definitions for tables
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var sort = Builders&lt;DocumentType&gt;.TableSort;
+    /// sort = sort.Ascending(x => x.Name);
+    /// </code>
+    /// </example>
+    public static TableFilterBuilder<T> TableFilter => new();
 }

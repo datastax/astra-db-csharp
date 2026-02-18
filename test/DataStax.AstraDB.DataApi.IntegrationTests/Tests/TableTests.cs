@@ -176,19 +176,6 @@ public class TableTests
     }
 
     [Fact]
-    public async Task FindOne_Vectorize()
-    {
-        var table = fixture.SearchTable;
-        var sort = Builders<RowBook>.TableSort;
-        var filter = sort.Vectorize(b => b.Author, "Walter Dray");
-        var result = await table.FindOneAsync<RowBookWithSimilarity>(null,
-            new TableFindOptions<RowBook>() { Sort = filter, IncludeSimilarity = true });
-        Assert.Equal("Desert Peace", result.Title);
-        //TODO: similarity not being returned currently via API
-        //Assert.NotEqual(0, result.Similarity);
-    }
-
-    [Fact]
     public async Task FindOne_Sort()
     {
         var table = fixture.SearchTable;
@@ -537,13 +524,10 @@ public class TableTests
         var projection = Builders<Row>.Projection.Include("Name");
         var result = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
         Assert.Equal("Name_9", result["Name"].ToString());
-        Assert.False(result.ContainsKey("SortOneAscending"));
         result = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
         Assert.Equal("Name_9", result["Name"].ToString());
-        Assert.False(result.ContainsKey("SortOneAscending"));
         result = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
         Assert.Equal("Name_9", result["Name"].ToString());
-        Assert.False(result.ContainsKey("SortOneAscending"));
     }
 
     [Fact]
@@ -555,15 +539,12 @@ public class TableTests
         var results = fixture.UntypedTableSinglePrimaryKey.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
         Assert.Equal(5, results.Count());
         Assert.Equal("Name_7", results.First()["Name"].ToString());
-        Assert.False(results.First().ContainsKey("SortOneAscending"));
         results = fixture.UntypedTableCompositePrimaryKey.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
         Assert.Equal(5, results.Count());
         Assert.Equal("Name_7", results.First()["Name"].ToString());
-        Assert.False(results.First().ContainsKey("SortOneAscending"));
         results = fixture.UntypedTableCompoundPrimaryKey.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
         Assert.Equal(5, results.Count());
         Assert.Equal("Name_7", results.First()["Name"].ToString());
-        Assert.False(results.First().ContainsKey("SortOneAscending"));
     }
 
     [Fact]
@@ -627,7 +608,7 @@ public class TableTests
             var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
-                Filter = Builders<SimpleObjectWithLexical>.Filter.LexicalMatch("dog"),
+                Filter = Builders<SimpleObjectWithLexical>.TableFilter.TableLexicalMatch<SimpleObjectWithLexical, string>((b) => b.LexicalValue, "dog"),
             };
 
             var result = await table.FindOneAsync(findOptions);

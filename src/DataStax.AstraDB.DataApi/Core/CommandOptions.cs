@@ -42,6 +42,7 @@ public class CommandOptions
     internal JsonConverter OutputConverter { get; set; }
     internal bool? SerializeGuidAsDollarUuid { get; set; }
     internal bool? SerializeDateAsDollarDate { get; set; }
+    internal bool? DeserializeToObjectDictionary { get; set; } = false;
 
     /// <summary>
     /// The token to use for authentication
@@ -143,6 +144,7 @@ public class CommandOptions
             IncludeKeyspaceInUrl = FirstNonNull(x => x.IncludeKeyspaceInUrl) ?? Defaults().IncludeKeyspaceInUrl,
             SerializeGuidAsDollarUuid = FirstNonNull(x => x.SerializeGuidAsDollarUuid) ?? Defaults().SerializeGuidAsDollarUuid,
             SerializeDateAsDollarDate = FirstNonNull(x => x.SerializeDateAsDollarDate) ?? Defaults().SerializeDateAsDollarDate,
+            DeserializeToObjectDictionary = FirstNonNull(x => x.DeserializeToObjectDictionary) ?? Defaults().DeserializeToObjectDictionary,
             BulkOperationCancellationToken = list.Select(o => o.BulkOperationCancellationToken).Merge()
         };
         return options;

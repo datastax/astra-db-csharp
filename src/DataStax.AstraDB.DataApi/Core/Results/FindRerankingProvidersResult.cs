@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core.Query;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Core.Results;
 
 /// <summary>
-/// Options for deleting a row from a table
+/// The result of a find reranking providers operation.
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public class TableDeleteOptions<T> where T : class
+public class FindRerankingProvidersResult
 {
-  internal Filter<T> Filter { get; set; }
-
-  [JsonInclude]
-  [JsonPropertyName("filter")]
-  internal Dictionary<string, object> FilterMap => Filter == null ? new Dictionary<string, object>() : Filter.Serialize();
+    /// <summary>
+    /// A dictionary of reranking provider names to reranking provider details.
+    /// </summary>
+    [JsonPropertyName("rerankingProviders")]
+    public Dictionary<string, object> RerankingProviders { get; set; } = new();
 }

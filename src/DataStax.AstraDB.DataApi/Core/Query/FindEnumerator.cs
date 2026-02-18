@@ -207,6 +207,15 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
         return cursor.ToEnumerable().GetEnumerator();
     }
 
+    /// <summary>
+    /// Retrieves the next page of results.
+    /// </summary>
+    public async Task<ApiFindResult<TResult>> GetPageAsync(string pageState = null, CancellationToken cancellationToken = default)
+    {
+        var runResponse = await RunAsync(pageState, cancellationToken, runSynchronously: false);
+        return runResponse.Data;
+    }
+
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();

@@ -2,6 +2,7 @@ using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
+using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System.Net;

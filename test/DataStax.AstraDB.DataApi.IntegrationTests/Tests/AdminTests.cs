@@ -217,6 +217,31 @@ public class AdminTests
 		Assert.NotEmpty(providers);
 	}
 
+	[Fact]
+	public async Task DatabaseAdminAstra_GetRegions()
+	{
+		var admin = fixture.Client.GetAstraDatabasesAdmin();
+
+		var regions = await admin.FindAvailableRegionsAsync();
+		Assert.NotNull(regions);
+		Assert.NotEmpty(regions);
+	}
+
+	[Fact]
+	public async Task DatabaseAdminAstra_GetRerankingProvidersAsync()
+	{
+		var adminOptions = new CommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
+
+		var result = await daa.FindRerankingProvidersAsync();
+		Assert.NotNull(result);
+		Assert.NotEmpty(result.RerankingProviders);
+
+	}
+
 	/*
         From here on are ad hoc tests for creating and dropping databases. 
         You will likely need to adjust details to match your execution details.

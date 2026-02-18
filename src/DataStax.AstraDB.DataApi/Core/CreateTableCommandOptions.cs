@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core.Query;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options for deleting a row from a table
+/// Additional command options when a command can be skipped if the target resource already exists.
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public class TableDeleteOptions<T> where T : class
+public class CreateTableCommandOptions : DatabaseCommandOptions
 {
-  internal Filter<T> Filter { get; set; }
-
-  [JsonInclude]
-  [JsonPropertyName("filter")]
-  internal Dictionary<string, object> FilterMap => Filter == null ? new Dictionary<string, object>() : Filter.Serialize();
+  /// <summary>
+  /// Skip creating the resource if it already exists (instead of throwing an error).
+  /// </summary>
+  public bool SkipIfExists { get; set; } = false;
 }

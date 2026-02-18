@@ -18,29 +18,50 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-internal class ApiError
+/// <summary>
+/// Represents an error returned by the API.
+/// </summary>
+public class ApiError
 {
+    /// <summary>
+    /// The error message.
+    /// </summary>
     [JsonPropertyName("message")]
     public string Message { get; set; }
 
     [JsonPropertyName("code")]
-    public string Code { get; set; }
+    [JsonInclude]
+    internal string Code { get; set; }
 
+    /// <summary>
+    /// The error code.
+    /// </summary>
     [JsonPropertyName("errorCode")]
     public string ErrorCode { get; set; }
 
     [JsonPropertyName("exceptionClass")]
-    public string ExceptionClass { get; set; }
+    [JsonInclude]
+    internal string ExceptionClass { get; set; }
 
     [JsonPropertyName("family")]
-    public string Family { get; set; }
+    [JsonInclude]
+    internal string Family { get; set; }
 
+    /// <summary>
+    /// The scope of the error.
+    /// </summary>
     [JsonPropertyName("scope")]
     public string Scope { get; set; }
 
+    /// <summary>
+    /// The title of the error.
+    /// </summary>
     [JsonPropertyName("title")]
     public string Title { get; set; }
 
+    /// <summary>
+    /// The unique identifier for the error instance.
+    /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; }
 }

@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
-using DataStax.AstraDB.DataApi.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Configuration used to create a text index on a table column
+/// </summary>
 public class TableTextIndexDefinition : TableIndexDefinition
 {
 
@@ -34,16 +32,3 @@ public class TableTextIndexDefinition : TableIndexDefinition
   internal override string IndexCreationCommandName => "createTextIndex";
 
 }
-
-// public class TableTextIndexDefinition<TRow, TColumn> : TableTextIndexDefinition
-// {
-//   public Expression<Func<TRow, TColumn>> Column
-//   {
-//     set
-//     {
-
-//       ColumnName = value.GetMemberNameTree();
-//     }
-//   }
-
-// }

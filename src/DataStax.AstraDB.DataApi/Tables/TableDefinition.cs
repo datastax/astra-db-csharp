@@ -15,6 +15,7 @@
  */
 
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -107,14 +108,6 @@ public class TableDefinition
               Authentication = vectorize.AuthenticationPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1]),
               Parameters = vectorize.ParameterPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1])
             }));
-            // definition.AddVectorizeColumn(
-            //                 columnName,
-            //                 vectorize.Dimension,
-            //                 vectorize.ServiceProvider,
-            //                 vectorize.ServiceModelName,
-            //                 vectorize.AuthenticationPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1]),
-            //                 vectorize.ParameterPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1])
-            //             );
             break;
 
           case ColumnVectorAttribute vector:
@@ -124,7 +117,6 @@ public class TableDefinition
             }
             createColumn = false;
             definition.AddColumn(columnName, DataApiType.Vector(vector.Dimension));
-            //definition.AddVectorColumn(columnName, vector.Dimension);
             break;
         }
       }
@@ -249,89 +241,17 @@ public static class TableDefinitionExtensions
     return tableDefinition;
   }
 
+  /// <summary>
+  /// Add a column to the table definition
+  /// </summary>
+  /// <param name="tableDefinition"></param>
+  /// <param name="columnName"></param>
+  /// <param name="columnType"></param>
+  /// <returns></returns>
   public static TableDefinition AddColumn(this TableDefinition tableDefinition, string columnName, DataApiType columnType)
   {
     tableDefinition.Columns.Add(columnName, columnType.AsColumnType);
     return tableDefinition;
   }
-
-  // /// <summary>
-  // /// Add a text column to the table definition
-  // /// </summary>
-  // /// <param name="tableDefinition"></param>
-  // /// <param name="columnName"></param>
-  // /// <param name="columnType"></param>
-  // /// <param name="keyType">(Optional) Type of the keys for this column (e.g. for map columns)</param>
-  // /// <param name="valueType">(Optional) Type of the values to be stored in this column (e.g. for list types)</param>
-  // /// <returns></returns>
-  // public static TableDefinition AddColumn(this TableDefinition tableDefinition, string columnName, DataApiType columnType, DataApiType keyType = default, DataApiType valueType = default)
-  // {
-  //   tableDefinition.Columns.Add(columnName, new Column() { Type = columnType, KeyType = keyType, ValueType = valueType });
-  //   return tableDefinition;
-  // }
-
-  // /// <summary>
-  // /// Add a vector column to the table definition
-  // /// </summary>
-  // /// <param name="tableDefinition"></param>
-  // /// <param name="columnName"></param>
-  // /// <param name="dimension"></param>
-  // /// <returns></returns>
-  // public static TableDefinition AddVectorColumn(this TableDefinition tableDefinition, string columnName, int dimension)
-  // {
-  //   tableDefinition.Columns.Add(columnName, new VectorColumn(dimension));
-  //   return tableDefinition;
-  // }
-
-  // /// <summary>
-  // /// Add a vectorize column to the table definition
-  // /// </summary>
-  // /// <param name="tableDefinition"></param>
-  // /// <param name="columnName"></param>
-  // /// <param name="dimension"></param>
-  // /// <param name="provider"></param>
-  // /// <param name="modelName"></param>
-  // /// <param name="authentication"></param>
-  // /// <param name="parameters"></param>
-  // /// <returns></returns>
-  // public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, int dimension, string provider, string modelName, Dictionary<string, string> authentication, Dictionary<string, string> parameters)
-  // {
-  //   tableDefinition.Columns.Add(columnName, new VectorizeColumn(dimension, new VectorServiceOptions
-  //   {
-  //     Provider = provider,
-  //     ModelName = modelName,
-  //     Authentication = authentication,
-  //     Parameters = parameters
-  //   }
-  //   ));
-  //   return tableDefinition;
-  // }
-
-  // /// <summary>
-  // /// Add a vectorize column to the table definition
-  // /// </summary>
-  // /// <param name="tableDefinition"></param>
-  // /// <param name="columnName"></param>
-  // /// <param name="dimension"></param>
-  // /// <param name="options"></param>
-  // /// <returns></returns>
-  // public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, int dimension, VectorServiceOptions options)
-  // {
-  //   tableDefinition.Columns.Add(columnName, new VectorizeColumn(dimension, options));
-  //   return tableDefinition;
-  // }
-
-  // /// <summary>
-  // /// Add a vectorize column to the table definition
-  // /// </summary>
-  // /// <param name="tableDefinition"></param>
-  // /// <param name="columnName"></param>
-  // /// <param name="options"></param>
-  // /// <returns></returns>
-  // public static TableDefinition AddVectorizeColumn(this TableDefinition tableDefinition, string columnName, VectorServiceOptions options)
-  // {
-  //   tableDefinition.Columns.Add(columnName, new VectorizeColumn(options));
-  //   return tableDefinition;
-  // }
 
 }

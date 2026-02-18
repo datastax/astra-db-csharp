@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Tables;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
