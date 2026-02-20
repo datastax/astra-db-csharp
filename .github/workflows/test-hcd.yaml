@@ -55,14 +55,24 @@ jobs:
       - name: A few seconds for the Data API to fully start
         run: sleep 10
 
-      # TODO remove this mock step
-      - name: Issue a request to the Data API
+      - name: Issue a first Data API request to create the required keyspace
         run: |
           curl -XPOST \
-          http://localhost:8181/v1/ \
-          -H "token: Cassandra:Y2Fzc2FuZHJh:Y2Fzc2FuZHJh" \
-          -H "Content-Type: application/json" \
-          -d '{"findKeyspaces": {}}'
+            ${{ env.ASTRA_DB_URL }}/v1/ \
+            -H "token: ${{ env.ASTRA_DB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '
+          {
+              "createKeyspace": {
+                  "name": "default_keyspace",
+                  "options": {
+                      "replication": {
+                          "class": "SimpleStrategy",
+                          "replication_factor": 1
+                      }
+                  }
+              }
+          }'
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
