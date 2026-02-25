@@ -302,6 +302,15 @@ internal class Command
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commandOptions.Token);
         request.Headers.Add("Token", commandOptions.Token);
+        if (commandOptions.AdditionalHeaders != null)
+        {
+            foreach (var kvp in commandOptions.AdditionalHeaders)
+            {
+                request.Headers.Add(kvp.Key, kvp.Value);
+            }
+        }
+
+        MaybeLogDebugMessage("Headers: {Headers}", request.Headers);
 
         string responseContent = null;
         HttpResponseMessage response = null;

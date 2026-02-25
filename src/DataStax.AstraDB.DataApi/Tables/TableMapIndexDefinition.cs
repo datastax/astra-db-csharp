@@ -48,7 +48,10 @@ public class TableMapIndexDefinition : TableIndexDefinition
     IndexType = indexType;
   }
 
-  internal override object Column
+  /// <summary>
+  /// The column to index.
+  /// </summary>
+  public override object Column
   {
     get
     {

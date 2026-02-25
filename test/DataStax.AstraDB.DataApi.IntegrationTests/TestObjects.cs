@@ -362,7 +362,7 @@ public class TestDataBook
     public HashSet<string>? Genres { get; set; }
 
     [ColumnName("metadata")]
-    public Dictionary<string, string>? Metadata { get; set; }
+    public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
 
     [ColumnName("is_checked_out")]
     public bool? IsCheckedOut { get; set; }

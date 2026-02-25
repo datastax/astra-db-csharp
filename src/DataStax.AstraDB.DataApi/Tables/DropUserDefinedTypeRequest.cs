@@ -14,7 +14,7 @@ internal class DropUserDefinedTypeRequest
 
     internal void SetSkipIfNotExists(bool skipIfNotExists)
     {
-        var optionsKey = "ifNotExists";
+        var optionsKey = "ifExists";
         if (!skipIfNotExists)
         {
             if (Options != null)
