@@ -55,6 +55,41 @@ public class AdditionalCollectionTests
     }
 
     [Fact]
+    public async Task EmbeddingApiKey_Test()
+    {
+        var collectionName = "testEmbeddingApiKey";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<Book>(collectionName, new DatabaseCollectionCommandOptions()
+            {
+                EmbeddingApiKey = "test-api-key-here"
+            });
+            var items = new List<Book>() {
+                new Book()
+                {
+                    Title = "Test Book 1",
+                    Author = "Test Author 1",
+                    NumberOfPages = 100,
+                },
+                new Book()
+                {
+                    Title = "Test Book 2",
+                    Author = "Test Author 2",
+                    NumberOfPages = 200,
+                },
+            };
+            var insertResult = await collection.InsertManyAsync(items);
+            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            //Manually verify the API key is included in the request by checking the logs
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+
+    [Fact]
     public async Task Book_Projection_Tests()
     {
         var collectionName = "testBookProjection";

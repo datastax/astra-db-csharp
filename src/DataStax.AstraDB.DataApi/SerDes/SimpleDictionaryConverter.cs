@@ -90,9 +90,37 @@ internal class SimpleDictionaryConverter
         foreach (var kvp in value)
         {
             writer.WritePropertyName(kvp.Key);
-            JsonSerializer.Serialize(writer, kvp.Value, options);
+            WriteValue(writer, kvp.Value, options);
         }
 
         writer.WriteEndObject();
+    }
+
+    private static void WriteValue(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
+    {
+        if (value != null)
+        {
+            var type = value.GetType();
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            {
+                var keyType = type.GetGenericArguments()[0];
+                if (keyType != typeof(string))
+                {
+                    var valueType = type.GetGenericArguments()[1];
+                    writer.WriteStartArray();
+                    var dict = (System.Collections.IDictionary)value;
+                    foreach (var key in dict.Keys)
+                    {
+                        writer.WriteStartArray();
+                        JsonSerializer.Serialize(writer, key, keyType, options);
+                        JsonSerializer.Serialize(writer, dict[key], valueType, options);
+                        writer.WriteEndArray();
+                    }
+                    writer.WriteEndArray();
+                    return;
+                }
+            }
+        }
+        JsonSerializer.Serialize(writer, value, options);
     }
 }

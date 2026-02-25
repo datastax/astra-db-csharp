@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Utils;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -105,6 +106,8 @@ public class CommandOptions
 
     internal bool IncludeKeyspaceInUrl { get; set; }
 
+    internal Dictionary<string, string> AdditionalHeaders { get; set; } = new Dictionary<string, string>();
+
     internal static CommandOptions Merge(params CommandOptions[] arr)
     {
         var list = arr.Where(o => o != null).ToList();
@@ -145,7 +148,13 @@ public class CommandOptions
             SerializeGuidAsDollarUuid = FirstNonNull(x => x.SerializeGuidAsDollarUuid) ?? Defaults().SerializeGuidAsDollarUuid,
             SerializeDateAsDollarDate = FirstNonNull(x => x.SerializeDateAsDollarDate) ?? Defaults().SerializeDateAsDollarDate,
             DeserializeToObjectDictionary = FirstNonNull(x => x.DeserializeToObjectDictionary) ?? Defaults().DeserializeToObjectDictionary,
-            BulkOperationCancellationToken = list.Select(o => o.BulkOperationCancellationToken).Merge()
+            BulkOperationCancellationToken = list.Select(o => o.BulkOperationCancellationToken).Merge(),
+            AdditionalHeaders = list
+                .Select(o => o.AdditionalHeaders)
+                .Where(d => d != null)
+                .SelectMany(d => d)
+                .GroupBy(kvp => kvp.Key)
+                .ToDictionary(g => g.Key, g => g.Last().Value)
         };
         return options;
     }

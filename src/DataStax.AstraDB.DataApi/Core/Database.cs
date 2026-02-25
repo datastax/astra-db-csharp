@@ -246,10 +246,10 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync(string, DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync(string, DatabaseCollectionCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync(string, DatabaseCommandOptions)" />
-    public Collection<Document> CreateCollection(string collectionName, DatabaseCommandOptions options)
+    /// <inheritdoc cref="CreateCollectionAsync(string, DatabaseCollectionCommandOptions)" />
+    public Collection<Document> CreateCollection(string collectionName, DatabaseCollectionCommandOptions options)
     {
         return CreateCollection(collectionName, null, options);
     }
@@ -264,10 +264,10 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync(string, CollectionDefinition, DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync(string, CollectionDefinition, DatabaseCollectionCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync(string, CollectionDefinition, DatabaseCommandOptions)" />
-    public Collection<Document> CreateCollection(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options)
+    /// <inheritdoc cref="CreateCollectionAsync(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    public Collection<Document> CreateCollection(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options)
     {
         return CreateCollectionAsync<Document>(collectionName, definition, options, false).ResultSync();
     }
@@ -292,7 +292,7 @@ public class Database
     /// <param name="collectionName"></param>
     /// <param name="commandOptions"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, DatabaseCommandOptions commandOptions)
+    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, DatabaseCollectionCommandOptions commandOptions)
     {
         return CreateCollectionAsync<Document>(collectionName, null, commandOptions);
     }
@@ -309,7 +309,7 @@ public class Database
     /// <param name="collectionName"></param>
     /// <param name="definition"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options)
+    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options)
     {
         return CreateCollectionAsync<Document>(collectionName, definition, options, false);
     }
@@ -333,19 +333,19 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}(string, DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(string, DatabaseCollectionCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, DatabaseCommandOptions)" />
-    public Collection<T> CreateCollection<T>(string collectionName, DatabaseCommandOptions options) where T : class
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, DatabaseCollectionCommandOptions)" />
+    public Collection<T> CreateCollection<T>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
         return CreateCollection<T>(collectionName, null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCommandOptions)" />
-    public Collection<T> CreateCollection<T>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options) where T : class
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    public Collection<T> CreateCollection<T>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
         return CreateCollectionAsync<T>(collectionName, definition, options, false).ResultSync();
     }
@@ -373,7 +373,7 @@ public class Database
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
     /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, DatabaseCommandOptions options) where T : class
+    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
         return CreateCollectionAsync<T>(collectionName, null, options);
     }
@@ -382,7 +382,7 @@ public class Database
     /// <param name="collectionName"></param>
     /// <param name="definition"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options) where T : class
+    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
         return CreateCollectionAsync<T>(collectionName, definition, options, false);
     }
@@ -406,10 +406,10 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, DatabaseCollectionCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, DatabaseCommandOptions)" />
-    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options) where T : class
+    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, false).ResultSync();
     }
@@ -428,20 +428,20 @@ public class Database
         return CreateCollectionAsync<T, TId>(collectionName, definition, null);
     }
 
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCommandOptions)" />
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options) where T : class
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, false);
     }
 
-    private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options, bool runSynchronously) where T : class
+    private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options, bool runSynchronously) where T : class
     {
         await CreateCollectionAsync<T, object>(collectionName, definition, options, runSynchronously);
-        return GetCollection<T>(collectionName);
+        return GetCollection<T>(collectionName, options);
     }
 
-    private async Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCommandOptions options, bool runSynchronously) where T : class
+    private async Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options, bool runSynchronously) where T : class
     {
         if (definition == null)
         {
@@ -461,7 +461,7 @@ public class Database
             .WithTimeoutManager(new CollectionAdminTimeoutManager())
             .AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
-        return GetCollection<T, TId>(collectionName);
+        return GetCollection<T, TId>(collectionName, options);
     }
 
     /// <summary>
@@ -508,7 +508,7 @@ public class Database
     /// <inheritdoc cref="GetCollection(string)" />
     /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Collection<Document> GetCollection(string collectionName, DatabaseCommandOptions options)
+    public Collection<Document> GetCollection(string collectionName, DatabaseCollectionCommandOptions options)
     {
         return GetCollection<Document>(collectionName, options);
     }
@@ -523,7 +523,7 @@ public class Database
     /// <inheritdoc cref="GetCollection{T}(string)" />
     /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Collection<T> GetCollection<T>(string collectionName, DatabaseCommandOptions options) where T : class
+    public Collection<T> GetCollection<T>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T>(collectionName, this, options);
@@ -539,7 +539,7 @@ public class Database
     /// <inheritdoc cref="GetCollection{T, TId}(string)" />
     /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Collection<T, TId> GetCollection<T, TId>(string collectionName, DatabaseCommandOptions options) where T : class
+    public Collection<T, TId> GetCollection<T, TId>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T, TId>(collectionName, this, options);
