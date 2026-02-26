@@ -27,22 +27,22 @@ public class TableIndexesTests
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
 
             // first creation (should succeed)
-            await table.CreateIndexAsync((b) => b.Category);
+            await table.CreateIndexAsync("category_idx_custom", (b) => b.Category);
 
             // second creation (should fail)
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                table.CreateIndexAsync((b) => b.Category));
+                table.CreateIndexAsync("category_idx_custom", (b) => b.Category));
 
             Assert.Contains("already exists", ex.Message);
 
             // second creation (should not fail when SkipIfExists is set)
-            await table.CreateIndexAsync((b) => b.Category, new CreateIndexCommandOptions()
+            await table.CreateIndexAsync("category_idx_custom", (b) => b.Category, new CreateIndexCommandOptions()
             {
                 SkipIfExists = true
             });
 
             var result = await table.ListIndexMetadataAsync();
-            Assert.Contains(result.Indexes, i => i.Name == "category_idx");
+            Assert.Contains(result.Indexes, i => i.Name == "category_idx_custom");
 
             //ensure insert still works
             var insertResult = await TableIndexesFixture.AddTableRows(table);

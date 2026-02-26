@@ -39,6 +39,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     private readonly string _tableName;
     private readonly Database _database;
     private readonly CommandOptions _commandOptions;
+    private TableInfo _cachedTableInfo;
 
     internal Table(string tableName, Database database, CommandOptions commandOptions)
     {
@@ -786,7 +787,13 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return new FindEnumerator<T, TResult, TableSortBuilder<T>>(this, findOptions, commandOptions);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(Filter<T> filter, IFindManyOptions<T, TableSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(
+            Filter<T> filter,
+            IFindManyOptions<T,
+            TableSortBuilder<T>> findOptions,
+            CommandOptions commandOptions,
+            bool runSynchronously
+    )
         where TResult : class
     {
         findOptions.Filter = filter;
@@ -795,14 +802,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
-            // we are going to get the table definition and handle null values for missing columns
-            var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
-            var tableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
+            if (_cachedTableInfo == null)
+            {
+                var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
+                _cachedTableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
+            }
             foreach (var row in response.Data.Items)
             {
-                PopulateMissingColumnsInRow(row as Row, tableInfo);
+                PopulateMissingColumnsInRow(row as Row, _cachedTableInfo);
             }
-
         }
         return response;
     }
