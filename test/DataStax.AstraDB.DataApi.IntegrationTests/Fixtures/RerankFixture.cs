@@ -3,6 +3,7 @@ using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using System.Text.Json.Serialization;
 using Xunit;
+using Xunit.v3;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
@@ -24,6 +25,10 @@ public class RerankFixture : BaseFixture, IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
+        if (Destination?.ToLower() is "dse" or "hcd" or "cassandra")
+        {
+            throw new Exception($"{DynamicSkipToken.Value}Rerank tests not supported for destination: {Destination}");
+        }
         await CreateSearchCollection();
         var collection = Database.GetCollection<HybridSearchTestObject>(_queryCollectionName);
         HybridSearchCollection = collection;
