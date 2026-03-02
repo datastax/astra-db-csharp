@@ -64,6 +64,7 @@ public class AdditionalTableTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_BookJsonData()
     {
@@ -383,6 +384,7 @@ public class AdditionalTableTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_EmptyColumnValues()
     {

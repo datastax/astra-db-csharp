@@ -148,6 +148,7 @@ public class FindAndUpdateTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindOneAndUpdate_MostSimilarToSearchString_Vectorize()
     {

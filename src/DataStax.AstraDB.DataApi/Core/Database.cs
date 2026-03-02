@@ -99,7 +99,11 @@ public class Database
         _apiEndpoint = apiEndpoint;
         _client = client;
         _dbCommandOptions = dbCommandOptions;
-        _id = GetDatabaseIdFromUrl(_apiEndpoint);
+        var maybeId = GetDatabaseIdFromUrl(_apiEndpoint);
+        if (maybeId != null)
+        {
+            _id = (Guid)maybeId;
+        }
     }
 
     /// <summary>

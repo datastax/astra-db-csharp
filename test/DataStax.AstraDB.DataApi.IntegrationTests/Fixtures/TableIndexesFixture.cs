@@ -13,16 +13,7 @@ public class TableIndexesFixture : BaseFixture, IAsyncLifetime
 {
     public TableIndexesFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "tableIndexes")
     {
-        try
-        {
-            var keyspaces = Database.GetAdmin().ListKeyspaces();
-            Console.WriteLine($"[Fixture] Connected. Keyspaces found: {keyspaces.Count()}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Fixture] Connection failed: {ex.Message}");
-            throw;
-        }
+        
     }
 
     public Table<RowEventByDay> FixtureTestTable { get; private set; }
