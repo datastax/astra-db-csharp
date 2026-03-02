@@ -165,11 +165,12 @@ public class TableTests
         Assert.Equal(102, results.Count);
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public void FindMany_Vectorize()
     {
-        var table = fixture.SearchTable;
-        var sorter = Builders<RowBook>.TableSort;
+        var table = fixture.SearchTableVectorize;
+        var sorter = Builders<RowBookVectorize>.TableSort;
         var sort = sorter.Vectorize(b => b.Author, "Walter Dray");
         var results = table.Find().Sort(sort).ToList();
         Assert.Equal("Desert Peace", results.First().Title);
@@ -484,6 +485,7 @@ public class TableTests
         Assert.Equal(50, results.Count);
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public void FindMany_Vectorize_Untyped()
     {
@@ -500,6 +502,7 @@ public class TableTests
         Assert.Equal(50, results.Count);
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindOne_Vectorize_Untyped()
     {
@@ -577,6 +580,7 @@ public class TableTests
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindOne_Lexical()
     {
