@@ -40,7 +40,7 @@ public enum RerankingProviderStatus
 }
 
 /// <summary>
-/// Options for Find Available Regions command.
+/// Options for Find Reranking Providers command.
 /// </summary>
 public class FindRerankingProvidersCommandOptions : CommandOptions
 {
