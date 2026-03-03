@@ -39,7 +39,6 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     private readonly string _tableName;
     private readonly Database _database;
     private readonly CommandOptions _commandOptions;
-    private TableInfo _cachedTableInfo;
 
     internal Table(string tableName, Database database, CommandOptions commandOptions)
     {
@@ -787,7 +786,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return new FindEnumerator<T, TResult, TableSortBuilder<T>>(this, findOptions, commandOptions);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(
+    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, TableFindStatusResult>> RunFindManyAsync<TResult>(
             Filter<T> filter,
             IFindManyOptions<T,
             TableSortBuilder<T>> findOptions,
@@ -799,19 +798,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         findOptions.Filter = filter;
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
-            if (_cachedTableInfo == null)
-            {
-                var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
-                _cachedTableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
-            }
+            var columnsInResult = response.Status.ProjectionSchema;
             if (response != null && response.Data != null && response.Data.Items != null)
             {
                 foreach (var row in response.Data.Items)
                 {
-                    PopulateMissingColumnsInRow(row as Row, _cachedTableInfo);
+                    PopulateMissingColumnsInRow(row as Row, columnsInResult);
                 }
             }
         }
@@ -1003,28 +998,25 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         }
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
-            // we are going to get the table definition and handle null values for missing columns
-            var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
-            var tableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
             if (response != null && response.Data != null && response.Data.Document != null)
             {
-                PopulateMissingColumnsInRow(response.Data.Document as Row, tableInfo);
+                PopulateMissingColumnsInRow(response.Data.Document as Row, response.Status.ProjectionSchema);
             }
         }
         return response.Data.Document;
     }
 
-    private void PopulateMissingColumnsInRow(Row row, TableInfo tableInfo)
+    private void PopulateMissingColumnsInRow(Row row, Dictionary<string, SchemaColumn> projectionSchema)
     {
-        foreach (var column in tableInfo.TableDefinition.Columns)
+        foreach (var column in projectionSchema)
         {
             if (!row.ContainsKey(column.Key))
             {
                 object value = null;
-                var columnType = ((Dictionary<string, object>)column.Value)["type"];
+                var columnType = column.Value.Type;
                 switch (columnType)
                 {
                     case "map":
@@ -1438,9 +1430,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _tableName));
     }
 
-    Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, TableSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, TableSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
-        where TProjected : class
+    async Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, TableSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, TableSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        return RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously);
+        var result = await RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously).ConfigureAwait(false);
+        return new ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>
+        {
+            Data = result.Data,
+            Status = result.Status,
+            Errors = result.Errors,
+            Warnings = result.Warnings
+        };
     }
 }
