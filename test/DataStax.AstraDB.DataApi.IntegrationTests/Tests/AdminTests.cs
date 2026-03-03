@@ -157,6 +157,16 @@ public class AdminTests
 	}
 
 	[Fact]
+	public async Task DatabaseAdminAstra_GetKeyspaces_TokenSuppliedToDb()
+	{
+		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
+		var databaseAdmin = database.GetAdmin();
+
+		var names = await databaseAdmin.ListKeyspacesAsync();
+		Assert.NotNull(names);
+	}
+
+	[Fact]
 	public async Task DatabaseAdminAstra_DoesKeyspaceExist()
 	{
 		var daa = fixture.CreateAdmin(fixture.Database);

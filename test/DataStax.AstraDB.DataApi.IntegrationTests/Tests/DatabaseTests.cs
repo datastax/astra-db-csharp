@@ -32,7 +32,7 @@ public class DatabaseTests
         var admin = databaseWithKeyspace.GetAdmin();
         try
         {
-            var dbOptions = new DatabaseCommandOptions
+            var dbOptions = new DatabaseCollectionCommandOptions
             {
                 Keyspace = keyspaceName
             };
@@ -161,7 +161,7 @@ public class DatabaseTests
     {
         var collectionName = "simpleCollectionCanceled";
         var cts = new CancellationTokenSource();
-        var commandOptions = new DatabaseCommandOptions
+        var commandOptions = new DatabaseCollectionCommandOptions
         {
             CancellationToken = cts.Token
         };

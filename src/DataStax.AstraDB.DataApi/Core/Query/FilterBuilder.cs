@@ -427,6 +427,28 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
+    /// All operator -- The $all operator matches rows where the column contains all of the specified key-value pairs.
+    /// To match specific keys or specific values, rather than key-value pairs, use the $keys or $values operator.
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="expression"></param>
+    /// <param name="pairs"></param>
+    /// <returns></returns>
+    public Filter<T> AllPairs<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression,
+        IEnumerable<KeyValuePair<TKey, TValue>> pairs)
+    {
+        var array = pairs
+            .Select(kv => new object[] { kv.Key, kv.Value })
+            .ToArray();
+
+        return new Filter<T>(
+            expression.GetMemberNameTree(),
+            FilterOperator.All,
+            array);
+    }
+
+    /// <summary>
     /// Size operator -- Matches documents where the specified array has the specified size.
     /// </summary>
     /// <param name="fieldName">The name of the field for this filter</param>
