@@ -7,6 +7,12 @@ using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
+public static class Extensions
+{
+    public static TableDefinition When(this TableDefinition def, bool condition, Func<TableDefinition, TableDefinition> action)
+        => condition ? action(def) : def;
+}
+
 [CollectionDefinition("Tables")]
 public class TablesCollection : ICollectionFixture<AssemblyFixture>, ICollectionFixture<TablesFixture>
 {
@@ -16,7 +22,10 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
 {
     public TablesFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "tables")
     {
+        IsAstra = assemblyFixture.Destination.ToLower() == "astra";
     }
+
+    private bool IsAstra { get; set; }
 
     public Table<RowBook> SearchTable { get; private set; }
 
@@ -162,10 +171,19 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .AddColumn("Map", DataApiType.Map(DataApiType.Text(), DataApiType.Int()))
                 .AddColumn("SortOneAscending", DataApiType.Text())
                 .AddColumn("SortTwoDescending", DataApiType.Text())
+                .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
+                {
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddSinglePrimaryKey("Id");
 
         UntypedTableSinglePrimaryKey = await Database.CreateTableAsync(_untypedSinglePkTableName, createDefinition);
+        if (IsAstra)
+        {
+            await UntypedTableSinglePrimaryKey.CreateIndexAsync("vectorize_index", "Vectorize", Builders.TableIndex.Vector());
+        }
         await UntypedTableSinglePrimaryKey.CreateIndexAsync("vector_index", "Vector", Builders.TableIndex.Vector());
 
         // Create a table with a composite primary key
@@ -175,9 +193,18 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .AddColumn("Name", DataApiType.Text())
                 .AddColumn("SortOneAscending", DataApiType.Text())
                 .AddColumn("SortTwoDescending", DataApiType.Text())
+                .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
+                {
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddCompositePrimaryKey(new[] { "Id", "IdTwo" });
         UntypedTableCompositePrimaryKey = await Database.CreateTableAsync(_untypedCompositePkTableName, createDefinition);
+        if (IsAstra)
+        {
+            await UntypedTableCompositePrimaryKey.CreateIndexAsync("composite_vectorize_index", "Vectorize", Builders.TableIndex.Vector());
+        }
         await UntypedTableCompositePrimaryKey.CreateIndexAsync("composite_vector_index", "Vector", Builders.TableIndex.Vector());
 
         // Create a table with a compound primary key
@@ -187,6 +214,11 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .AddColumn("Name", DataApiType.Text())
                 .AddColumn("SortOneAscending", DataApiType.Text())
                 .AddColumn("SortTwoDescending", DataApiType.Text())
+                .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
+                {
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddCompoundPrimaryKey(new[] { "Id", "IdTwo" }, new[]
                 {
@@ -194,6 +226,10 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                     new PrimaryKeySort("SortTwoDescending", SortDirection.Descending)
                 });
         UntypedTableCompoundPrimaryKey = await Database.CreateTableAsync(_untypedCompoundPkTableName, createDefinition);
+        if (IsAstra)
+        {
+            await UntypedTableCompoundPrimaryKey.CreateIndexAsync("compound_vectorize_index", "Vectorize", Builders.TableIndex.Vector());
+        }
         await UntypedTableCompoundPrimaryKey.CreateIndexAsync("compound_vector_index", "Vector", Builders.TableIndex.Vector());
 
         // Populate untyped tables with sample data
