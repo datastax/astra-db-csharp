@@ -1,0 +1,39 @@
+name: Run integration tests on Astra Prod
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  ASTRA_DB_URL: ${{ secrets.ASTRA_DB_URL }}
+  ASTRA_DB_TOKEN: ${{ secrets.ASTRA_DB_TOKEN }}
+  ASTRA_DB_DATABASE_NAME: ${{ secrets.ASTRA_DB_DATABASE_NAME }}
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Run integration tests
+        run: |
+          # dotnet restore ./src/DataStax.AstraDB.DataApi/
+          # dotnet build ./src/DataStax.AstraDB.DataApi/
+          # cd ./test/DataStax.AstraDB.DataApi.IntegrationTests/
+          # dotnet test
+          dotnet test ./test/DataStax.AstraDB.DataApi.IntegrationTests/
