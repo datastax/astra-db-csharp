@@ -12,7 +12,7 @@ public class BaseFixture
     public DataApiClient ClientWithoutToken { get; set; }
     public string DatabaseUrl { get; set; }
     public string Token { get; set; }
-    public string Destination => _assemblyFixture.Destination ?? "astra";
+    public string Destination => _assemblyFixture.Destination;
 
     public BaseFixture(AssemblyFixture assemblyFixture, string fixtureName)
     {

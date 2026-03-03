@@ -807,9 +807,12 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
                 var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
                 _cachedTableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
             }
-            foreach (var row in response.Data.Items)
+            if (response != null && response.Data != null && response.Data.Items != null)
             {
-                PopulateMissingColumnsInRow(row as Row, _cachedTableInfo);
+                foreach (var row in response.Data.Items)
+                {
+                    PopulateMissingColumnsInRow(row as Row, _cachedTableInfo);
+                }
             }
         }
         return response;
@@ -1006,8 +1009,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
             // we are going to get the table definition and handle null values for missing columns
             var tableInfos = runSynchronously ? _database.ListTables() : await _database.ListTablesAsync();
             var tableInfo = tableInfos.FirstOrDefault(t => t.Name == _tableName);
-            PopulateMissingColumnsInRow(response.Data.Document as Row, tableInfo);
-
+            if (response != null && response.Data != null && response.Data.Document != null)
+            {
+                PopulateMissingColumnsInRow(response.Data.Document as Row, tableInfo);
+            }
         }
         return response.Data.Document;
     }
