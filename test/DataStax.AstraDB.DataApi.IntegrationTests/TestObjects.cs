@@ -151,6 +151,19 @@ public class RowBook
 {
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
+    public string Author { get; set; }
+    [ColumnPrimaryKey(2)]
+    public int NumberOfPages { get; set; }
+    public DateTime? DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
+[TableName("bookTestTableVectorize")]
+public class RowBookVectorize
+{
+    [ColumnPrimaryKey(1)]
+    public string Title { get; set; }
     [ColumnVectorize(1024,
         serviceProvider: "nvidia",
         serviceModelName: "NV-Embed-QA")]

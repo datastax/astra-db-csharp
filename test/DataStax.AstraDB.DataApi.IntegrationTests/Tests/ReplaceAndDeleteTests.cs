@@ -175,6 +175,7 @@ public class ReplaceAndDeleteTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindOneAndReplace_MostSimilarToSearchString_Vectorize()
     {
@@ -345,6 +346,7 @@ public class ReplaceAndDeleteTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindOneAndDelete_MostSimilarToSearchString_Vectorize()
     {
@@ -485,6 +487,7 @@ public class ReplaceAndDeleteTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task Delete_MostSimilarToSearchString_Vectorize()
     {

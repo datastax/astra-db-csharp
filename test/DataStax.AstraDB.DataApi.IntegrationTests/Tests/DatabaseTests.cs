@@ -376,6 +376,7 @@ public class DatabaseTests
         await fixture.Database.DropCollectionAsync(collectionName);
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task CreateCollection_ForHybridSearch()
     {

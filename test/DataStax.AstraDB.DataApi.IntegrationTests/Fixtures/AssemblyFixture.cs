@@ -15,7 +15,7 @@ public class AssemblyFixture
 
     public string DatabaseUrl { get; private set; }
     public string DatabaseName { get; private set; }
-    public string Destination { get; private set; }
+    public string Destination { get; private set; } = "astra";
 
     public AssemblyFixture()
     {
@@ -30,7 +30,7 @@ public class AssemblyFixture
         OpenAiApiKey = configuration["OPENAI_APIKEYNAME"] ?? configuration["AstraDB:OpenAiApiKey"];
         DatabaseName = configuration["DATABASE_NAME"] ?? configuration["AstraDB:DatabaseName"];
         DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:Url"];
-        Destination = configuration["DESTINATION"] ?? configuration["AstraDB:Destination"];
+        Destination = configuration["DESTINATION"] ?? configuration["AstraDB:Destination"] ?? "astra";
 
     }
 

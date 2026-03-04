@@ -162,6 +162,7 @@ public class SearchTests
         Assert.True(!expectedArray.Except(actualArray).Any() && !actualArray.Except(expectedArray).Any());
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task VectorizeFindOne()
     {
@@ -785,6 +786,7 @@ public class SearchTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task QueryDocumentsWithVectorizeAsync()
     {
@@ -851,6 +853,7 @@ public class SearchTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task QueryDocumentsWithVectorize_Fluent_Async()
     {

@@ -379,6 +379,7 @@ public class UpdateTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task UpdateDocuments_MostSimilarToSearchString_Vectorize()
     {
