@@ -311,6 +311,32 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
+    /// In operator -- Match one or more key-value pairs in a dictionary field.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values</typeparam>
+    /// <param name="expression">An expression that represents the dictionary field for this filter</param>
+    /// <param name="pairs">Array of key-value pairs represented as arrays</param>
+    /// <returns>The filter</returns>
+    public Filter<T> In<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, TKey[][] pairs)
+    {
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairs);
+    }
+
+    /// <summary>
+    /// In operator -- Match one or more key-value pairs in a dictionary field.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values</typeparam>
+    /// <param name="expression">An expression that represents the dictionary field for this filter</param>
+    /// <param name="pairs">Array of key-value pairs represented as arrays</param>
+    /// <returns>The filter</returns>
+    public Filter<T> In<TKey, TValue>(Expression<Func<T, Dictionary<TKey, TValue>>> expression, TKey[][] pairs)
+    {
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairs);
+    }
+
+    /// <summary>
     /// Not in operator -- Match documents where the field does not match any of the specified values.
     /// </summary>
     /// <typeparam name="T2">The type of the values in the array to check</typeparam>
