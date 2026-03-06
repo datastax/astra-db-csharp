@@ -316,11 +316,12 @@ public class FilterBuilder<T>
     /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
     /// <typeparam name="TValue">The type of the dictionary values</typeparam>
     /// <param name="expression">An expression that represents the dictionary field for this filter</param>
-    /// <param name="pairs">Array of key-value pairs represented as arrays</param>
+    /// <param name="pairs">Array of key-value pairs as tuples</param>
     /// <returns>The filter</returns>
-    public Filter<T> In<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, TKey[][] pairs)
+    public Filter<T> In<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
     {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairs);
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairArrays);
     }
 
     /// <summary>
@@ -329,11 +330,12 @@ public class FilterBuilder<T>
     /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
     /// <typeparam name="TValue">The type of the dictionary values</typeparam>
     /// <param name="expression">An expression that represents the dictionary field for this filter</param>
-    /// <param name="pairs">Array of key-value pairs represented as arrays</param>
+    /// <param name="pairs">Array of key-value pairs as tuples</param>
     /// <returns>The filter</returns>
-    public Filter<T> In<TKey, TValue>(Expression<Func<T, Dictionary<TKey, TValue>>> expression, TKey[][] pairs)
+    public Filter<T> In<TKey, TValue>(Expression<Func<T, Dictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
     {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairs);
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairArrays);
     }
 
     /// <summary>
