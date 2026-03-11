@@ -572,8 +572,8 @@ public class TableTests
                     new PrimaryKeyFilter("IdTwo", "IdTwo_3"),
                 },
                 new[] {
-                    Builders<Row>.Filter.Eq("SortOneAscending", "SortOneAscending3"),
-                    Builders<Row>.Filter.Eq("SortTwoDescending", "SortTwoDescending47")
+                    Builders<Row>.Filter.Eq("SortOneAscending", "SortOne_3"),
+                    Builders<Row>.Filter.Eq("SortTwoDescending", "SortTwo_47")
                 });
         await fixture.UntypedTableCompoundPrimaryKey.UpdateOneAsync(filter, update);
         updatedDocument = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(filter);
