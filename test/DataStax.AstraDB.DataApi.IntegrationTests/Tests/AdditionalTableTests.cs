@@ -187,8 +187,8 @@ public class AdditionalTableTests
                     Id = i,
                     StringDictionary = new Dictionary<string, string>
                     {
-                        { "KeyA", "ValueA" },
-                        { "KeyB", "ValueB" }
+                        { "KeyA", $"ValueA {100 + i}" },
+                        { "KeyB", $"ValueB {100 + i}" }
                     },
                     IntDictionary = new Dictionary<string, int>
                     {
@@ -246,6 +246,54 @@ public class AdditionalTableTests
             Assert.NotNull(updatedDocument);
             Assert.Single(updatedDocument.IntKey);
             Assert.Equal(32, updatedDocument.IntKey.Keys.First());
+
+            // Tuple-based dictionary $in filtering (typed):
+            var filterBuilder = Builders<DictionaryTypeTest>.TableFilter;
+
+            var filterIn1 = filterBuilder.In(
+                b => b.StringDictionary,
+                new[] {("KeyA", "ValueA 104"), ("KeyB", "ValueA ZZZ")}
+            );
+            var rowIn1 = await table.FindOneAsync(filterIn1);
+            Assert.NotNull(rowIn1);
+            Assert.Equal(rowIn1.Id, 4);
+
+            var filterIn2 = filterBuilder.In(
+                b => b.IntKey,
+                new[] {(14, "IntValue 4A"), (999, "IntValue ZZZ")}
+            );
+            var rowIn2 = await table.FindOneAsync(filterIn2);
+            Assert.NotNull(rowIn2);
+            Assert.Equal(rowIn2.Id, 4);
+
+            // Tuple-based dictionary $in filtering (untyped):
+            var tableUntyped = fixture.Database.GetTable(tableName);
+            var filterBuilderUntyped = Builders<Row>.TableFilter;
+
+            var filterInUntyped1 = filterBuilderUntyped.In(
+                "StringDictionary",
+                new[]
+                {
+                    // tuples also work (see next filter with heterogeneous key/values)
+                    new[] { "KeyA", "ValueA 104" },
+                    new[] { "KeyB", "ValueA ZZZ" },
+                }
+            );
+            var rowInUntyped1 = await tableUntyped.FindOneAsync(filterInUntyped1);
+            Assert.NotNull(rowInUntyped1);
+            Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped1["Id"]).GetInt32(), 4);
+
+            var filterInUntyped2 = filterBuilderUntyped.In(
+                "IntKey",
+                new[]
+                {
+                    (  14, "IntValue 4A" ),
+                    ( 999, "IntValue ZZZ" ),
+                }
+            );
+            var rowInUntyped2 = await tableUntyped.FindOneAsync(filterInUntyped2);
+            Assert.NotNull(rowInUntyped2);
+            Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped2["Id"]).GetInt32(), 4);
 
         }
         catch (Exception ex)
