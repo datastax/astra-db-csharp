@@ -34,7 +34,7 @@ internal class Command
 {
     private readonly ILogger _logger;
     private readonly List<CommandOptions> _commandOptionsTree;
-    private readonly DataApiClient _client;
+    private readonly DataAPIClient _client;
     private readonly CommandUrlBuilder _urlBuilder;
     private readonly string _name;
     private List<string> _urlPaths = new();
@@ -49,12 +49,12 @@ internal class Command
     private Func<HttpResponseMessage, Task> _responseHandler;
     internal Func<HttpResponseMessage, Task> ResponseHandler { set { _responseHandler = value; } }
 
-    internal Command(DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
+    internal Command(DataAPIClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
 
     }
 
-    internal Command(string name, DataApiClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder)
+    internal Command(string name, DataAPIClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder)
     {
         _commandOptionsTree = options.ToList();
         _client = client;

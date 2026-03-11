@@ -16,7 +16,7 @@ dotnet add package DataStax.AstraDB.DataApi --prerelease
 
 ```
 //instantiate a client
-var client = new DataApiClient("YourTokenHere");
+var client = new DataAPIClient("YourTokenHere");
 
 //connect to a database
 var database = client.GetDatabase("YourAPIEndpointHere");

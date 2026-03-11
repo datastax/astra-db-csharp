@@ -78,7 +78,7 @@ public class SearchTests
             };
 
             var collection = await fixture.Database.CreateCollectionAsync<DifferentIdsObject>(collectionName);
-            await collection.InsertManyAsync(items, new InsertManyOptions() { InsertInOrder = true });
+            await collection.InsertManyAsync(items, new InsertManyOptions() { IsOrdered = true });
 
             //Search using Expression
             var filter = Builders<DifferentIdsObject>.Filter.Eq(d => d.TheId, 1);

@@ -24,5 +24,5 @@ public class DropTypeCommandOptions : CommandOptions
   /// <summary>
   /// Skip dropping the type if it does not exist (instead of throwing an error).
   /// </summary>
-  public bool SkipIfNotExists { get; set; } = false;
+  public bool IfExists { get; set; } = false;
 }

@@ -24,5 +24,5 @@ public class CreateTypeCommandOptions : CommandOptions
   /// <summary>
   /// Skip creating the type if one with the same name already exists
   /// </summary>
-  public bool SkipIfExists { get; set; } = false;
+  public bool IfNotExists { get; set; } = false;
 }

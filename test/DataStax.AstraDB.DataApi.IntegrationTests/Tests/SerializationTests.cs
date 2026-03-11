@@ -127,7 +127,7 @@ public class SerializationTests
 	{
 		string serializationTestString = "{\"primaryKeySchema\":{\"Name\":{\"type\":\"text\"}},\"insertedIds\":[[\"Test\"]]}";
 		var commandOptions = Array.Empty<CommandOptions>();
-		var command = new Command("deserializationTest", new DataApiClient(), commandOptions, null);
+		var command = new Command("deserializationTest", new DataAPIClient(), commandOptions, null);
 		var deserialized = command.Deserialize<TableInsertManyResult>(serializationTestString);
 		Assert.Equal("text", deserialized.PrimaryKeys["Name"].Type);
 		Assert.Equal("Test", deserialized.InsertedIds.First().First().ToString());
@@ -159,7 +159,7 @@ public class SerializationTests
 				OutputConverter = new DocumentConverter<HybridSearchTestObject>()
 			}
 		};
-		var command = new Command("deserializationTest", new DataApiClient(), commandOptions.ToArray(), null);
+		var command = new Command("deserializationTest", new DataAPIClient(), commandOptions.ToArray(), null);
 		var deserialized = command.Deserialize<ApiResponseWithData<ApiFindResult<HybridSearchTestObject>, FindStatusResult<RerankedResult<HybridSearchTestObject>>>>(serializationTestString);
 		Assert.NotNull(deserialized);
 		Assert.NotNull(deserialized.Data);

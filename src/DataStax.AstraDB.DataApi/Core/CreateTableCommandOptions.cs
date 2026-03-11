@@ -24,5 +24,5 @@ public class CreateTableCommandOptions : DatabaseCommandOptions
   /// <summary>
   /// Skip creating the resource if it already exists (instead of throwing an error).
   /// </summary>
-  public bool SkipIfExists { get; set; } = false;
+  public bool IfNotExists { get; set; } = false;
 }

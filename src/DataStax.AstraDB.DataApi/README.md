@@ -39,7 +39,7 @@ Now do this:
 
 ```
 //instantiate a client
-var client = new DataApiClient();
+var client = new DataAPIClient();
 
 //connect to a database
 var database = client.GetDatabase("YourDatabaseUrlHere", "YourTokenHere");

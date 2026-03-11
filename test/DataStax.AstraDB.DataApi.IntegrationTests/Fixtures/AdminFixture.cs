@@ -33,7 +33,7 @@ public class AdminFixture : BaseFixture
 			return new DatabaseAdminAstra(database, Client, adminOptions);
 		}
 
-		return new DatabaseAdminOther(database, Client, adminOptions);
+		return new DatabaseAdminDataAPI(database, Client, adminOptions);
 	}
 
 	public static Guid? GetDatabaseIdFromUrl(string url)

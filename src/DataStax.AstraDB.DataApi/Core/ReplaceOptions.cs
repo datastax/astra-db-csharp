@@ -66,9 +66,9 @@ public class ReplaceOptions<T> where T : class
   /// Whether to insert the document if no matching document is found or not.
   /// </summary>
   [JsonIgnore]
-  public bool Upsert
+  public bool IsUpsert
   {
-    set => Parameters.Upsert = value;
+    set => Parameters.IsUpsert = value;
   }
 
   /// <summary>
@@ -86,7 +86,7 @@ internal class ReplaceOptionsParameters
   [JsonInclude]
   [JsonPropertyName("upsert")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  internal bool? Upsert { get; set; }
+  internal bool? IsUpsert { get; set; }
 
   [JsonInclude]
   [JsonPropertyName("returnDocument")]

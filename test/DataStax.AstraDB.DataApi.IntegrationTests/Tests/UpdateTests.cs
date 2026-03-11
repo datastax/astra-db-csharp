@@ -171,7 +171,7 @@ public class UpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.Filter.Eq(so => so._id, 111);
         var update = Builders<SimpleObject>.Update.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
-        var result = await collection.UpdateOneAsync(filter, update, new UpdateOneOptions<SimpleObject> { Upsert = true });
+        var result = await collection.UpdateOneAsync(filter, update, new UpdateOneOptions<SimpleObject> { IsUpsert = true });
         Assert.Equal(0, result.ModifiedCount);
         Assert.NotNull(result.UpsertedId);
         Assert.Equal(0, result.MatchedCount);

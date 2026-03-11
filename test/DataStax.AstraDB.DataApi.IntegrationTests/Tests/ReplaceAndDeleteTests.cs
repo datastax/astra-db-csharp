@@ -78,7 +78,7 @@ public class ReplaceAndDeleteTests
     {
         var collection = fixture.ReplaceCollection;
         var filter = Builders<SimpleObject>.Filter.Eq(so => so._id, 111);
-        var options = new ReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After, Upsert = true };
+        var options = new ReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After, IsUpsert = true };
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
         Assert.Equal("replacement", result.Properties.PropertyTwo);
     }

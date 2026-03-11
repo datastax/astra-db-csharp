@@ -21,5 +21,5 @@ namespace DataStax.AstraDB.DataApi.Tables;
 
 public class CreateIndexCommandOptions : CommandOptions
 {
-  public bool SkipIfExists { get; set; } = false;
+  public bool IfNotExists { get; set; } = false;
 }
