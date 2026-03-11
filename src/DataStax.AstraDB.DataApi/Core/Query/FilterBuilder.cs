@@ -329,20 +329,6 @@ public class FilterBuilder<T>
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
     /// <typeparam name="TValue">The type of the dictionary values</typeparam>
-    /// <param name="expression">An expression that represents the dictionary field for this filter</param>
-    /// <param name="pairs">Array of key-value pairs as tuples</param>
-    /// <returns>The filter</returns>
-    public Filter<T> In<TKey, TValue>(Expression<Func<T, Dictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
-    {
-        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairArrays);
-    }
-
-    /// <summary>
-    /// In operator -- Match one or more key-value pairs in a dictionary field.
-    /// </summary>
-    /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
-    /// <typeparam name="TValue">The type of the dictionary values</typeparam>
     /// <param name="fieldName">The name of the field for this filter</param>
     /// <param name="pairs">Array of key-value pairs as tuples</param>
     /// <returns>The filter</returns>
