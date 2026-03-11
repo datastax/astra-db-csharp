@@ -496,7 +496,7 @@ public class Database
         {
             return new DatabaseAdminAstra(this, _client, options);
         }
-        return new DatabaseAdminOther(this, _client, options);
+        return new DatabaseAdminDataAPI(this, _client, options);
     }
 
     /// <summary>
