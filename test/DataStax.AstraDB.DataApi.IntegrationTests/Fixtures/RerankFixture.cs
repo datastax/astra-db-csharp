@@ -3,6 +3,8 @@ using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using System.Text.Json.Serialization;
 using Xunit;
+using Xunit.v3;
+using Xunit.Sdk;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
@@ -24,6 +26,10 @@ public class RerankFixture : BaseFixture, IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
+        if (Destination?.ToLower() != "astra")
+        {
+            return;
+        }
         await CreateSearchCollection();
         var collection = Database.GetCollection<HybridSearchTestObject>(_queryCollectionName);
         HybridSearchCollection = collection;

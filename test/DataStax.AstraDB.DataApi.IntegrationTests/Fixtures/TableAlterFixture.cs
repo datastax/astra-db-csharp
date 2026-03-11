@@ -14,16 +14,7 @@ public class TableAlterFixture : BaseFixture
 {
     public TableAlterFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "tableAlter")
     {
-        try
-        {
-            var keyspaces = Database.GetAdmin().ListKeyspaces();
-            Console.WriteLine($"[Fixture] Connected. Keyspaces found: {keyspaces.Count()}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Fixture] Connection failed: {ex.Message}");
-            throw;
-        }
+        
     }
 
     public async Task<Table<RowEventByDay>> CreateTestTable(string tableName)

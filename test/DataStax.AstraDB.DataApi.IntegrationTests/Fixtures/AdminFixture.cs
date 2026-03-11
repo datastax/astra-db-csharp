@@ -12,10 +12,14 @@ public class AdminFixture : BaseFixture
 	public AdminFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "admin")
 	{
 		DatabaseName = assemblyFixture.DatabaseName;
-		DatabaseId = GetDatabaseIdFromUrl(assemblyFixture.DatabaseUrl).Value;
+		var dbId = GetDatabaseIdFromUrl(assemblyFixture.DatabaseUrl);
+		if (dbId != null)
+        {
+            DatabaseId = dbId.Value;
+        }
 	}
 
-	public DatabaseAdminAstra CreateAdmin(Database database = null)
+	public IDatabaseAdmin CreateAdmin(Database database = null)
 	{
 		database ??= Database;
 
@@ -25,7 +29,11 @@ public class AdminFixture : BaseFixture
 			Environment = DBEnvironment.Production // or default
 		};
 
-		return new DatabaseAdminAstra(database, Client, adminOptions);
+		if (Destination.ToLower() == "astra") {
+			return new DatabaseAdminAstra(database, Client, adminOptions);
+		}
+
+		return new DatabaseAdminOther(database, Client, adminOptions);
 	}
 
 	public static Guid? GetDatabaseIdFromUrl(string url)

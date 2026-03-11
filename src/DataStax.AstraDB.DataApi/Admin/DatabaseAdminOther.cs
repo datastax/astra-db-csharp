@@ -37,6 +37,7 @@ namespace DataStax.AstraDB.DataApi.Admin
     /// </remarks>
     public class DatabaseAdminOther : IDatabaseAdmin
     {
+        private readonly Guid? _id;
         private readonly Database _database;
         private readonly CommandOptions _adminOptions;
         private readonly DataApiClient _client;

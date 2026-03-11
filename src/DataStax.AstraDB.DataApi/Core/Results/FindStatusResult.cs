@@ -24,7 +24,6 @@ internal class FindStatusResult
     [JsonInclude]
     [JsonPropertyName("sortVector")]
     internal float[] SortVector { get; set; }
-
 }
 
 internal class FindStatusResult<T> : FindStatusResult
@@ -32,4 +31,25 @@ internal class FindStatusResult<T> : FindStatusResult
     [JsonInclude]
     [JsonPropertyName("documentResponses")]
     internal List<T> DocumentResponses { get; set; }
+}
+
+internal class TableFindStatusResult : FindStatusResult
+{
+    [JsonInclude]
+    [JsonPropertyName("projectionSchema")]
+    internal Dictionary<string, SchemaColumn> ProjectionSchema { get; set; }
+}
+
+internal class TableFindStatusResult<T> : TableFindStatusResult
+{
+    [JsonInclude]
+    [JsonPropertyName("documentResponses")]
+    internal List<T> DocumentResponses { get; set; }
+}
+
+internal class SchemaColumn
+{
+    [JsonInclude]
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
 }

@@ -22,6 +22,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         _collection = fixture.HybridSearchCollection;
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindAndRerank_BasicSearch_ReturnsResults_WithAsyncEnumeration()
     {
@@ -37,6 +38,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         Assert.Contains(searchResultsList, r => r.Name == "Cat");
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public void FindAndRerank_BasicVectorAndLexicalSearch_ReturnsResults()
     {
@@ -50,6 +52,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         Assert.Contains(searchResultsList, r => r.Name == "Cat");
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public void FindAndRerank_BasicLexicalAndVectorizeSearch_ReturnsResults()
     {
@@ -63,6 +66,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         Assert.Contains(searchResultsList, r => r.Name == "Cat");
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public void FindAndRerank_WithLimit_ReturnsLimitedResults()
     {
@@ -77,6 +81,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         Assert.True(results.Count <= limit);
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public void FindAndRerank_WithFilter_ReturnsFilteredResults()
     {
@@ -90,6 +95,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         Assert.All(results, r => Assert.Equal("Horse", r.Name));
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindAndRerank_WithIncludeScores_ReturnsScores()
     {
@@ -104,6 +110,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindAndRerank_WithExclusiveProjection_ExcludesProperties()
     {
@@ -116,6 +123,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task FindAndRerank_WithIncludeSortVector_ReturnsSortVector()
     {
@@ -127,6 +135,7 @@ public class RerankTests : IClassFixture<RerankFixture>
         Assert.NotEmpty(sortVector);
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public void FindAndRerank_WithAllOptions_ReturnsSuccessfully()
     {

@@ -430,6 +430,23 @@ public class FilterBuilder<T>
     /// All operator -- The $all operator matches rows where the column contains all of the specified key-value pairs.
     /// To match specific keys or specific values, rather than key-value pairs, use the $keys or $values operator.
     /// </summary>
+    /// <typeparam name="TField"></typeparam>
+    /// <param name="fieldName"></param>
+    /// <param name="array"></param>
+    /// <returns></returns>
+    public Filter<T> AllPairs<TField>(string fieldName,
+        TField[] array)
+    {
+        return new Filter<T>(
+            fieldName,
+            FilterOperator.All,
+            array);
+    }
+
+    /// <summary>
+    /// All operator -- The $all operator matches rows where the column contains all of the specified key-value pairs.
+    /// To match specific keys or specific values, rather than key-value pairs, use the $keys or $values operator.
+    /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TValue"></typeparam>
     /// <param name="expression"></param>
