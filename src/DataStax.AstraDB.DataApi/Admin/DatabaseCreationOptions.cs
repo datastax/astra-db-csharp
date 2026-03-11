@@ -21,6 +21,21 @@ namespace DataStax.AstraDB.DataApi.Admin;
 
 public class DatabaseCreationOptions
 {
+    public DatabaseCreationOptions(string name, CloudProviderType cloudProvider, string region)
+    {
+        Name = name;
+        CloudProvider = cloudProvider;
+        Region = region;
+    }
+
+    public DatabaseCreationOptions(string name, CloudProviderType cloudProvider, string region, string keyspace)
+    {
+        Name = name;
+        CloudProvider = cloudProvider;
+        Region = region;
+        Keyspace = keyspace;
+    }
+
     [JsonPropertyName("name")]
     public string Name { get; set; }
 
@@ -34,11 +49,14 @@ public class DatabaseCreationOptions
     public string Keyspace { get; set; } = Database.DefaultKeyspace;
 
     [JsonPropertyName("capacityUnits")]
+    [JsonInclude]
     internal int CapacityUnits { get; set; } = 1;
 
     [JsonPropertyName("tier")]
+    [JsonInclude]
     internal string Tier { get; set; } = "serverless";
 
     [JsonPropertyName("dbType")]
+    [JsonInclude]
     internal string DatabaseType { get; set; } = "vector";
 }

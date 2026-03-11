@@ -279,23 +279,6 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Creates a new database with the specified name.
-    /// </summary>
-    /// <param name="databaseName">The name for the new database.</param>
-    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
-    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = admin.CreateDatabase("myDatabase");
-    /// </code>
-    /// </example>
-    public IDatabaseAdmin CreateDatabase(string databaseName, bool waitForDb = true)
-    {
-        var options = new DatabaseCreationOptions() { Name = databaseName };
-        return CreateDatabaseAsync(options, null, waitForDb, true).ResultSync();
-    }
-
-    /// <summary>
     /// Creates a new database with the specified creation options.
     /// </summary>
     /// <param name="options">The database creation options.</param>
@@ -326,23 +309,6 @@ public class AstraDatabasesAdmin
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions, bool waitForDb = true)
     {
         return CreateDatabaseAsync(options, commandOptions, waitForDb, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Asynchronously creates a new database with the specified name.
-    /// </summary>
-    /// <param name="databaseName">The name for the new database.</param>
-    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
-    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync("myDatabase");
-    /// </code>
-    /// </example>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(string databaseName, bool waitForDb = true)
-    {
-        var options = new DatabaseCreationOptions() { Name = databaseName };
-        return CreateDatabaseAsync(options, null, waitForDb, false);
     }
 
     /// <summary>
@@ -476,21 +442,6 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Drops the database with the specified name.
-    /// </summary>
-    /// <param name="databaseName">The name of the database to drop.</param>
-    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = admin.DropDatabase("myDatabase");
-    /// </code>
-    /// </example>
-    public bool DropDatabase(string databaseName)
-    {
-        return DropDatabaseAsync(databaseName, null, false).ResultSync();
-    }
-
-    /// <summary>
     /// Drops the database with the specified GUID.
     /// </summary>
     /// <param name="dbGuid">The GUID of the database to drop.</param>
@@ -503,22 +454,6 @@ public class AstraDatabasesAdmin
     public bool DropDatabase(Guid dbGuid)
     {
         return DropDatabaseAsync(dbGuid, null, false).ResultSync();
-    }
-
-    /// <summary>
-    /// Drops the database with the specified name using provided command options.
-    /// </summary>
-    /// <param name="databaseName">The name of the database to drop.</param>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = admin.DropDatabase("myDatabase", options);
-    /// </code>
-    /// </example>
-    public bool DropDatabase(string databaseName, CommandOptions options)
-    {
-        return DropDatabaseAsync(databaseName, options, false).ResultSync();
     }
 
     /// <summary>
@@ -538,21 +473,6 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Asynchronously drops the database with the specified name.
-    /// </summary>
-    /// <param name="databaseName">The name of the database to drop.</param>
-    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = await admin.DropDatabaseAsync("myDatabase");
-    /// </code>
-    /// </example>
-    public Task<bool> DropDatabaseAsync(string databaseName)
-    {
-        return DropDatabaseAsync(databaseName, null, true);
-    }
-
-    /// <summary>
     /// Asynchronously drops the database with the specified GUID.
     /// </summary>
     /// <param name="dbGuid">The GUID of the database to drop.</param>
@@ -565,22 +485,6 @@ public class AstraDatabasesAdmin
     public Task<bool> DropDatabaseAsync(Guid dbGuid)
     {
         return DropDatabaseAsync(dbGuid, null, true);
-    }
-
-    /// <summary>
-    /// Asynchronously drops the database with the specified name using provided command options.
-    /// </summary>
-    /// <param name="databaseName">The name of the database to drop.</param>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = await admin.DropDatabaseAsync("myDatabase", options);
-    /// </code>
-    /// </example>
-    public Task<bool> DropDatabaseAsync(string databaseName, CommandOptions options)
-    {
-        return DropDatabaseAsync(databaseName, options, true);
     }
 
     /// <summary>
@@ -597,25 +501,6 @@ public class AstraDatabasesAdmin
     public Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options)
     {
         return DropDatabaseAsync(dbGuid, options, true);
-    }
-
-    internal async Task<bool> DropDatabaseAsync(string databaseName, CommandOptions options, bool runSynchronously)
-    {
-        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-        var dbList = await ListDatabasesAsync(null, options, runSynchronously).ConfigureAwait(false);
-
-        var dbInfo = dbList.FirstOrDefault(item => item.Name.Equals(databaseName));
-        if (dbInfo == null)
-        {
-            return false;
-        }
-
-        if (Guid.TryParse(dbInfo.Id, out var dbGuid))
-        {
-            return await DropDatabaseAsync(dbGuid, options, runSynchronously).ConfigureAwait(false);
-        }
-
-        return false;
     }
 
     internal async Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options, bool runSynchronously)
