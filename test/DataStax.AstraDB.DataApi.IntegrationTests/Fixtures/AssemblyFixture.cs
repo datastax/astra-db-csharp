@@ -34,7 +34,7 @@ public class AssemblyFixture
 
     }
 
-    public DataApiClient CreateApiClient(string fixtureName, bool useToken = true)
+    public DataAPIClient CreateApiClient(string fixtureName, bool useToken = true)
     {
         using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger($"../../../_logs/{fixtureName}_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger(fixtureName);
@@ -57,8 +57,8 @@ public class AssemblyFixture
             case "cassandra":
                 destination = DataApiDestination.CASSANDRA;
                 break;
-            case "others":
-                destination = DataApiDestination.OTHERS;
+            case "other":
+                destination = DataApiDestination.OTHER;
                 break;
             default:
                 destination = DataApiDestination.ASTRA;
@@ -73,7 +73,7 @@ public class AssemblyFixture
             Destination = destination,
         };
 
-        return new DataApiClient(useToken ? Token : null, clientOptions, logger);
+        return new DataAPIClient(useToken ? Token : null, clientOptions, logger);
     }
 
 }

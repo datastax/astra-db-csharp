@@ -11,14 +11,14 @@ The Data API stores structured data as `Documents` which are essentially key-val
 
 == Client hierarchy
 
-All interactions with the data begin with a DataApiClient object.
+All interactions with the data begin with a DataAPIClient object.
 
 Once you have an instance of a `DataAPIClient`, you can use it to get an instance of a `Database` object, which can be used to manage and access `Collection` objects which are themselves used to interact with the actual documents.
 
 [source,c#]
 ----
 //instantiate a client
-var client = new DataApiClient("YourTokenHere");
+var client = new DataAPIClient("YourTokenHere");
 
 //connect to a database
 var database = client.GetDatabase("YourDatabaseUrlHere");
@@ -41,7 +41,7 @@ The `CommandOptions` class provides a set of low-level options to control the in
 
 These options can be provided at any level of the SDK hierarchy:
 
-* `DataApiClient`
+* `DataAPIClient`
 ** `Database`
 *** `Collection`
 

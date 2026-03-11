@@ -48,31 +48,31 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListIndexMetadataAsync()"/>
+    /// Synchronous version of <see cref="ListIndexesAsync()"/>
     /// </summary>
     /// <returns></returns>
-    public ListTableIndexMetadataResult ListIndexMetadata()
+    public ListTableIndexMetadataResult ListIndexes()
     {
-        return ListIndexMetadata(null);
+        return ListIndexes(null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListIndexMetadataAsync(CommandOptions)"/>
+    /// Synchronous version of <see cref="ListIndexesAsync(CommandOptions)"/>
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public ListTableIndexMetadataResult ListIndexMetadata(CommandOptions commandOptions)
+    public ListTableIndexMetadataResult ListIndexes(CommandOptions commandOptions)
     {
-        return ListIndexMetadataAsync(commandOptions, true).ResultSync();
+        return ListIndexesAsync(commandOptions, true).ResultSync();
     }
 
     /// <summary>
     /// Get a list of indexes for the table.
     /// </summary>
     /// <returns></returns>
-    public Task<ListTableIndexMetadataResult> ListIndexMetadataAsync()
+    public Task<ListTableIndexMetadataResult> ListIndexesAsync()
     {
-        return ListIndexMetadataAsync(null);
+        return ListIndexesAsync(null);
     }
 
     /// <summary>
@@ -80,12 +80,12 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public Task<ListTableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions)
+    public Task<ListTableIndexMetadataResult> ListIndexesAsync(CommandOptions commandOptions)
     {
-        return ListIndexMetadataAsync(commandOptions, false);
+        return ListIndexesAsync(commandOptions, false);
     }
 
-    private async Task<ListTableIndexMetadataResult> ListIndexMetadataAsync(CommandOptions commandOptions, bool runSynchronously)
+    private async Task<ListTableIndexMetadataResult> ListIndexesAsync(CommandOptions commandOptions, bool runSynchronously)
     {
         var payload = new
         {
@@ -482,12 +482,12 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         {
             indexName = $"{columnName}_idx";
         }
-        var indexResponse = await ListIndexMetadataAsync(commandOptions, runSynchronously);
+        var indexResponse = await ListIndexesAsync(commandOptions, runSynchronously);
         var exists = indexResponse?.Indexes?.Any(i => i.Name == indexName) == true;
 
         if (exists)
         {
-            if (commandOptions != null && commandOptions.SkipIfExists)
+            if (commandOptions != null && commandOptions.IfNotExists)
             {
                 return;
             }
@@ -582,7 +582,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         Guard.NotNullOrEmpty(rows, nameof(rows));
 
         if (insertOptions == null) insertOptions = new InsertManyOptions();
-        if (insertOptions.Concurrency > 1 && insertOptions.InsertInOrder)
+        if (insertOptions.Concurrency > 1 && insertOptions.IsOrdered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
@@ -606,7 +606,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, insertOptions.ReturnDocumentResponses, commandOptions, runSynchronously).ConfigureAwait(false);
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions.IsOrdered, insertOptions.ReturnDocumentResponses, commandOptions, runSynchronously).ConfigureAwait(false);
                             lock (result.InsertedIds)
                             {
                                 result.PrimaryKeys = runResult.PrimaryKeys;

@@ -12,10 +12,10 @@ internal class DropUserDefinedTypeRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     internal Dictionary<string, object> Options { get; set; }
 
-    internal void SetSkipIfNotExists(bool skipIfNotExists)
+    internal void SetIfExists(bool ifExists)
     {
         var optionsKey = "ifExists";
-        if (!skipIfNotExists)
+        if (!ifExists)
         {
             if (Options != null)
             {
@@ -25,7 +25,7 @@ internal class DropUserDefinedTypeRequest
         else
         {
             Options ??= new Dictionary<string, object>();
-            Options[optionsKey] = skipIfNotExists;
+            Options[optionsKey] = ifExists;
         }
     }
 }

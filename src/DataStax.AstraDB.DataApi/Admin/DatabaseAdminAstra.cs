@@ -40,10 +40,10 @@ namespace DataStax.AstraDB.DataApi.Admin
         private readonly Guid _id;
         private readonly Database _database;
         private readonly CommandOptions _adminOptions;
-        private readonly DataApiClient _client;
+        private readonly DataAPIClient _client;
         private CommandOptions[] _optionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
 
-        internal DatabaseAdminAstra(Database database, DataApiClient client, CommandOptions adminOptions)
+        internal DatabaseAdminAstra(Database database, DataAPIClient client, CommandOptions adminOptions)
         {
             Guard.NotNull(client, nameof(client));
             if (database.DatabaseId == null)

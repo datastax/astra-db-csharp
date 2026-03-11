@@ -7,9 +7,9 @@ public class BaseFixture
 {
     private readonly AssemblyFixture _assemblyFixture;
 
-    public DataApiClient Client { get; set; }
+    public DataAPIClient Client { get; set; }
     public Database Database { get; set; }
-    public DataApiClient ClientWithoutToken { get; set; }
+    public DataAPIClient ClientWithoutToken { get; set; }
     public string DatabaseUrl { get; set; }
     public string Token { get; set; }
     public string Destination => _assemblyFixture.Destination;

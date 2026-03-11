@@ -29,7 +29,7 @@ public class GeneralTests
     {
         string username = "cassandra";
         string password = "cassandra";
-        string result = DataApiClient.UsernamePasswordTokenProvider(username, password);
+        string result = DataAPIClient.UsernamePasswordTokenProvider(username, password);
         Assert.Equal("Cassandra:Y2Fzc2FuZHJh:Y2Fzc2FuZHJh", result);
     }
 }

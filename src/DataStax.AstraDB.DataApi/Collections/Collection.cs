@@ -211,7 +211,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         Guard.NotNullOrEmpty(documents, nameof(documents));
 
         if (insertOptions == null) insertOptions = new InsertManyOptions();
-        if (insertOptions.Concurrency > 1 && insertOptions.InsertInOrder)
+        if (insertOptions.Concurrency > 1 && insertOptions.IsOrdered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
@@ -240,7 +240,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions.InsertInOrder, commandOptions, runSynchronously).ConfigureAwait(false);
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions.IsOrdered, commandOptions, runSynchronously).ConfigureAwait(false);
                             lock (result.InsertedIds)
                             {
                                 result.InsertedIds.AddRange(runResult.InsertedIds);

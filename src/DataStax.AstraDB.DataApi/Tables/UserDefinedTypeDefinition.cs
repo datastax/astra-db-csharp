@@ -56,10 +56,10 @@ internal class UserDefinedTypeRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     internal Dictionary<string, object> Options { get; set; }
 
-    internal void SetSkipIfExists(bool skipIfExists)
+    internal void SetIfNotExists(bool ifNotExists)
     {
         var optionsKey = "ifNotExists";
-        if (!skipIfExists)
+        if (!ifNotExists)
         {
             if (Options != null)
             {
@@ -69,7 +69,7 @@ internal class UserDefinedTypeRequest
         else
         {
             Options ??= new Dictionary<string, object>();
-            Options[optionsKey] = skipIfExists;
+            Options[optionsKey] = ifNotExists;
         }
     }
 

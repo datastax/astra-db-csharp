@@ -27,7 +27,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// This class provides a set of low-level options to control the interactions with the underlying data store.
 /// 
 /// These options can be provided at any level of the SDK hierarchy:
-///     <see cref="DataApiClient"/>
+///     <see cref="DataAPIClient"/>
 ///         <see cref="Database"/>
 ///             <see cref="Collections.Collection"/>
 ///             

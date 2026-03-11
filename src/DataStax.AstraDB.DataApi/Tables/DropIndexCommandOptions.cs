@@ -21,5 +21,5 @@ namespace DataStax.AstraDB.DataApi.Tables;
 
 public class DropIndexCommandOptions : CommandOptions
 {
-  public bool SkipIfNotExists { get; set; } = false;
+  public bool IfExists { get; set; } = false;
 }

@@ -31,17 +31,17 @@ public class InsertManyOptions
     /// </summary>
     public const int MaxConcurrency = int.MaxValue;
 
-    private bool _insertInOrder = false;
+    private bool _isOrdered = false;
     /// <summary>
     /// Whether to insert documents in order or not.
     /// </summary>
-    public bool InsertInOrder
+    public bool IsOrdered
     {
-        get => _insertInOrder;
+        get => _isOrdered;
         set
         {
             if (value) Concurrency = 1;
-            _insertInOrder = value;
+            _isOrdered = value;
         }
     }
     /// <summary>
