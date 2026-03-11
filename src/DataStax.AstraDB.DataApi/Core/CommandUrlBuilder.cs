@@ -88,7 +88,8 @@ internal class EmbeddingCommandUrlBuilder : CommandUrlBuilder
 
     internal override string BuildUrl(CommandOptions options)
     {
-        var url = $"{_database.ApiEndpoint}/api/json/{options.ApiVersion.Value.ToUrlString()}";
+        var prefix = options.Destination == DataApiDestination.ASTRA ? "api/json/" : "";
+        var url = $"{_database.ApiEndpoint}/{prefix}{options.ApiVersion.Value.ToUrlString()}";
         return url;
     }
 }

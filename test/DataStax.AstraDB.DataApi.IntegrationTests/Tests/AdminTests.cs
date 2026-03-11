@@ -22,6 +22,7 @@ public class AdminTests
 		this.fixture = fixture;
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task GetDatabasesList()
 	{
@@ -34,6 +35,7 @@ public class AdminTests
 		Console.WriteLine($"GetDatabasesList: {list.Count} items");
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task GetDatabasesNamesList()
 	{
@@ -47,6 +49,7 @@ public class AdminTests
 		Console.WriteLine(string.Join(", ", list));
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task CheckDatabaseExistsByName()
 	{
@@ -59,6 +62,7 @@ public class AdminTests
 		Assert.True(found);
 	}
 
+	[SkipWhenNotAstra]
 	[Theory]
 	[InlineData(null)]
 	[InlineData("")]
@@ -68,6 +72,7 @@ public class AdminTests
 		Assert.Contains("Value cannot be null or empty", ex.Message);
 	}
 
+	[SkipWhenNotAstra]
 	[Theory]
 	[InlineData(null)]
 	[InlineData("")]
@@ -79,6 +84,7 @@ public class AdminTests
 		Assert.Contains("Value cannot be null or empty", ex.Message);
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task CheckDatabaseExistsByName_ExpectedFalse()
 	{
@@ -92,6 +98,7 @@ public class AdminTests
 		Assert.False(doesExist);
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task CheckDatabaseExistsById()
 	{
@@ -104,6 +111,7 @@ public class AdminTests
 		Assert.True(found);
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task CheckDatabaseStatus()
 	{
@@ -116,6 +124,7 @@ public class AdminTests
 		Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public void DatabaseAdminAstra_GetDatabaseAdminAstra()
 	{
@@ -124,24 +133,26 @@ public class AdminTests
 		Assert.IsType<AstraDatabasesAdmin>(daa);
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
-	public void DatabaseAdminAstra_GetDatabase()
+	public void DatabaseAdmin_GetDatabase()
 	{
 		var daa = fixture.CreateAdmin(fixture.Database);
 
 		Assert.IsType<Database>(daa.GetDatabase());
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
-	public void DatabaseAdminAstra_GetApiEndpoint()
+	public void DatabaseAdmin_GetApiEndpoint()
 	{
-		var daa = fixture.CreateAdmin(fixture.Database);
+		var daa = fixture.CreateAdmin(fixture.Database) as DatabaseAdminAstra;
 
 		Assert.Equal(fixture.DatabaseId, AdminFixture.GetDatabaseIdFromUrl(daa.GetApiEndpoint()));
 	}
 
 	[Fact]
-	public async Task DatabaseAdminAstra_GetKeyspacesList()
+	public async Task DatabaseAdmin_GetKeyspacesList()
 	{
 		var daa = fixture.CreateAdmin(fixture.Database);
 
@@ -157,7 +168,7 @@ public class AdminTests
 	}
 
 	[Fact]
-	public async Task DatabaseAdminAstra_GetKeyspaces_TokenSuppliedToDb()
+	public async Task DatabaseAdmin_GetKeyspaces_TokenSuppliedToDb()
 	{
 		var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
 		var databaseAdmin = database.GetAdmin();
@@ -167,7 +178,7 @@ public class AdminTests
 	}
 
 	[Fact]
-	public async Task DatabaseAdminAstra_DoesKeyspaceExist()
+	public async Task DatabaseAdmin_DoesKeyspaceExist()
 	{
 		var daa = fixture.CreateAdmin(fixture.Database);
 
@@ -179,7 +190,7 @@ public class AdminTests
 	}
 
 	[Fact]
-	public async Task DatabaseAdminAstra_DoesKeyspaceExist_Another()
+	public async Task DatabaseAdmin_DoesKeyspaceExist_Another()
 	{
 		var daa = fixture.CreateAdmin(fixture.Database);
 		var keyspaceName = "another_keyspace";
@@ -201,6 +212,7 @@ public class AdminTests
 		}
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task DatabaseAdminAstra_FindEmbeddingProvidersAsync()
 	{
@@ -227,6 +239,7 @@ public class AdminTests
 		Assert.NotEmpty(providers);
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task DatabaseAdminAstra_GetRegions()
 	{
@@ -237,6 +250,7 @@ public class AdminTests
 		Assert.NotEmpty(regions);
 	}
 
+	[SkipWhenNotAstra]
 	[Fact]
 	public async Task DatabaseAdminAstra_GetRerankingProvidersAsync()
 	{
