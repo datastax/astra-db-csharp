@@ -39,6 +39,17 @@ public class AstraDatabasesAdmin
 
     private CommandOptions[] OptionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
 
+    private static readonly HashSet<AstraDatabaseStatus> CreatingDatabaseStatuses = new HashSet<AstraDatabaseStatus>
+    {
+        AstraDatabaseStatus.ASSOCIATING,
+        AstraDatabaseStatus.INITIALIZING,
+        AstraDatabaseStatus.PENDING
+    };
+    private static readonly HashSet<AstraDatabaseStatus> DroppingDatabaseStatuses = new HashSet<AstraDatabaseStatus>
+    {
+        AstraDatabaseStatus.TERMINATING
+    };
+
     internal AstraDatabasesAdmin(DataAPIClient client, CommandOptions adminOptions)
     {
         Guard.NotNull(client, nameof(client));
@@ -374,56 +385,53 @@ public class AstraDatabasesAdmin
         {
             if (runSynchronously)
             {
-                WaitForDatabase(databaseName);
+                WaitForDatabase(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE);
             }
             else
             {
-                await WaitForDatabaseAsync(databaseName).ConfigureAwait(false);
+                await WaitForDatabaseAsync(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE).ConfigureAwait(false);
             }
         }
 
         return await GetDatabaseAdminAsync(newDbId);
     }
 
-    private void WaitForDatabase(string databaseName)
+    private void WaitForDatabase(Guid dbGuid, HashSet<AstraDatabaseStatus> waitingStatuses, AstraDatabaseStatus targetStatus)
     {
-        WaitForDatabaseAsync(databaseName).ResultSync();
+        WaitForDatabaseAsync(dbGuid, waitingStatuses, targetStatus).ResultSync();
     }
 
-    internal async Task WaitForDatabaseAsync(string databaseName)
+    internal async Task WaitForDatabaseAsync(Guid dbGuid, HashSet<AstraDatabaseStatus> waitingStatuses, AstraDatabaseStatus targetStatus)
     {
         const int MAX_WAIT_IN_SECONDS = 600;
         const int SLEEP_SECONDS = 5;
-        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
+        Guard.NotEmpty(dbGuid, nameof(dbGuid));
 
         int secondsWaited = 0;
 
         while (secondsWaited < MAX_WAIT_IN_SECONDS)
         {
-            var status = await GetDatabaseStatusAsync(databaseName).ConfigureAwait(false);
-            if (status == AstraDatabaseStatus.ACTIVE)
+            var status = await GetDatabaseStatusAsync(dbGuid).ConfigureAwait(false);
+            if (status == targetStatus)
             {
                 return;
+            }
+            if(!waitingStatuses.Contains(status)){
+                throw new Exception($"Database {dbGuid} reached unexpected status {status}");
             }
             await Task.Delay(SLEEP_SECONDS * 1000).ConfigureAwait(false);
             secondsWaited += SLEEP_SECONDS;
         }
 
-        throw new Exception($"Database {databaseName} did not become ready within {MAX_WAIT_IN_SECONDS} seconds.");
+        throw new Exception($"Database {dbGuid} did not reach target status {targetStatus} within {MAX_WAIT_IN_SECONDS} seconds.");
     }
 
-    internal async Task<AstraDatabaseStatus> GetDatabaseStatusAsync(string databaseName)
+    internal async Task<AstraDatabaseStatus> GetDatabaseStatusAsync(Guid dbGuid)
     {
-        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-        var dbList = await ListDatabasesAsync();
-        var db = dbList.FirstOrDefault(item => databaseName.Equals(item.Name));
+        Guard.NotEmpty(dbGuid, nameof(dbGuid));
 
-        if (db == null)
-        {
-            throw new Exception($"Database '{databaseName}' not found.");
-        }
-
-        return db.Status;
+        var dbInfo = await GetDatabaseInfoAsync(dbGuid);
+        return dbInfo.Status;
     }
 
     /// <summary>

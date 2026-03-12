@@ -71,6 +71,7 @@ public enum AstraDatabaseCloudProvider
 public enum AstraDatabaseStatus
 {
     ACTIVE,
+    ASSOCIATING,
     ERROR,
     DECOMMISSIONING,
     DEGRADED,

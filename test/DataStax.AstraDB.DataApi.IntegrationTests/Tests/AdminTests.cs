@@ -115,12 +115,13 @@ public class AdminTests
 	[Fact]
 	public async Task CheckDatabaseStatus()
 	{
-		var dbName = fixture.DatabaseName;
+		var dbGuid = Database.GetDatabaseIdFromUrl(fixture.DatabaseUrl);
+		Assert.NotNull(dbGuid);
 
-		var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
+		var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid.Value);
 		Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 
-		status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
+		status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid.Value);
 		Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 	}
 
@@ -308,7 +309,8 @@ public class AdminTests
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlocking
-	[Fact(Skip = AdminCollection.SkipMessage)]
+	// [Fact(Skip = AdminCollection.SkipMessage)]
+	[Fact()]
 	public void CreateDatabaseBlocking()
 	{
 		var dbName = "test-db-create-blocking-x";
