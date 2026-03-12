@@ -16,8 +16,18 @@
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-internal enum RunMode
+/// <summary>
+/// The execution mode for database operations.
+/// </summary>
+public enum RunMode
 {
+    /// <summary>
+    /// Normal execution mode
+    /// </summary>
     Normal,
+    
+    /// <summary>
+    /// Debug execution mode with additional logging and diagnostics
+    /// </summary>
     Debug
 }
