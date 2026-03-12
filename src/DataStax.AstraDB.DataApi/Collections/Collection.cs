@@ -1100,55 +1100,6 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
-    /// </summary>
-    /// <returns></returns>
-    public RerankSorter<T, T> FindAndRerank()
-    {
-        return FindAndRerank<T>(null);
-    }
-
-    /// <inheritdoc cref="FindAndRerank()"/>
-    /// <param name="filter"></param>
-    public RerankSorter<T, T> FindAndRerank(Filter<T> filter)
-    {
-        return FindAndRerank<T>(filter);
-    }
-
-    /// <inheritdoc cref="FindAndRerank()"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public RerankSorter<T, T> FindAndRerank(Filter<T> filter, CommandOptions commandOptions)
-    {
-        return FindAndRerank<T>(filter, commandOptions);
-    }
-
-    /// <summary>
-    /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
-    /// </summary>
-    /// <typeparam name="TResult">If you are using projection to return a subset of fields, TResult can be used to receive the projected document.</typeparam>
-    /// <returns></returns>
-    public RerankSorter<T, TResult> FindAndRerank<TResult>() where TResult : class
-    {
-        return FindAndRerank<TResult>(null, null);
-    }
-
-    /// <inheritdoc cref="FindAndRerank{TResult}()"/>
-    /// <param name="filter"></param>
-    public RerankSorter<T, TResult> FindAndRerank<TResult>(Filter<T> filter) where TResult : class
-    {
-        return FindAndRerank<TResult>(filter, null);
-    }
-
-    /// <inheritdoc cref="FindAndRerank{TResult}()"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public RerankSorter<T, TResult> FindAndRerank<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
-    {
-        return new RerankSorter<T, TResult>(() => CreateCommand("findAndRerank"), filter, commandOptions);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="ReplaceOneAsync(Filter{T}, T)"/>
     /// </summary>
     /// <inheritdoc cref="ReplaceOneAsync(Filter{T}, T)"/>
