@@ -276,9 +276,9 @@ public class AdminTests
         3. Run the associated command from the terminal.
     */
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseByOptions
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabase
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void CreateDatabaseByOptions()
+	public void CreateDatabase()
 	{
 		var dbName = "test-db-create-options-x";
 		var options = new DatabaseCreationOptions(
@@ -292,9 +292,9 @@ public class AdminTests
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseByOptionsAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task CreateDatabaseByOptionsAsync()
+	public async Task CreateDatabaseAsync()
 	{
 		var dbName = "test-db-create-options-async-x";
 		var options = new DatabaseCreationOptions(
@@ -308,9 +308,9 @@ public class AdminTests
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseByOptionsBlocking
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlocking
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void CreateDatabaseByOptionsBlocking()
+	public void CreateDatabaseBlocking()
 	{
 		var dbName = "test-db-create-options-blocking-x";
 		var options = new DatabaseCreationOptions(
@@ -323,9 +323,9 @@ public class AdminTests
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseByOptionsBlockingAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task CreateDatabaseByOptionsBlockingAsync()
+	public async Task CreateDatabaseBlockingAsync()
 	{
 		var dbName = "test-db-create-options-blocking-async-x";
 		var options = new DatabaseCreationOptions(

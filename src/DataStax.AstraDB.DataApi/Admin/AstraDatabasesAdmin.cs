@@ -286,7 +286,7 @@ public class AstraDatabasesAdmin
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions { Name = "myDatabase" });
+    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"));
     /// </code>
     /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, bool waitForDb = true)
@@ -303,7 +303,7 @@ public class AstraDatabasesAdmin
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions { Name = "myDatabase" }, commandOptions);
+    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"), commandOptions);
     /// </code>
     /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions, bool waitForDb = true)
@@ -319,7 +319,7 @@ public class AstraDatabasesAdmin
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions { Name = "myDatabase" });
+    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"));
     /// </code>
     /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb = true)
@@ -336,7 +336,7 @@ public class AstraDatabasesAdmin
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions { Name = "myDatabase" }, commandOptions);
+    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"), commandOptions);
     /// </code>
     /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb = true)
@@ -348,21 +348,6 @@ public class AstraDatabasesAdmin
     {
         var databaseName = creationOptions.Name;
         Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-
-        List<DatabaseInfo> dbList = await ListDatabasesAsync(null, commandOptions, runSynchronously).ConfigureAwait(false);
-
-        DatabaseInfo existingDb = dbList.FirstOrDefault(item => databaseName.Equals(item.Name));
-
-        if (existingDb != null)
-        {
-            if (existingDb.Status == AstraDatabaseStatus.ACTIVE)
-            {
-                Console.WriteLine($"Database {databaseName} already exists and is ACTIVE.");
-                return GetDatabaseAdmin(existingDb);
-            }
-
-            throw new InvalidOperationException($"Database {databaseName} already exists but is in state: {existingDb.Status}");
-        }
 
         Command command = CreateCommand()
             .AddUrlPath("databases")
