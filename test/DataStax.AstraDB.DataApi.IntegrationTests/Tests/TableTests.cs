@@ -430,7 +430,7 @@ public class TableTests
             await table.InsertManyAsync(rows);
             var findResult = table.Find().ToList();
             Assert.Equal(rows.Count, findResult.Count);
-            await table.DeleteAllAsync();
+            await table.DeleteManyAsync(null);
             var deletedResult = table.Find().ToList();
             Assert.Empty(deletedResult);
         }
