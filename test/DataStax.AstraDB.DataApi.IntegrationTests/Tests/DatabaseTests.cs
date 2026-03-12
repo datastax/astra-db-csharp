@@ -764,9 +764,9 @@ public class DatabaseTests
     }
 
     [Fact]
-    public async Task DropNonExistentTable_DoesNotThrowException_WhenNotExistsIsTrue()
+    public async Task DropNonExistentTable_DoesNotThrowException_WhenIfExistsIsTrue()
     {
-        await fixture.Database.DropTableAsync("nonExistentTable", true);
+        await fixture.Database.DropTableAsync("nonExistentTable", new() { IfExists = true });
     }
 
     [Fact]
