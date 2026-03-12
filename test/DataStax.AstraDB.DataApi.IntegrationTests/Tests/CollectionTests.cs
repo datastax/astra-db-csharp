@@ -632,7 +632,7 @@ public class CollectionTests
     public async Task CountDocuments_NoFilter_ReturnsCorrectCount()
     {
         var collection = fixture.SearchCollection;
-        var count = await collection.CountDocumentsAsync();
+        var count = await collection.CountDocumentsAsync(1000);
         Assert.Equal(33, count);
     }
 
@@ -641,7 +641,7 @@ public class CollectionTests
     {
         var collection = fixture.SearchCollection;
         var filter = Builders<SimpleObject>.Filter.Eq("Properties.PropertyOne", "grouptwo");
-        var count = await collection.CountDocumentsAsync(filter);
+        var count = await collection.CountDocumentsAsync(filter, 1000);
         Assert.Equal(3, count);
     }
 

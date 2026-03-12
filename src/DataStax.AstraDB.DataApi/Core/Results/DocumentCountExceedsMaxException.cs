@@ -19,7 +19,7 @@ using System;
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
 /// <summary>
-/// Exception thrown from CountDocumentsAsync when the number of documents exceeds the maximum stated limit (or the internal limit of 1000).
+/// Exception thrown from CountDocumentsAsync when the number of documents exceeds the maximum stated limit, or the internal Data API limit.
 /// </summary>
 public class DocumentCountExceedsMaxException : Exception
 {
