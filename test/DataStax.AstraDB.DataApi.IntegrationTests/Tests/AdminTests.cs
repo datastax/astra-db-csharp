@@ -309,8 +309,7 @@ public class AdminTests
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlocking
-	// [Fact(Skip = AdminCollection.SkipMessage)]
-	[Fact()]
+	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void CreateDatabaseBlocking()
 	{
 		var dbName = "test-db-create-blocking-x";
@@ -340,22 +339,42 @@ public class AdminTests
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseById
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabase
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void DropDatabaseById()
+	public void DropDatabase()
 	{
-		var dbGuid = Guid.Parse("ee1a268c-112f-47fd-971e-57ecef64a23b"); // from a db created ad-hoc on astra's site
-		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid);
+		var dbGuid = Guid.Parse("a47df344-29eb-44f9-b536-23b1e25d6ec7"); // from a db created ad-hoc on astra's site
+		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, false);
 
 		Assert.True(dropped);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseByIdAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DropDatabaseByIdAsync()
+	public async Task DropDatabaseAsync()
 	{
-		var dbGuid = Guid.Parse("65b4cdb5-2f21-4550-99ce-8c2570d18c1a"); // from a db created ad-hoc on astra's site
-		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid);
+		var dbGuid = Guid.Parse("b03270f5-4957-4dd6-b0de-5be57e03f1a5"); // from a db created ad-hoc on astra's site
+		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, false);
+
+		Assert.True(dropped);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlocking
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public void DropDatabaseBlocking()
+	{
+		var dbGuid = Guid.Parse("0bf28446-8d9f-4630-b880-8b85b6c1e259"); // from a db created ad-hoc on astra's site
+		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, true);
+
+		Assert.True(dropped);
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlockingAsync
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task DropDatabaseBlockingAsync()
+	{
+		var dbGuid = Guid.Parse("4f43d07d-7ccb-4423-868d-4197303623fc"); // from a db created ad-hoc on astra's site
+		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, true);
 
 		Assert.True(dropped);
 	}

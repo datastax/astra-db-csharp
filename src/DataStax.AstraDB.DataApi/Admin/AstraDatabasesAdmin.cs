@@ -379,7 +379,6 @@ public class AstraDatabasesAdmin
             return Task.CompletedTask;
         };
         Command.EmptyResult emptyResult = await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
-        Console.WriteLine($"Database {databaseName} (dbId: {newDbId}) is starting: please wait...");
 
         if (waitForDb)
         {
@@ -438,15 +437,16 @@ public class AstraDatabasesAdmin
     /// Drops the database with the specified GUID.
     /// </summary>
     /// <param name="dbGuid">The GUID of the database to drop.</param>
+    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
     /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
     /// <code>
     /// bool dropped = admin.DropDatabase(new Guid("..."));
     /// </code>
     /// </example>
-    public bool DropDatabase(Guid dbGuid)
+    public bool DropDatabase(Guid dbGuid, bool waitForDb = true)
     {
-        return DropDatabaseAsync(dbGuid, null, false).ResultSync();
+        return DropDatabaseAsync(dbGuid, null, waitForDb, false).ResultSync();
     }
 
     /// <summary>
@@ -454,30 +454,32 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <param name="dbGuid">The GUID of the database to drop.</param>
     /// <param name="options">The command options to use.</param>
+    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
     /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
     /// <code>
     /// bool dropped = admin.DropDatabase(new Guid("..."), options);
     /// </code>
     /// </example>
-    public bool DropDatabase(Guid dbGuid, CommandOptions options)
+    public bool DropDatabase(Guid dbGuid, CommandOptions options, bool waitForDb = true)
     {
-        return DropDatabaseAsync(dbGuid, options, false).ResultSync();
+        return DropDatabaseAsync(dbGuid, options, waitForDb, false).ResultSync();
     }
 
     /// <summary>
     /// Asynchronously drops the database with the specified GUID.
     /// </summary>
     /// <param name="dbGuid">The GUID of the database to drop.</param>
+    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
     /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
     /// <code>
     /// bool dropped = await admin.DropDatabaseAsync(new Guid("..."));
     /// </code>
     /// </example>
-    public Task<bool> DropDatabaseAsync(Guid dbGuid)
+    public Task<bool> DropDatabaseAsync(Guid dbGuid, bool waitForDb = true)
     {
-        return DropDatabaseAsync(dbGuid, null, true);
+        return DropDatabaseAsync(dbGuid, null, waitForDb, true);
     }
 
     /// <summary>
@@ -485,35 +487,43 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <param name="dbGuid">The GUID of the database to drop.</param>
     /// <param name="options">The command options to use.</param>
+    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
     /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
     /// <code>
     /// bool dropped = await admin.DropDatabaseAsync(new Guid("..."), options);
     /// </code>
     /// </example>
-    public Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options)
+    public Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options, bool waitForDb = true)
     {
-        return DropDatabaseAsync(dbGuid, options, true);
+        return DropDatabaseAsync(dbGuid, options, waitForDb, true);
     }
 
-    internal async Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options, bool runSynchronously)
+    internal async Task<bool> DropDatabaseAsync(Guid dbGuid, CommandOptions options, bool waitForDb, bool runSynchronously)
     {
         Guard.NotEmpty(dbGuid, nameof(dbGuid));
-        var dbInfo = await GetDatabaseInfoAsync(dbGuid, options, runSynchronously).ConfigureAwait(false);
-        if (dbInfo != null)
+        Command command = CreateCommand()
+            .AddUrlPath("databases")
+            .AddUrlPath(dbGuid.ToString())
+            .AddUrlPath("terminate")
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
+            .AddCommandOptions(options);
+
+        await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
+
+        if (waitForDb)
         {
-            Command command = CreateCommand()
-                .AddUrlPath("databases")
-                .AddUrlPath(dbGuid.ToString())
-                .AddUrlPath("terminate")
-                .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-                .AddCommandOptions(options);
-
-            await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
-
-            return true;
+            if (runSynchronously)
+            {
+                WaitForDatabase(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED);
+            }
+            else
+            {
+                await WaitForDatabaseAsync(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED).ConfigureAwait(false);
+            }
         }
-        return false;
+
+        return true;
     }
 
 
