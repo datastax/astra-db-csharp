@@ -101,13 +101,16 @@ public class TableDefinition
 
           case ColumnVectorizeAttribute vectorize:
             createColumn = false;
-            definition.AddColumn(columnName, new VectorizeDataApiType(vectorize.Dimension, new VectorServiceOptions()
+            var serviceOptions = new VectorServiceOptions
             {
               Provider = vectorize.ServiceProvider,
               ModelName = vectorize.ServiceModelName,
               Authentication = vectorize.AuthenticationPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1]),
               Parameters = vectorize.ParameterPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1])
-            }));
+            };
+            definition.AddColumn(columnName, vectorize.Dimension.HasValue 
+              ? new VectorizeDataApiType(vectorize.Dimension.Value, serviceOptions)
+              : new VectorizeDataApiType(serviceOptions));
             break;
 
           case ColumnVectorAttribute vector:
