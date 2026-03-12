@@ -46,7 +46,8 @@ public class DatabaseCreationOptions
     public string Region { get; set; }
 
     [JsonPropertyName("keyspace")]
-    public string Keyspace { get; set; } = Database.DefaultKeyspace;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Keyspace { get; set; } = null;
 
     [JsonPropertyName("capacityUnits")]
     [JsonInclude]

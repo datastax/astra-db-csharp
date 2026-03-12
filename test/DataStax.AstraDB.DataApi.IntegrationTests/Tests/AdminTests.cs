@@ -280,7 +280,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void CreateDatabase()
 	{
-		var dbName = "test-db-create-options-x";
+		var dbName = "test-db-create-x";
 		var options = new DatabaseCreationOptions(
 			dbName,
 			CloudProviderType.AWS,
@@ -296,12 +296,11 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task CreateDatabaseAsync()
 	{
-		var dbName = "test-db-create-options-async-x";
+		var dbName = "test-db-create-async-x";
 		var options = new DatabaseCreationOptions(
 			dbName,
 			CloudProviderType.AWS,
-			"us-east-2",
-			"fedault_seykpace"
+			"us-east-2"
 		);
 		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, false);
 
@@ -312,11 +311,12 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void CreateDatabaseBlocking()
 	{
-		var dbName = "test-db-create-options-blocking-x";
+		var dbName = "test-db-create-blocking-x";
 		var options = new DatabaseCreationOptions(
 			dbName,
 			CloudProviderType.AWS,
-			"us-east-2"
+			"us-east-2",
+			"fedault_seykpace"
 		);
 		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, true);
 
@@ -327,7 +327,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task CreateDatabaseBlockingAsync()
 	{
-		var dbName = "test-db-create-options-blocking-async-x";
+		var dbName = "test-db-create-blocking-async-x";
 		var options = new DatabaseCreationOptions(
 			dbName,
 			CloudProviderType.AWS,
