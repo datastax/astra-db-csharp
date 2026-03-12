@@ -357,9 +357,6 @@ public class AstraDatabasesAdmin
 
     internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb, bool runSynchronously)
     {
-        var databaseName = creationOptions.Name;
-        Guard.NotNullOrEmpty(databaseName, nameof(databaseName));
-
         Command command = CreateCommand()
             .AddUrlPath("databases")
             .WithPayload(creationOptions)
@@ -384,15 +381,31 @@ public class AstraDatabasesAdmin
         {
             if (runSynchronously)
             {
-                WaitForDatabase(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE);
+                try
+                {
+                    WaitForDatabase(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // gracefully handle insufficient token:
+                    throw new Exception("The token used does not allow to poll for DB statuses.");
+                }
             }
             else
             {
-                await WaitForDatabaseAsync(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE).ConfigureAwait(false);
+                try
+                {
+                    await WaitForDatabaseAsync(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE).ConfigureAwait(false);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // gracefully handle insufficient token:
+                    throw new Exception("The token used does not allow to poll for DB statuses.");
+                }
             }
         }
 
-        return await GetDatabaseAdminAsync(newDbId);
+        return await GetDatabaseAdminAsync(newDbId, creationOptions.Region);
     }
 
     private void WaitForDatabase(Guid dbGuid, HashSet<AstraDatabaseStatus> waitingStatuses, AstraDatabaseStatus targetStatus)
@@ -515,11 +528,27 @@ public class AstraDatabasesAdmin
         {
             if (runSynchronously)
             {
-                WaitForDatabase(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED);
+                try
+                {
+                    WaitForDatabase(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // gracefully handle insufficient token:
+                    throw new Exception("The token used does not allow to poll for DB statuses.");
+                }
             }
             else
             {
-                await WaitForDatabaseAsync(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED).ConfigureAwait(false);
+                try
+                {
+                    await WaitForDatabaseAsync(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED).ConfigureAwait(false);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // gracefully handle insufficient token:
+                    throw new Exception("The token used does not allow to poll for DB statuses.");
+                }
             }
         }
 
@@ -692,10 +721,9 @@ public class AstraDatabasesAdmin
         return new DatabaseAdminAstra(database, _client, null);
     }
 
-    private async Task<DatabaseAdminAstra> GetDatabaseAdminAsync(Guid dbGuid)
+    private async Task<DatabaseAdminAstra> GetDatabaseAdminAsync(Guid dbGuid, string region)
     {
-        var dbInfo = await GetDatabaseInfoAsync(dbGuid).ConfigureAwait(false);
-        var apiEndpoint = $"https://{dbGuid}-{dbInfo.Region}.apps.astra.datastax.com";
+        var apiEndpoint = $"https://{dbGuid}-{region}.apps.astra.datastax.com";
         var database = _client.GetDatabase(apiEndpoint);
         return new DatabaseAdminAstra(database, _client, null);
     }

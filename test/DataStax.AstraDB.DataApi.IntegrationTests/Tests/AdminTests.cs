@@ -343,7 +343,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void DropDatabase()
 	{
-		var dbGuid = Guid.Parse("a47df344-29eb-44f9-b536-23b1e25d6ec7"); // from a db created ad-hoc on astra's site
+		var dbGuid = Guid.Parse("7683bb84-4604-49b4-b05f-69b695bba976"); // from a db created ad-hoc on astra's site
 		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, false);
 
 		Assert.True(dropped);
@@ -353,7 +353,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DropDatabaseAsync()
 	{
-		var dbGuid = Guid.Parse("b03270f5-4957-4dd6-b0de-5be57e03f1a5"); // from a db created ad-hoc on astra's site
+		var dbGuid = Guid.Parse("6a118896-bd69-4f24-90db-6229cd211c99"); // from a db created ad-hoc on astra's site
 		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, false);
 
 		Assert.True(dropped);
@@ -363,7 +363,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void DropDatabaseBlocking()
 	{
-		var dbGuid = Guid.Parse("0bf28446-8d9f-4630-b880-8b85b6c1e259"); // from a db created ad-hoc on astra's site
+		var dbGuid = Guid.Parse("88dee1d4-daf9-4375-a9b1-0d0287de5466"); // from a db created ad-hoc on astra's site
 		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, true);
 
 		Assert.True(dropped);
@@ -373,7 +373,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DropDatabaseBlockingAsync()
 	{
-		var dbGuid = Guid.Parse("4f43d07d-7ccb-4423-868d-4197303623fc"); // from a db created ad-hoc on astra's site
+		var dbGuid = Guid.Parse("2b8bc268-511b-4b35-adfd-ef4f3063351b"); // from a db created ad-hoc on astra's site
 		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, true);
 
 		Assert.True(dropped);
