@@ -37,13 +37,13 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// </summary>
 /// <remarks>
 /// The Database class has a concept of a "current keyspace", which is the keyspace used for all operations. This can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter,
-/// or when creating the <see cref="Database"/> instance (see <see cref="DataApiClient.GetDatabase(string, DatabaseCommandOptions)"/>).
+/// or when creating the <see cref="Database"/> instance (see <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/>).
 /// If unset, the default keyspace will be used.
 /// </remarks>
 /// <example>
 /// Using the default keyspace for all operations
 /// <code>
-/// var client = new DataApiClient("token");
+/// var client = new DataAPIClient("token");
 /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com");
 /// // Check to see if a collection exists in the default keyspace
 /// var doesCollectionExist = database.DoesCollectionExist("myCollection");
@@ -52,7 +52,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <example>
 /// Setting a custom keyspace for all operations
 /// <code>
-/// var client = new DataApiClient("token");
+/// var client = new DataAPIClient("token");
 /// var dbOptions = new DatabaseCommandOptions() { Keyspace = "myKeyspace" };
 /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com", dbOptions);
 /// // Check to see if a collection exists in the custom keyspace
@@ -62,7 +62,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <example>
 /// Setting a custom keyspace for a single operation
 /// <code>
-/// var client = new DataApiClient("token");
+/// var client = new DataAPIClient("token");
 /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com");
 /// // Check to see if a collection exists in the custom keyspace
 /// var dbOptions = new DatabaseCommandOptions() { Keyspace = "myKeyspace" };
@@ -74,14 +74,14 @@ public class Database
     internal const string DefaultKeyspace = "default_keyspace";
 
     private readonly string _apiEndpoint;
-    private readonly DataApiClient _client;
+    private readonly DataAPIClient _client;
     private readonly string _urlPostfix = "";
     private readonly Guid? _id;
 
     private DatabaseCommandOptions _dbCommandOptions;
 
     internal string ApiEndpoint => _apiEndpoint;
-    internal DataApiClient Client => _client;
+    internal DataAPIClient Client => _client;
     internal Guid? DatabaseId => _id;
 
     internal CommandOptions[] OptionsTree
@@ -92,7 +92,7 @@ public class Database
         }
     }
 
-    internal Database(string apiEndpoint, DataApiClient client, DatabaseCommandOptions dbCommandOptions)
+    internal Database(string apiEndpoint, DataAPIClient client, DatabaseCommandOptions dbCommandOptions)
     {
         Guard.NotNullOrEmpty(apiEndpoint, nameof(apiEndpoint));
         Guard.NotNull(client, nameof(client));
@@ -278,7 +278,7 @@ public class Database
 
     /// <summary>
     /// Create a new collection in the database, using the keyspace specified in the <see cref="DatabaseCommandOptions"/>
-    /// passed to the DataApiClient's GetDatabase method (for example: <see cref="DataApiClient.GetDatabase(string, DatabaseCommandOptions)"/>), or the default keyspace otherwise.
+    /// passed to the DataAPIClient's GetDatabase method (for example: <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/>), or the default keyspace otherwise.
     /// </summary>
     /// <param name="collectionName">The name of the collection to create.</param>
     /// <returns>A reference to the created collection.</returns>
@@ -356,7 +356,7 @@ public class Database
 
     /// <summary>
     /// Create a new collection in the database, using the keyspace specified in the <see cref="DatabaseCommandOptions"/>
-    /// passed to the <see cref="DataApiClient.GetDatabase(string, DatabaseCommandOptions)"/> method, or the default keyspace otherwise.
+    /// passed to the <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/> method, or the default keyspace otherwise.
     /// </summary>
     /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
     /// <param name="collectionName">The name of the collection to create.</param>
@@ -496,7 +496,7 @@ public class Database
         {
             return new DatabaseAdminAstra(this, _client, options);
         }
-        return new DatabaseAdminOther(this, _client, options);
+        return new DatabaseAdminDataAPI(this, _client, options);
     }
 
     /// <summary>
@@ -626,7 +626,7 @@ public class Database
                 var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName(udtProperty.UnderlyingType, udtProperty.Attribute);
                 if (!existingTypes.Contains(typeName))
                 {
-                    await CreateTypeAsync(typeName, UserDefinedTypeRequest.CreateDefinitionFromType(udtProperty.UnderlyingType), new CreateTypeCommandOptions() { SkipIfExists = true });
+                    await CreateTypeAsync(typeName, UserDefinedTypeRequest.CreateDefinitionFromType(udtProperty.UnderlyingType), new CreateTypeCommandOptions() { IfNotExists = true });
                 }
             }
         }
@@ -651,7 +651,7 @@ public class Database
     private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableCommandOptions options, bool runSynchronously) where TRow : class
     {
         options = options ?? new CreateTableCommandOptions();
-        if (options.SkipIfExists)
+        if (options.IfNotExists)
         {
             var existingTables = await ListTableNamesAsync().ConfigureAwait(false);
             if (existingTables.Contains(tableName))
@@ -1093,7 +1093,7 @@ public class Database
             name = indexName,
             options = new
             {
-                ifExists = commandOptions?.SkipIfNotExists ?? false,
+                ifExists = commandOptions?.IfExists ?? false,
             }
         };
         var command = CreateCommand("dropIndex")
@@ -1228,7 +1228,7 @@ public class Database
             Name = typeName,
             TypeDefinition = definition
         };
-        request.SetSkipIfExists(options.SkipIfExists);
+        request.SetIfNotExists(options.IfNotExists);
         var command = CreateCommand("createType")
             .WithPayload(request)
             .WithTimeoutManager(new TableAdminTimeoutManager())
@@ -1329,7 +1329,7 @@ public class Database
         {
             Name = typeName
         };
-        request.SetSkipIfNotExists(options.SkipIfNotExists);
+        request.SetIfExists(options.IfExists);
         var command = CreateCommand("dropType")
             .WithPayload(request)
             .WithTimeoutManager(new TableAdminTimeoutManager())

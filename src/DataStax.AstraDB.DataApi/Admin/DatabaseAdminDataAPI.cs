@@ -35,15 +35,15 @@ namespace DataStax.AstraDB.DataApi.Admin
     /// methods for listing, creating, and dropping keyspaces, as well as querying embedding and
     /// reranking providers.
     /// </remarks>
-    public class DatabaseAdminOther : IDatabaseAdmin
+    public class DatabaseAdminDataAPI : IDatabaseAdmin
     {
         private readonly Guid? _id;
         private readonly Database _database;
         private readonly CommandOptions _adminOptions;
-        private readonly DataApiClient _client;
+        private readonly DataAPIClient _client;
         private CommandOptions[] _optionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
 
-        internal DatabaseAdminOther(Database database, DataApiClient client, CommandOptions adminOptions)
+        internal DatabaseAdminDataAPI(Database database, DataAPIClient client, CommandOptions adminOptions)
         {
             Guard.NotNull(client, nameof(client));
             _client = client;

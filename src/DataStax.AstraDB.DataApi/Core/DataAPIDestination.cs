@@ -25,5 +25,5 @@ public enum DataApiDestination
     DSE,
     HCD,
     CASSANDRA,
-    OTHERS
+    OTHER
 }

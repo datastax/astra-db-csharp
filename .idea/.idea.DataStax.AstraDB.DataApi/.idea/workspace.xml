@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="599ec604-5a81-4903-aeb3-6b992ed05d2f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/csharp-client.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/csharp-client.adoc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/index.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Admin/AstraDatabasesAdmin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Admin/AstraDatabasesAdmin.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Admin/DatabaseAdminAstra.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Admin/DatabaseAdminAstra.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Admin/DatabaseAdminDataAPI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Admin/DatabaseAdminDataAPI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Collections/Collection.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Collections/Collection.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/CommandOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/CommandOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/Commands/Command.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/Commands/Command.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/CreateTableCommandOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/CreateTableCommandOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/CreateTypeCommandOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/CreateTypeCommandOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/DataAPIDestination.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/DataAPIDestination.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/Database.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/Database.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/DropTypeCommandOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/DropTypeCommandOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/InsertManyOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/InsertManyOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/ReplaceOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/ReplaceOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/TimeoutOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/TimeoutOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/UpdateOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Core/UpdateOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/DataAPIClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/DataAPIClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/CreateIndexCommandOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/CreateIndexCommandOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/DropIndexCommandOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/DropIndexCommandOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/DropUserDefinedTypeRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/DropUserDefinedTypeRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/Table.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/Table.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/UserDefinedTypeDefinition.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/Tables/UserDefinedTypeDefinition.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Fixtures/AdminFixture.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Fixtures/AdminFixture.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Fixtures/AssemblyFixture.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Fixtures/AssemblyFixture.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Fixtures/BaseFixture.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Fixtures/BaseFixture.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/AdditionalTableTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/AdditionalTableTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/CollectionTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/CollectionTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/FindAndUpdateTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/FindAndUpdateTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/ReplaceAndDeleteTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/ReplaceAndDeleteTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/SearchTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/SearchTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/SerializationTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/SerializationTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/TableIndexesTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/TableIndexesTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/TableTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/TableTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/UpdateTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/Tests/UpdateTests.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.UnitTests/GeneralTests.cs" beforeDir="false" afterPath="$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.UnitTests/GeneralTests.cs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/Users/me/work/astra-db-csharp/astra-db-csharp" value="336rDmuUd4RoyD2Md47MR9HfzkP" />
+    </persistenceIdMap>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/2c50feed06d34008a21934ead0382f3db400/3b/a97e5d37/Dictionary`2.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/e31e5adc676d44c79a639a65fd4b8ed0cc600/17/5a0bd14c/Task.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/e31e5adc676d44c79a639a65fd4b8ed0cc600/fb/142e485e/String.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/308584f6cad3144a32d4212f8fa3b9cc81d089da95abcf3e5e5e8a7d7c873/JsonPropertyNameAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/71f8a5297672ad56962c6af62f7241a092ad7d95eaee4ef564601be5d8e37b38/Int32.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/c120c82e15a3dff119821a348ca241e694e92b886dd8c541547b37d603aff/JsonIgnoreAttribute.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/docfx.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/DataStax.AstraDB.DataApi/obj/Debug/netstandard2.1/DataStax.AstraDB.DataApi.AssemblyInfo.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/test/DataStax.AstraDB.DataApi.IntegrationTests/obj/DataStax.AstraDB.DataApi.IntegrationTests.csproj.nuget.dgspec.json" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="Toolset" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
+  <component name="ProjectId" id="336rDmuUd4RoyD2Md47MR9HfzkP" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "KG-renamings",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="599ec604-5a81-4903-aeb3-6b992ed05d2f" name="Changes" comment="" />
+      <created>1758648245639</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1758648245639</updated>
+      <workItem from="1758648247833" duration="174000" />
+      <workItem from="1771466564550" duration="2182000" />
+      <workItem from="1771890957796" duration="1858000" />
+      <workItem from="1771917621069" duration="24298000" />
+      <workItem from="1772504337100" duration="1050000" />
+      <workItem from="1772577495553" duration="18551000" />
+      <workItem from="1772817005296" duration="522000" />
+      <workItem from="1773159007357" duration="3819000" />
+      <workItem from="1773249181289" duration="970000" />
+      <workItem from="1773264196598" duration="1383000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.OperationCanceledException" breakIfHandledByOtherCode="false" displayValue="System.OperationCanceledException" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.Tasks.TaskCanceledException" breakIfHandledByOtherCode="false" displayValue="System.Threading.Tasks.TaskCanceledException" />
+          <option name="timeStamp" value="2" />
+        </breakpoint>
+        <breakpoint enabled="true" type="DotNet_Exception_Breakpoints">
+          <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

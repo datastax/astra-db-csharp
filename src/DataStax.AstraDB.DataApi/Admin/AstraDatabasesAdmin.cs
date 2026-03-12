@@ -35,11 +35,11 @@ namespace DataStax.AstraDB.DataApi.Admin;
 public class AstraDatabasesAdmin
 {
     private readonly CommandOptions _adminOptions;
-    private readonly DataApiClient _client;
+    private readonly DataAPIClient _client;
 
     private CommandOptions[] OptionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
 
-    internal AstraDatabasesAdmin(DataApiClient client, CommandOptions adminOptions)
+    internal AstraDatabasesAdmin(DataAPIClient client, CommandOptions adminOptions)
     {
         Guard.NotNull(client, nameof(client));
         _client = client;

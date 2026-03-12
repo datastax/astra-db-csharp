@@ -22,14 +22,14 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// While timeouts can be set on a per-request basis (via the <see cref="CommandOptions.TimeoutOptions"/>), 
 /// when the timeouts are not specified, the default timeouts will be used. These can also be overridden
 /// by setting the <see cref="CommandOptions.TimeoutOptions.Defaults"/> property at any level in the command
-/// hierarchy (e.g. <see cref="DataApiClient"/>, <see cref="Database"/>, <see cref="Collections.Collection"/>).
+/// hierarchy (e.g. <see cref="DataAPIClient"/>, <see cref="Database"/>, <see cref="Collections.Collection"/>).
 /// </summary>
 /// <example>
 /// <code>
 /// The following example shows how to override the default timeouts at the client level.
 /// Let's change the defaults for each request, as well as those for collection administration operations,
 /// but leave the rest of the defaults unchanged.
-/// var client = new DataApiClient(new CommandOptions
+/// var client = new DataAPIClient(new CommandOptions
 /// {
 ///     TimeoutOptions = new TimeoutOptions
 ///     {

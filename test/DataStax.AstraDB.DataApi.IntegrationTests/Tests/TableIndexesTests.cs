@@ -35,13 +35,13 @@ public class TableIndexesTests
 
             Assert.Contains("already exists", ex.Message);
 
-            // second creation (should not fail when SkipIfExists is set)
+            // second creation (should not fail when IfNotExists is set)
             await table.CreateIndexAsync("category_idx_custom", (b) => b.Category, new CreateIndexCommandOptions()
             {
-                SkipIfExists = true
+                IfNotExists = true
             });
 
-            var result = await table.ListIndexMetadataAsync();
+            var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == "category_idx_custom");
 
             //ensure insert still works
@@ -72,13 +72,13 @@ public class TableIndexesTests
 
             Assert.Contains("already exists", ex.Message);
 
-            // second creation (should not fail when SkipIfExists is set)
+            // second creation (should not fail when IfNotExists is set)
             await table.CreateIndexAsync("category_idx", (b) => b.Category, new CreateIndexCommandOptions()
             {
-                SkipIfExists = true
+                IfNotExists = true
             });
 
-            var result = await table.ListIndexMetadataAsync();
+            var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == "category_idx");
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
@@ -100,7 +100,7 @@ public class TableIndexesTests
 
             await table.CreateIndexAsync("map_idx", (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Entries));
 
-            var result = await table.ListIndexMetadataAsync();
+            var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == "map_idx");
 
         }
@@ -120,7 +120,7 @@ public class TableIndexesTests
 
             await table.CreateIndexAsync("map_idx", (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Keys));
 
-            var result = await table.ListIndexMetadataAsync();
+            var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == "map_idx");
 
         }
@@ -140,7 +140,7 @@ public class TableIndexesTests
 
             await table.CreateIndexAsync("map_idx", (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Values));
 
-            var result = await table.ListIndexMetadataAsync();
+            var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == "map_idx");
 
         }
@@ -164,17 +164,17 @@ public class TableIndexesTests
 
             // drop should work
             await fixture.Database.DropTableIndexAsync(indexName);
-            var result = await table.ListIndexMetadataAsync();
+            var result = await table.ListIndexesAsync();
             Assert.DoesNotContain(result.Indexes, i => i.Name == indexName);
 
             // second drop (should fail)
             var ex = await Assert.ThrowsAsync<CommandException>(() =>
                 fixture.Database.DropTableIndexAsync(indexName));
 
-            // second drop (should not fail when SkipIfExists is set)
+            // second drop (should not fail when IfNotExists is set)
             await fixture.Database.DropTableIndexAsync(indexName, new DropIndexCommandOptions()
             {
-                SkipIfNotExists = true
+                IfExists = true
             });
         }
         finally
@@ -197,17 +197,17 @@ public class TableIndexesTests
 
             // drop should work
             await fixture.Database.DropTableIndexAsync(indexName);
-            var result = await table.ListIndexMetadataAsync();
+            var result = await table.ListIndexesAsync();
             Assert.DoesNotContain(result.Indexes, i => i.Name == indexName);
 
             // second drop (should fail)
             var ex = await Assert.ThrowsAsync<CommandException>(() =>
                 fixture.Database.DropTableIndexAsync(indexName));
 
-            // second drop (should not fail when SkipIfExists is set)
+            // second drop (should not fail when IfNotExists is set)
             await fixture.Database.DropTableIndexAsync(indexName, new DropIndexCommandOptions()
             {
-                SkipIfNotExists = true
+                IfExists = true
             });
         }
         finally

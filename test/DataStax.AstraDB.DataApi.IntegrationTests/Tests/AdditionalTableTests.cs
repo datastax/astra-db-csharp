@@ -323,7 +323,7 @@ public class AdditionalTableTests
 
             var sameTable = await fixture.Database.CreateTableAsync<SimpleRowObject>(tableName, new CreateTableCommandOptions()
             {
-                SkipIfExists = true
+                IfNotExists = true
             });
             Assert.NotNull(sameTable);
         }

@@ -119,7 +119,7 @@ public class TableTests
             var options = new InsertManyOptions
             {
                 ReturnDocumentResponses = true,
-                InsertInOrder = true,
+                IsOrdered = true,
                 ChunkSize = 2
             };
             var result = await table.InsertManyAsync(rows, options);
