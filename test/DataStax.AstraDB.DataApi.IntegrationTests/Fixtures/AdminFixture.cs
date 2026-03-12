@@ -21,19 +21,7 @@ public class AdminFixture : BaseFixture
 
 	public IDatabaseAdmin CreateAdmin(Database database = null)
 	{
-		database ??= Database;
-
-		var adminOptions = new CommandOptions
-		{
-			Token = Client.ClientOptions.Token,
-			Environment = DBEnvironment.Production // or default
-		};
-
-		if (Destination.ToLower() == "astra") {
-			return new DatabaseAdminAstra(database, Client, adminOptions);
-		}
-
-		return new DatabaseAdminDataAPI(database, Client, adminOptions);
+		return (database ?? Database).GetAdmin();
 	}
 
 	public static Guid? GetDatabaseIdFromUrl(string url)

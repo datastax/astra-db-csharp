@@ -490,13 +490,21 @@ public class Database
         {
             throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
         }
-        var destination = options != null && options.Destination != null ? options.Destination :
-            baseCommandOptions == null ? DataApiDestination.ASTRA : baseCommandOptions.Destination;
+        
+        var destination = 
+            options != null && options.Destination != null
+                ? options.Destination :
+            baseCommandOptions == null
+                ? DataApiDestination.ASTRA 
+                : baseCommandOptions.Destination;
+        
+        var mergedOptions = CommandOptions.Merge(_dbCommandOptions, options);
+        
         if (destination == DataApiDestination.ASTRA)
         {
-            return new DatabaseAdminAstra(this, _client, options);
+            return new DatabaseAdminAstra(this, _client, mergedOptions);
         }
-        return new DatabaseAdminDataAPI(this, _client, options);
+        return new DatabaseAdminDataAPI(this, _client, mergedOptions);
     }
 
     /// <summary>

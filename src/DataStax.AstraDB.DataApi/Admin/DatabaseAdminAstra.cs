@@ -146,7 +146,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         internal async Task<IEnumerable<string>> ListKeyspacesAsync(bool runSynchronously, CommandOptions options)
         {
-            var databaseInfo = await _client.GetAstraDatabasesAdmin().GetDatabaseInfoAsync(_id, options, runSynchronously);
+            var databaseInfo = await _client.GetAstraDatabasesAdmin(_adminOptions).GetDatabaseInfoAsync(_id, options, runSynchronously);
             return databaseInfo.Keyspaces;
         }
 
