@@ -1268,49 +1268,99 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync{T}(IAlterTypeOperation)"/> 
     /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/>
-    public void AlterType(AlterUserDefinedTypeDefinition definition)
+    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation)"/>
+    public void AlterType<T>(IAlterTypeOperation operation) where T : new()
     {
-        AlterType(definition, null);
+        AlterType<T>(operation, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync(AlterUserDefinedTypeDefinition, CommandOptions)"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync{T}(IAlterTypeOperation, CommandOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition, CommandOptions)"/>
-    public void AlterType(AlterUserDefinedTypeDefinition definition, CommandOptions options)
+    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation, CommandOptions)"/>
+    public void AlterType<T>(IAlterTypeOperation operation, CommandOptions options) where T : new()
     {
-        AlterTypeAsync(definition, options, true).ResultSync();
+        var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        AlterType(typeName, operation, options);
     }
-
 
     /// <summary>
-    /// Alter a User Defined Type given the <see cref="AlterUserDefinedTypeDefinition"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync(string, IAlterTypeOperation)"/> 
     /// </summary>
-    /// <param name="definition">The definition of the User Defined Type to alter.</param>
-    public Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition)
+    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation)"/>
+    public void AlterType(string typeName, IAlterTypeOperation operation)
     {
-        return AlterTypeAsync(definition, null);
+        AlterType(typeName, operation, null);
     }
 
-    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/>
-    /// <param name="definition"></param>
+    /// <summary>
+    /// Synchronous version of <see cref="AlterTypeAsync(string, IAlterTypeOperation, CommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation, CommandOptions)"/>
+    public void AlterType(string typeName, IAlterTypeOperation operation, CommandOptions options)
+    {
+        AlterTypeAsync(typeName, operation, options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Alter a User Defined Type by specifying the class that defines the type
+    /// </summary>
+    /// <remarks>
+    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// </remarks>
+    /// <typeparam name="T">The type that defines the User Defined Type</typeparam>
+    /// <param name="operation">The operation to apply to the User Defined Type.</param>
+    public Task AlterTypeAsync<T>(IAlterTypeOperation operation) where T : new()
+    {
+        return AlterTypeAsync<T>(operation, null);
+    }
+
+    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation)"/>
+    /// <param name="operation"></param>
     /// <param name="options"></param>
-    public Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition, CommandOptions options)
+    public Task AlterTypeAsync<T>(IAlterTypeOperation operation, CommandOptions options) where T : new()
     {
-        return AlterTypeAsync(definition, options, false);
+        var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        return AlterTypeAsync(typeName, operation, options);
     }
 
-    private async Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition, CommandOptions options, bool runSynchronously)
+    /// <summary>
+    /// Alter a User Defined Type given the type name and <see cref="IAlterTypeOperation"/> 
+    /// </summary>
+    /// <param name="typeName">The name of the User Defined Type to alter.</param>
+    /// <param name="operation">The operation to apply to the User Defined Type.</param>
+    public Task AlterTypeAsync(string typeName, IAlterTypeOperation operation)
+    {
+        return AlterTypeAsync(typeName, operation, null);
+    }
+
+    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation)"/>
+    /// <param name="typeName"></param>
+    /// <param name="operation"></param>
+    /// <param name="options"></param>
+    public Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, CommandOptions options)
+    {
+        return AlterTypeAsync(typeName, operation, options, false);
+    }
+
+    private async Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, CommandOptions options, bool runSynchronously)
     {
         if (options == null)
         {
             options = new CommandOptions();
         }
+        
+        var (operationName, operationData) = operation.GetOperation();
+        var payload = new Dictionary<string, object>
+        {
+            ["name"] = typeName,
+            [operationName] = operationData
+        };
+        
         var command = CreateCommand("alterType")
-            .WithPayload(definition)
+            .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())
             .AddCommandOptions(options);
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);

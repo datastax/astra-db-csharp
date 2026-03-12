@@ -42,11 +42,17 @@ public class UserDefinedTypesTests
             Assert.True(types.First(t => t.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase))
                 .Definition.Fields.ContainsKey("removeMe"));
 
-            var alterDefinition = new AlterUserDefinedTypeDefinition(typeName)
-                .AddField("new_field", DataApiType.Text())
-                .RenameField("removeMe", "okYouCanStay");
+            var addFieldsOp = new AlterTypeAddFields(new()
+            {
+                ["new_field"] = DataApiType.Text()
+            });
+            await fixture.Database.AlterTypeAsync(typeName, addFieldsOp);
 
-            await fixture.Database.AlterTypeAsync(alterDefinition);
+            var renameFieldsOp = new AlterTypeRenameFields(new()
+            {
+                ["removeMe"] = "okYouCanStay"
+            });
+            await fixture.Database.AlterTypeAsync(typeName, renameFieldsOp);
             var updatedTypes = await fixture.Database.ListTypesAsync();
             var updatedType = updatedTypes.FirstOrDefault(t => t.Name.Equals(typeName, StringComparison.OrdinalIgnoreCase));
             Assert.NotNull(updatedType);
