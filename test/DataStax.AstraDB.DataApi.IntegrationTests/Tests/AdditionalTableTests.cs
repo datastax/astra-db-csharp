@@ -295,6 +295,25 @@ public class AdditionalTableTests
             Assert.NotNull(rowInUntyped2);
             Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped2["Id"]).GetInt32(), 4);
 
+            // Test empty maps with non-string keys (#57)
+            var emptyMapRow = new DictionaryTypeTest()
+            {
+                Id = 100,
+                StringDictionary = new (),
+                DateTimeKey = new (),
+                DecimalKey = new ()
+            };
+            
+            var emptyMapInsertResult = await table.InsertOneAsync(emptyMapRow);
+            Assert.NotNull(emptyMapInsertResult.InsertedId);
+            
+            var emptyMapRetrieved = await table.FindOneAsync(
+                Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 100)
+            );
+            Assert.NotNull(emptyMapRetrieved);
+            Assert.Empty(emptyMapRetrieved.StringDictionary);
+            Assert.Empty(emptyMapRetrieved.DateTimeKey);
+            Assert.Empty(emptyMapRetrieved.DecimalKey);
         }
         catch (Exception ex)
         {

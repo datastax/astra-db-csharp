@@ -165,17 +165,25 @@ public class RowConverter<T> : JsonConverter<T> where T : class
                     }
                     else
                     {
-                        // Serialize as array of [key, value] pairs
-                        writer.WriteStartArray();
                         var dict = (System.Collections.IDictionary)propertyValue;
-                        foreach (var key in dict.Keys)
+                        
+                        if (dict.Count == 0)
+                        {
+                            writer.WriteStartObject();
+                            writer.WriteEndObject();
+                        }
+                        else
                         {
                             writer.WriteStartArray();
-                            JsonSerializer.Serialize(writer, key, keyType, options);
-                            JsonSerializer.Serialize(writer, dict[key], valueType, options);
+                            foreach (var key in dict.Keys)
+                            {
+                                writer.WriteStartArray();
+                                JsonSerializer.Serialize(writer, key, keyType, options);
+                                JsonSerializer.Serialize(writer, dict[key], valueType, options);
+                                writer.WriteEndArray();
+                            }
                             writer.WriteEndArray();
                         }
-                        writer.WriteEndArray();
                     }
                 }
                 else
