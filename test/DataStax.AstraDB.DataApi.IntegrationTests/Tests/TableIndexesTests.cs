@@ -19,35 +19,33 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_GeneratedIndexNames()
+    public async Task CreateIndexTests_NoOptions()
     {
-        var tableName = "tableIndexesTest";
+        var tableName = "tableIndexesTest_NoOptions";
         try
         {
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
 
             // first creation (should succeed)
-            await table.CreateIndexAsync("category_idx_custom", (b) => b.Category);
+            await table.CreateIndexAsync("category_idx", (b) => b.Category);
 
             // second creation (should fail)
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                table.CreateIndexAsync("category_idx_custom", (b) => b.Category));
+                table.CreateIndexAsync("category_idx", (b) => b.Category));
 
             Assert.Contains("already exists", ex.Message);
 
             // second creation (should not fail when IfNotExists is set)
-            await table.CreateIndexAsync("category_idx_custom", (b) => b.Category, new CreateIndexCommandOptions()
+            await table.CreateIndexAsync("category_idx", (b) => b.Category, new CreateIndexCommandOptions()
             {
                 IfNotExists = true
             });
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == "category_idx_custom");
+            Assert.Contains(result.Indexes, i => i.Name == "category_idx");
 
-            //ensure insert still works
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
-
         }
         finally
         {
@@ -56,15 +54,17 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_NamedIndex()
+    public async Task CreateIndexTests_WithOptions()
     {
-        var tableName = "tableIndexesTest_NamedIndex";
+        var tableName = "tableIndexesTest_NoOptions";
         try
         {
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
 
             // first creation (should succeed)
-            await table.CreateIndexAsync("category_idx", (b) => b.Category);
+            await table.CreateIndexAsync("category_idx", (b) => b.Category,
+                new TableIndexDefinition() { Ascii = true,  CaseSensitive = true, Normalize = true }
+            );
 
             // second creation (should fail)
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -151,7 +151,7 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task DropIndexTests_NamedIndex()
+    public async Task DropIndexTests()
     {
         var tableName = "dropIndexTest";
         try
@@ -159,40 +159,6 @@ public class TableIndexesTests
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
 
             var indexName = "drop_idx";
-
-            await table.CreateIndexAsync(indexName, (b) => b.Location);
-
-            // drop should work
-            await fixture.Database.DropTableIndexAsync(indexName);
-            var result = await table.ListIndexesAsync();
-            Assert.DoesNotContain(result.Indexes, i => i.Name == indexName);
-
-            // second drop (should fail)
-            var ex = await Assert.ThrowsAsync<CommandException>(() =>
-                fixture.Database.DropTableIndexAsync(indexName));
-
-            // second drop (should not fail when IfNotExists is set)
-            await fixture.Database.DropTableIndexAsync(indexName, new DropIndexCommandOptions()
-            {
-                IfExists = true
-            });
-        }
-        finally
-        {
-            await fixture.Database.DropTableAsync(tableName);
-        }
-
-    }
-
-    [Fact]
-    public async Task DropIndexTests_GeneratedIndexNames()
-    {
-        var tableName = "dropIndexTests_GeneratedIndexNames";
-        try
-        {
-            var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
-
-            var indexName = "Location_idx";
             await table.CreateIndexAsync(indexName, (b) => b.Location);
 
             // drop should work
