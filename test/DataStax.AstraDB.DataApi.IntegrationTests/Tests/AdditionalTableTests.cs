@@ -46,7 +46,7 @@ public class AdditionalTableTests
             };
 
             var table = await fixture.Database.CreateTableAsync<ArrayTestRow>(tableName);
-            await table.CreateIndexAsync((b) => b.StringArray);
+            await table.CreateIndexAsync("StringArray_idx", (b) => b.StringArray);
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var findOptions = new TableFindOptions<ArrayTestRow>()
@@ -345,7 +345,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
-            await table.CreateIndexAsync((b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            await table.CreateIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
 
             List<SimpleObjectWithVector> items = new List<SimpleObjectWithVector>() {
                 new()
@@ -390,7 +390,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
-            await table.CreateIndexAsync((b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            await table.CreateIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
 
             List<SimpleObjectWithVector> items = new List<SimpleObjectWithVector>() {
                 new()
