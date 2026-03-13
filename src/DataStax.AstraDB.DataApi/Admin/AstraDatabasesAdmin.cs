@@ -358,6 +358,7 @@ public class AstraDatabasesAdmin
     internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb, bool runSynchronously)
     {
         Guard.NotNullOrEmpty(creationOptions.Name, nameof(creationOptions.Name));
+        Guard.NotNull(creationOptions.CloudProvider, nameof(creationOptions.CloudProvider));
         Guard.NotNullOrEmpty(creationOptions.Region, nameof(creationOptions.Region));
         Command command = CreateCommand()
             .AddUrlPath("databases")

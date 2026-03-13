@@ -25,7 +25,7 @@ public class DatabaseCreationOptions
     public string Name { get; set; }
 
     [JsonPropertyName("cloudProvider")]
-    public CloudProviderType CloudProvider { get; set; }
+    public CloudProviderType? CloudProvider { get; set; } = null;
 
     [JsonPropertyName("region")]
     public string Region { get; set; }

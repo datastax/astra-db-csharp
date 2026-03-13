@@ -294,6 +294,18 @@ public class AdminTests
 			)
 		);
 		Assert.Contains("Value cannot be null or empty", ex2.Message);
+
+		var ex3 = Assert.Throws<ArgumentNullException>(() =>
+			fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+				new (){
+					Name = "theoretical_db_3",
+					Region = "the-region-",
+					Keyspace = "fedault_seykpace"
+				},
+				false
+			)
+		);
+		Assert.Contains("Value cannot be null", ex3.Message);
 	}
 
 	/*
