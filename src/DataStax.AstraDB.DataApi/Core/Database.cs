@@ -692,7 +692,7 @@ public class Database
 
     /// <inheritdoc cref="GetTable{TRow}()" />
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<TRow> GetTable<TRow>(DatabaseCommandOptions options) where TRow : class, new()
+    public Table<TRow> GetTable<TRow>(DatabaseTableCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
         return GetTable<TRow>(tableName, options);
@@ -711,7 +711,7 @@ public class Database
     /// <inheritdoc cref="GetTable(string)" />
     /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<Row> GetTable(string tableName, DatabaseCommandOptions options)
+    public Table<Row> GetTable(string tableName, DatabaseTableCommandOptions options)
     {
         return GetTable<Row>(tableName, options);
     }
@@ -726,7 +726,7 @@ public class Database
     /// <inheritdoc cref="GetTable{T}(string)" />
     /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<TRow> GetTable<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class
+    public Table<TRow> GetTable<TRow>(string tableName, DatabaseTableCommandOptions options) where TRow : class
     {
         Guard.NotNullOrEmpty(tableName, nameof(tableName));
         return new Table<TRow>(tableName, this, options);
