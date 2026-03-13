@@ -99,8 +99,8 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 rows.Add(row);
             }
             var table = await Database.CreateTableAsync<RowBook>(_queryTableName);
-            await table.CreateIndexAsync((b) => b.NumberOfPages);
-            await table.CreateIndexAsync((b) => b.DueDate);
+            await table.CreateIndexAsync("NumberOfPages_idx", (b) => b.NumberOfPages);
+            await table.CreateIndexAsync("DueDate_idx", (b) => b.DueDate);
             await table.InsertManyAsync(rows);
             SearchTable = table;
         }
