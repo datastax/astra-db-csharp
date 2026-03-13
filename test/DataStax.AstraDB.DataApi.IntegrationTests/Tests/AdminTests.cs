@@ -115,12 +115,13 @@ public class AdminTests
 	[Fact]
 	public async Task CheckDatabaseStatus()
 	{
-		var dbName = fixture.DatabaseName;
+		var dbGuid = Database.GetDatabaseIdFromUrl(fixture.DatabaseUrl);
+		Assert.NotNull(dbGuid);
 
-		var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
+		var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid.Value);
 		Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 
-		status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbName);
+		status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid.Value);
 		Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 	}
 
@@ -266,6 +267,47 @@ public class AdminTests
 
 	}
 
+	[SkipWhenNotAstra]
+	[Fact()]
+	public void CreateDatabaseMissingParameters()
+	{
+		var ex1 = Assert.Throws<ArgumentNullException>(() =>
+			fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+				new (){
+					Name = "theoretical_db_1",
+					CloudProvider = CloudProviderType.AWS,
+					Keyspace = "fedault_seykpace"
+				},
+				false
+			)
+		);
+		Assert.Contains("Value cannot be null or empty", ex1.Message);
+
+		var ex2 = Assert.Throws<ArgumentNullException>(() =>
+			fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+				new (){
+					CloudProvider = CloudProviderType.AWS,
+					Region = "the-region-",
+					Keyspace = "fedault_seykpace"
+				},
+				false
+			)
+		);
+		Assert.Contains("Value cannot be null or empty", ex2.Message);
+
+		var ex3 = Assert.Throws<ArgumentNullException>(() =>
+			fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+				new (){
+					Name = "theoretical_db_3",
+					Region = "the-region-",
+					Keyspace = "fedault_seykpace"
+				},
+				false
+			)
+		);
+		Assert.Contains("Value cannot be null", ex3.Message);
+	}
+
 	/*
         From here on are ad hoc tests for creating and dropping databases. 
         You will likely need to adjust details to match your execution details.
@@ -276,111 +318,113 @@ public class AdminTests
         3. Run the associated command from the terminal.
     */
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabaseBlocking
-	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void CreateDatabaseBlocking()
-	{
-		var dbName = "test-db-create-blocking-x";
-		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(dbName);
-
-		// todo: better test result here; for now we assume if no error, this was successful
-	}
-
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabaseBlockingAsync
-	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task CreateDatabaseBlockingAsync()
-	{
-		var dbName = "test-db-create-blocking-async-x";
-		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(dbName);
-
-		// todo: better test result here; for now we assume if no error, this was successful
-	}
-
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabase
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabase
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void CreateDatabase()
 	{
 		var dbName = "test-db-create-x";
-		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(dbName, false);
+		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+			new (){
+				Name = dbName,
+				CloudProvider = CloudProviderType.AWS,
+				Region = "us-east-2",
+				Keyspace = "fedault_seykpace"
+			},
+			false
+		);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabaseAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task CreateDatabaseAsync()
 	{
 		var dbName = "test-db-create-async-x";
-		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(dbName, false);
-
-		// todo: better test result here; for now we assume if no error, this was successful
-	}
-
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabaseByOptions
-	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void CreateDatabaseByOptions()
-	{
-		var dbName = "test-db-create-options-x";
-		var options = new DatabaseCreationOptions();
-		options.Name = dbName;
-		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, false);
-
-		// todo: better test result here; for now we assume if no error, this was successful
-	}
-
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.CreateDatabaseByOptionsAsync
-	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task CreateDatabaseByOptionsAsync()
-	{
-		var dbName = "test-db-create-options-async-x";
-		var options = new DatabaseCreationOptions();
-		options.Name = dbName;
+		var options = new DatabaseCreationOptions{
+			Name = dbName,
+			CloudProvider = CloudProviderType.AWS,
+			Region = "us-east-2"
+		};
 		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DropDatabaseByName
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlocking
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void DropDatabaseByName()
+	public void CreateDatabaseBlocking()
 	{
-		var dbName = "test-db-drop-by-name";
-		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbName);
+		var dbName = "test-db-create-blocking-x";
+		var options = new DatabaseCreationOptions{
+			Name = dbName,
+			CloudProvider = CloudProviderType.AWS,
+			Region = "us-east-2",
+			Keyspace = "fedault_seykpace"
+		};
+		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, true);
+
+		// todo: better test result here; for now we assume if no error, this was successful
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingAsync
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task CreateDatabaseBlockingAsync()
+	{
+		var dbName = "test-db-create-blocking-async-x";
+		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(
+			new (){
+				Name = dbName,
+				CloudProvider = CloudProviderType.AWS,
+				Region = "us-east-2"
+			},
+			true
+		);
+
+		// todo: better test result here; for now we assume if no error, this was successful
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabase
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public void DropDatabase()
+	{
+		var dbGuid = Guid.Parse("7683bb84-4604-49b4-b05f-69b695bba976"); // from a db created ad-hoc on astra's site
+		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, false);
 
 		Assert.True(dropped);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DropDatabaseByNameAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DropDatabaseByNameAsync()
+	public async Task DropDatabaseAsync()
 	{
-		var dbName = "test-db-drop-by-name-async";
-		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbName);
+		var dbGuid = Guid.Parse("6a118896-bd69-4f24-90db-6229cd211c99"); // from a db created ad-hoc on astra's site
+		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, false);
 
 		Assert.True(dropped);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DropDatabaseById
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlocking
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void DropDatabaseById()
+	public void DropDatabaseBlocking()
 	{
-		var dbGuid = Guid.Parse("ee1a268c-112f-47fd-971e-57ecef64a23b"); // from a db created ad-hoc on astra's site
-		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid);
+		var dbGuid = Guid.Parse("949c493b-0d08-41ca-b2e1-5a636c05f3ed"); // from a db created ad-hoc on astra's site
+		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, true);
 
 		Assert.True(dropped);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DropDatabaseByIdAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlockingAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DropDatabaseByIdAsync()
+	public async Task DropDatabaseBlockingAsync()
 	{
-		var dbGuid = Guid.Parse("65b4cdb5-2f21-4550-99ce-8c2570d18c1a"); // from a db created ad-hoc on astra's site
-		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid);
+		var dbGuid = Guid.Parse("2b8bc268-511b-4b35-adfd-ef4f3063351b"); // from a db created ad-hoc on astra's site
+		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, true);
 
 		Assert.True(dropped);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_CreateKeyspace_ExpectedError
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspace_ExpectedError
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_CreateKeyspace_ExpectedError()
 	{
@@ -393,7 +437,7 @@ public class AdminTests
 		Assert.Contains("Keyspace default_keyspace already exists", ex.Message);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_CreateKeyspaceAsync()
 	{
@@ -410,7 +454,7 @@ public class AdminTests
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_Update
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_Update
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_Update()
 	{
@@ -428,7 +472,7 @@ public class AdminTests
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.Tests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_DropKeyspaceAsync()
 	{

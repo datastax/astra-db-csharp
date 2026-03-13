@@ -66,4 +66,12 @@ internal static class Guard
             throw new ArgumentException($"Value cannot be default value for type {typeof(T)}", paramName);
         }
     }
+
+    internal static void NotNull<T>(T? value, string paramName) where T : struct
+    {
+        if (!value.HasValue)
+        {
+            throw new ArgumentNullException(paramName, $"Value cannot be null for {paramName}");
+        }
+    }
 }

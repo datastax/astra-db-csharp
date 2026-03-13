@@ -342,15 +342,33 @@ internal class Command
                 response = httpClient.Send(request, linkedCts.Token);
                 var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
                 contentTask.Wait();
-                responseContent = contentTask.Result;
 #else
                 var requestTask = Task.Run(() => httpClient.SendAsync(request, linkedCts.Token));
                 requestTask.Wait();
                 response = requestTask.Result;
                 var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
                 contentTask.Wait();
-                responseContent = contentTask.Result;
 #endif
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.GatewayTimeout ||
+                        response.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
+                    {
+                        throw new TimeoutException($"Request timed out...");
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        throw new UnauthorizedAccessException("Unauthorized access...");
+                    }
+                    else
+                    {
+                        responseContent = contentTask.Result;
+                        MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
+                        MaybeLogDebugMessage("Content: {Content}", responseContent);
+                        throw new HttpRequestException($"Request failed with status code {response.StatusCode}.");
+                    }
+                }
+                responseContent = contentTask.Result;
             }
             else
             {

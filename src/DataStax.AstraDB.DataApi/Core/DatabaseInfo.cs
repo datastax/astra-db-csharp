@@ -31,7 +31,7 @@ public class DatabaseInfo
         Name = rawInfo.Info.Name;
         OrgId = rawInfo.OrgId;
         OwnerId = rawInfo.OwnerId;
-        Status = Enum.TryParse<AstraDatabaseStatus>(rawInfo.Status, true, out var status) ? status : AstraDatabaseStatus.ERROR;
+        Status = Enum.TryParse<AstraDatabaseStatus>(rawInfo.Status, true, out var status) ? status : AstraDatabaseStatus.UNKNOWN;
         CloudProvider = Enum.TryParse<AstraDatabaseCloudProvider>(rawInfo.Info.CloudProvider, true, out var cloudProvider) ? cloudProvider : AstraDatabaseCloudProvider.AWS;
         CreatedAt = rawInfo.CreationTime;
         LastUsed = rawInfo.LastUsageTime;
@@ -71,6 +71,7 @@ public enum AstraDatabaseCloudProvider
 public enum AstraDatabaseStatus
 {
     ACTIVE,
+    ASSOCIATING,
     ERROR,
     DECOMMISSIONING,
     DEGRADED,
@@ -89,5 +90,5 @@ public enum AstraDatabaseStatus
     TERMINATING,
     UNKNOWN,
     UNPARKING,
-    SYNCHRONIZING
+    SYNCHRONIZING,
 }

@@ -25,20 +25,24 @@ public class DatabaseCreationOptions
     public string Name { get; set; }
 
     [JsonPropertyName("cloudProvider")]
-    public CloudProviderType CloudProvider { get; set; }
+    public CloudProviderType? CloudProvider { get; set; } = null;
 
     [JsonPropertyName("region")]
     public string Region { get; set; }
 
     [JsonPropertyName("keyspace")]
-    public string Keyspace { get; set; } = Database.DefaultKeyspace;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Keyspace { get; set; } = null;
 
     [JsonPropertyName("capacityUnits")]
+    [JsonInclude]
     internal int CapacityUnits { get; set; } = 1;
 
     [JsonPropertyName("tier")]
+    [JsonInclude]
     internal string Tier { get; set; } = "serverless";
 
     [JsonPropertyName("dbType")]
+    [JsonInclude]
     internal string DatabaseType { get; set; } = "vector";
 }
