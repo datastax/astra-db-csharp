@@ -1,12 +1,15 @@
 name: Run integration tests on Astra Prod
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
+# ASTRA IT DISABLED until effort at fixing flakiness:
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
 permissions:
   contents: read
