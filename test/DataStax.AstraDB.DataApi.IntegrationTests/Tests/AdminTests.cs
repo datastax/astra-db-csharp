@@ -251,21 +251,21 @@ public class AdminTests
 		Assert.NotEmpty(regions);
 	}
 
-	[SkipWhenNotAstra]
-	[Fact]
-	public async Task DatabaseAdminAstra_GetRerankingProvidersAsync()
-	{
-		var adminOptions = new CommandOptions
-		{
-			Token = fixture.Client.ClientOptions.Token,
-		};
-		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
-
-		var result = await daa.FindRerankingProvidersAsync();
-		Assert.NotNull(result);
-		Assert.NotEmpty(result.RerankingProviders);
-
-	}
+	// [SkipWhenNotAstra] TODO uncomment when FARR is added back
+	// [Fact]
+	// public async Task DatabaseAdminAstra_GetRerankingProvidersAsync()
+	// {
+	// 	var adminOptions = new CommandOptions
+	// 	{
+	// 		Token = fixture.Client.ClientOptions.Token,
+	// 	};
+	// 	var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
+	//
+	// 	var result = await daa.FindRerankingProvidersAsync();
+	// 	Assert.NotNull(result);
+	// 	Assert.NotEmpty(result.RerankingProviders);
+	//
+	// }
 
 	[SkipWhenNotAstra]
 	[Fact()]
