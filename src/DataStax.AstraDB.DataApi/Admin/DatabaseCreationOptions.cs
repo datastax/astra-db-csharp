@@ -21,21 +21,6 @@ namespace DataStax.AstraDB.DataApi.Admin;
 
 public class DatabaseCreationOptions
 {
-    public DatabaseCreationOptions(string name, CloudProviderType cloudProvider, string region)
-    {
-        Name = name;
-        CloudProvider = cloudProvider;
-        Region = region;
-    }
-
-    public DatabaseCreationOptions(string name, CloudProviderType cloudProvider, string region, string keyspace)
-    {
-        Name = name;
-        CloudProvider = cloudProvider;
-        Region = region;
-        Keyspace = keyspace;
-    }
-
     [JsonPropertyName("name")]
     public string Name { get; set; }
 

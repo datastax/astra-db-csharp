@@ -267,6 +267,35 @@ public class AdminTests
 
 	}
 
+	[SkipWhenNotAstra]
+	[Fact()]
+	public void CreateDatabaseMissingParameters()
+	{
+		var ex1 = Assert.Throws<ArgumentNullException>(() =>
+			fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+				new (){
+					Name = "theoretical_db_1",
+					CloudProvider = CloudProviderType.AWS,
+					Keyspace = "fedault_seykpace"
+				},
+				false
+			)
+		);
+		Assert.Contains("Value cannot be null or empty", ex1.Message);
+
+		var ex2 = Assert.Throws<ArgumentNullException>(() =>
+			fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+				new (){
+					CloudProvider = CloudProviderType.AWS,
+					Region = "the-region-",
+					Keyspace = "fedault_seykpace"
+				},
+				false
+			)
+		);
+		Assert.Contains("Value cannot be null or empty", ex2.Message);
+	}
+
 	/*
         From here on are ad hoc tests for creating and dropping databases. 
         You will likely need to adjust details to match your execution details.
@@ -282,13 +311,15 @@ public class AdminTests
 	public void CreateDatabase()
 	{
 		var dbName = "test-db-create-x";
-		var options = new DatabaseCreationOptions(
-			dbName,
-			CloudProviderType.AWS,
-			"us-east-2",
-			"fedault_seykpace"
+		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
+			new (){
+				Name = dbName,
+				CloudProvider = CloudProviderType.AWS,
+				Region = "us-east-2",
+				Keyspace = "fedault_seykpace"
+			},
+			false
 		);
-		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -298,11 +329,11 @@ public class AdminTests
 	public async Task CreateDatabaseAsync()
 	{
 		var dbName = "test-db-create-async-x";
-		var options = new DatabaseCreationOptions(
-			dbName,
-			CloudProviderType.AWS,
-			"us-east-2"
-		);
+		var options = new DatabaseCreationOptions{
+			Name = dbName,
+			CloudProvider = CloudProviderType.AWS,
+			Region = "us-east-2"
+		};
 		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, false);
 
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -313,12 +344,12 @@ public class AdminTests
 	public void CreateDatabaseBlocking()
 	{
 		var dbName = "test-db-create-blocking-x";
-		var options = new DatabaseCreationOptions(
-			dbName,
-			CloudProviderType.AWS,
-			"us-east-2",
-			"fedault_seykpace"
-		);
+		var options = new DatabaseCreationOptions{
+			Name = dbName,
+			CloudProvider = CloudProviderType.AWS,
+			Region = "us-east-2",
+			Keyspace = "fedault_seykpace"
+		};
 		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, true);
 
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -329,12 +360,14 @@ public class AdminTests
 	public async Task CreateDatabaseBlockingAsync()
 	{
 		var dbName = "test-db-create-blocking-async-x";
-		var options = new DatabaseCreationOptions(
-			dbName,
-			CloudProviderType.AWS,
-			"us-east-2"
+		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(
+			new (){
+				Name = dbName,
+				CloudProvider = CloudProviderType.AWS,
+				Region = "us-east-2"
+			},
+			true
 		);
-		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, true);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -363,7 +396,7 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void DropDatabaseBlocking()
 	{
-		var dbGuid = Guid.Parse("88dee1d4-daf9-4375-a9b1-0d0287de5466"); // from a db created ad-hoc on astra's site
+		var dbGuid = Guid.Parse("949c493b-0d08-41ca-b2e1-5a636c05f3ed"); // from a db created ad-hoc on astra's site
 		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, true);
 
 		Assert.True(dropped);

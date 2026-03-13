@@ -297,7 +297,7 @@ public class AstraDatabasesAdmin
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"));
+    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
     /// </code>
     /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, bool waitForDb = true)
@@ -314,7 +314,7 @@ public class AstraDatabasesAdmin
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = admin.CreateDatabase(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"), commandOptions);
+    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
     /// </code>
     /// </example>
     public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions, bool waitForDb = true)
@@ -330,7 +330,7 @@ public class AstraDatabasesAdmin
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"));
+    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
     /// </code>
     /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb = true)
@@ -347,7 +347,7 @@ public class AstraDatabasesAdmin
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new DatabaseCreationOptions("MyDatabase", CloudProviderType.AWS, "us-east-2"), commandOptions);
+    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
     /// </code>
     /// </example>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb = true)
@@ -357,6 +357,8 @@ public class AstraDatabasesAdmin
 
     internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb, bool runSynchronously)
     {
+        Guard.NotNullOrEmpty(creationOptions.Name, nameof(creationOptions.Name));
+        Guard.NotNullOrEmpty(creationOptions.Region, nameof(creationOptions.Region));
         Command command = CreateCommand()
             .AddUrlPath("databases")
             .WithPayload(creationOptions)
@@ -381,27 +383,11 @@ public class AstraDatabasesAdmin
         {
             if (runSynchronously)
             {
-                try
-                {
-                    WaitForDatabase(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    // gracefully handle insufficient token:
-                    throw new Exception("The token used does not allow to poll for DB statuses.");
-                }
+                WaitForDatabase(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE);
             }
             else
             {
-                try
-                {
-                    await WaitForDatabaseAsync(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE).ConfigureAwait(false);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    // gracefully handle insufficient token:
-                    throw new Exception("The token used does not allow to poll for DB statuses.");
-                }
+                await WaitForDatabaseAsync(newDbId, CreatingDatabaseStatuses, AstraDatabaseStatus.ACTIVE).ConfigureAwait(false);
             }
         }
 
@@ -528,27 +514,11 @@ public class AstraDatabasesAdmin
         {
             if (runSynchronously)
             {
-                try
-                {
-                    WaitForDatabase(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    // gracefully handle insufficient token:
-                    throw new Exception("The token used does not allow to poll for DB statuses.");
-                }
+                WaitForDatabase(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED);
             }
             else
             {
-                try
-                {
-                    await WaitForDatabaseAsync(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED).ConfigureAwait(false);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    // gracefully handle insufficient token:
-                    throw new Exception("The token used does not allow to poll for DB statuses.");
-                }
+                await WaitForDatabaseAsync(dbGuid, DroppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED).ConfigureAwait(false);
             }
         }
 
