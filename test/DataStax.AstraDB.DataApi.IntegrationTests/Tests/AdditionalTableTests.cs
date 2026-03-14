@@ -311,9 +311,9 @@ public class AdditionalTableTests
                 Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 100)
             );
             Assert.NotNull(emptyMapRetrieved);
-            Assert.Empty(emptyMapRetrieved.StringDictionary);
-            Assert.Empty(emptyMapRetrieved.DateTimeKey);
-            Assert.Empty(emptyMapRetrieved.DecimalKey);
+            Assert.Null(emptyMapRetrieved.StringDictionary);
+            Assert.Null(emptyMapRetrieved.DateTimeKey);
+            Assert.Null(emptyMapRetrieved.DecimalKey);
         }
         catch (Exception ex)
         {

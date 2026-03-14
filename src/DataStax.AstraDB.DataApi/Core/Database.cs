@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -485,22 +486,14 @@ public class Database
     /// <exception cref="ArgumentException">Thrown when the destination is not the same for all CommandOptions when overriding the default destination</exception>
     public IDatabaseAdmin GetAdmin(CommandOptions options)
     {
-        var baseCommandOptions = CommandOptions.Merge(OptionsTree);
-        if (options != null && options.Destination != null && baseCommandOptions != null && baseCommandOptions.Destination != null && options.Destination != baseCommandOptions.Destination)
+        var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
+        
+        if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
         {
             throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
         }
         
-        var destination = 
-            options != null && options.Destination != null
-                ? options.Destination :
-            baseCommandOptions == null
-                ? DataApiDestination.ASTRA 
-                : baseCommandOptions.Destination;
-        
-        var mergedOptions = CommandOptions.Merge(_dbCommandOptions, options);
-        
-        if (destination == DataApiDestination.ASTRA)
+        if (mergedOptions.Destination == DataApiDestination.ASTRA)
         {
             return new DatabaseAdminAstra(this, _client, mergedOptions);
         }
