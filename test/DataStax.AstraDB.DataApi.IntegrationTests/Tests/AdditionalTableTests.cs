@@ -515,5 +515,46 @@ public class AdditionalTableTests
         }
     }
 
-}
+    [Fact]
+    public async Task Test_DoubleAndFloatConverters()
+    {
+        var tableName = "tableTestDoubleFloatConverters";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<DoubleFloatTypeTest>(tableName);
 
+            List<DoubleFloatTypeTest> rows = new List<DoubleFloatTypeTest>
+            {
+                new() { Id = 0, DoubleValue = 123.456, FloatValue = 78.9f, NullableDouble = 999.999, NullableFloat = 111.111f },
+                new() { Id = 1, DoubleValue = double.NaN, FloatValue = float.NaN, NullableDouble = double.NaN, NullableFloat = float.NaN },
+                new() { Id = 2, DoubleValue = double.PositiveInfinity, FloatValue = float.PositiveInfinity, NullableDouble = null, NullableFloat = null },
+                new() { Id = 3, DoubleValue = double.NegativeInfinity, FloatValue = float.NegativeInfinity, NullableDouble = 0.0, NullableFloat = 0.0f }
+            };
+
+            var result = await table.InsertManyAsync(rows);
+            Assert.Equal(4, result.InsertedCount);
+
+            var row0 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.Id, 0));
+            Assert.Equal(123.456, row0.DoubleValue, 5);
+            Assert.Equal(78.9f, row0.FloatValue, 5);
+
+            var row1 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.Id, 1));
+            Assert.True(double.IsNaN(row1.DoubleValue));
+            Assert.True(float.IsNaN(row1.FloatValue));
+
+            var row2 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.Id, 2));
+            Assert.True(double.IsPositiveInfinity(row2.DoubleValue));
+            Assert.True(float.IsPositiveInfinity(row2.FloatValue));
+            Assert.Null(row2.NullableDouble);
+            Assert.Null(row2.NullableFloat);
+
+            var row3 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.Id, 3));
+            Assert.True(double.IsNegativeInfinity(row3.DoubleValue));
+            Assert.True(float.IsNegativeInfinity(row3.FloatValue));
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+}

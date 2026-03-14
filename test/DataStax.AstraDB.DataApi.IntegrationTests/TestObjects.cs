@@ -466,3 +466,14 @@ public class TypesTester
     public TimeOnly? MaybeTime { get; set; }
     public DateTime TimestampWithKind { get; set; }
 }
+
+public class DoubleFloatTypeTest
+{
+    [ColumnPrimaryKey()]
+    public int Id { get; set; }
+    public double DoubleValue { get; set; }
+    public float FloatValue { get; set; }
+    public double? NullableDouble { get; set; }
+    public float? NullableFloat { get; set; }
+}
+
