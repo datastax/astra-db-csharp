@@ -193,6 +193,8 @@ internal class Command
             serializeOptions.Converters.Add(new GuidConverter());
         }
         serializeOptions.Converters.Add(new IpAddressConverter());
+        serializeOptions.Converters.Add(new FloatConverter());
+        serializeOptions.Converters.Add(new DoubleConverter());
         if (commandOptions.InputConverter != null)
         {
             serializeOptions.Converters.Add(commandOptions.InputConverter);
@@ -241,6 +243,8 @@ internal class Command
         }
         deserializeOptions.Converters.Add(new IpAddressConverter());
         deserializeOptions.Converters.Add(new AnalyzerOptionsConverter());
+        deserializeOptions.Converters.Add(new FloatConverter());
+        deserializeOptions.Converters.Add(new DoubleConverter());
 
         return JsonSerializer.Deserialize<T>(input, deserializeOptions);
     }
