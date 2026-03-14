@@ -569,7 +569,7 @@ public class ReplaceAndDeleteTests
             Assert.Equal(30, result.DeletedCount);
             result = await collection.DeleteManyAsync(null);
             Assert.Equal(-1, result.DeletedCount);
-            Assert.Equal(0, await collection.CountDocumentsAsync());
+            Assert.Equal(0, await collection.CountDocumentsAsync(1000));
         }
         finally
         {

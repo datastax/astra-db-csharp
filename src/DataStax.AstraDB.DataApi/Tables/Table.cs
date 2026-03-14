@@ -1305,22 +1305,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         }
     }
 
-    /// <summary>
-    /// Synchronous version of <see cref="DeleteAllAsync()"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteAllAsync()"/>
-    public void DeleteAll()
-    {
-        DeleteAllAsync().ResultSync();
-    }
 
-    /// <summary>
-    /// Delete all rows from the table.
-    /// </summary>
-    public Task DeleteAllAsync()
-    {
-        return DeleteManyAsync(null, null);
-    }
 
     /// <summary>
     /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.

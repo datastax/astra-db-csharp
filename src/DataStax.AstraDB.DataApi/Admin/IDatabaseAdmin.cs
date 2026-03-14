@@ -24,9 +24,13 @@ namespace DataStax.AstraDB.DataApi.Admin;
 public interface IDatabaseAdmin
 {
     IEnumerable<string> ListKeyspaces();
+    IEnumerable<string> ListKeyspaces(CommandOptions options);
     Task<IEnumerable<string>> ListKeyspacesAsync();
+    Task<IEnumerable<string>> ListKeyspacesAsync(CommandOptions options);
     FindEmbeddingProvidersResult FindEmbeddingProviders();
-    FindRerankingProvidersResult FindRerankingProviders();
+    FindEmbeddingProvidersResult FindEmbeddingProviders(CommandOptions options);
+    Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync();
+    Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(CommandOptions options);
     Database GetDatabase();
     void CreateKeyspace(string keyspace);
     void CreateKeyspace(string keyspace, CommandOptions options);

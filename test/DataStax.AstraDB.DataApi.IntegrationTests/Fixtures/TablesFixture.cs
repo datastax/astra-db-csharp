@@ -43,12 +43,13 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        await Database.DropTableAsync(_queryTableName, true);
-        await Database.DropTableAsync(_queryTableNameVectorize, true);
-        await Database.DropTableAsync(_deleteTableName, true);
-        await Database.DropTableAsync(_untypedSinglePkTableName, true);
-        await Database.DropTableAsync(_untypedCompositePkTableName, true);
-        await Database.DropTableAsync(_untypedCompoundPkTableName, true);
+        var dropOptions = new DropTableCommandOptions { IfExists = true };
+        await Database.DropTableAsync(_queryTableName, dropOptions);
+        await Database.DropTableAsync(_queryTableNameVectorize, dropOptions);
+        await Database.DropTableAsync(_deleteTableName, dropOptions);
+        await Database.DropTableAsync(_untypedSinglePkTableName, dropOptions);
+        await Database.DropTableAsync(_untypedCompositePkTableName, dropOptions);
+        await Database.DropTableAsync(_untypedCompoundPkTableName, dropOptions);
     }
 
     private const string _queryTableName = "tableQueryTests";

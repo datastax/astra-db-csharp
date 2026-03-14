@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -485,18 +486,18 @@ public class Database
     /// <exception cref="ArgumentException">Thrown when the destination is not the same for all CommandOptions when overriding the default destination</exception>
     public IDatabaseAdmin GetAdmin(CommandOptions options)
     {
-        var baseCommandOptions = CommandOptions.Merge(OptionsTree);
-        if (options != null && options.Destination != null && baseCommandOptions != null && baseCommandOptions.Destination != null && options.Destination != baseCommandOptions.Destination)
+        var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
+        
+        if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
         {
             throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
         }
-        var destination = options != null && options.Destination != null ? options.Destination :
-            baseCommandOptions == null ? DataApiDestination.ASTRA : baseCommandOptions.Destination;
-        if (destination == DataApiDestination.ASTRA)
+        
+        if (mergedOptions.Destination == DataApiDestination.ASTRA)
         {
-            return new DatabaseAdminAstra(this, _client, options);
+            return new DatabaseAdminAstra(this, _client, mergedOptions);
         }
-        return new DatabaseAdminDataAPI(this, _client, options);
+        return new DatabaseAdminDataAPI(this, _client, mergedOptions);
     }
 
     /// <summary>
@@ -684,7 +685,7 @@ public class Database
 
     /// <inheritdoc cref="GetTable{TRow}()" />
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<TRow> GetTable<TRow>(DatabaseCommandOptions options) where TRow : class, new()
+    public Table<TRow> GetTable<TRow>(DatabaseTableCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
         return GetTable<TRow>(tableName, options);
@@ -703,7 +704,7 @@ public class Database
     /// <inheritdoc cref="GetTable(string)" />
     /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<Row> GetTable(string tableName, DatabaseCommandOptions options)
+    public Table<Row> GetTable(string tableName, DatabaseTableCommandOptions options)
     {
         return GetTable<Row>(tableName, options);
     }
@@ -718,7 +719,7 @@ public class Database
     /// <inheritdoc cref="GetTable{T}(string)" />
     /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<TRow> GetTable<TRow>(string tableName, DatabaseCommandOptions options) where TRow : class
+    public Table<TRow> GetTable<TRow>(string tableName, DatabaseTableCommandOptions options) where TRow : class
     {
         Guard.NotNullOrEmpty(tableName, nameof(tableName));
         return new Table<TRow>(tableName, this, options);
@@ -730,17 +731,7 @@ public class Database
     /// <inheritdoc cref="DropTableAsync{TRow}()"/>
     public void DropTable<TRow>() where TRow : class, new()
     {
-        DropTable<TRow>(false, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTableAsync{TRow}(DatabaseCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DropTableAsync{TRow}(DatabaseCommandOptions)"/>
-    public void DropTable<TRow>(DatabaseCommandOptions options) where TRow : class, new()
-    {
-        var tableName = TableDefinition.GetTableName<TRow>();
-        DropTable(tableName, false, options);
+        DropTable<TRow>(null);
     }
 
     /// <summary>
@@ -749,57 +740,27 @@ public class Database
     /// <inheritdoc cref="DropTableAsync(string)"/>
     public void DropTable(string tableName)
     {
-        DropTable(tableName, false, null);
+        DropTable(tableName, null as DropTableCommandOptions);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTableAsync(string, DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="DropTableAsync{TRow}(DropTableCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DropTableAsync(string, DatabaseCommandOptions)"/>
-    public void DropTable(string tableName, DatabaseCommandOptions options)
-    {
-        DropTable(tableName, false, options);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTableAsync{TRow}(bool)"/>
-    /// </summary>
-    /// <inheritdoc cref="DropTableAsync{TRow}(bool)"/>
-    public void DropTable<TRow>(bool onlyIfExists) where TRow : class, new()
-    {
-        DropTable<TRow>(onlyIfExists, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTableAsync{TRow}(bool, DatabaseCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DropTableAsync{TRow}(bool, DatabaseCommandOptions)"/>
-    public void DropTable<TRow>(bool onlyIfExists, DatabaseCommandOptions options) where TRow : class, new()
+    /// <inheritdoc cref="DropTableAsync{TRow}(DropTableCommandOptions)"/>
+    public void DropTable<TRow>(DropTableCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
-        DropTable(tableName, onlyIfExists, options);
+        DropTable(tableName, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTableAsync(string, bool)"/>
+    /// Synchronous version of <see cref="DropTableAsync(string, DropTableCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DropTableAsync(string, bool)"/>
-    public void DropTable(string tableName, bool onlyIfExists)
+    /// <inheritdoc cref="DropTableAsync(string, DropTableCommandOptions)"/>
+    public void DropTable(string tableName, DropTableCommandOptions options)
     {
-        DropTable(tableName, onlyIfExists, null);
+        DropTableAsync(tableName, options, true).ResultSync();
     }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTableAsync(string, bool, DatabaseCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DropTableAsync(string, bool, DatabaseCommandOptions)"/>
-    public void DropTable(string tableName, bool onlyIfExists, DatabaseCommandOptions options)
-    {
-        DropTableAsync(tableName, onlyIfExists, options, true).ResultSync();
-    }
-
-
-
 
     /// <summary>
     /// Drops the table with the name defined by a [TableName] attribute on the TRowtype, or the type name if no attribute is present.
@@ -807,15 +768,7 @@ public class Database
     /// <typeparam name="TRow"></typeparam>
     public Task DropTableAsync<TRow>() where TRow : class, new()
     {
-        return DropTableAsync<TRow>(false, null);
-    }
-
-    /// <inheritdoc cref="DropTableAsync{TRow}()" />
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Task DropTableAsync<TRow>(DatabaseCommandOptions options) where TRow : class, new()
-    {
-        var tableName = TableDefinition.GetTableName<TRow>();
-        return DropTableAsync(tableName, false, options, false);
+        return DropTableAsync<TRow>(null);
     }
 
     /// <summary>
@@ -824,63 +777,33 @@ public class Database
     /// <param name="tableName"></param>
     public Task DropTableAsync(string tableName)
     {
-        return DropTableAsync(tableName, false, null, false);
-    }
-
-    /// <inheritdoc cref="DropTableAsync(string)" />
-    /// <param name="tableName"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Task DropTableAsync(string tableName, DatabaseCommandOptions options)
-    {
-        return DropTableAsync(tableName, false, options, false);
-    }
-
-    /// <summary>
-    /// Drops the table with the name defined by a [TableName] attribute on the TRowtype, or the type name if no attribute is present.
-    /// </summary>
-    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
-    /// <typeparam name="TRow"></typeparam>
-    public Task DropTableAsync<TRow>(bool onlyIfExists) where TRow : class, new()
-    {
-        return DropTableAsync<TRow>(onlyIfExists, null);
+        return DropTableAsync(tableName, null as DropTableCommandOptions, false);
     }
 
     /// <inheritdoc cref="DropTableAsync{TRow}()" />
-    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Task DropTableAsync<TRow>(bool onlyIfExists, DatabaseCommandOptions options) where TRow : class, new()
+    public Task DropTableAsync<TRow>(DropTableCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
-        return DropTableAsync(tableName, onlyIfExists, options, false);
-    }
-
-    /// <summary>
-    /// Drops the table with the specified name.
-    /// </summary>
-    /// <param name="tableName"></param>
-    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
-    public Task DropTableAsync(string tableName, bool onlyIfExists)
-    {
-        return DropTableAsync(tableName, onlyIfExists, null, false);
+        return DropTableAsync(tableName, options, false);
     }
 
     /// <inheritdoc cref="DropTableAsync(string)" />
     /// <param name="tableName"></param>
-    /// <param name="onlyIfExists">If true, the command will not error if the table does not exist.</param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Task DropTableAsync(string tableName, bool onlyIfExists, DatabaseCommandOptions options)
+    public Task DropTableAsync(string tableName, DropTableCommandOptions options)
     {
-        return DropTableAsync(tableName, onlyIfExists, options, false);
+        return DropTableAsync(tableName, options, false);
     }
 
-    private async Task DropTableAsync(string tableName, bool onlyIfExists, DatabaseCommandOptions options, bool runSynchronously)
+    private async Task DropTableAsync(string tableName, DropTableCommandOptions options, bool runSynchronously)
     {
         var payload = new
         {
             name = tableName,
             options = new
             {
-                ifExists = onlyIfExists
+                ifExists = options?.IfExists ?? false
             }
         };
         var command = CreateCommand("dropTable")
@@ -1338,49 +1261,99 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync{T}(IAlterTypeOperation)"/> 
     /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/>
-    public void AlterType(AlterUserDefinedTypeDefinition definition)
+    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation)"/>
+    public void AlterType<T>(IAlterTypeOperation operation) where T : new()
     {
-        AlterType(definition, null);
+        AlterType<T>(operation, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync(AlterUserDefinedTypeDefinition, CommandOptions)"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync{T}(IAlterTypeOperation, CommandOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition, CommandOptions)"/>
-    public void AlterType(AlterUserDefinedTypeDefinition definition, CommandOptions options)
+    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation, CommandOptions)"/>
+    public void AlterType<T>(IAlterTypeOperation operation, CommandOptions options) where T : new()
     {
-        AlterTypeAsync(definition, options, true).ResultSync();
+        var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        AlterType(typeName, operation, options);
     }
-
 
     /// <summary>
-    /// Alter a User Defined Type given the <see cref="AlterUserDefinedTypeDefinition"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync(string, IAlterTypeOperation)"/> 
     /// </summary>
-    /// <param name="definition">The definition of the User Defined Type to alter.</param>
-    public Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition)
+    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation)"/>
+    public void AlterType(string typeName, IAlterTypeOperation operation)
     {
-        return AlterTypeAsync(definition, null);
+        AlterType(typeName, operation, null);
     }
 
-    /// <inheritdoc cref="AlterTypeAsync(AlterUserDefinedTypeDefinition)"/>
-    /// <param name="definition"></param>
+    /// <summary>
+    /// Synchronous version of <see cref="AlterTypeAsync(string, IAlterTypeOperation, CommandOptions)"/> 
+    /// </summary>
+    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation, CommandOptions)"/>
+    public void AlterType(string typeName, IAlterTypeOperation operation, CommandOptions options)
+    {
+        AlterTypeAsync(typeName, operation, options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Alter a User Defined Type by specifying the class that defines the type
+    /// </summary>
+    /// <remarks>
+    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// </remarks>
+    /// <typeparam name="T">The type that defines the User Defined Type</typeparam>
+    /// <param name="operation">The operation to apply to the User Defined Type.</param>
+    public Task AlterTypeAsync<T>(IAlterTypeOperation operation) where T : new()
+    {
+        return AlterTypeAsync<T>(operation, null);
+    }
+
+    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation)"/>
+    /// <param name="operation"></param>
     /// <param name="options"></param>
-    public Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition, CommandOptions options)
+    public Task AlterTypeAsync<T>(IAlterTypeOperation operation, CommandOptions options) where T : new()
     {
-        return AlterTypeAsync(definition, options, false);
+        var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
+        return AlterTypeAsync(typeName, operation, options);
     }
 
-    private async Task AlterTypeAsync(AlterUserDefinedTypeDefinition definition, CommandOptions options, bool runSynchronously)
+    /// <summary>
+    /// Alter a User Defined Type given the type name and <see cref="IAlterTypeOperation"/> 
+    /// </summary>
+    /// <param name="typeName">The name of the User Defined Type to alter.</param>
+    /// <param name="operation">The operation to apply to the User Defined Type.</param>
+    public Task AlterTypeAsync(string typeName, IAlterTypeOperation operation)
+    {
+        return AlterTypeAsync(typeName, operation, null);
+    }
+
+    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation)"/>
+    /// <param name="typeName"></param>
+    /// <param name="operation"></param>
+    /// <param name="options"></param>
+    public Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, CommandOptions options)
+    {
+        return AlterTypeAsync(typeName, operation, options, false);
+    }
+
+    private async Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, CommandOptions options, bool runSynchronously)
     {
         if (options == null)
         {
             options = new CommandOptions();
         }
+        
+        var (operationName, operationData) = operation.GetOperation();
+        var payload = new Dictionary<string, object>
+        {
+            ["name"] = typeName,
+            [operationName] = operationData
+        };
+        
         var command = CreateCommand("alterType")
-            .WithPayload(definition)
+            .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())
             .AddCommandOptions(options);
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);

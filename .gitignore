@@ -1,4 +1,5 @@
 .vscode
+.idea
 src/DataStax.AstraDB.DataApi/bin
 src/DataStax.AstraDB.DataApi/obj
 test/DataStax.AstraDB.DataApi.IntegrationTests/bin

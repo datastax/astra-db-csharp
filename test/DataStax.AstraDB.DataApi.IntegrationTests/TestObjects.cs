@@ -164,9 +164,7 @@ public class RowBookVectorize
 {
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
-    [ColumnVectorize(1024,
-        serviceProvider: "nvidia",
-        serviceModelName: "NV-Embed-QA")]
+    [ColumnVectorize("nvidia", "NV-Embed-QA", dimension: 1024)]
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
     public int NumberOfPages { get; set; }
@@ -230,9 +228,7 @@ public class RowTestObject
     [ColumnVector(4)]
     public float[] Vector { get; set; }
     [ColumnPrimaryKey(3)]
-    [ColumnVectorize(1024,
-        serviceProvider: "nvidia",
-        serviceModelName: "NV-Embed-QA")]
+    [ColumnVectorize(serviceProvider: "nvidia", serviceModelName: "NV-Embed-QA", dimension: 1024)]
     public object StringToVectorize { get; set; }
     [ColumnPrimaryKey(4)]
     public string Text { get; set; }
@@ -389,11 +385,7 @@ public class TestDataBook
     // This column will store vector embeddings.
     // The column will use an embedding model from NVIDIA to generate the
     // vector embeddings when data is inserted to the column. 
-    [ColumnVectorize(
-      1024,
-      serviceProvider: "nvidia",
-      serviceModelName: "NV-Embed-QA"
-    )]
+    [ColumnVectorize("nvidia", "NV-Embed-QA", dimension: 1024)]
     [ColumnName("summary_genres_vector")]
     public object? SummaryGenresVector { get; set; }
 }

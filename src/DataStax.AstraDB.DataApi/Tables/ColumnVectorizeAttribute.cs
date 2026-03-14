@@ -21,25 +21,24 @@ namespace DataStax.AstraDB.DataApi.Tables;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 public class ColumnVectorizeAttribute : Attribute
 {
-    public int Dimension { get; set; }
+    public int? Dimension { get; set; }
     public string ServiceProvider { get; set; }
     public string ServiceModelName { get; set; }
     public string[] AuthenticationPairs { get; set; }
     public string[] ParameterPairs { get; set; }
 
     public ColumnVectorizeAttribute(
-        int dimension,
         string serviceProvider,
         string serviceModelName,
+        int dimension = -1,
         string[] authenticationPairs = null,
         string[] parameterPairs = null
     )
     {
-        Dimension = dimension;
         ServiceProvider = serviceProvider;
         ServiceModelName = serviceModelName;
+        Dimension = dimension == -1 ? null : dimension;
         AuthenticationPairs = authenticationPairs ?? Array.Empty<string>();
         ParameterPairs = parameterPairs ?? Array.Empty<string>();
     }
 }
-

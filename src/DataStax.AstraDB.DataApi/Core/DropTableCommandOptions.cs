@@ -17,22 +17,12 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Command options specific to Collection get/set.
+/// Additional command options for the Database.DropTable commands.
 /// </summary>
-public class DatabaseCollectionCommandOptions : DatabaseCommandOptions
+public class DropTableCommandOptions : DatabaseCommandOptions
 {
-    /// <summary>
-    /// When specified, the client will send the x-embedding-api-key header with the specified key to any underlying HTTP request that requires vectorize authentication.
-    /// </summary>
-    public string EmbeddingApiKey
-    {
-        get
-        {
-            return AdditionalHeaders.TryGetValue("x-embedding-api-key", out var value) ? value : null;
-        }
-        set
-        {
-            AdditionalHeaders["x-embedding-api-key"] = value;
-        }
-    }
+  /// <summary>
+  /// Skip dropping the table if it does not exist (instead of throwing an error).
+  /// </summary>
+  public bool IfExists { get; set; } = false;
 }

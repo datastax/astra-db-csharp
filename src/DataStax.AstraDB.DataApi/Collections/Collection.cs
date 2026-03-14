@@ -1099,55 +1099,55 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return response.Data.Document;
     }
 
-    /// <summary>
-    /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
-    /// </summary>
-    /// <returns></returns>
-    public RerankSorter<T, T> FindAndRerank()
-    {
-        return FindAndRerank<T>(null);
-    }
-
-    /// <inheritdoc cref="FindAndRerank()"/>
-    /// <param name="filter"></param>
-    public RerankSorter<T, T> FindAndRerank(Filter<T> filter)
-    {
-        return FindAndRerank<T>(filter);
-    }
-
-    /// <inheritdoc cref="FindAndRerank()"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public RerankSorter<T, T> FindAndRerank(Filter<T> filter, CommandOptions commandOptions)
-    {
-        return FindAndRerank<T>(filter, commandOptions);
-    }
-
-    /// <summary>
-    /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
-    /// </summary>
-    /// <typeparam name="TResult">If you are using projection to return a subset of fields, TResult can be used to receive the projected document.</typeparam>
-    /// <returns></returns>
-    public RerankSorter<T, TResult> FindAndRerank<TResult>() where TResult : class
-    {
-        return FindAndRerank<TResult>(null, null);
-    }
-
-    /// <inheritdoc cref="FindAndRerank{TResult}()"/>
-    /// <param name="filter"></param>
-    public RerankSorter<T, TResult> FindAndRerank<TResult>(Filter<T> filter) where TResult : class
-    {
-        return FindAndRerank<TResult>(filter, null);
-    }
-
-    /// <inheritdoc cref="FindAndRerank{TResult}()"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public RerankSorter<T, TResult> FindAndRerank<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
-    {
-        return new RerankSorter<T, TResult>(() => CreateCommand("findAndRerank"), filter, commandOptions);
-    }
-
+    // /// <summary>
+    // /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
+    // /// </summary>
+    // /// <returns></returns>
+    // public RerankSorter<T, T> FindAndRerank()
+    // {
+    //     return FindAndRerank<T>(null);
+    // }
+    //
+    // /// <inheritdoc cref="FindAndRerank()"/>
+    // /// <param name="filter"></param>
+    // public RerankSorter<T, T> FindAndRerank(Filter<T> filter)
+    // {
+    //     return FindAndRerank<T>(filter);
+    // }
+    //
+    // /// <inheritdoc cref="FindAndRerank()"/>
+    // /// <param name="filter"></param>
+    // /// <param name="commandOptions"></param>
+    // public RerankSorter<T, T> FindAndRerank(Filter<T> filter, CommandOptions commandOptions)
+    // {
+    //     return FindAndRerank<T>(filter, commandOptions);
+    // }
+    //
+    // /// <summary>
+    // /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
+    // /// </summary>
+    // /// <typeparam name="TResult">If you are using projection to return a subset of fields, TResult can be used to receive the projected document.</typeparam>
+    // /// <returns></returns>
+    // public RerankSorter<T, TResult> FindAndRerank<TResult>() where TResult : class
+    // {
+    //     return FindAndRerank<TResult>(null, null);
+    // }
+    //
+    // /// <inheritdoc cref="FindAndRerank{TResult}()"/>
+    // /// <param name="filter"></param>
+    // public RerankSorter<T, TResult> FindAndRerank<TResult>(Filter<T> filter) where TResult : class
+    // {
+    //     return FindAndRerank<TResult>(filter, null);
+    // }
+    //
+    // /// <inheritdoc cref="FindAndRerank{TResult}()"/>
+    // /// <param name="filter"></param>
+    // /// <param name="commandOptions"></param>
+    // public RerankSorter<T, TResult> FindAndRerank<TResult>(Filter<T> filter, CommandOptions commandOptions) where TResult : class
+    // {
+    //     return new RerankSorter<T, TResult>(() => CreateCommand("findAndRerank"), filter, commandOptions);
+    // }
+    
     /// <summary>
     /// Synchronous version of <see cref="ReplaceOneAsync(Filter{T}, T)"/>
     /// </summary>
@@ -1912,30 +1912,12 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync()"/>
-    /// </summary>
-    /// <inheritdoc cref="CountDocumentsAsync()"/>
-    public int CountDocuments()
-    {
-        return CountDocuments(null);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="CountDocumentsAsync(int)"/>
     /// </summary>
     /// <inheritdoc cref="CountDocumentsAsync(int)"/>
     public int CountDocuments(int maxDocumentsToCount)
     {
         return CountDocuments(null, maxDocumentsToCount);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync(Filter{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="CountDocumentsAsync(Filter{T})"/>
-    public int CountDocuments(Filter<T> filter)
-    {
-        return CountDocuments(filter, MaxDocumentsToCount);
     }
 
     /// <summary>
@@ -1959,37 +1941,22 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <summary>
     /// Count the number of documents in the collection.
     /// </summary>
+    /// <param name="maxDocumentsToCount">Maximum number of documents to count (required)</param>
     /// <returns></returns>
     /// <remarks>
     /// Count operations are expensive: for this reason, the best practice is to provide a reasonable `upperBound`
     /// according to the caller expectations. Moreover, indiscriminate usage of count operations for sizeable amounts
     /// of documents is discouraged in favor of alternative application-specific
-    /// solutions. Keep in mind that the Data API has a hard upper limit on the amount of documents it will count (1000),
+    /// solutions. Keep in mind that the Data API has a hard upper limit on the amount of documents it will count,
     /// and that an exception will be thrown by this method if this limit is encountered.
     /// </remarks>
     /// <throws cref="DocumentCountExceedsMaxException">Thrown if the number of documents to count exceeds the limit</throws>
-    public Task<int> CountDocumentsAsync()
-    {
-        return CountDocumentsAsync(null);
-    }
-
-    /// <inheritdoc cref="CountDocumentsAsync()"/>
-    /// <param name="maxDocumentsToCount"></param>
-    /// <returns></returns>
     public Task<int> CountDocumentsAsync(int maxDocumentsToCount)
     {
         return CountDocumentsAsync(null, maxDocumentsToCount);
     }
 
-    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}"/>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task<int> CountDocumentsAsync(Filter<T> filter)
-    {
-        return CountDocumentsAsync(filter, null);
-    }
-
-    /// <inheritdoc cref="CountDocumentsAsync()"/>
+    /// <inheritdoc cref="CountDocumentsAsync(int)"/>
     /// <param name="filter"></param>
     /// <param name="maxDocumentsToCount"></param>
     public Task<int> CountDocumentsAsync(Filter<T> filter, int maxDocumentsToCount)
@@ -1997,15 +1964,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return CountDocumentsAsync(filter, maxDocumentsToCount, null);
     }
 
-    /// <inheritdoc cref="CountDocumentsAsync(Filter{T}"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<int> CountDocumentsAsync(Filter<T> filter, CommandOptions commandOptions)
-    {
-        return CountDocumentsAsync(filter, MaxDocumentsToCount, commandOptions, false);
-    }
-
-    /// <inheritdoc cref="CountDocumentsAsync()"/>
+    /// <inheritdoc cref="CountDocumentsAsync(int)"/>
     /// <param name="filter"></param>
     /// <param name="maxDocumentsToCount"></param>
     /// <param name="commandOptions"></param>
@@ -2014,12 +1973,11 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return CountDocumentsAsync(filter, maxDocumentsToCount, commandOptions, false);
     }
 
-    public const int MaxDocumentsToCount = 1000;
     internal async Task<int> CountDocumentsAsync(Filter<T> filter, int maxDocumentsToCount, CommandOptions commandOptions, bool runSynchronously)
     {
-        if (maxDocumentsToCount < 1 || maxDocumentsToCount > MaxDocumentsToCount)
+        if (maxDocumentsToCount < 1)
         {
-            throw new ArgumentException($"maxDocumentsToCount must be between 1 and {MaxDocumentsToCount}");
+            throw new ArgumentException($"maxDocumentsToCount must be >= 1 (got {maxDocumentsToCount})", nameof(maxDocumentsToCount));
         }
         commandOptions ??= new CommandOptions();
         var findOptions = new DocumentFindOptions<T>()

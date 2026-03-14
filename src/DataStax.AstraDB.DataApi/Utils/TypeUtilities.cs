@@ -318,7 +318,7 @@ public class VectorizeDataApiType : VectorDataApiType
     /// </summary>
     /// <param name="dimensions"></param>
     /// <param name="serviceOptions"></param>
-    public VectorizeDataApiType(int dimensions, VectorServiceOptions serviceOptions) : base(dimensions)
+    public VectorizeDataApiType(int? dimensions, VectorServiceOptions serviceOptions) : base(dimensions)
     {
         ServiceOptions = serviceOptions;
     }

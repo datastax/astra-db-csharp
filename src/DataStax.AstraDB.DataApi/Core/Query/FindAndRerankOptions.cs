@@ -22,7 +22,6 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 internal class FindAndRerankOptions<T>
 {
-
     internal string RerankOn { get; set; }
     internal bool? IncludeScores { get; set; }
     internal bool? IncludeSortVector { get; set; }
@@ -89,5 +88,4 @@ internal class FindAndRerankOptions<T>
         };
         return clone;
     }
-
 }

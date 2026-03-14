@@ -37,7 +37,6 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class CommandOptions
 {
     internal DBEnvironment? Environment { get; set; }
-    internal RunMode? RunMode { get; set; }
     internal string Keyspace { get; set; }
     internal JsonConverter InputConverter { get; set; }
     internal JsonConverter OutputConverter { get; set; }
@@ -49,7 +48,14 @@ public class CommandOptions
     /// The token to use for authentication
     /// </summary>
     public string Token { get; set; }
-
+    
+    /// <summary>
+    /// The execution mode for database operations.
+    /// 
+    /// Defaults to <see cref="Core.RunMode.Normal"/>
+    /// </summary>
+    public RunMode? RunMode { get; set; }
+    
     /// <summary>
     /// The destination datastore.
     /// 

@@ -295,5 +295,5 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
     {
         return GetEnumerator();
     }
-
 }
+

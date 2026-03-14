@@ -17,9 +17,9 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Command options specific to Collection get/set.
+/// Command options specific to Table get/set.
 /// </summary>
-public class DatabaseCollectionCommandOptions : DatabaseCommandOptions
+public class DatabaseTableCommandOptions : DatabaseCommandOptions
 {
     /// <summary>
     /// When specified, the client will send the x-embedding-api-key header with the specified key to any underlying HTTP request that requires vectorize authentication.
