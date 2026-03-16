@@ -17,12 +17,12 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options for Find Reranking Providers command.
+/// Options for Find Embedding Providers command.
 /// </summary>
-public class FindRerankingProvidersCommandOptions : CommandOptions
+public class FindEmbeddingProvidersCommandOptions : CommandOptions
 {
   /// <summary>
-  /// Filter reranking providers by status, defaults to "Supported".
+  /// Filter Embedding providers by status, defaults to "Supported".
   /// </summary>
   public ModelLifecycleStatus FilterModelStatus { get; set; } = ModelLifecycleStatus.Supported;
 }
