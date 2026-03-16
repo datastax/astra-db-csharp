@@ -18,19 +18,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-internal class TableIndex
+internal class TableIndexCreationOptions
 {
   [JsonInclude]
-  [JsonPropertyName("name")]
-  internal string IndexName { get; set; }
-
-  [JsonInclude]
-  [JsonPropertyName("definition")]
-  internal TableIndexDefinition Definition { get; set; }
-
-  [JsonInclude]
-  [JsonPropertyName("options")]
-  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  internal TableIndexCreationOptions Options { get; set; }
-
+  [JsonPropertyName("ifNotExists")]
+  internal bool IfNotExists { get; set; }
 }
