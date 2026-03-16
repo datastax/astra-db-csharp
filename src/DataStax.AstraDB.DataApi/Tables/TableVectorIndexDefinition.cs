@@ -32,16 +32,18 @@ public class TableVectorIndexDefinition : TableIndexDefinition
   /// The similarity metric to use
   /// </summary>
   [JsonIgnore]
-  public SimilarityMetric Metric
+  public SimilarityMetric? Metric
   {
     get
     {
-      return Options != null && Options.ContainsKey("metric") && Enum.TryParse((string)Options["metric"], out SimilarityMetric result) ? result : default;
+      return Options != null && Options.ContainsKey("metric") && Enum.TryParse((string)Options["metric"], out SimilarityMetric result) ? result : null;
     }
     set
     {
       Options ??= new Dictionary<string, object>();
-      Options["metric"] = value;
+      if ( value != null ){
+        Options["metric"] = value;
+      }
     }
   }
 
@@ -56,7 +58,9 @@ public class TableVectorIndexDefinition : TableIndexDefinition
     set
     {
       Options ??= new Dictionary<string, object>();
-      Options["sourceModel"] = value;
+      if (value != null ){
+        Options["sourceModel"] = value;
+      }
     }
   }
 

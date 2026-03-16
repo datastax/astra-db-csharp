@@ -89,10 +89,39 @@ public class TableIndexBuilder
     /// <summary>
     /// Create a vector index.
     /// </summary>
+    /// <returns></returns>
+    public TableIndexDefinition Vector()
+    {
+        return Vector(null, null);
+    }
+
+    /// <summary>
+    /// Create a vector index.
+    /// </summary>
+    /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
+    /// <returns></returns>
+    public TableIndexDefinition Vector(SimilarityMetric metric = SimilarityMetric.Cosine)
+    {
+        return Vector(metric, null);
+    }
+
+    /// <summary>
+    /// Create a vector index.
+    /// </summary>
+    /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
+    /// <returns></returns>
+    public TableIndexDefinition Vector(string sourceModel = "other")
+    {
+        return Vector(null, sourceModel);
+    }
+
+    /// <summary>
+    /// Create a vector index.
+    /// </summary>
     /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
     /// <returns></returns>
-    public TableIndexDefinition Vector(SimilarityMetric metric = SimilarityMetric.Cosine, string sourceModel = "other")
+    public TableIndexDefinition Vector(SimilarityMetric? metric, string? sourceModel)
     {
         return new TableVectorIndexDefinition
         {
