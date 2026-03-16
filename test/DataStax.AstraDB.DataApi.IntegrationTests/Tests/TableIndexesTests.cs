@@ -187,6 +187,29 @@ public class TableIndexesTests
     }
 
     [Fact]
+    public async Task CreateIndexTests_VectorIndex()
+    {
+        var tableName = "tableIndexesTest_VectorIndex";
+        string indexName = "vector_idx";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
     public async Task DropIndexTests()
     {
         var tableName = "dropIndexTest";
