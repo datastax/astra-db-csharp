@@ -187,16 +187,62 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_VectorIndex()
+    public async Task CreateIndexTests_VectorIndex_NoOptions()
     {
-        var tableName = "tableIndexesTest_VectorIndex";
-        string indexName = "vector_idx";
+        var tableName = "tableIndexesTest_VectorIndex_NoOptions";
+        string indexName = "vector_idx_noopt";
 
         try
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
 
             await table.CreateIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_VectorIndex_PartialOptions()
+    {
+        var tableName = "tableIndexesTest_VectorIndex_PartialOptions";
+        string indexName = "vector_idx_ptopt";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.DotProduct));
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_VectorIndex_FullOptions()
+    {
+        var tableName = "tableIndexesTest_VectorIndex_FullOptions";
+        string indexName = "vector_idx_fuopt";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.Euclidean, "other"));
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
