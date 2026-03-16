@@ -1,7 +1,5 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
-using DataStax.AstraDB.DataApi.Core.Commands;
-using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
@@ -223,5 +221,33 @@ public class AdditionalCollectionTests
         }
     }
 
+    [Fact]
+    public async Task TestCollectionNameAttribute()
+    {
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<CollectionNameObject>();
+            var row1 = new CollectionNameObject()
+            {
+                _id = 1,
+                Test = "Test 1"
+
+            };
+
+            var insertOneResult = await collection.InsertOneAsync(row1);
+            Assert.NotNull(insertOneResult.InsertedId);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync<CollectionNameObject>();
+        }
+    }
+}
+
+[CollectionName("testCollectionNameViaAttribute")]
+public class CollectionNameObject
+{
+    public int? _id { get; set; }
+    public string Test { get; set; }
 }
 

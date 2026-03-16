@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -356,6 +357,38 @@ public class Database
     }
 
     /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}()"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>() where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition)"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(DatabaseCollectionCommandOptions)"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>(DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, options, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition, DatabaseCollectionCommandOptions)"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, options, false).ResultSync();
+    }
+
+    /// <summary>
     /// Create a new collection in the database, using the keyspace specified in the <see cref="DatabaseCommandOptions"/>
     /// passed to the <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/> method, or the default keyspace otherwise.
     /// </summary>
@@ -392,6 +425,30 @@ public class Database
         return CreateCollectionAsync<T>(collectionName, definition, options, false);
     }
 
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>() where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, DatabaseCollectionCommandOptions)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>(DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, options);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, options, false);
+    }
+
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string)"/>
     /// </summary>
@@ -419,6 +476,30 @@ public class Database
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, false).ResultSync();
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}()"/>
+    /// </summary>
+    public Collection<T, TId> CreateCollection<T, TId>() where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, null, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition)"/>
+    /// </summary>
+    public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition, DatabaseCollectionCommandOptions)"/>
+    /// </summary>
+    public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, options, false).ResultSync();
+    }
+
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
     public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName) where T : class
@@ -440,14 +521,42 @@ public class Database
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, false);
     }
 
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>() where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, null, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, options, false);
+    }
+
     private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options, bool runSynchronously) where T : class
     {
+        collectionName = MaybeGetCollectionNameFromAttribute<T>(collectionName);
+        Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         await CreateCollectionAsync<T, object>(collectionName, definition, options, runSynchronously);
         return GetCollection<T>(collectionName, options);
     }
 
     private async Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options, bool runSynchronously) where T : class
     {
+        collectionName = MaybeGetCollectionNameFromAttribute<T>(collectionName);
+        Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         if (definition == null)
         {
             definition = CollectionDefinition.Create<T>();
@@ -467,6 +576,20 @@ public class Database
             .AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
         return GetCollection<T, TId>(collectionName, options);
+    }
+
+    private string MaybeGetCollectionNameFromAttribute<T>(string collectionName)
+    {
+        if (string.IsNullOrEmpty(collectionName))
+        {
+            Type type = typeof(T);
+            var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+            if (nameAttribute != null)
+            {
+                collectionName = nameAttribute.Name;
+            }
+        }
+        return collectionName;
     }
 
     /// <summary>
@@ -546,6 +669,15 @@ public class Database
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Collection<T, TId> GetCollection<T, TId>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
+        if (string.IsNullOrEmpty(collectionName))
+        {
+            Type type = typeof(T);
+            var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+            if (nameAttribute != null)
+            {
+                collectionName = nameAttribute.Name;
+            }
+        }
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T, TId>(collectionName, this, options);
     }
@@ -560,11 +692,38 @@ public class Database
     }
 
     /// <summary>
+    /// Synchronous version of <see cref="DropCollectionAsync{T}()"/>
+    /// </summary>
+    /// <inheritdoc cref="DropCollection()" />
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public void DropCollection<T>()
+    {
+        DropCollection<T>(null);
+    }
+
+    /// <summary>
     /// Synchronous version of <see cref="DropCollectionAsync(string, DatabaseCommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="DropCollection(string, DatabaseCommandOptions)" />
     public void DropCollection(string collectionName, DatabaseCommandOptions options)
     {
+        DropCollectionAsync(collectionName, options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropCollectionAsync{T}(DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropCollection(string, DatabaseCommandOptions)" />
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public void DropCollection<T>(DatabaseCommandOptions options)
+    {
+        string collectionName = null;
+        Type type = typeof(T);
+        var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+        if (nameAttribute != null)
+        {
+            collectionName = nameAttribute.Name;
+        }
         DropCollectionAsync(collectionName, options, true).ResultSync();
     }
 
@@ -583,6 +742,28 @@ public class Database
     /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
     public Task DropCollectionAsync(string collectionName, DatabaseCommandOptions options)
     {
+        return DropCollectionAsync(collectionName, options, false);
+    }
+
+    /// <inheritdoc cref="DropCollectionAsync(string)" />
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public Task DropCollectionAsync<T>()
+    {
+        return DropCollectionAsync<T>(null);
+    }
+
+    /// <inheritdoc cref="DropCollectionAsync(string)" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public Task DropCollectionAsync<T>(DatabaseCommandOptions options)
+    {
+        string collectionName = null;
+        Type type = typeof(T);
+        var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+        if (nameAttribute != null)
+        {
+            collectionName = nameAttribute.Name;
+        }
         return DropCollectionAsync(collectionName, options, false);
     }
 
