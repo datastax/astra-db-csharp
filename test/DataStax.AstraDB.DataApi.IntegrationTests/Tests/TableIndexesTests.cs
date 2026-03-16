@@ -278,6 +278,9 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
+            // temporarily for easier check against logs (1. line) and CQL (2. line)
+            // {"createTextIndex":{"name":"text_idx_noopt","definition":{"column":"Name"}}}
+            // CREATE CUSTOM INDEX text_idx_noopt ON default_keyspace."tableIndexesTest_TextIndex_NoOptions" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': 'standard'};
         }
 
     }
@@ -301,6 +304,9 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
+            // temporarily for easier check against logs (1. line) and CQL (2. line)
+            // {"createTextIndex":{"name":"text_idx_w_analyzer","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
+            // CREATE CUSTOM INDEX text_idx_w_analyzer ON default_keyspace."tableIndexesTest_TextIndex_WithAnalyzer" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': 'whitespace'};
         }
 
     }
@@ -323,7 +329,10 @@ public class TableIndexesTests
         }
         finally
         {
-            //await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName);
+            // temporarily for easier check against logs (1. line) and CQL (2. line)
+            // {"createTextIndex":{"name":"text_idx_w_string","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
+            // CREATE CUSTOM INDEX text_idx_w_string ON default_keyspace."tableIndexesTest_TextIndex_WithString" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': 'whitespace'};
         }
 
     }
@@ -356,7 +365,44 @@ public class TableIndexesTests
         }
         finally
         {
-            //await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName);
+            // temporarily for easier check against logs (1. line) and CQL (2. line)
+            // {"createTextIndex":{"name":"text_idx_w_aoptions","definition":{"column":"Name","options":{"analyzer":{"tokenizer":{"name":"standard","args":{}},"charFilters":[],"filters":[{"name":"lowercase"},{"name":"stop"},{"name":"porterstem"},{"name":"asciifolding"}]}}}}}
+            // CREATE CUSTOM INDEX text_idx_w_aoptions ON default_keyspace."tableIndexesTest_TextIndex_WithAOptions" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': '{"tokenizer":{"name":"standard","args":{}},"charFilters":[],"filters":[{"name":"lowercase"},{"name":"stop"},{"name":"porterstem"},{"name":"asciifolding"}]}'};
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_TextIndex_WithFreeform()
+    {
+        var tableName = "tableIndexesTest_TextIndex_WithFreeform";
+        string indexName = "text_idx_w_freeform";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(
+                new Dictionary<string, object>
+                {
+                    ["tokenizer"] = new Dictionary<string, object>
+                    {
+                        ["name"] = "whitespace"
+                    }
+                }
+            ));
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+            // temporarily for easier check against logs (1. line) and CQL (2. line)
+            // {"createTextIndex":{"name":"text_idx_w_freeform","definition":{"column":"Name","options":{"analyzer":{"tokenizer":{"name":"whitespace"}}}}}}
+            // CREATE CUSTOM INDEX text_idx_w_freeform ON default_keyspace."tableIndexesTest_TextIndex_WithFreeform" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': '{"tokenizer":{"name":"whitespace"}}'};
         }
 
     }
