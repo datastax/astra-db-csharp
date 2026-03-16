@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
@@ -293,6 +294,21 @@ public class AstraDatabasesAdmin
     /// Creates a new database with the specified creation options.
     /// </summary>
     /// <param name="options">The database creation options.</param>
+    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// <code>
+    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
+    /// </code>
+    /// </example>
+    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options)
+    {
+        return CreateDatabaseAsync(options, null, true, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Creates a new database with the specified creation options.
+    /// </summary>
+    /// <param name="options">The database creation options.</param>
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
@@ -310,6 +326,22 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <param name="options">The database creation options.</param>
     /// <param name="commandOptions">Additional command options.</param>
+    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// <code>
+    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
+    /// </code>
+    /// </example>
+    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions)
+    {
+        return CreateDatabaseAsync(options, commandOptions, true, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Creates a new database with the specified creation and command options.
+    /// </summary>
+    /// <param name="options">The database creation options.</param>
+    /// <param name="commandOptions">Additional command options.</param>
     /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>An IDatabaseAdmin instance for the created database.</returns>
     /// <example>
@@ -317,9 +349,24 @@ public class AstraDatabasesAdmin
     /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
     /// </code>
     /// </example>
-    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions, bool waitForDb = true)
+    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions, bool waitForDb)
     {
         return CreateDatabaseAsync(options, commandOptions, waitForDb, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Asynchronously creates a new database with the specified creation options.
+    /// </summary>
+    /// <param name="creationOptions">The database creation options.</param>
+    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// <code>
+    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
+    /// </code>
+    /// </example>
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions)
+    {
+        return CreateDatabaseAsync(creationOptions, null, true, false);
     }
 
     /// <summary>
@@ -333,7 +380,7 @@ public class AstraDatabasesAdmin
     /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
     /// </code>
     /// </example>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb = true)
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb)
     {
         return CreateDatabaseAsync(creationOptions, null, waitForDb, false);
     }
@@ -343,14 +390,30 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <param name="creationOptions">The database creation options.</param>
     /// <param name="commandOptions">Additional command options.</param>
-    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
     /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
     /// </code>
     /// </example>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions, bool waitForDb = true)
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions)
+    {
+        return CreateDatabaseAsync(creationOptions, commandOptions, true, false);
+    }
+
+    /// <summary>
+    /// Asynchronously creates a new database with the specified creation and command options.
+    /// </summary>
+    /// <param name="creationOptions">The database creation options.</param>
+    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
+    /// <param name="commandOptions">Additional command options.</param>
+    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
+    /// <example>
+    /// <code>
+    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
+    /// </code>
+    /// </example>
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb, CommandOptions commandOptions)
     {
         return CreateDatabaseAsync(creationOptions, commandOptions, waitForDb, false);
     }
