@@ -8,6 +8,10 @@ using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
+// TODO: this whole file needs a stronger verification,
+// i.e. reading index metadata in each test and checking details match expectation.
+// For now, part of the testing is manual payload inspection in the logs.
+
 [Collection("TableIndexes")]
 public class TableIndexesTests
 {
@@ -251,6 +255,108 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_TextIndex_NoOptions()
+    {
+        var tableName = "tableIndexesTest_TextIndex_NoOptions";
+        string indexName = "text_idx_noopt";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text());
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_TextIndex_WithAnalyzer()
+    {
+        var tableName = "tableIndexesTest_TextIndex_WithAnalyzer";
+        string indexName = "text_idx_w_analyzer";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(TextAnalyzer.Whitespace));
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_TextIndex_WithString()
+    {
+        var tableName = "tableIndexesTest_TextIndex_WithString";
+        string indexName = "text_idx_w_string";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text("whitespace"));
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            //await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_TextIndex_WithAOptions()
+    {
+        var tableName = "tableIndexesTest_TextIndex_WithAOptions";
+        string indexName = "text_idx_w_aoptions";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(
+                new AnalyzerOptions{
+                    Tokenizer = new TokenizerOptions { Name = "standard" },
+                    Filters = {
+                        "lowercase",
+                        "stop",
+                        "porterstem",
+                        "asciifolding"
+                    }
+                }
+            ));
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            //await fixture.Database.DropTableAsync(tableName);
         }
 
     }
