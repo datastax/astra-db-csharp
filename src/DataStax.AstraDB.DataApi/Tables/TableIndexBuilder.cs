@@ -87,6 +87,19 @@ public class TableIndexBuilder
     }
 
     /// <summary>
+    /// Create a text index with free-form analyzer options.
+    /// </summary>
+    /// <param name="analyzer"></param>
+    /// <returns></returns>
+    public TableIndexDefinition Text(object analyzer)
+    {
+        return new TableTextIndexDefinition()
+        {
+            Analyzer = analyzer
+        };
+    }
+
+    /// <summary>
     /// Create a vector index.
     /// </summary>
     /// <returns></returns>
