@@ -14,34 +14,57 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
+/// <summary>
+/// Options to use when creating a new database.
+/// </summary>
 public class DatabaseCreationOptions
 {
+    /// <summary>
+    /// Name of the database to be created.
+    /// </summary>
     [JsonPropertyName("name")]
     public string Name { get; set; }
 
+    /// <summary>
+    /// Which cloud provider should host the database?
+    /// </summary>
     [JsonPropertyName("cloudProvider")]
     public CloudProviderType? CloudProvider { get; set; } = null;
 
+    /// <summary>
+    /// Database region.
+    /// </summary>
     [JsonPropertyName("region")]
     public string Region { get; set; }
 
+    /// <summary>
+    /// Name of the initial keyspace (defaults to "default_keyspace")
+    /// </summary>
     [JsonPropertyName("keyspace")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Keyspace { get; set; } = null;
 
+    /// <summary>
+    /// Capacity units to use, defaults to 1.
+    /// </summary>
     [JsonPropertyName("capacityUnits")]
     [JsonInclude]
     internal int CapacityUnits { get; set; } = 1;
 
+    /// <summary>
+    /// Tier to use, defaults to "serverless".
+    /// </summary>
     [JsonPropertyName("tier")]
     [JsonInclude]
     internal string Tier { get; set; } = "serverless";
 
+    /// <summary>
+    /// Type of database, defaults to "vector".
+    /// </summary>
     [JsonPropertyName("dbType")]
     [JsonInclude]
     internal string DatabaseType { get; set; } = "vector";
