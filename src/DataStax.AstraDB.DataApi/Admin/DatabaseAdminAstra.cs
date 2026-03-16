@@ -579,6 +579,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return response.Result;
         }
         
+        
         // /// <summary>
         // /// Finds and returns available reranking providers for the current database.
         // /// </summary>
