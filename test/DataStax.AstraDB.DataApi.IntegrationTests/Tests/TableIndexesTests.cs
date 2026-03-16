@@ -31,12 +31,19 @@ public class TableIndexesTests
             await table.CreateIndexAsync(indexName, (b) => b.Category);
 
             // second creation (should fail)
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            var ex = await Assert.ThrowsAsync<CommandException>(() =>
                 table.CreateIndexAsync(indexName, (b) => b.Category));
 
             Assert.Contains("already exists", ex.Message);
 
-            // second creation (should not fail when IfNotExists is set)
+            // third creation (should fail when IfNotExists is false)
+            var ex2 = await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, (b) => b.Category,
+                    new CreateIndexCommandOptions(){IfNotExists = false}));
+
+            Assert.Contains("already exists", ex2.Message);
+
+            // fourth creation (should not fail when IfNotExists is true)
             await table.CreateIndexAsync(indexName, (b) => b.Category, new CreateIndexCommandOptions()
             {
                 IfNotExists = true
@@ -68,12 +75,12 @@ public class TableIndexesTests
             await table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition);
 
             // second creation (should fail)
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            var ex = await Assert.ThrowsAsync<CommandException>(() =>
                 table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition));
 
             Assert.Contains("already exists", ex.Message);
 
-            // second creation (should not fail when IfNotExists is set)
+            // third creation (should not fail when IfNotExists is set)
             await table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition, new CreateIndexCommandOptions()
             {
                 IfNotExists = true
@@ -84,6 +91,28 @@ public class TableIndexesTests
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_MapIndex_EntriesByDefault()
+    {
+        var tableName = "tableIndexesTest_MapIndex_EntriesByDefault";
+        string indexName = "map_e_def_idx";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.StringMap);
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
         }
         finally
         {
@@ -177,7 +206,16 @@ public class TableIndexesTests
             var ex = await Assert.ThrowsAsync<CommandException>(() =>
                 fixture.Database.DropTableIndexAsync(indexName));
 
-            // second drop (should not fail when IfNotExists is set)
+            Assert.Contains("attempted to drop", ex.Message);
+
+            // third drop (should fail when IfNotExists is false)
+            var ex2 = await Assert.ThrowsAsync<CommandException>(() =>
+                fixture.Database.DropTableIndexAsync(indexName,
+                    new DropIndexCommandOptions(){IfExists = false}));
+
+            Assert.Contains("attempted to drop", ex2.Message);
+
+            // fourth drop (should not fail when IfNotExists is true)
             await fixture.Database.DropTableIndexAsync(indexName, new DropIndexCommandOptions()
             {
                 IfExists = true

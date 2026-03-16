@@ -307,28 +307,22 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
 
     private async Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions, bool runSynchronously)
     {
-        var indexResponse = await ListIndexesAsync(commandOptions, runSynchronously);
-        var exists = indexResponse?.Indexes?.Any(i => i.Name == indexName) == true;
-
-        if (exists)
-        {
-            if (commandOptions != null && commandOptions.IfNotExists)
-            {
-                return;
-            }
-            throw new InvalidOperationException($"Index '{indexName}' already exists on table '{this._tableName}'.");
-        }
         if (indexDefinition == null)
         {
             indexDefinition = new TableIndexDefinition();
         }
         indexDefinition.ColumnName = columnName;
+
         var index = new TableIndex
         {
             IndexName = indexName,
             Definition = indexDefinition
         };
+        if (commandOptions != null){
+            index.Options = new TableIndexCreationOptions { IfNotExists = commandOptions.IfNotExists };
+        }
         var command = CreateCommand(indexDefinition.IndexCreationCommandName).WithPayload(index).AddCommandOptions(commandOptions);
+
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
 
