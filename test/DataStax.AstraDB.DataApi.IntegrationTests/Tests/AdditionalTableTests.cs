@@ -364,7 +364,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
-            await table.CreateIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            await table.CreateVectorIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
 
             List<SimpleObjectWithVector> items = new List<SimpleObjectWithVector>() {
                 new()
@@ -409,7 +409,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
-            await table.CreateIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            await table.CreateVectorIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
 
             List<SimpleObjectWithVector> items = new List<SimpleObjectWithVector>() {
                 new()

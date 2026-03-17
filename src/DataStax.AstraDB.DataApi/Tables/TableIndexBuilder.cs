@@ -38,10 +38,20 @@ public class TableIndexBuilder
     }
 
     /// <summary>
+    /// Create a table index for a map column.
+    /// </summary>
+    /// <param name="mapIndexType"></param>
+    /// <returns></returns>
+    public TableIndexDefinition Map(MapIndexType mapIndexType)
+    {
+        return new TableMapIndexDefinition(mapIndexType);
+    }
+
+    /// <summary>
     /// Create a text index using the default analyzer.
     /// </summary>
     /// <returns></returns>
-    public TableBaseIndexDefinition Text()
+    public TableTextIndexDefinition Text()
     {
         return new TableTextIndexDefinition();
     }
@@ -51,7 +61,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzer"></param>
     /// <returns></returns>
-    public TableBaseIndexDefinition Text(TextAnalyzer analyzer)
+    public TableTextIndexDefinition Text(TextAnalyzer analyzer)
     {
         return new TableTextIndexDefinition()
         {
@@ -65,7 +75,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzer"></param>
     /// <returns></returns>
-    public TableBaseIndexDefinition Text(string analyzer)
+    public TableTextIndexDefinition Text(string analyzer)
     {
         return new TableTextIndexDefinition()
         {
@@ -78,7 +88,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzerOptions"></param>
     /// <returns></returns>
-    public TableBaseIndexDefinition Text(AnalyzerOptions analyzerOptions)
+    public TableTextIndexDefinition Text(AnalyzerOptions analyzerOptions)
     {
         return new TableTextIndexDefinition()
         {
@@ -91,7 +101,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzer"></param>
     /// <returns></returns>
-    public TableBaseIndexDefinition Text(object analyzer)
+    public TableTextIndexDefinition Text(object analyzer)
     {
         return new TableTextIndexDefinition()
         {
@@ -103,7 +113,7 @@ public class TableIndexBuilder
     /// Create a vector index.
     /// </summary>
     /// <returns></returns>
-    public TableBaseIndexDefinition Vector()
+    public TableVectorIndexDefinition Vector()
     {
         return Vector(null, null);
     }
@@ -113,7 +123,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
     /// <returns></returns>
-    public TableBaseIndexDefinition Vector(SimilarityMetric metric = SimilarityMetric.Cosine)
+    public TableVectorIndexDefinition Vector(SimilarityMetric metric = SimilarityMetric.Cosine)
     {
         return Vector(metric, null);
     }
@@ -123,7 +133,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
     /// <returns></returns>
-    public TableBaseIndexDefinition Vector(string sourceModel = "other")
+    public TableVectorIndexDefinition Vector(string sourceModel = "other")
     {
         return Vector(null, sourceModel);
     }
@@ -134,7 +144,7 @@ public class TableIndexBuilder
     /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
     /// <returns></returns>
-    public TableBaseIndexDefinition Vector(SimilarityMetric? metric, string? sourceModel)
+    public TableVectorIndexDefinition Vector(SimilarityMetric? metric, string? sourceModel)
     {
         return new TableVectorIndexDefinition
         {
@@ -143,13 +153,4 @@ public class TableIndexBuilder
         };
     }
 
-    /// <summary>
-    /// Create a table index for a map column.
-    /// </summary>
-    /// <param name="mapIndexType"></param>
-    /// <returns></returns>
-    public TableBaseIndexDefinition Map(MapIndexType mapIndexType)
-    {
-        return new TableMapIndexDefinition(mapIndexType);
-    }
 }
