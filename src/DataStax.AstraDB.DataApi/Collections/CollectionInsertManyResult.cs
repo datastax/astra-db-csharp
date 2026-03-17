@@ -19,6 +19,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
+/// <summary>
+/// The result of inserting multiple documents into a collection.
+/// </summary>
 public class CollectionInsertManyResult<T>
 {
     /// <summary>

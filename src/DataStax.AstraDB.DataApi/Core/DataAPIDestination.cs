@@ -21,9 +21,14 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// </summary>
 public enum DataApiDestination
 {
+    /// <summary>DataStax Astra DB (managed cloud service).</summary>
     ASTRA,
+    /// <summary>DataStax Enterprise (DSE).</summary>
     DSE,
+    /// <summary>HCD (Hyper-Converged Database).</summary>
     HCD,
+    /// <summary>Apache Cassandra.</summary>
     CASSANDRA,
+    /// <summary>Another data source not covered by the predefined values.</summary>
     OTHER
 }

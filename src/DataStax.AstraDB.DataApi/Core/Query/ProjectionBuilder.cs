@@ -169,6 +169,10 @@ public abstract class ProjectionBuilderBase<T, TBuilder> : IProjectionBuilder wh
 
     List<Projection> IProjectionBuilder.Projections => _projections;
 
+    /// <summary>
+    /// Creates a copy of this projection builder.
+    /// </summary>
+    /// <returns>A new <see cref="IProjectionBuilder"/> with the same projections.</returns>
     public abstract IProjectionBuilder Clone();
 }
 
@@ -219,7 +223,6 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
     /// Specify a special field to exclude from the projection.
     /// </summary>
     /// <param name="fieldExpression"></param>
-    /// <param name="fieldName">The name of the field to exclude.</param>
     /// <returns>The projection builder.</returns>
     public InclusiveProjectionBuilder<T> ExcludeSpecial<TField>(Expression<Func<T, TField>> fieldExpression)
     {
@@ -283,6 +286,9 @@ public class InclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, InclusiveP
         return this;
     }
 
+    /// <summary>
+    /// Creates a copy of this projection builder.
+    /// </summary>
     public override IProjectionBuilder Clone()
     {
         var clone = new InclusiveProjectionBuilder<T>();
@@ -376,7 +382,6 @@ public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveP
     /// Specify a special field to include in the projection.
     /// </summary>
     /// <param name="fieldExpression"></param>
-    /// <param name="fieldName">The name of the field to include.</param>
     /// <returns>The projection builder.</returns>
     public ExclusiveProjectionBuilder<T> IncludeSpecial<TField>(Expression<Func<T, TField>> fieldExpression)
     {
@@ -402,6 +407,9 @@ public class ExclusiveProjectionBuilder<T> : ProjectionBuilderBase<T, ExclusiveP
         return this;
     }
 
+    /// <summary>
+    /// Creates a copy of this projection builder.
+    /// </summary>
     public override IProjectionBuilder Clone()
     {
         var clone = new ExclusiveProjectionBuilder<T>();

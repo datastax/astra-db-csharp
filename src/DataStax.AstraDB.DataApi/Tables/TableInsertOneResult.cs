@@ -19,6 +19,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Represents the result of inserting a single row into a table.
+/// </summary>
 [JsonConverter(typeof(TableInsertOneResultConverter))]
 public class TableInsertOneResult : TableInsertManyResult
 {

@@ -36,6 +36,9 @@ public class Document : Dictionary<string, object>
 /// </summary>
 public class DocumentDictionaryConverter : JsonConverter<Document>
 {
+    /// <summary>
+    /// Reads and converts JSON to a <see cref="Document"/> instance.
+    /// </summary>
     public override Document Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -84,6 +87,9 @@ public class DocumentDictionaryConverter : JsonConverter<Document>
         throw new JsonException("Failed to parse value.");
     }
 
+    /// <summary>
+    /// Writes a <see cref="Document"/> instance as a JSON object.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, Document value, JsonSerializerOptions options)
     {
         JsonSerializer.Serialize(writer, (Dictionary<string, object>)value, options);

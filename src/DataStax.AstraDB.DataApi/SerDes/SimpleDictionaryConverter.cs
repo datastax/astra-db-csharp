@@ -32,7 +32,7 @@ internal class SimpleDictionaryConverter
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException("Expected StartObject");
 
-        var dict = new Dictionary<string, object?>();
+        var dict = new Dictionary<string, object>();
 
         while (reader.Read())
         {
@@ -42,7 +42,7 @@ internal class SimpleDictionaryConverter
             if (reader.TokenType != JsonTokenType.PropertyName)
                 throw new JsonException("Expected PropertyName");
 
-            string propertyName = reader.GetString()!;
+            string propertyName = reader.GetString() ?? throw new JsonException("Null property name");
             reader.Read();
 
             dict[propertyName] = ReadValue(ref reader, options);
@@ -51,7 +51,7 @@ internal class SimpleDictionaryConverter
         throw new JsonException("Incomplete JSON object");
     }
 
-    private static object? ReadValue(
+    private static object ReadValue(
         ref Utf8JsonReader reader,
         JsonSerializerOptions options)
     {
@@ -60,7 +60,7 @@ internal class SimpleDictionaryConverter
             JsonTokenType.String => reader.GetString(),
 
             JsonTokenType.Number => reader.TryGetInt64(out var l)
-                ? l
+                ? (object)l
                 : reader.GetDouble(),
 
             JsonTokenType.True => true,
@@ -68,11 +68,11 @@ internal class SimpleDictionaryConverter
             JsonTokenType.Null => null,
 
             JsonTokenType.StartObject =>
-                JsonSerializer.Deserialize<Dictionary<string, object?>>(
+                JsonSerializer.Deserialize<Dictionary<string, object>>(
                     ref reader, options),
 
             JsonTokenType.StartArray =>
-                JsonSerializer.Deserialize<List<object?>>(
+                JsonSerializer.Deserialize<List<object>>(
                     ref reader, options),
 
             _ => throw new JsonException(
@@ -82,7 +82,7 @@ internal class SimpleDictionaryConverter
 
     public override void Write(
         Utf8JsonWriter writer,
-        Dictionary<string, object?> value,
+        Dictionary<string, object> value,
         JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -96,7 +96,7 @@ internal class SimpleDictionaryConverter
         writer.WriteEndObject();
     }
 
-    private static void WriteValue(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
+    private static void WriteValue(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
     {
         if (value != null)
         {

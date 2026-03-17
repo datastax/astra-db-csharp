@@ -52,6 +52,9 @@ public struct Duration : IEquatable<Duration>, IComparable<Duration>
     private static readonly Regex Iso8601AlternateRegex = new Regex(
         @"^P(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$", RegexOptions.Compiled);
 
+    /// <summary>
+    /// A <see cref="Duration"/> representing zero length (0 months, 0 days, 0 nanoseconds).
+    /// </summary>
     public static readonly Duration Zero = new Duration();
 
     /// <summary>
@@ -134,6 +137,10 @@ public struct Duration : IEquatable<Duration>, IComparable<Duration>
         return Nanoseconds.CompareTo(other.Nanoseconds);
     }
 
+    /// <summary>
+    /// Explicitly converts a <see cref="TimeSpan"/> to a <see cref="Duration"/>.
+    /// </summary>
+    /// <param name="ts">The <see cref="TimeSpan"/> to convert.</param>
     public static explicit operator Duration(TimeSpan ts)
     {
         return Parse(XmlConvert.ToString(ts));

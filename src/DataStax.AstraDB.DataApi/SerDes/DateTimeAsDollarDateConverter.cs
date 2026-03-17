@@ -28,6 +28,9 @@ public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>
 {
     private static readonly DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
+    /// <summary>
+    /// Reads and converts a JSON <c>$date</c> object or Unix timestamp (milliseconds) to a <typeparamref name="T"/> value.
+    /// </summary>
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
@@ -83,6 +86,9 @@ public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>
         }
     }
 
+    /// <summary>
+    /// Writes a <typeparamref name="T"/> value as a JSON <c>$date</c> object with Unix milliseconds.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         if (value == null)

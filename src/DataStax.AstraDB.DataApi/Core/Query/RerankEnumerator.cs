@@ -77,8 +77,8 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
     /// <returns></returns>
     /// <example>
     /// <code>
-    /// var findAndReranker = collection.Find<SimpleObjectWithVectorizeResult>()
-    ///     .Sort(Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString))
+    /// var findAndReranker = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
+    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
     ///     .IncludeScores(true);
     /// var documentsWithScores = findAndReranker.WithScoresAsync();
     /// await foreach (var document in documentsWithScores)
@@ -100,13 +100,12 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
     /// <param name="includeSortVector">Whether to include the sort vector in the result or not.</param>
     /// <returns></returns>
     /// <example>
-    /// To access the sort vectors, you need to use <see cref="Cursor{T}.SortVector"/> after calling <see cref="ToCursor()"/> on your FindAndReranker instance.
+    /// To access the sort vectors, use <see cref="GetSortVectorAsync()"/>.
     /// <code>
-    /// var FindAndReranker = collection.Find<SimpleObjectWithVectorizeResult>()
-    ///     .Sort(Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString))
+    /// var reranker = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
+    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
     ///     .IncludeSortVector(true);
-    /// var cursor = FindAndReranker.ToCursor();
-    /// var sortVector = cursor.SortVector;
+    /// var sortVector = await reranker.GetSortVectorAsync();
     /// </code>
     /// </example>
     public RerankEnumerator<T, TResult> IncludeSortVector(bool includeSortVector)
@@ -168,7 +167,7 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
     /// <example>
     /// <code>
     /// // Inclusive Projection, return only the nested Properties.PropertyOne field
-    /// var projectionBuilder = Builders<SimpleObject>.Projection;
+    /// var projectionBuilder = Builders&lt;SimpleObject&gt;.Projection;
     /// var projection = projectionBuilder.Include(p => p.Properties.PropertyOne);
     /// </code>
     /// </example>

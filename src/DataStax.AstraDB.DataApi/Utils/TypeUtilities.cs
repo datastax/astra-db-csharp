@@ -11,6 +11,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
+/// <summary>
+/// Utility methods for mapping .NET types to Data API column type descriptors.
+/// </summary>
 public class TypeUtilities
 {
     internal static Type GetUnderlyingType(Type propertyType, int dictionaryPosition = 1)
@@ -38,6 +41,10 @@ public class TypeUtilities
         return propertyType;
     }
 
+    /// <summary>
+    /// Returns the <see cref="DataApiType"/> that corresponds to the given .NET type,
+    /// unwrapping <c>Nullable&lt;T&gt;</c> if necessary.
+    /// </summary>
     public static DataApiType GetDataApiType(Type propertyType)
     {
         Type underlyingType;
@@ -52,6 +59,9 @@ public class TypeUtilities
         return GetDataApiTypeFromUnderlyingType(underlyingType);
     }
 
+    /// <summary>
+    /// Returns the <see cref="DataApiType"/> that corresponds to the given non-nullable .NET type.
+    /// </summary>
     public static DataApiType GetDataApiTypeFromUnderlyingType(Type propertyType)
     {
         DataApiType type = null;
@@ -222,13 +232,22 @@ internal class UserDefinedProperty
     public Type UnderlyingType { get; set; }
 }
 
+/// <summary>
+/// Represents a Data API column type (e.g., text, int, uuid, vector).
+/// </summary>
 public class DataApiType
 {
+    /// <summary>
+    /// Initializes a new <see cref="DataApiType"/> with the given type key.
+    /// </summary>
     public DataApiType(string key)
     {
         Key = key;
     }
 
+    /// <summary>
+    /// The Data API type identifier string (e.g., "text", "int", "uuid").
+    /// </summary>
     [JsonPropertyName("type")]
     public string Key { get; set; }
 
@@ -238,30 +257,53 @@ public class DataApiType
 
     internal virtual bool IsSimpleType => true;
 
+    /// <summary>Creates an ascii column type.</summary>
     public static DataApiType Ascii() => new DataApiType("ascii");
+    /// <summary>Creates a bigint column type.</summary>
     public static DataApiType BigInt() => new DataApiType("bigint");
+    /// <summary>Creates a blob column type.</summary>
     public static DataApiType Blob() => new DataApiType("blob");
+    /// <summary>Creates a boolean column type.</summary>
     public static DataApiType Boolean() => new DataApiType("boolean");
+    /// <summary>Creates a date column type.</summary>
     public static DataApiType Date() => new DataApiType("date");
+    /// <summary>Creates a decimal column type.</summary>
     public static DataApiType Decimal() => new DataApiType("decimal");
+    /// <summary>Creates a double column type.</summary>
     public static DataApiType Double() => new DataApiType("double");
+    /// <summary>Creates a duration column type.</summary>
     public static DataApiType Duration() => new DataApiType("duration");
+    /// <summary>Creates a float column type.</summary>
     public static DataApiType Float() => new DataApiType("float");
+    /// <summary>Creates an inet (IP address) column type.</summary>
     public static DataApiType Inet() => new DataApiType("inet");
+    /// <summary>Creates an int column type.</summary>
     public static DataApiType Int() => new DataApiType("int");
 
+    /// <summary>Creates a text column type.</summary>
     public static DataApiType Text() => new DataApiType("text");
+    /// <summary>Creates a time column type.</summary>
     public static DataApiType Time() => new DataApiType("time");
+    /// <summary>Creates a timestamp column type.</summary>
     public static DataApiType Timestamp() => new DataApiType("timestamp");
+    /// <summary>Creates a uuid column type.</summary>
     public static DataApiType Uuid() => new DataApiType("uuid");
 
+    /// <summary>Creates a list column type with the specified element type.</summary>
     public static DataApiType List(DataApiType valueType) => new ListDataApiType(valueType);
+    /// <summary>Creates a map column type with string keys and the specified value type.</summary>
     public static DataApiType Map(DataApiType valueType) => new MapDataApiType(valueType);
+    /// <summary>Creates a map column type with the specified key and value types.</summary>
     public static DataApiType Map(DataApiType keyType, DataApiType valueType) => new MapDataApiType(keyType, valueType);
+    /// <summary>Creates a set column type with the specified element type.</summary>
     public static DataApiType Set(DataApiType valueType) => new ListDataApiType("set", valueType);
+    /// <summary>Creates a vector column type with the specified dimension.</summary>
     public static DataApiType Vector(int dimension) => new VectorDataApiType(dimension);
+    /// <summary>Creates a vectorize column type backed by the specified vectorization service.</summary>
     public static DataApiType Vectorize(VectorServiceOptions serviceOptions) => new VectorizeDataApiType(serviceOptions);
+    /// <summary>Creates a vectorize column type with explicit dimensions, backed by the specified vectorization service.</summary>
     public static DataApiType Vectorize(int dimensions, VectorServiceOptions serviceOptions) => new VectorizeDataApiType(dimensions, serviceOptions);
+    /// <summary>Creates a user-defined (UDT) column type with the specified type name.</summary>
     public static DataApiType UserDefined(string name) => new UserDefinedDataApiType(name);
 }
 
@@ -329,11 +371,20 @@ public class VectorizeDataApiType : VectorDataApiType
 
 }
 
+/// <summary>
+/// Represents a user-defined type (UDT) column type in the Data API.
+/// </summary>
 public class UserDefinedDataApiType : DataApiType
 {
+    /// <summary>
+    /// The name of the user-defined type as registered in the Data API schema.
+    /// </summary>
     [JsonPropertyName("udtName")]
     public string UserDefinedTypeName { get; set; }
 
+    /// <summary>
+    /// Initializes a new <see cref="UserDefinedDataApiType"/> with the given UDT name.
+    /// </summary>
     public UserDefinedDataApiType(string name) : base("userDefined")
     {
         UserDefinedTypeName = name;
@@ -346,20 +397,32 @@ public class UserDefinedDataApiType : DataApiType
     internal override bool IsSimpleType => false;
 }
 
+/// <summary>
+/// Represents a list column type in the Data API, parameterized by an element type.
+/// </summary>
 public class ListDataApiType : DataApiType
 {
     [JsonInclude]
     [JsonPropertyName("valueType")]
     internal object ValueTypeObject => ValueType.AsValueType;
 
+    /// <summary>
+    /// The Data API type of the list's elements.
+    /// </summary>
     [JsonIgnore]
     public DataApiType ValueType { get; set; }
 
+    /// <summary>
+    /// Initializes a new list column type with the specified element type.
+    /// </summary>
     public ListDataApiType(DataApiType valueType) : base("list")
     {
         ValueType = valueType;
     }
 
+    /// <summary>
+    /// Initializes a new list-like column type (e.g., set) with the given base type key and element type.
+    /// </summary>
     public ListDataApiType(string baseType, DataApiType valueType) : base(baseType)
     {
         ValueType = valueType;

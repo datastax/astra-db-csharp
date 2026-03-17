@@ -24,6 +24,9 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 
+/// <summary>
+/// Defines the primary key structure of a table, including partition keys and clustering keys with their sort orders.
+/// </summary>
 public class PrimaryKeyDefinition
 {
     /*
@@ -38,6 +41,9 @@ public class PrimaryKeyDefinition
     }
     */
     private List<string> _keys;
+    /// <summary>
+    /// The ordered list of partition key column names.
+    /// </summary>
     [JsonPropertyName("partitionBy")]
     public List<string> Keys
     {
@@ -60,6 +66,9 @@ public class PrimaryKeyDefinition
     internal Dictionary<int, string> KeyList { get; set; } = new Dictionary<int, string>();
 
     private Dictionary<string, SortDirection> _sorts;
+    /// <summary>
+    /// The clustering key columns and their sort directions, ordered by clustering key position.
+    /// </summary>
     [JsonIgnore]
     public Dictionary<string, SortDirection> Sorts
     {
@@ -100,11 +109,26 @@ public class PrimaryKeyDefinition
     internal Dictionary<int, PrimaryKeySort> SortList { get; set; } = new Dictionary<int, PrimaryKeySort>();
 }
 
+/// <summary>
+/// Defines the sort order for a single clustering key column.
+/// </summary>
 public class PrimaryKeySort
 {
+    /// <summary>
+    /// The column name of the clustering key.
+    /// </summary>
     public string Key { get; set; }
+
+    /// <summary>
+    /// The sort direction for this clustering key column.
+    /// </summary>
     public SortDirection Direction { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="PrimaryKeySort"/> with the specified key and sort direction.
+    /// </summary>
+    /// <param name="key">The column name of the clustering key.</param>
+    /// <param name="direction">The sort direction for this clustering key column.</param>
     public PrimaryKeySort(string key, SortDirection direction)
     {
         Key = key;
@@ -112,8 +136,14 @@ public class PrimaryKeySort
     }
 }
 
+/// <summary>
+/// Extension methods for validating primary key ordering sequences.
+/// </summary>
 public static class PrimaryKeyExtensions
 {
+    /// <summary>
+    /// Determines whether a sequence of integer key positions forms a valid contiguous sequence starting from 1.
+    /// </summary>
     public static bool IsValidKeyOrder(this IEnumerable<int> numbers)
     {
         if (numbers == null || !numbers.Any())

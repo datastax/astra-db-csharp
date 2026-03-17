@@ -25,17 +25,17 @@ internal interface IFindManyOptions<T, TSort> : IFindOptions<T, TSort>
     where TSort : SortBuilder<T>
 {
     /// <summary>
-    /// Gets or sets the number of documents to skip.
+    /// The number of documents to skip.
     /// </summary>
     internal int? Skip { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum number of documents to return.
+    /// The maximum number of documents to return.
     /// </summary>
     internal int? Limit { get; set; }
 
     /// <summary>
-    /// Gets or sets whether to include the sort vector in the results.
+    /// Whether to include the sort vector in the results.
     /// </summary>
     internal bool? IncludeSortVector { get; set; }
 

@@ -81,6 +81,9 @@ public class DocumentConverter<T> : JsonConverter<T>
         }
     }
 
+    /// <summary>
+    /// Reads and converts JSON to a <typeparamref name="T"/> document instance.
+    /// </summary>
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -123,6 +126,9 @@ public class DocumentConverter<T> : JsonConverter<T>
         throw new JsonException("Unexpected end of JSON");
     }
 
+    /// <summary>
+    /// Writes a <typeparamref name="T"/> document instance as JSON.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();

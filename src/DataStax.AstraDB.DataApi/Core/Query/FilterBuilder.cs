@@ -23,6 +23,10 @@ using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// Builds filter expressions for querying documents or rows in a collection or table.
+/// </summary>
+/// <typeparam name="T">The type of the document or row being filtered.</typeparam>
 public class FilterBuilder<T>
 {
     /// <summary>
@@ -252,7 +256,7 @@ public class FilterBuilder<T>
     /// <param name="values">The array of values</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="In{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="In{TField}(Expression{Func{T, TField[]}},TField)"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> In<T2>(string fieldName, T2[] values)
     {
@@ -291,7 +295,7 @@ public class FilterBuilder<T>
     /// <param name="value">The value to check for.</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="In{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="In{TField}(Expression{Func{T, TField[]}},TField)"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> In(string fieldName, object value)
     {
@@ -349,7 +353,7 @@ public class FilterBuilder<T>
     /// <param name="values">The array of values</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="Nin{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="Nin{TField}(Expression{Func{T, TField}},TField[])"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> Nin<T2>(string fieldName, T2[] values)
     {
@@ -386,7 +390,6 @@ public class FilterBuilder<T>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="value"></param>
-    /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField value)
     {
@@ -396,10 +399,8 @@ public class FilterBuilder<T>
     /// <summary>
     /// Not in operator -- Match items where the array field does not match the specified value.
     /// </summary>
-    /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="field"></param>
     /// <param name="value"></param>
-    /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin(string field, object value)
     {
@@ -438,7 +439,7 @@ public class FilterBuilder<T>
     /// <param name="array">The array of values to check against</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="All{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="All{TField}(Expression{Func{T,TField[]}}, TField[])"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> All<TField>(string fieldName, TField[] array)
     {
@@ -558,20 +559,41 @@ public class FilterBuilder<T>
 
 }
 
+/// <summary>
+/// Represents a primary key column filter restricted to a single column name and value.
+/// Used in table operations that require filtering by primary key fields.
+/// </summary>
 public class PrimaryKeyFilter
 {
+    /// <summary>
+    /// Initializes a new <see cref="PrimaryKeyFilter"/> with a column name and value.
+    /// </summary>
+    /// <param name="columnName">The name of the primary key column.</param>
+    /// <param name="value">The value to match.</param>
     public PrimaryKeyFilter(string columnName, object value)
     {
         ColumnName = columnName;
         Value = value;
     }
 
+    /// <summary>The name of the primary key column.</summary>
     public string ColumnName { get; set; }
+    /// <summary>The value to match for this primary key column.</summary>
     public object Value { get; set; }
 }
 
+/// <summary>
+/// A strongly-typed primary key column filter using a member expression to specify the column.
+/// </summary>
+/// <typeparam name="T">The type of the row or document.</typeparam>
+/// <typeparam name="TValue">The type of the primary key column value.</typeparam>
 public class PrimaryKeyFilter<T, TValue> : PrimaryKeyFilter
 {
+    /// <summary>
+    /// Initializes a new <see cref="PrimaryKeyFilter{T, TValue}"/> using a member expression and value.
+    /// </summary>
+    /// <param name="columnExpression">An expression identifying the primary key column.</param>
+    /// <param name="value">The value to match.</param>
     public PrimaryKeyFilter(Expression<Func<T, TValue>> columnExpression, TValue value)
         : base(columnExpression.GetMemberNameTree(), value)
     {

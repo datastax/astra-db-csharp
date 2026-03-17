@@ -26,7 +26,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// A cursor for iterating over the results of a query in a streaming manner.
 ///  
 /// When multiple results are returned by the underlying API, they are returned in batches.
-/// You can use the <see cref="MoveNextAsync"/> method to iterate over the batches
+/// You can use the <see cref="MoveNextAsync(CancellationToken)"/> method to iterate over the batches
 /// and <see cref="Current"/> to access the current batch of results.
 /// 
 /// The <see cref="ToAsyncEnumerator"/> and <see cref="ToEnumerable"/> methods create a new cursor to ensure
@@ -80,7 +80,7 @@ public class Cursor<T> : IDisposable, IParentCursor
     /// </summary>
     /// <returns>True if there are more batches, false otherwise.</returns>
     /// <remarks>
-    /// The asynchronous version <see cref="MoveNextAsync"/> is recommended to avoid potential deadlocks.
+    /// The asynchronous version <see cref="MoveNextAsync(CancellationToken)"/> is recommended to avoid potential deadlocks.
     /// </remarks>
     public bool MoveNext()
     {
@@ -136,6 +136,9 @@ public class Cursor<T> : IDisposable, IParentCursor
         return true;
     }
 
+    /// <summary>
+    /// Releases all resources used by the cursor.
+    /// </summary>
     public void Dispose()
     {
         _semaphore.Dispose();

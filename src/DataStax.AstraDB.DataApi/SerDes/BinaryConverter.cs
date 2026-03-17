@@ -21,8 +21,15 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
+/// <summary>
+/// JSON converter that serializes and deserializes byte arrays using the Data API
+/// binary format: <c>{ "$binary": "&lt;base64&gt;" }</c>.
+/// </summary>
 public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
 {
+    /// <summary>
+    /// Reads and converts a JSON <c>$binary</c> object to a <see cref="byte"/> array.
+    /// </summary>
     public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -76,6 +83,9 @@ public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
         }
     }
 
+    /// <summary>
+    /// Writes a <see cref="byte"/> array as a JSON <c>$binary</c> object with a base-64 encoded value.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();

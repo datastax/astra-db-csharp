@@ -705,11 +705,11 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <summary>
     /// Find rows in the table.
     /// 
-    /// The Find() methods return a <see cref="FindEnumerator{T,T,TableSortBuilder{T}}"/> object that can be used to further structure the query
+    /// The Find() methods return a <see cref="FindEnumerator{T,TResult,TSort}"/> object that can be used to further structure the query
     /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
     /// 
-    /// The <see cref="FindEnumerator{T,T,TableSortBuilder{T}}"/> object can be directly enumerated both synchronously and asynchronously.
-    /// Secondarily, the results can be paged through manually by using the results of <see cref="FindEnumerator{T,T,TableSortBuilder{T}}.ToCursor()"/>.
+    /// The <see cref="FindEnumerator{T,TResult,TSort}"/> object can be directly enumerated both synchronously and asynchronously.
+    /// Secondarily, the results can be paged through manually by using the results of <see cref="FindEnumerator{T,TResult,TSort}.ToCursor()"/>.
     /// </summary>
     /// <returns></returns>
     /// <example>
@@ -733,9 +733,9 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// </code>
     /// </example>
     /// <remarks>
-    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="CommandOptions.TimeoutOptions.ConnectionTimeout"/>
-    /// and <see cref="CommandOptions.TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
-    /// however <see cref="CommandOptions.TimeoutOptions.BulkOperationCancellationToken"/> settings are ignored due to the nature of Enueration.
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
+    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enueration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
     public FindEnumerator<T, T, TableSortBuilder<T>> Find()
@@ -748,7 +748,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <returns></returns>
     /// <example>
     /// <code>
-    /// var filterBuilder = Builders<BookRow>.Filter;
+    /// var filterBuilder = Builders{BookRow}.Filter;
     /// var filter = filterBuilder.Gt(x => x.NumberOfPages, 430);
     /// var matchingBooks = table.Find(filter).ToList();
     /// await foreach (var bookRow in matchingBooks)
@@ -762,7 +762,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return Find(filter, null);
     }
 
-    /// <inheritdoc cref="Find(Filter{T})"/>
+    /// <inheritdoc cref="Find(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public FindEnumerator<T, T, TableSortBuilder<T>> Find(TableFilter<T> filter, CommandOptions commandOptions)
@@ -770,7 +770,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return Find<T>(filter, commandOptions);
     }
 
-    /// <inheritdoc cref="Find(Filter{T},CommandOptions)"/>
+    /// <inheritdoc cref="Find(TableFilter{T},CommandOptions)"/>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
     /// <remarks>
@@ -820,15 +820,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOne(null, null, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync(Filter{T})"/>
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T})"/>
     public T FindOne(TableFilter<T> filter)
     {
         return FindOne(filter, null, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(Filter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync(Filter{T}, CommandOptions)"/>
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, CommandOptions)"/>
     public T FindOne(TableFilter<T> filter, CommandOptions commandOptions)
     {
         return FindOne(filter, null, commandOptions);
@@ -841,15 +841,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOne<T>(null, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(Filter{T}, TableFindOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync(Filter{T}, TableFindOptions{T})"/>
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOptions{T})"/>
     public T FindOne(TableFilter<T> filter, TableFindOptions<T> findOptions)
     {
         return FindOne<T>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(Filter{T}, TableFindOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync(Filter{T}, TableFindOptions{T}, CommandOptions)"/> 
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/> 
     public T FindOne(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions)
     {
         return FindOne<T>(filter, findOptions, commandOptions);
@@ -862,29 +862,29 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOne<TResult>(null, null, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T})"/>
     public TResult FindOne<TResult>(TableFilter<T> filter) where TResult : class
     {
         return FindOne<TResult>(filter, null, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T}, CommandOptions)"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, CommandOptions)"/>
     public TResult FindOne<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
     {
         return FindOne<TResult>(filter, null, commandOptions);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T})"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T})"/>
     public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions) where TResult : class
     {
         return FindOne<TResult>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T}, CommandOptions)"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/>
     public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
     {
         return FindOneAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
@@ -909,7 +909,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOneAsync(filter, null, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<T> FindOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
@@ -927,7 +927,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOneAsync<T>(null, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(Filter{T})"/>
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOptions<T> findOptions)
@@ -935,7 +935,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOneAsync<T>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(Filter{T}, TableFindOptions{T})"/>
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
@@ -963,7 +963,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOneAsync<TResult>(filter, null, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
@@ -971,7 +971,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOneAsync<TResult>(filter, null, commandOptions);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T})"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions) where TResult : class
@@ -979,7 +979,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOneAsync<TResult>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(Filter{T}, TableFindOptions{T})"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
@@ -1071,18 +1071,18 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
     public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update)
     {
         UpdateOne(filter, update, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, CommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T}, CommandOptions)"/>
+    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, CommandOptions)"/>
     public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
     {
         UpdateOneAsync(filter, update, commandOptions, true).ResultSync();
@@ -1100,7 +1100,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return UpdateOneAsync(filter, update, null);
     }
 
-    /// <inheritdoc cref="UpdateOneAsync(Filter{T}, UpdateBuilder{T})"/>
+    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
     /// <param name="filter"></param>
     /// <param name="update"></param>
     /// <param name="commandOptions"></param>
@@ -1121,7 +1121,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(DeleteOptions{T})"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
     public DeleteResult DeleteOne(TableDeleteOptions<T> deleteOptions)
@@ -1130,18 +1130,18 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T})"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T})"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
     public DeleteResult DeleteOne(TableFilter<T> filter)
     {
         return DeleteOne(filter, null, null);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T}, CommandOptions)"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, CommandOptions)"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
     public DeleteResult DeleteOne(TableFilter<T> filter, CommandOptions commandOptions)
     {
         return DeleteOne(filter, null, commandOptions);
@@ -1157,18 +1157,18 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T})"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
     public DeleteResult DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
     {
         return DeleteOne(filter, deleteOptions, null);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T}, CommandOptions)"/>
+    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T}, CommandOptions)"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
     public DeleteResult DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
         var response = DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
@@ -1195,7 +1195,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return DeleteOneAsync(filter, null, null);
     }
 
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
@@ -1211,7 +1211,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return DeleteOneAsync(null, deleteOptions, commandOptions);
     }
 
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="deleteOptions"></param>
     public Task<DeleteResult> DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
@@ -1219,7 +1219,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return DeleteOneAsync(filter, deleteOptions, null);
     }
 
-    /// <inheritdoc cref="DeleteOneAsync(Filter{T}, TableDeleteOptions{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="deleteOptions"></param>
     /// <param name="commandOptions"></param>
@@ -1237,15 +1237,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return response.Result;
     }
 
-    /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
-    /// Synchronous version of <see cref="DeleteManyAsync(Filter{T})"/>
+    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T})"/>
+    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T})"/>
     public void DeleteMany(TableFilter<T> filter)
     {
         DeleteMany(filter, null);
     }
 
-    /// <inheritdoc cref="DeleteManyAsync(Filter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="DeleteManyAsync(Filter{T}, CommandOptions)"/>
+    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T}, CommandOptions)"/>
     public void DeleteMany(TableFilter<T> filter, CommandOptions commandOptions)
     {
         DeleteManyAsync(filter, commandOptions, true).ResultSync();
@@ -1261,7 +1261,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return DeleteManyAsync(filter, null);
     }
 
-    /// <inheritdoc cref="DeleteManyAsync(Filter{T})"/>
+    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
     public Task DeleteManyAsync(TableFilter<T> filter, CommandOptions commandOptions)

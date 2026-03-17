@@ -19,11 +19,17 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// A result document returned from a reranked (hybrid search) query, including its reranking scores.
+/// </summary>
+/// <typeparam name="T">The type of the result document.</typeparam>
 public class RerankedResult<T>
 {
+    /// <summary>The result document.</summary>
     [JsonIgnore]
     public T Document { get; set; }
 
+    /// <summary>The reranking scores associated with this result, keyed by score name.</summary>
     [JsonPropertyName("scores")]
     public Dictionary<string, object> Scores { get; set; }
 }

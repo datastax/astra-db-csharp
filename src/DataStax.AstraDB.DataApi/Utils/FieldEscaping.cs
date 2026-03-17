@@ -22,15 +22,26 @@ using System.Text.RegularExpressions;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
+/// <summary>
+/// Utility for escaping and unescaping field names for use in Data API field paths.
+/// Dots and ampersands within individual field name segments are escaped so they are
+/// not interpreted as path separators or escape characters.
+/// </summary>
 public static class FieldEscaping
 {
     private static readonly Regex _escapeRegex = new("([.&])", RegexOptions.Compiled);
-    
+
+    /// <summary>
+    /// Escapes each segment and joins them with '.' to produce a valid Data API field path.
+    /// </summary>
     public static string EscapeFieldNames(params string[] segments)
     {
         return EscapeFieldNames((IEnumerable<string>)segments);
     }
-    
+
+    /// <summary>
+    /// Escapes each segment and joins them with '.' to produce a valid Data API field path.
+    /// </summary>
     public static string EscapeFieldNames(IEnumerable<string> segments)
     {
         if (segments == null)
@@ -43,6 +54,9 @@ public static class FieldEscaping
         ));
     }
 
+    /// <summary>
+    /// Splits an escaped Data API field path back into its individual unescaped segments.
+    /// </summary>
     public static string[] UnescapeFieldPath(string path)
     {
         if (string.IsNullOrEmpty(path))

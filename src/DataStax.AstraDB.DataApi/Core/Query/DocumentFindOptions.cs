@@ -18,6 +18,10 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// Options for finding a single document in a collection.
+/// </summary>
+/// <typeparam name="T">The type of the document.</typeparam>
 public class DocumentFindOptions<T> : FindOptions<T, DocumentSortBuilder<T>>
 {
     /// <summary>

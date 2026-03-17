@@ -18,11 +18,21 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Overrides the table name used when mapping a class to a database table.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class TableNameAttribute : Attribute
 {
+    /// <summary>
+    /// The table name to use in the database.
+    /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="TableNameAttribute"/> with the specified table name.
+    /// </summary>
+    /// <param name="name">The table name to use in the database.</param>
     public TableNameAttribute(string name)
     {
         Name = name;

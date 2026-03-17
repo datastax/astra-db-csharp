@@ -18,6 +18,9 @@ namespace DataStax.AstraDB.DataApi.Core;
  * limitations under the License.
  */
 
+/// <summary>
+/// Configuration options for a vector embedding service used to automatically generate embeddings.
+/// </summary>
 public class VectorServiceOptions
 {
     /// <summary>

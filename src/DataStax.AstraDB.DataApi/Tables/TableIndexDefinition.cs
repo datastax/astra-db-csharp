@@ -31,6 +31,9 @@ public class TableIndexDefinition
 
     private object _column;
 
+    /// <summary>
+    /// The column (or column specification) that this index targets.
+    /// </summary>
     [JsonPropertyName("column")]
     public virtual object Column
     {

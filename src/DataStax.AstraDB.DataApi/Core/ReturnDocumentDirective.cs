@@ -23,12 +23,22 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// </summary>
 public enum ReturnDocumentDirective
 {
+    /// <summary>Returns the document as it was before the operation was applied.</summary>
     Before,
+    /// <summary>Returns the document as it is after the operation was applied.</summary>
     After
 }
 
+/// <summary>
+/// Extension methods for <see cref="ReturnDocumentDirective"/>.
+/// </summary>
 public static class ReturnDocumentDirectiveExtensions
 {
+    /// <summary>
+    /// Serializes a <see cref="ReturnDocumentDirective"/> value to its Data API string representation.
+    /// </summary>
+    /// <param name="returnDocumentDirective">The directive to serialize.</param>
+    /// <returns>"before", "after", or <c>null</c> if the value is <c>null</c>.</returns>
     public static string Serialize(this ReturnDocumentDirective? returnDocumentDirective)
     {
         if (returnDocumentDirective == null) return null;

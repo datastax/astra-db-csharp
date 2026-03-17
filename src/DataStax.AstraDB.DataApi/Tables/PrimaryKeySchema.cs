@@ -18,9 +18,15 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Describes the schema of a single primary key component, as returned by the Data API.
+/// </summary>
 public class PrimaryKeySchema
 {
-  [JsonPropertyName("type")]
-  public string Type { get; set; }
+    /// <summary>
+    /// The data type of the primary key column.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
 }
 

@@ -49,6 +49,9 @@ internal class TableFindStatusResult<T> : TableFindStatusResult
 
 internal class SchemaColumn
 {
+    /// <summary>
+    /// The Data API type name for this column.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName("type")]
     public string Type { get; set; }

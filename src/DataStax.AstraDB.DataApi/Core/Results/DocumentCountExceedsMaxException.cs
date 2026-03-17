@@ -23,6 +23,9 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 /// </summary>
 public class DocumentCountExceedsMaxException : Exception
 {
+    /// <summary>
+    /// Initializes a new instance of <see cref="DocumentCountExceedsMaxException"/>.
+    /// </summary>
     public DocumentCountExceedsMaxException()
     {
 

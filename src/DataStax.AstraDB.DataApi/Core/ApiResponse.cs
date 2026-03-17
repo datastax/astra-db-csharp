@@ -21,27 +21,48 @@ namespace DataStax.AstraDB.DataApi.Core;
 
 internal class ApiResponseWithStatus<T>
 {
+    /// <summary>
+    /// The status payload returned by the Data API.
+    /// </summary>
     [JsonPropertyName("status")]
     public T Result { get; set; }
 
+    /// <summary>
+    /// Errors returned by the Data API, if any.
+    /// </summary>
     [JsonPropertyName("errors")]
     public List<ApiError> Errors { get; set; }
 
+    /// <summary>
+    /// Warnings returned by the Data API, if any.
+    /// </summary>
     [JsonPropertyName("warnings")]
     public List<ApiWarning> Warnings { get; set; }
 }
 
 internal class ApiResponseWithData<T, TStatus>
 {
+    /// <summary>
+    /// Errors returned by the Data API, if any.
+    /// </summary>
     [JsonPropertyName("errors")]
     public List<ApiError> Errors { get; set; }
 
+    /// <summary>
+    /// Warnings returned by the Data API, if any.
+    /// </summary>
     [JsonPropertyName("warnings")]
     public List<ApiWarning> Warnings { get; set; }
 
+    /// <summary>
+    /// The data payload returned by the Data API.
+    /// </summary>
     [JsonPropertyName("data")]
     public T Data { get; set; }
 
+    /// <summary>
+    /// The status payload returned by the Data API.
+    /// </summary>
     [JsonPropertyName("status")]
     public TStatus Status { get; set; }
 }

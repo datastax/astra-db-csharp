@@ -20,8 +20,14 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// Base class for find operation options, providing projection and sort configuration.
+/// </summary>
+/// <typeparam name="T">The type of the document or row.</typeparam>
+/// <typeparam name="TSort">The type of the sort builder.</typeparam>
 public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort : SortBuilder<T>
 {
+    /// <summary>The projection to apply to the results.</summary>
     [JsonIgnore]
     public IProjectionBuilder Projection { get; set; }
 
@@ -31,14 +37,18 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
     [JsonIgnore]
     public bool? IncludeSimilarity { get; set; }
 
+    /// <summary>When <see langword="true"/>, the sort vector is included in the response.</summary>
     protected bool? _includeSortVector;
 
+    /// <summary>Number of results to skip before returning documents.</summary>
     protected int? _skip;
 
+    /// <summary>Maximum number of documents to return.</summary>
     protected int? _limit;
 
     internal Filter<T> Filter { get; set; }
 
+    /// <summary>The sort to apply to the results.</summary>
     [JsonIgnore]
     public abstract TSort Sort { get; set; }
 

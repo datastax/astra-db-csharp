@@ -16,6 +16,9 @@
 
 namespace DataStax.AstraDB.DataApi.Collections;
 
+/// <summary>
+/// The result of inserting a single document into a collection.
+/// </summary>
 public class CollectionInsertOneResult<T>
 {
     /// <summary>

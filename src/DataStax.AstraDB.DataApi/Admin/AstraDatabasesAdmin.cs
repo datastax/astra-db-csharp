@@ -455,7 +455,7 @@ public class AstraDatabasesAdmin
             }
         }
 
-        return await GetDatabaseAdminAsync(newDbId, creationOptions.Region);
+        return GetDatabaseAdmin(newDbId, creationOptions.Region);
     }
 
     private void WaitForDatabase(Guid dbGuid, HashSet<AstraDatabaseStatus> waitingStatuses, AstraDatabaseStatus targetStatus)
@@ -755,7 +755,7 @@ public class AstraDatabasesAdmin
         return new DatabaseAdminAstra(database, _client, _adminOptions);
     }
 
-    private async Task<DatabaseAdminAstra> GetDatabaseAdminAsync(Guid dbGuid, string region)
+    private DatabaseAdminAstra GetDatabaseAdmin(Guid dbGuid, string region)
     {
         var apiEndpoint = $"https://{dbGuid}-{region}.apps.astra.datastax.com";
         var database = _client.GetDatabase(apiEndpoint);

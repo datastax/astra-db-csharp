@@ -76,20 +76,20 @@ public class AlterTableAddColumns : IAlterTableOperation
 public class AlterTableColumnDefinition
 {
   /// <summary>
-  /// Gets or sets the type of the column.
+  /// The type of the column.
   /// </summary>
   [JsonPropertyName("type")]
   public string Type { get; set; }
 
   /// <summary>
-  /// Gets or sets the key type if the column is a map or similar structure.
+  /// The key type if the column is a map or similar structure.
   /// </summary>
   [JsonPropertyName("keyType")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public string KeyType { get; set; }
 
   /// <summary>
-  /// Gets or sets the value type if the column is a map or similar structure.
+  /// The value type if the column is a map or similar structure.
   /// </summary>
   [JsonPropertyName("valueType")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -137,14 +137,14 @@ public class AlterTableVectorColumnDefinition
   public string Type => "vector";
 
   /// <summary>
-  /// Gets or sets the vector dimension.
+  /// The vector dimension.
   /// </summary>
   [JsonPropertyName("dimension")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public int? VectorDimension { get; set; }
 
   /// <summary>
-  /// Gets or sets the vector service options.
+  /// The vector service options.
   /// </summary>
   [JsonPropertyName("service")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

@@ -297,7 +297,6 @@ public class Database
     /// <inheritdoc cref="CreateCollectionAsync(string)" />
     /// <param name="collectionName"></param>
     /// <param name="commandOptions"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Task<Collection<Document>> CreateCollectionAsync(string collectionName, DatabaseCollectionCommandOptions commandOptions)
     {
         return CreateCollectionAsync<Document>(collectionName, null, commandOptions);
@@ -501,6 +500,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
     public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName) where T : class
     {
@@ -508,6 +508,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
     public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition) where T : class
     {
@@ -515,6 +516,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
     public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
@@ -659,6 +661,7 @@ public class Database
 
     /// <inheritdoc cref="GetCollection{T}(string)" />
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     public Collection<T, TId> GetCollection<T, TId>(string collectionName) where T : class
     {
         return GetCollection<T, TId>(collectionName, null);
@@ -781,22 +784,46 @@ public class Database
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Creates a table using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public Task<Table<TRow>> CreateTableAsync<TRow>() where TRow : class, new()
     {
         return CreateTableAsync<TRow>(null as CreateTableCommandOptions);
     }
 
+    /// <summary>
+    /// Creates a table using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public Task<Table<TRow>> CreateTableAsync<TRow>(CreateTableCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
         return CreateTableAsync<TRow>(tableName, options);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName) where TRow : class, new()
     {
         return CreateTableAsync<TRow>(tableName, null);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CreateTableCommandOptions options) where TRow : class, new()
     {
         var udtProperties = TypeUtilities.FindPropertiesWithUserDefinedTypeAttribute(typeof(TRow));
@@ -816,11 +843,24 @@ public class Database
         return await CreateTableAsync<TRow>(tableName, definition, options, false);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name and definition.
+    /// </summary>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="definition">The table definition describing columns and primary key.</param>
+    /// <returns>A <see cref="Table{Row}"/> instance for the created table.</returns>
     public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition)
     {
         return CreateTableAsync(tableName, definition, null);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name, definition, and options.
+    /// </summary>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="definition">The table definition describing columns and primary key.</param>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{Row}"/> instance for the created table.</returns>
     public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, CreateTableCommandOptions options)
     {
         if (definition.PrimaryKey == null)
@@ -1268,7 +1308,7 @@ public class Database
     /// Create a User Defined Type dynamically by specifying the class that defines the type
     /// </summary>
     /// <remarks>
-    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
     /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
     /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
@@ -1312,7 +1352,7 @@ public class Database
         return CreateTypeAsync(typeName, definition, null);
     }
 
-    /// <inheritdoc cref="CreateTypeAsync(UserDefinedTypeDefinition)"/>
+    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition)"/>
     /// <param name="typeName"></param>
     /// <param name="definition"></param>
     /// <param name="options"></param>
@@ -1350,7 +1390,7 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTypeAsync{T}(string)"/> 
+    /// Synchronous version of <see cref="DropTypeAsync(string)"/> 
     /// </summary>
     /// <inheritdoc cref="DropTypeAsync(string)"/>
     public void DropType(string typeName)
@@ -1390,7 +1430,7 @@ public class Database
     /// Drop a User Defined Type dynamically by specifying the class that defines the type
     /// </summary>
     /// <remarks>
-    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
     /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
     /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
@@ -1482,7 +1522,7 @@ public class Database
     /// Alter a User Defined Type by specifying the class that defines the type
     /// </summary>
     /// <remarks>
-    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
     /// </remarks>
     /// <typeparam name="T">The type that defines the User Defined Type</typeparam>
     /// <param name="operation">The operation to apply to the User Defined Type.</param>

@@ -19,7 +19,14 @@ using DataStax.AstraDB.DataApi.Core;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 
+/// <summary>
+/// Options for dropping a table index.
+/// </summary>
 public class DropIndexCommandOptions : CommandOptions
 {
-  public bool IfExists { get; set; } = false;
+    /// <summary>
+    /// A value indicating whether to skip the drop operation if the index does not exist,
+    /// avoiding an error.
+    /// </summary>
+    public bool IfExists { get; set; } = false;
 }

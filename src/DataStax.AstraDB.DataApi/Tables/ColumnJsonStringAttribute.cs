@@ -18,6 +18,9 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Marks a column to be serialized and deserialized as a JSON string.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 public class ColumnJsonStringAttribute : Attribute
 {

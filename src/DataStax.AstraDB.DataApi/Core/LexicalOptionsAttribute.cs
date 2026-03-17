@@ -26,12 +26,19 @@ namespace DataStax.AstraDB.DataApi.Core;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 public class LexicalOptionsAttribute : Attribute
 {
+    /// <summary>The name of the tokenizer to use. Defaults to "standard".</summary>
     public string TokenizerName { get; set; } = "standard";
+    /// <summary>The token filters to apply during lexical analysis.</summary>
     public string[] Filters { get; set; } = new string[0];
+    /// <summary>The character filters to apply before tokenization.</summary>
     public string[] CharacterFilters { get; set; } = new string[0];
 
+    /// <summary>Additional tokenizer arguments as a JSON string.</summary>
     public string TokenizerArgumentsJson { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="LexicalOptionsAttribute"/> with default settings.
+    /// </summary>
     public LexicalOptionsAttribute() { }
 
     internal Dictionary<string, object> GetArguments()
