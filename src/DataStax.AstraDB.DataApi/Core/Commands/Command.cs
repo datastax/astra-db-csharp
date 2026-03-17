@@ -320,7 +320,7 @@ internal class Command
 
         var ctsForTimeout = new CancellationTokenSource();
         var requestTimeout = TimeoutManager.GetRequestTimeout(commandOptions);
-        if (requestTimeout.Milliseconds > 0)
+        if (requestTimeout.TotalMilliseconds > 0)
         {
             ctsForTimeout.CancelAfter(requestTimeout);
         }

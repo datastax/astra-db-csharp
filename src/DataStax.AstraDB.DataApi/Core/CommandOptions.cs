@@ -134,16 +134,10 @@ public class CommandOptions
                 ConnectionTimeout = list.Select(o => o.TimeoutOptions?.ConnectionTimeout).Merge(),
                 RequestTimeout = list.Select(o => o.TimeoutOptions?.RequestTimeout).Merge(),
                 BulkOperationTimeout = list.Select(o => o.TimeoutOptions?.BulkOperationTimeout).Merge(),
-                Defaults = new TimeoutDefaults()
-                {
-                    RequestTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.RequestTimeout).Merge() ?? TimeoutDefaults.DefaultRequestTimeout,
-                    ConnectionTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.ConnectionTimeout).Merge() ?? TimeoutDefaults.DefaultConnectionTimeout,
-                    BulkOperationTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.BulkOperationTimeout).Merge() ?? TimeoutDefaults.DefaultBulkOperationTimeout,
-                    CollectionAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.CollectionAdminTimeout).Merge() ?? TimeoutDefaults.DefaultCollectionAdminTimeout,
-                    TableAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.TableAdminTimeout).Merge() ?? TimeoutDefaults.DefaultTableAdminTimeout,
-                    DatabaseAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.DatabaseAdminTimeout).Merge() ?? TimeoutDefaults.DefaultDatabaseAdminTimeout,
-                    KeyspaceAdminTimeout = list.Select(o => o.TimeoutOptions?.Defaults?.KeyspaceAdminTimeout).Merge() ?? TimeoutDefaults.DefaultKeyspaceAdminTimeout,
-                }
+                CollectionAdminTimeout = list.Select(o => o.TimeoutOptions?.CollectionAdminTimeout).Merge(),
+                TableAdminTimeout = list.Select(o => o.TimeoutOptions?.TableAdminTimeout).Merge(),
+                DatabaseAdminTimeout = list.Select(o => o.TimeoutOptions?.DatabaseAdminTimeout).Merge(),
+                KeyspaceAdminTimeout = list.Select(o => o.TimeoutOptions?.KeyspaceAdminTimeout).Merge(),
             },
             ApiVersion = list.Select(o => o.ApiVersion).Merge(),
             CancellationToken = list.Select(o => o.CancellationToken).Merge(),
@@ -182,13 +176,7 @@ public class CommandOptions
             IncludeKeyspaceInUrl = true,
             SerializeGuidAsDollarUuid = true,
             SerializeDateAsDollarDate = true,
-            TimeoutOptions = new TimeoutOptions
-            {
-                ConnectionTimeout = TimeoutDefaults.DefaultConnectionTimeout,
-                RequestTimeout = TimeoutDefaults.DefaultRequestTimeout,
-                BulkOperationTimeout = TimeoutDefaults.DefaultBulkOperationTimeout,
-                Defaults = new TimeoutDefaults()
-            }
+            TimeoutOptions = new TimeoutOptions()
         };
     }
 }

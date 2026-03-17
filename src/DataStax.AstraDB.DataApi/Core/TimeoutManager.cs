@@ -21,44 +21,22 @@ internal class TimeoutManager
 {
     internal TimeSpan GetRequestTimeout(CommandOptions commandOptions)
     {
-        if (commandOptions.TimeoutOptions?.RequestTimeout != null)
-        {
-            return commandOptions.TimeoutOptions.RequestTimeout.Value;
-        }
-        return GetDefaultRequestTimeout(commandOptions);
+        return commandOptions.TimeoutOptions?.RequestTimeout ?? GetDefaultRequestTimeout(commandOptions);
     }
 
     internal TimeSpan GetConnectionTimeout(CommandOptions commandOptions)
     {
-        if (commandOptions.TimeoutOptions?.ConnectionTimeout != null)
-        {
-            return commandOptions.TimeoutOptions.ConnectionTimeout.Value;
-        }
-        return GetDefaultConnectionTimeout(commandOptions);
+        return commandOptions.TimeoutOptions?.ConnectionTimeout ?? TimeoutOptions.DefaultConnectionTimeout;
     }
 
     internal TimeSpan GetBulkOperationTimeout(CommandOptions commandOptions)
     {
-        if (commandOptions.TimeoutOptions?.BulkOperationTimeout != null)
-        {
-            return commandOptions.TimeoutOptions.BulkOperationTimeout.Value;
-        }
-        return GetDefaultBulkOperationTimeout(commandOptions);
+        return commandOptions.TimeoutOptions?.BulkOperationTimeout ?? TimeoutOptions.DefaultBulkOperationTimeout;
     }
 
     virtual internal TimeSpan GetDefaultRequestTimeout(CommandOptions commandOptions)
     {
-        return commandOptions.TimeoutOptions.Defaults.RequestTimeout;
-    }
-
-    virtual internal TimeSpan GetDefaultConnectionTimeout(CommandOptions commandOptions)
-    {
-        return commandOptions.TimeoutOptions.Defaults.ConnectionTimeout;
-    }
-
-    virtual internal TimeSpan GetDefaultBulkOperationTimeout(CommandOptions commandOptions)
-    {
-        return commandOptions.TimeoutOptions.Defaults.BulkOperationTimeout;
+        return TimeoutOptions.DefaultRequestTimeout;
     }
 }
 
@@ -66,7 +44,7 @@ internal class CollectionAdminTimeoutManager : TimeoutManager
 {
     override internal TimeSpan GetDefaultRequestTimeout(CommandOptions commandOptions)
     {
-        return commandOptions.TimeoutOptions.Defaults.CollectionAdminTimeout;
+        return commandOptions.TimeoutOptions?.CollectionAdminTimeout ?? TimeoutOptions.DefaultCollectionAdminTimeout;
     }
 }
 
@@ -74,7 +52,7 @@ internal class TableAdminTimeoutManager : TimeoutManager
 {
     override internal TimeSpan GetDefaultRequestTimeout(CommandOptions commandOptions)
     {
-        return commandOptions.TimeoutOptions.Defaults.TableAdminTimeout;
+        return commandOptions.TimeoutOptions?.TableAdminTimeout ?? TimeoutOptions.DefaultTableAdminTimeout;
     }
 }
 
@@ -82,7 +60,7 @@ internal class DatabaseAdminTimeoutManager : TimeoutManager
 {
     override internal TimeSpan GetDefaultRequestTimeout(CommandOptions commandOptions)
     {
-        return commandOptions.TimeoutOptions.Defaults.DatabaseAdminTimeout;
+        return commandOptions.TimeoutOptions?.DatabaseAdminTimeout ?? TimeoutOptions.DefaultDatabaseAdminTimeout;
     }
 }
 
@@ -90,6 +68,6 @@ internal class KeyspaceAdminTimeoutManager : TimeoutManager
 {
     override internal TimeSpan GetDefaultRequestTimeout(CommandOptions commandOptions)
     {
-        return commandOptions.TimeoutOptions.Defaults.KeyspaceAdminTimeout;
+        return commandOptions.TimeoutOptions?.KeyspaceAdminTimeout ?? TimeoutOptions.DefaultKeyspaceAdminTimeout;
     }
 }
