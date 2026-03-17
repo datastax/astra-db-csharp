@@ -34,7 +34,7 @@ public class SerializationTests
 				IntProperty = 1,
 				StringArrayProperty = new string[] { "One", "Two", "Three" },
 				BoolProperty = true,
-				DateTimeProperty = DateTime.Now,
+				DateTimeProperty = DateTime.UtcNow,
 				DateTimeOffsetProperty = DateTimeOffset.Now,
 				SkipWhenNull = null
 			}
@@ -66,7 +66,7 @@ public class SerializationTests
 				IntProperty = 1,
 				StringArrayProperty = new string[] { "One", "Two", "Three" },
 				BoolProperty = true,
-				DateTimeProperty = DateTime.Now,
+				DateTimeProperty = DateTime.UtcNow,
 				DateTimeOffsetProperty = DateTimeOffset.Now,
 				SkipWhenNull = null
 			}

@@ -31,7 +31,7 @@ public class TableTests
                 Title = "Computed Wilderness",
                 Author = "Ryan Eau",
                 NumberOfPages = 432,
-                DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                 Genres = new HashSet<string> { "History", "Biography" }
             };
             var row2 = new RowBook()
@@ -39,7 +39,7 @@ public class TableTests
                 Title = "Desert Peace",
                 Author = "Walter Dray",
                 NumberOfPages = 355,
-                DueDate = DateTime.Now - TimeSpan.FromDays(2),
+                DueDate = DateTime.UtcNow - TimeSpan.FromDays(2),
                 Genres = new HashSet<string> { "Fiction" }
             };
             var rows = new List<RowBook> { row1, row2 };
@@ -69,7 +69,7 @@ public class TableTests
                     Title = "Title" + i,
                     Author = "Author" + i,
                     NumberOfPages = 400 + i,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = new HashSet<string> { "History", "Biography" }
                 };
                 rows.Add(row);
@@ -103,7 +103,7 @@ public class TableTests
                     Title = "Title" + i,
                     Author = "Author" + i,
                     NumberOfPages = 400 + i,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = new HashSet<string> { "History", "Biography" }
                 };
                 rows.Add(row);
@@ -113,7 +113,7 @@ public class TableTests
                 Title = "Title1",
                 Author = "This Should Update",
                 NumberOfPages = 1000,
-                DueDate = DateTime.Now,
+                DueDate = DateTime.UtcNow,
                 Genres = new HashSet<string> { "Fiction" }
             });
             var options = new InsertManyOptions
@@ -232,7 +232,7 @@ public class TableTests
                     Title = "Title " + i,
                     Author = "Author Number" + i,
                     NumberOfPages = 400 + i,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = (i % 2 == 0)
                         ? new HashSet<string> { "History", "Biography" }
                         : new HashSet<string> { "Fiction", "History" },
@@ -247,7 +247,7 @@ public class TableTests
                     Title = "Title " + i,
                     Author = "AuthorDeleteMe",
                     NumberOfPages = 22,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = (i % 2 == 0)
                         ? new HashSet<string> { "History", "Biography" }
                         : new HashSet<string> { "Fiction", "History" },
@@ -286,7 +286,7 @@ public class TableTests
                     Title = "Title " + i,
                     Author = "Author Number" + i,
                     NumberOfPages = 400 + i,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = (i % 2 == 0)
                         ? new HashSet<string> { "History", "Biography" }
                         : new HashSet<string> { "Fiction", "History" },
@@ -301,7 +301,7 @@ public class TableTests
                     Title = "Title " + i,
                     Author = "AuthorDeleteMe",
                     NumberOfPages = 22,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = (i % 2 == 0)
                         ? new HashSet<string> { "History", "Biography" }
                         : new HashSet<string> { "Fiction", "History" },

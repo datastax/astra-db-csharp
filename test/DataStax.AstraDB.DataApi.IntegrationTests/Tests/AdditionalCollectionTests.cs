@@ -151,7 +151,7 @@ public class AdditionalCollectionTests
                     Timestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
                     Date = new DateOnly(2000, 1, i + 1),
                     Time = new TimeOnly(12, i),
-                    TimestampWithKind = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Local),
+                    TimestampWithKind = DateTime.SpecifyKind(DateTime.UtcNow.AddDays(i), DateTimeKind.Utc),
                 });
             }
             for (var i = 5; i < 10; i++)
@@ -162,7 +162,7 @@ public class AdditionalCollectionTests
                     Timestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
                     Date = new DateOnly(2000, 1, i + 1),
                     Time = new TimeOnly(12, i),
-                    TimestampWithKind = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Local),
+                    TimestampWithKind = DateTime.SpecifyKind(DateTime.UtcNow.AddDays(i), DateTimeKind.Utc),
                     MaybeDate = new DateOnly(2000, 1, i + 1),
                     MaybeTime = new TimeOnly(12, i),
                     MaybeTimestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
@@ -242,6 +242,35 @@ public class AdditionalCollectionTests
             await fixture.Database.DropCollectionAsync<CollectionNameObject>();
         }
     }
+
+    [Fact]
+    public async Task DateTime_Timezone_Tests()
+    {
+        var collectionName = "dateTimeTestCollection";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<CollectionDatetimeObject>(collectionName);
+            var insertee = new CollectionDatetimeObject {
+                _id = "from_cs",
+                dt_naive = new DateTime(2024, 6, 15, 10, 30, 0, 500, DateTimeKind.Unspecified),
+                dt_aware = new DateTime(2024, 6, 15, 10, 30, 0, 500, DateTimeKind.Utc),
+                dt_unspecified = new DateTime(2024, 6, 15, 10, 30, 0, 500, DateTimeKind.Unspecified)
+            };
+            await collection.InsertOneAsync(insertee);
+
+            var filter = Builders<CollectionDatetimeObject>.CollectionFilter.Eq(d => d._id, "from_cs");
+            var reread = await collection.FindOneAsync(filter);
+
+            Assert.Equal(insertee.dt_naive, reread.dt_naive);
+            Assert.Equal(insertee.dt_aware, reread.dt_aware);
+            Assert.Equal(insertee.dt_unspecified, reread.dt_unspecified);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
 }
 
 [CollectionName("testCollectionNameViaAttribute")]

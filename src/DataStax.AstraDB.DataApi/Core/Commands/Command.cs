@@ -184,6 +184,8 @@ internal class Command
         {
             serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset>());
             serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime>());
+            serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset?>());
+            serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime?>());
         }
         else
         {
@@ -232,6 +234,8 @@ internal class Command
         {
             deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset>());
             deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime>());
+            deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset?>());
+            deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime?>());
         }
         else
         {

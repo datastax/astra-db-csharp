@@ -465,3 +465,27 @@ public class TypesTester
     public TimeOnly? MaybeTime { get; set; }
     public DateTime TimestampWithKind { get; set; }
 }
+
+public class FloatingPointTest{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public float p_float_nan { get; set; }
+    public float p_float_pinf { get; set; }
+    public float p_float_minf { get; set; }
+    public double p_double_nan { get; set; }
+    public double p_double_pinf { get; set; }
+    public double p_double_minf { get; set; }
+    public double[] p_list_double { get; set; }
+    public List<double> p_set_double { get; set; }
+    public float[] p_list_float { get; set; }
+    public List<float> p_set_float { get; set; }
+}
+
+public class CollectionDatetimeObject
+{
+    [DocumentId]
+    public string _id {get; set;}
+    public DateTime dt_naive { get; set; }
+    public DateTime dt_aware { get; set; }
+    public DateTime dt_unspecified { get; set; }
+}

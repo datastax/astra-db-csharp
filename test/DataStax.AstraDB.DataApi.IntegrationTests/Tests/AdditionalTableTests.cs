@@ -135,7 +135,7 @@ public class AdditionalTableTests
                     Timestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
                     Date = new DateOnly(2000, 1, i + 1),
                     Time = new TimeOnly(12, i),
-                    TimestampWithKind = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Local),
+                    TimestampWithKind = DateTime.SpecifyKind(DateTime.UtcNow.AddDays(i), DateTimeKind.Utc),
                 });
             }
             for (var i = 5; i < 10; i++)
@@ -146,7 +146,7 @@ public class AdditionalTableTests
                     Timestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
                     Date = new DateOnly(2000, 1, i + 1),
                     Time = new TimeOnly(12, i),
-                    TimestampWithKind = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Local),
+                    TimestampWithKind = DateTime.SpecifyKind(DateTime.UtcNow.AddDays(i), DateTimeKind.Utc),
                     MaybeDate = new DateOnly(2000, 1, i + 1),
                     MaybeTime = new TimeOnly(12, i),
                     MaybeTimestamp = DateTime.SpecifyKind(DateTime.Now.AddDays(i), DateTimeKind.Unspecified),
@@ -575,21 +575,6 @@ public class AdditionalTableTests
             await fixture.Database.DropTableAsync(tableName);
         }
     }
-
 }
 
-public class FloatingPointTest{
-    [ColumnPrimaryKey]
-    public string id { get; set; }
-    public float p_float_nan { get; set; }
-    public float p_float_pinf { get; set; }
-    public float p_float_minf { get; set; }
-    public double p_double_nan { get; set; }
-    public double p_double_pinf { get; set; }
-    public double p_double_minf { get; set; }
-    public double[] p_list_double { get; set; }
-    public List<double> p_set_double { get; set; }
-    public float[] p_list_float { get; set; }
-    public List<float> p_set_float { get; set; }
-}
 

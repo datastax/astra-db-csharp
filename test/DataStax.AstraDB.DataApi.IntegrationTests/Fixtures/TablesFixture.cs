@@ -69,7 +69,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 Title = "Computed Wilderness",
                 Author = "Ryan Eau",
                 NumberOfPages = 22,
-                DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                 Genres = new HashSet<string>() { "History", "Biography" },
                 Rating = 1.5f
             },
@@ -78,7 +78,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 Title = "Desert Peace",
                 Author = "Walter Dray",
                 NumberOfPages = 33,
-                DueDate = DateTime.Now - TimeSpan.FromDays(2),
+                DueDate = DateTime.UtcNow - TimeSpan.FromDays(2),
                 Genres = new HashSet<string>() { "Fiction" },
                 Rating = 2.50123f
             }
@@ -90,7 +90,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                     Title = "Title " + i,
                     Author = "Author Number" + i,
                     NumberOfPages = 400 + i,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = (i % 2 == 0)
                         ? new HashSet<string> { "History", "Biography" }
                         : new HashSet<string> { "Fiction", "History" },
@@ -120,7 +120,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                     Title = "Computed Wilderness",
                     Author = "Ryan Eau",
                     NumberOfPages = 22,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = new HashSet<string>() { "History", "Biography" },
                     Rating = 1.5f
                 },
@@ -129,7 +129,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                     Title = "Desert Peace",
                     Author = "Walter Dray",
                     NumberOfPages = 33,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(2),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(2),
                     Genres = new HashSet<string>() { "Fiction" },
                     Rating = 2.50123f
                 }
@@ -141,7 +141,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                     Title = "Title " + i,
                     Author = "Author Number" + i,
                     NumberOfPages = 400 + i,
-                    DueDate = DateTime.Now - TimeSpan.FromDays(1),
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
                     Genres = (i % 2 == 0)
                         ? new HashSet<string> { "History", "Biography" }
                         : new HashSet<string> { "Fiction", "History" },

@@ -153,13 +153,13 @@ public class UserDefinedTypesTests
                         Boolean = false,
                         UUID = Guid.NewGuid(),
                         Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us1ns"),
-                        Timestamp = DateTime.Now,
+                        Timestamp = DateTime.UtcNow,
                         Date = DateOnly.FromDateTime(DateTime.Now),
                         Time = TimeOnly.FromDateTime(DateTime.Now),
                         MaybeTimestamp = null,
                         MaybeDate = DateOnly.FromDateTime(DateTime.Now),
                         MaybeTime = null,
-                        TimestampWithKind = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc),
+                        TimestampWithKind = DateTime.UtcNow,
                     },
                     UdtList = new List<SimpleUdt>
                     {
@@ -192,13 +192,13 @@ public class UserDefinedTypesTests
                         Boolean = false,
                         UUID = Guid.NewGuid(),
                         Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us2ns"),
-                        Timestamp = DateTime.Now,
+                        Timestamp = DateTime.UtcNow,
                         Date = DateOnly.FromDateTime(DateTime.Now),
                         Time = TimeOnly.FromDateTime(DateTime.Now),
                         MaybeTimestamp = null,
                         MaybeDate = DateOnly.FromDateTime(DateTime.Now),
                         MaybeTime = null,
-                        TimestampWithKind = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc),
+                        TimestampWithKind = DateTime.UtcNow,
                     },
                     UdtList = new List<SimpleUdt>
                     {
@@ -231,13 +231,13 @@ public class UserDefinedTypesTests
                         Boolean = false,
                         UUID = Guid.NewGuid(),
                         Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us2ns"),
-                        Timestamp = DateTime.Now,
+                        Timestamp = DateTime.UtcNow,
                         Date = DateOnly.FromDateTime(DateTime.Now),
                         Time = TimeOnly.FromDateTime(DateTime.Now),
                         MaybeTimestamp = null,
                         MaybeDate = DateOnly.FromDateTime(DateTime.Now),
                         MaybeTime = null,
-                        TimestampWithKind = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc),
+                        TimestampWithKind = DateTime.UtcNow,
                     },
                     UdtList = new List<SimpleUdt>
                     {
@@ -258,12 +258,38 @@ public class UserDefinedTypesTests
             var table = await fixture.Database.CreateTableAsync<UdtTest>(tableName);
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var filter = Builders<UdtTest>.TableFilter.Eq(b => b.Udt.String, "Test 3");
+            var filter = Builders<UdtTest>.TableFilter.Eq(b => b.Id, 2);
+            var result = await table.FindOneAsync(filter);
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Id);
+            Assert.Equal(result.Udt.String, items[2].Udt.String);
+            Assert.Equal(result.Udt.Int, items[2].Udt.Int);
+            Assert.Equal(result.Udt.TinyInt, items[2].Udt.TinyInt);
+            Assert.Equal(result.Udt.SmallInt, items[2].Udt.SmallInt);
+            Assert.Equal(result.Udt.BigInt, items[2].Udt.BigInt);
+            Assert.Equal(result.Udt.Decimal, items[2].Udt.Decimal);
+            Assert.Equal(result.Udt.Double, items[2].Udt.Double);
+            Assert.Equal(result.Udt.Float, items[2].Udt.Float);
+            Assert.Equal(result.Udt.Boolean, items[2].Udt.Boolean);
+            Assert.Equal(result.Udt.UUID, items[2].Udt.UUID);
+            Assert.Equal(result.Udt.Duration, items[2].Udt.Duration);
+            DateTimeAssert.EqualToMs(result.Udt.Timestamp, items[2].Udt.Timestamp);
+            Assert.Equal(result.Udt.Date, items[2].Udt.Date);
+            Assert.Equal(result.Udt.Time, items[2].Udt.Time);
+            Assert.Equal(result.Udt.MaybeTimestamp, items[2].Udt.MaybeTimestamp);
+            Assert.Equal(result.Udt.MaybeDate, items[2].Udt.MaybeDate);
+            Assert.Equal(result.Udt.MaybeTime, items[2].Udt.MaybeTime);
+            DateTimeAssert.EqualToMs(result.Udt.TimestampWithKind, items[2].Udt.TimestampWithKind);
 
-            //TODO: Can you filter on UDT fields?
-            // var result = await table.FindOneAsync(filter);
-            // Assert.NotNull(result);
-            // Assert.Equal(2, result.Id);
+            Assert.Equal(2, result.UdtList.Count);
+            Assert.Equal(
+                result.UdtList[1].Name,
+                items[2].UdtList[1].Name
+            );
+            Assert.Equal(
+                result.UdtList[1].Number,
+                items[2].UdtList[1].Number
+            );
         }
         catch (Exception ex)
         {
