@@ -104,11 +104,19 @@ internal class SimpleDictionaryConverter
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
             {
                 var keyType = type.GetGenericArguments()[0];
-                if (keyType != typeof(string))
+                var dict = (System.Collections.IDictionary)value;
+                
+                // Empty dictionaries remain as {}
+                if (dict.Count == 0)
                 {
+                    writer.WriteStartObject();
+                    writer.WriteEndObject();
+                }
+                else
+                {
+                    // Non-empty: [[k1,v1],[k2,v2],...]
                     var valueType = type.GetGenericArguments()[1];
                     writer.WriteStartArray();
-                    var dict = (System.Collections.IDictionary)value;
                     foreach (var key in dict.Keys)
                     {
                         writer.WriteStartArray();
@@ -117,8 +125,8 @@ internal class SimpleDictionaryConverter
                         writer.WriteEndArray();
                     }
                     writer.WriteEndArray();
-                    return;
                 }
+                return;
             }
         }
         JsonSerializer.Serialize(writer, value, options);
