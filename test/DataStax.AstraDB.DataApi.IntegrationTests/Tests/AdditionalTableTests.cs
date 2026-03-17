@@ -631,4 +631,83 @@ public class AdditionalTableTests
             await fixture.Database.DropTableAsync(tableName);
         }
     }
+    
+    [Fact]
+    public async Task SteoNonstringMapTableInsertionTests()
+    {
+        var tableName = "steo_nonstrmap_insertiontest";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SBook>(tableName,
+                new CreateTableCommandOptions() { IfNotExists = true });
+            var untypedTable = fixture.Database.GetTable(tableName);
+
+            // typed insertion
+            var row = new SBook()
+            {
+                MapColumnIntStr = new Dictionary<int, string>
+                {
+                    { 1, "value1" },
+                    { 2, "value2" },
+                },
+                MapColumnStrStr = new Dictionary<string, string>
+                {
+                    { "key1", "value1" },
+                    { "key2", "value2" },
+                },
+                Title = "Once in a Living Memory",
+                Author = "Kayla McMaster",
+            };
+            await table.InsertOneAsync(row);
+            var rowE = new SBook()
+            {
+                MapColumnIntStr = new Dictionary<int, string>{},
+                MapColumnStrStr = new Dictionary<string, string>{},
+                Title = "emptyT",
+                Author = "emptyA",
+            };
+            await table.InsertOneAsync(rowE);
+
+            // untyped insertion
+            var untypedRow = new Row()
+            {
+                {
+                    "map_column_int_str",
+                    new Dictionary<int, string> { { 1, "value1" }, { 2, "value2" } }
+                },
+                {
+                    "map_column_str_str",
+                    new Dictionary<string, string>
+                    {
+                        { "key1", "value1" },
+                        { "key2", "value2" },
+                    }
+                },
+                { "title", "UNTY in a Living Memory" },
+                { "author", "UNTYP McMaster" },
+            };
+            await untypedTable.InsertOneAsync(untypedRow);
+
+            var untypedRowE = new Row()
+            {
+                {
+                    "map_column_int_str",
+                    new Dictionary<int, string> {}
+                },
+                {
+                    "map_column_str_str",
+                    new Dictionary<string, string> {}
+                },
+                { "title", "UNTYemptyT" },
+                { "author", "UNTYemptyA" },
+            };
+
+            await untypedTable.InsertOneAsync(untypedRowE);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
 }
