@@ -252,7 +252,6 @@ public class RowTestObject
     public HashSet<string> StringSet { get; set; }
     public HashSet<int> IntSet { get; set; }
     public List<string> StringList { get; set; }
-    //[JsonConverter(typeof(JsonStringConverter<List<Properties>>))]
     [ColumnJsonString]
     public List<Properties> ObjectList { get; set; }
     [ColumnPrimaryKey(12)]

@@ -35,7 +35,7 @@ public class ReplaceAndDeleteTests
     public async Task FindAndReplaceOne_DefaultReturnsOriginalDocument()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Cat");
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject());
         Assert.Equal("cat", result.Properties.PropertyTwo);
@@ -45,7 +45,7 @@ public class ReplaceAndDeleteTests
     public void FindAndReplaceOne_DefaultReturnsOriginalDocument_WhenRunSynchronously()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Dog");
         var result = collection.FindOneAndReplace(filter, CreateSimpleObject());
         Assert.Equal("dog", result.Properties.PropertyTwo);
@@ -55,7 +55,7 @@ public class ReplaceAndDeleteTests
     public void ReplaceOne()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Cow");
         var result = collection.ReplaceOne(filter, CreateSimpleObject());
         Assert.Equal(1, result.MatchedCount);
@@ -66,7 +66,7 @@ public class ReplaceAndDeleteTests
     public async Task FindAndUpdateOne_ReturnsUpdatedDocument()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Horse");
         var options = new ReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After };
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
@@ -77,7 +77,7 @@ public class ReplaceAndDeleteTests
     public async Task FindOneAndReplace_Upsert()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so._id, 111);
+        var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 111);
         var options = new ReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After, IsUpsert = true };
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
         Assert.Equal("replacement", result.Properties.PropertyTwo);
@@ -97,7 +97,7 @@ public class ReplaceAndDeleteTests
     public async Task FindAndReplaceOne_WithInclusiveProjection()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal5");
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
@@ -112,7 +112,7 @@ public class ReplaceAndDeleteTests
     public async Task FindAndReplaceOne_WithExclusiveProjection()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal6");
         var exclusiveProjection = Builders<SimpleObject>.Projection
                 .Exclude("Properties.PropertyOne");
@@ -234,7 +234,7 @@ public class ReplaceAndDeleteTests
     public async Task FindAndDeleteOne_ReturnsFoundDocument()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal7");
         var result = await collection.FindOneAndDeleteAsync(filter);
         Assert.Equal("Animal7", result.Name);
@@ -244,7 +244,7 @@ public class ReplaceAndDeleteTests
     public void FindAndDeleteOne_ReturnsFoundDocument_WhenRunSynchronously()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal8");
         var result = collection.FindOneAndDelete(filter);
         Assert.Equal("Animal8", result.Name);
@@ -254,7 +254,7 @@ public class ReplaceAndDeleteTests
     public void FindAndDeleteOne_ReturnsNull_WhenDocumentNotFound()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "ThisDocumentDoesNotExist");
         var result = collection.FindOneAndDelete(filter);
         Assert.Null(result);
@@ -273,7 +273,7 @@ public class ReplaceAndDeleteTests
     public async Task FindAndDeleteOne_WithInclusiveProjection()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal9");
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
@@ -288,7 +288,7 @@ public class ReplaceAndDeleteTests
     public async Task FindAndDeleteOne_WithExclusiveProjection()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal10");
         var exclusiveProjection = Builders<SimpleObject>.Projection
                 .Exclude("Properties.PropertyOne");
@@ -405,7 +405,7 @@ public class ReplaceAndDeleteTests
     public async Task DeleteOne()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal11");
         var result = await collection.DeleteOneAsync(filter);
         Assert.Equal(1, result.DeletedCount);
@@ -415,7 +415,7 @@ public class ReplaceAndDeleteTests
     public async Task DeleteOne_ZeroResultsOnNoMatch()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "NameDoesntExist");
         var result = await collection.DeleteOneAsync(filter);
         Assert.Equal(0, result.DeletedCount);
@@ -425,7 +425,7 @@ public class ReplaceAndDeleteTests
     public void DeleteOne_RunSynchronously()
     {
         var collection = fixture.ReplaceCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal12");
         var result = collection.DeleteOne(filter);
         Assert.Equal(1, result.DeletedCount);
@@ -562,7 +562,7 @@ public class ReplaceAndDeleteTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
             await collection.InsertManyAsync(items);
 
-            var filters = Builders<SimpleObject>.Filter;
+            var filters = Builders<SimpleObject>.CollectionFilter;
             var filter = filters.Eq(so => so.Properties.PropertyOne, "group0") | filters.Eq(so => so.Properties.PropertyOne, "group1")
                 | filters.Eq(so => so.Properties.PropertyOne, "group2");
             var result = await collection.DeleteManyAsync(filter);

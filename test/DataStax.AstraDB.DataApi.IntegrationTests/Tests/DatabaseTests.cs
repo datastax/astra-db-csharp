@@ -747,7 +747,7 @@ public class DatabaseTests
             var result = await table.InsertOneAsync(row);
             Assert.Equal(1, result.InsertedCount);
             var id = result.InsertedIds.First().First().ToString();
-            var filter = Builders<RowBook>.Filter.Eq(b => b.Title, id);
+            var filter = Builders<RowBook>.TableFilter.Eq(b => b.Title, id);
             var foundRow = await foundTable2.FindOneAsync(filter);
             Assert.Equal(row.Title, foundRow.Title);
         }

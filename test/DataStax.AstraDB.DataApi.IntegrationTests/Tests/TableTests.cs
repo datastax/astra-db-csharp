@@ -138,7 +138,7 @@ public class TableTests
     public void LogicalAnd_MongoStyle()
     {
         var table = fixture.SearchTable;
-        var builder = Builders<RowBook>.Filter;
+        var builder = Builders<RowBook>.TableFilter;
         //TODO: AND not working yet via API
         var filter = builder.Gt(so => so.NumberOfPages, 430); // & builder.Gt(so => so.DueDate, DateTime.Now - TimeSpan.FromDays(20));
         var results = table.Find(filter).ToList();
@@ -149,7 +149,7 @@ public class TableTests
     public void LogicalAnd_AstraStyle()
     {
         var table = fixture.SearchTable;
-        var builder = Builders<RowBook>.Filter;
+        var builder = Builders<RowBook>.TableFilter;
         //TODO: AND not working yet via API
         //var filter = builder.And(builder.Gt(so => so.NumberOfPages, 430), builder.Eq(so => so.DueDate, DateTime.Now - TimeSpan.FromDays(20)));
         var filter = builder.Gt(so => so.NumberOfPages, 430);
@@ -207,7 +207,7 @@ public class TableTests
     public async Task Update_Test()
     {
         var table = fixture.SearchTable;
-        var filter = Builders<RowBook>.Filter.CompositeKey(new PrimaryKeyFilter<RowBook, string>(x => x.Title, "Title 30"), new PrimaryKeyFilter<RowBook, int>(x => x.NumberOfPages, 430));
+        var filter = Builders<RowBook>.TableFilter.CompositeKey(new PrimaryKeyFilter<RowBook, string>(x => x.Title, "Title 30"), new PrimaryKeyFilter<RowBook, int>(x => x.NumberOfPages, 430));
         var update = Builders<RowBook>.Update.Set(x => x.Rating, 3.07)
             .Set(x => x.Genres, new HashSet<string> { "SetItem1", "SetItem2" })
             .Unset(x => x.DueDate);
@@ -258,7 +258,7 @@ public class TableTests
             var table = await fixture.Database.CreateTableAsync<RowBookSinglePrimaryKey>(tableName);
             await table.CreateIndexAsync("testDeleteOne_number_of_pages_index", (b) => b.NumberOfPages);
             await table.InsertManyAsync(rows);
-            var filter = Builders<RowBookSinglePrimaryKey>.Filter
+            var filter = Builders<RowBookSinglePrimaryKey>.TableFilter
                 .Eq(so => so.Title, "Title 1");
             var findResult = await table.FindOneAsync(filter);
             Assert.Equal("Title 1", findResult.Title);
@@ -312,7 +312,7 @@ public class TableTests
             var table = await fixture.Database.CreateTableAsync<RowBookSinglePrimaryKey>(tableName);
             await table.CreateIndexAsync("testDeleteOne_number_of_pages_index", (b) => b.NumberOfPages);
             await table.InsertManyAsync(rows);
-            var filter = Builders<RowBookSinglePrimaryKey>.Filter
+            var filter = Builders<RowBookSinglePrimaryKey>.TableFilter
             .Eq(so => so.Title, "Title 1");
             var findResult = table.Find(filter).ToList();
             Assert.Single(findResult);
@@ -344,7 +344,7 @@ public class TableTests
             }
             var table = await fixture.Database.CreateTableAsync<CompositePrimaryKey>(tableName);
             await table.InsertManyAsync(rows);
-            var filter = Builders<CompositePrimaryKey>.Filter.CompositeKey(
+            var filter = Builders<CompositePrimaryKey>.TableFilter.CompositeKey(
                 new PrimaryKeyFilter[] {
                     new PrimaryKeyFilter<CompositePrimaryKey, string>(x => x.KeyOne, "KeyOne3"),
                     new PrimaryKeyFilter<CompositePrimaryKey, string>(x => x.KeyTwo, "KeyTwo3")
@@ -386,7 +386,7 @@ public class TableTests
             }
             var table = await fixture.Database.CreateTableAsync<CompoundPrimaryKey>(tableName);
             await table.InsertManyAsync(rows);
-            var filterBuilder = Builders<CompoundPrimaryKey>.Filter;
+            var filterBuilder = Builders<CompoundPrimaryKey>.TableFilter;
             var filter = filterBuilder.CompoundKey(
                 new[] {
                     new PrimaryKeyFilter<CompoundPrimaryKey, string>(x => x.KeyOne, "KeyOne3"),
@@ -444,7 +444,7 @@ public class TableTests
     [Fact]
     public void LogicalAnd_MongoStyle_Untyped()
     {
-        var builder = Builders<Row>.Filter;
+        var builder = Builders<Row>.TableFilter;
         var filter = builder.Gte("Id", 10);
         //TODO: AND not working yet via API
         //var filter = builder.Gte("Id", 10) & builder.Gt("IdTwo", "IdTwo_20");
@@ -461,7 +461,7 @@ public class TableTests
     [Fact]
     public void LogicalAnd_AstraStyle_Untyped()
     {
-        var builder = Builders<Row>.Filter;
+        var builder = Builders<Row>.TableFilter;
         //TODO: AND not working yet via API
         //var filter = builder.And(builder.Gt("Id", 10), builder.Eq("IdTwo", "IdTwo_20"));
         var filter = builder.Gt("Id", 20);
@@ -553,27 +553,27 @@ public class TableTests
     [Fact]
     public async Task Update_Test_Untyped()
     {
-        var filter = Builders<Row>.Filter.Eq("Id", 3);
+        var filter = Builders<Row>.TableFilter.Eq("Id", 3);
         var update = Builders<Row>.Update.Set("Name", "Name_3_Updated");
         await fixture.UntypedTableSinglePrimaryKey.UpdateOneAsync(filter, update);
         var updatedDocument = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
 
-        filter = Builders<Row>.Filter.CompositeKey(
+        filter = Builders<Row>.TableFilter.CompositeKey(
             new PrimaryKeyFilter("Id", 3),
             new PrimaryKeyFilter("IdTwo", "IdTwo_3"));
         await fixture.UntypedTableCompositePrimaryKey.UpdateOneAsync(filter, update);
         updatedDocument = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
 
-        filter = Builders<Row>.Filter.CompoundKey(
+        filter = Builders<Row>.TableFilter.CompoundKey(
                 new[] {
                     new PrimaryKeyFilter("Id", 3),
                     new PrimaryKeyFilter("IdTwo", "IdTwo_3"),
                 },
                 new[] {
-                    Builders<Row>.Filter.Eq("SortOneAscending", "SortOne_3"),
-                    Builders<Row>.Filter.Eq("SortTwoDescending", "SortTwo_47")
+                    Builders<Row>.TableFilter.Eq("SortOneAscending", "SortOne_3"),
+                    Builders<Row>.TableFilter.Eq("SortTwoDescending", "SortTwo_47")
                 });
         await fixture.UntypedTableCompoundPrimaryKey.UpdateOneAsync(filter, update);
         updatedDocument = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(filter);
@@ -612,7 +612,7 @@ public class TableTests
             var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
-                Filter = Builders<SimpleObjectWithLexical>.TableFilter.TableLexicalMatch<SimpleObjectWithLexical, string>((b) => b.LexicalValue, "dog"),
+                Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch<SimpleObjectWithLexical, string>((b) => b.LexicalValue, "dog"),
             };
 
             var result = await table.FindOneAsync(findOptions);

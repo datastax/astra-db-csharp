@@ -41,7 +41,7 @@ public class ExamplesTests
             };
             var insertResult = await collection.InsertOneAsync(document);
 
-            var builder = Builders<Document>.Filter;
+            var builder = Builders<Document>.CollectionFilter;
             var filter = builder.And(builder.Eq("isCheckedOut", false), builder.Eq("number_of_pages", 434));
 
             var findResult = await collection.FindOneAsync(filter);
@@ -49,7 +49,7 @@ public class ExamplesTests
             Assert.Equal("Ocean Depths", findResult["title"]);
 
             var bookCollection = fixture.Database.GetCollection<Book>("bookTests");
-            var bookBuilder = Builders<Book>.Filter;
+            var bookBuilder = Builders<Book>.CollectionFilter;
             var bookFilter = bookBuilder.And(bookBuilder.Eq(b => b.IsCheckedOut, false), bookBuilder.Eq(b => b.NumberOfPages, 434));
             var bookFindResult = await bookCollection.FindOneAsync(bookFilter);
             Assert.Equal("Ocean Depths", bookFindResult.Title);

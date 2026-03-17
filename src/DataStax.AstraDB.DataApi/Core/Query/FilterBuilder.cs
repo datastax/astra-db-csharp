@@ -32,7 +32,7 @@ public class FilterBuilder<T>
     /// <returns>The combined filter</returns>
     /// <example>
     /// <code>
-    /// // Find documents where the "field" property equals "value" and "field2" property equals "value2"
+    /// // Find items where the "field" property equals "value" and "field2" property equals "value2"
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.And(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"), builder.Eq(so =&gt; so.Properties.PropertyTwo, "value2"));
     /// </code>
@@ -52,7 +52,7 @@ public class FilterBuilder<T>
     /// <returns>The combined filter</returns>
     /// <example>
     /// <code>
-    /// // Find documents where the "field" property equals "value" or "field2" property equals "value2"
+    /// // Find items where the "field" property equals "value" or "field2" property equals "value2"
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.Or(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"), builder.Eq(so =&gt; so.Properties.PropertyTwo, "value2"));
     /// </code>
@@ -72,7 +72,7 @@ public class FilterBuilder<T>
     /// <returns>The negated filter</returns>
     /// <example>
     /// <code>
-    /// // Find documents where the "field" property does not equal "value"
+    /// // Find items where the "field" property does not equal "value"
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.Not(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"));
     /// </code>
@@ -86,7 +86,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Greater than operator -- Matches documents where the specified field's value is greater than the specified value.
+    /// Greater than operator -- Matches items where the specified field's value is greater than the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -101,7 +101,7 @@ public class FilterBuilder<T>
 
 
     /// <summary>
-    /// Greater than operator -- Matches documents where the specified field's value is greater than the specified value.
+    /// Greater than operator -- Matches items where the specified field's value is greater than the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -113,7 +113,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Greater than or equal to operator -- Matches documents where the specified field's value is greater than or equal to the specified value.
+    /// Greater than or equal to operator -- Matches items where the specified field's value is greater than or equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -127,7 +127,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Greater than or equal to operator -- Matches documents where the specified field's value is greater than or equal to the specified value.
+    /// Greater than or equal to operator -- Matches items where the specified field's value is greater than or equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -139,7 +139,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than operator -- Matches documents where the specified field's value is less than the specified value.
+    /// Less than operator -- Matches items where the specified field's value is less than the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -153,7 +153,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than operator -- Matches documents where the specified field's value is less than the specified value.
+    /// Less than operator -- Matches items where the specified field's value is less than the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -165,7 +165,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than or equal to operator -- Matches documents where the specified field's value is less than or equal to the specified value.
+    /// Less than or equal to operator -- Matches items where the specified field's value is less than or equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -179,7 +179,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than or equal to operator -- Matches documents where the specified field's value is less than or equal to the specified value.
+    /// Less than or equal to operator -- Matches items where the specified field's value is less than or equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -191,7 +191,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Equal to operator -- Matches documents where the specified field's value is equal to the specified value.
+    /// Equal to operator -- Matches items where the specified field's value is equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -205,7 +205,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Equal to operator -- Matches documents where the specified field's value is equal to the specified value.
+    /// Equal to operator -- Matches items where the specified field's value is equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -217,7 +217,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not equal to operator -- Matches documents where the specified field's value is not equal to the specified value.
+    /// Not equal to operator -- Matches items where the specified field's value is not equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -231,7 +231,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not equal to operator -- Matches documents where the specified field's value is not equal to the specified value.
+    /// Not equal to operator -- Matches items where the specified field's value is not equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -342,7 +342,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the field does not match any of the specified values.
+    /// Not in operator -- Match items where the field does not match any of the specified values.
     /// </summary>
     /// <typeparam name="T2">The type of the values in the array to check</typeparam>
     /// <param name="fieldName">The name of the field for this filter</param>
@@ -357,7 +357,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the field does not match any of the specified values.
+    /// Not in operator -- Match items where the field does not match any of the specified values.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
@@ -369,7 +369,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the field does not match any of the specified values where the field itself is an array.
+    /// Not in operator -- Match items where the field does not match any of the specified values where the field itself is an array.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
@@ -381,7 +381,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the array field does not match the specified value.
+    /// Not in operator -- Match items where the array field does not match the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
@@ -394,7 +394,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the array field does not match the specified value.
+    /// Not in operator -- Match items where the array field does not match the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="field"></param>
@@ -407,7 +407,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Exists operator -- Match documents where the field exists.
+    /// Exists operator -- Match items where the field exists.
     /// </summary>
     /// <param name="fieldName">The name of the field to check for</param>
     /// <returns>The filter</returns>
@@ -420,7 +420,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Exists operator -- Match documents where the field exists.
+    /// Exists operator -- Match items where the field exists.
     /// </summary>
     /// <typeparam name="TField">The type of the field</typeparam>
     /// <param name="expression">An expression that represents the field to check for</param>
@@ -497,7 +497,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Size operator -- Matches documents where the specified array has the specified size.
+    /// Size operator -- Matches items where the specified array has the specified size.
     /// </summary>
     /// <param name="fieldName">The name of the field for this filter</param>
     /// <param name="size">The size of the array to match</param>
@@ -511,7 +511,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Size operator -- Matches documents where the specified array has the specified size.
+    /// Size operator -- Matches items where the specified array has the specified size.
     /// </summary>
     /// <typeparam name="TField">The type of the field</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
@@ -554,16 +554,6 @@ public class FilterBuilder<T>
             }
         }
         return new Filter<T>(null, dictionary);
-    }
-
-    /// <summary>
-    /// Lexical match operator -- Matches documents where the document's lexical field value is a lexicographical match to the specified string of space-separated keywords or terms
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public Filter<T> CollectionLexicalMatch(string value)
-    {
-        return new Filter<T>(DataApiKeywords.Lexical, FilterOperator.Match, value);
     }
 
 }
