@@ -490,10 +490,8 @@ public class TypesTester
 public class DoubleFloatTypeTest
 {
     [ColumnPrimaryKey()]
-    public int Id { get; set; }
-    public double DoubleValue { get; set; }
-    public float FloatValue { get; set; }
-    public double? NullableDouble { get; set; }
-    public float? NullableFloat { get; set; }
+    public double? DoubleValue { get; set; }
+    public float? FloatValue { get; set; }
+    public Dictionary<float, double> FloatDoubleMap { get; set; }
+    public List<float> FloatList { get; set; }
 }
-
