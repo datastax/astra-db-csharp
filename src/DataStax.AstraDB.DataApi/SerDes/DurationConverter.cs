@@ -21,14 +21,24 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
+/// <summary>
+/// JSON converter for the <see cref="Duration"/> type, converting between the CQL duration
+/// string representation and JSON string values.
+/// </summary>
 public class DurationConverter : JsonConverter<Duration>
 {
+    /// <summary>
+    /// Reads and converts a JSON string to a <see cref="Duration"/> value.
+    /// </summary>
     public override Duration Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         string value = reader.GetString();
         return Duration.Parse(value);
     }
 
+    /// <summary>
+    /// Writes a <see cref="Duration"/> value as a JSON string.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, Duration value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(value.ToString());

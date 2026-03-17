@@ -21,5 +21,6 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// </summary>
 public enum ApiVersion
 {
+    /// <summary>Version 1 of the Data API.</summary>
     V1
 }

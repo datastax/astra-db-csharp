@@ -23,8 +23,16 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+/// <summary>
+/// JSON converter for table row objects of type <typeparamref name="T"/>, handling the mapping
+/// between .NET properties and the Data API row format, including support for column name attributes,
+/// vectorize columns, JSON string columns, and non-string-keyed dictionary columns.
+/// </summary>
 public class RowConverter<T> : JsonConverter<T> where T : class
 {
+    /// <summary>
+    /// Reads and converts JSON to a <typeparamref name="T"/> instance.
+    /// </summary>
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -138,6 +146,9 @@ public class RowConverter<T> : JsonConverter<T> where T : class
         throw new JsonException("Unexpected end of JSON");
     }
 
+    /// <summary>
+    /// Writes a <typeparamref name="T"/> instance as JSON.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();

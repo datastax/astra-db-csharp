@@ -26,6 +26,34 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// </summary>
 public class TableIndexDefinition : TableBaseIndexDefinition
 {
+    [JsonIgnore]
+    internal string ColumnName { get; set; }
+
+    private object _column;
+
+    /// <summary>
+    /// The column (or column specification) that this index targets.
+    /// </summary>
+    [JsonPropertyName("column")]
+    public virtual object Column
+    {
+        get
+        {
+            if (_column == null)
+            {
+                return ColumnName;
+            }
+            return _column;
+        }
+        internal set => _column = value is JsonElement je
+        ? DeserializationUtils.UnwrapJsonElement(je)
+        : value;
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    internal Dictionary<string, object> Options { get; set; }
 
     /// <summary>
     /// Should the index be case sensitive?

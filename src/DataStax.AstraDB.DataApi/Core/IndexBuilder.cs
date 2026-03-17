@@ -17,6 +17,10 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 
+/// <summary>
+/// Builder for creating table index definitions.
+/// </summary>
+/// <typeparam name="T">The type representing the table row.</typeparam>
 public class IndexBuilder<T>
 {
 

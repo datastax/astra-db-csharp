@@ -34,6 +34,9 @@ public class IdListConverter : JsonConverter<List<object>>
     private static readonly ObjectIdConverter _objectIdConverter = new();
     private static readonly DateTimeAsDollarDateConverter<DateTime> _dateTimeConverter = new();
 
+    /// <summary>
+    /// Reads and converts JSON to a <see cref="List{T}"/> of document identifiers.
+    /// </summary>
     public override List<object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
@@ -129,6 +132,9 @@ public class IdListConverter : JsonConverter<List<object>>
         return value;
     }
 
+    /// <summary>
+    /// Writes a list of document identifiers as a JSON array.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, List<object> value, JsonSerializerOptions options)
     {
         writer.WriteStartArray();

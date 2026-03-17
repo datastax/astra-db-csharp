@@ -29,10 +29,13 @@ public enum DefaultIdType
     /// </summary>
     [JsonStringEnumMemberName("objectId")]
     ObjectId,
+    /// <summary>UUID version 6 (time-ordered).</summary>
     [JsonStringEnumMemberName("uuidv6")]
     UuidV6,
+    /// <summary>UUID version 7 (time-ordered, Unix epoch based).</summary>
     [JsonStringEnumMemberName("uuidv7")]
     UuidV7,
+    /// <summary>Standard UUID (version 4, random).</summary>
     [JsonStringEnumMemberName("uuid")]
     Uuid
 }

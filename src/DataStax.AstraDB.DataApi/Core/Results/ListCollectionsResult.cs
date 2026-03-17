@@ -20,6 +20,9 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 
 internal class ListCollectionsResult
 {
+    /// <summary>
+    /// The collection metadata entries for the keyspace.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName("collections")]
     public CollectionInfo[] Collections { get; set; }

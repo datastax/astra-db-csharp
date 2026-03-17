@@ -153,7 +153,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <summary>
         /// Synchronous version of <see cref="CreateKeyspaceAsync(string)"/>
         /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         public void CreateKeyspace(string keyspace)
         {
             CreateKeyspace(keyspace, false);
@@ -218,7 +218,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, false, true, null);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <example>
@@ -231,7 +231,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, updateDBKeyspace, false, null);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
@@ -245,7 +245,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, updateDBKeyspace, waitForCompletion, null);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <example>
@@ -258,7 +258,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, false, false, options, false);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
@@ -272,7 +272,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, false, waitForCompletion, options, false);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>

@@ -20,8 +20,14 @@ using System.Reflection;
 
 namespace DataStax.AstraDB.DataApi.Utils;
 
+/// <summary>
+/// Validates LINQ expressions used in filter and sort builders.
+/// </summary>
 public class ExpressionValidator
 {
+    /// <summary>
+    /// Determines whether the property targeted by the given expression has the specified attribute applied to it.
+    /// </summary>
     public static bool DoesPropertyHaveAttribute<T, TField, TAttribute>(Expression<Func<T, TField>> expression)
         where TAttribute : Attribute
     {

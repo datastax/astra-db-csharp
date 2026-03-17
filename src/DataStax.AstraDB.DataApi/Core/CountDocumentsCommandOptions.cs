@@ -16,7 +16,14 @@
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Options for the count documents operation.
+/// </summary>
 public class CountDocumentsCommandOptions : CommandOptions
 {
+  /// <summary>
+  /// The upper bound on the number of documents to count. The Data API stops counting once this limit is reached.
+  /// Defaults to <see cref="int.MaxValue"/>.
+  /// </summary>
   public int MaxDocumentsToCount { get; set; } = int.MaxValue;
 }

@@ -21,8 +21,15 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
+/// <summary>
+/// JSON converter for <see cref="IPAddress"/>, serializing and deserializing IP addresses
+/// as their standard string representation (e.g., "192.168.1.1" or "::1").
+/// </summary>
 public class IpAddressConverter : JsonConverter<IPAddress>
 {
+    /// <summary>
+    /// Reads and converts a JSON string to an <see cref="IPAddress"/> value.
+    /// </summary>
     public override IPAddress Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var token = reader.GetString();
@@ -35,6 +42,9 @@ public class IpAddressConverter : JsonConverter<IPAddress>
         return IPAddress.Parse(token);
     }
 
+    /// <summary>
+    /// Writes an <see cref="IPAddress"/> value as a JSON string.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, IPAddress value, JsonSerializerOptions options)
     {
         var ipAddressString = string.Empty;

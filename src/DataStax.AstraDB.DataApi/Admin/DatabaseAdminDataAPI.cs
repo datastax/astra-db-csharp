@@ -37,7 +37,6 @@ namespace DataStax.AstraDB.DataApi.Admin
     /// </remarks>
     public class DatabaseAdminDataAPI : IDatabaseAdmin
     {
-        private readonly Guid? _id;
         private readonly Database _database;
         private readonly CommandOptions _adminOptions;
         private readonly DataAPIClient _client;
@@ -632,6 +631,9 @@ namespace DataStax.AstraDB.DataApi.Admin
 
     internal class FindKeyspacesResult
     {
+        /// <summary>
+        /// The collection of keyspace names present in the database.
+        /// </summary>
         [JsonPropertyName("keyspaces")]
         public List<string> Keyspaces { get; set; }
     }

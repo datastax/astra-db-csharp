@@ -20,8 +20,15 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
+/// <summary>
+/// JSON converter that stores a value of type <typeparamref name="T"/> as a raw JSON string
+/// (i.e., the object is serialized to JSON and that JSON is stored as a string value, and vice versa).
+/// </summary>
 public class JsonStringConverter<T> : JsonConverter<T>
 {
+    /// <summary>
+    /// Reads and converts a JSON string to a <typeparamref name="T"/> instance by deserializing the string's contents.
+    /// </summary>
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var jsonString = reader.GetString();
@@ -32,6 +39,9 @@ public class JsonStringConverter<T> : JsonConverter<T>
         return JsonSerializer.Deserialize<T>(jsonString, options) ?? default;
     }
 
+    /// <summary>
+    /// Writes a <typeparamref name="T"/> value as a JSON string by serializing it to a JSON string value.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         if (value == null)

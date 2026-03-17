@@ -53,8 +53,8 @@ public class DataAPIClient
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class.
     /// 
-    /// When using this constructor, the token must be provided to the <see cref="GetDatabase"/> or 
-    /// <see cref="GetAstraDatabasesAdmin"/> methods,
+    /// When using this constructor, the token must be provided to the <see cref="GetDatabase(string)"/> or 
+    /// <see cref="GetAstraDatabasesAdmin()"/> methods,
     /// or to the eventual end commands via a <see cref="CommandOptions"/> parameter.
     /// </summary>
     public DataAPIClient() : this(null, null)
@@ -63,7 +63,7 @@ public class DataAPIClient
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class with a default authentication token. 
-    /// This token can be overridden when getting a database <see cref="GetDatabase"/> or admin instance <see cref="GetAstraDatabasesAdmin"/>
+    /// This token can be overridden when getting a database <see cref="GetDatabase(string)"/> or admin instance <see cref="GetAstraDatabasesAdmin()"/>
     /// as well as in the <see cref="CommandOptions"/> parameter of the commands.
     /// </summary>
     /// <param name="token">The token to use for authentication.</param>
@@ -75,7 +75,7 @@ public class DataAPIClient
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class with a default set of options
     /// When using this constructor, the token must be provided in the <see cref="CommandOptions"/> parameter,
-    /// to the <see cref="GetDatabase"/> or <see cref="GetAstraDatabasesAdmin"/> methods,
+    /// to the <see cref="GetDatabase(string)"/> or <see cref="GetAstraDatabasesAdmin()"/> methods,
     /// or the eventual end commands via a <see cref="CommandOptions"/> parameter.
     /// </summary>
     /// <param name="options">The default options to use for commands executed by this client.</param>
@@ -86,7 +86,7 @@ public class DataAPIClient
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class with a default authentication token.
-    /// When using the default constructor, the token must be provided to the <see cref="GetDatabase"/> or <see cref="GetAstraDatabasesAdmin"/> methods
+    /// When using the default constructor, the token must be provided to the <see cref="GetDatabase(string)"/> or <see cref="GetAstraDatabasesAdmin()"/> methods
     /// or the eventual end commands via a <see cref="CommandOptions"/> parameter.
     /// </summary>
     /// <param name="token">The token to use for authentication.</param>
@@ -150,7 +150,7 @@ public class DataAPIClient
     /// <summary>
     /// Gets an instance of the <see cref="Database"/> class given the API Endpoint for the database.
     /// 
-    /// The default keyspace will be used. If you need to connect to a different keyspace, use the <see cref="GetDatabase(string, string)"/> overload
+    /// The default keyspace will be used. If you need to connect to a different keyspace, use the <see cref="GetDatabase(string, string, string)"/> overload
     /// or set the keyspace on the <see cref="DatabaseCommandOptions"/> parameter and use the <see cref="GetDatabase(string, DatabaseCommandOptions)"/> overload.
     /// </summary>
     /// <param name="apiEndpoint">The API endpoint of the database.</param>

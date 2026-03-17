@@ -46,7 +46,7 @@ public class DatabaseCreationOptions
     /// </summary>
     [JsonPropertyName("keyspace")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Keyspace { get; set; } = null;
+    public string Keyspace { get; set; } = null;
 
     /// <summary>
     /// Capacity units to use, defaults to 1.

@@ -21,6 +21,9 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 
 internal class ListCollectionNamesResult
 {
+    /// <summary>
+    /// The names of the collections in the keyspace.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName("collections")]
     public List<string> CollectionNames { get; set; }

@@ -19,6 +19,11 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// Sorts results using a reranking model to support hybrid (lexical + vector) search reranking.
+/// </summary>
+/// <typeparam name="T">The type of the source document or row.</typeparam>
+/// <typeparam name="TResult">The type of the result document.</typeparam>
 public class RerankSorter<T, TResult> where T : class where TResult : class
 {
 
@@ -37,7 +42,6 @@ public class RerankSorter<T, TResult> where T : class where TResult : class
     /// Adds a hybrid sort using a combined string to use for lexical and vectorize parameters.
     /// </summary>
     /// <param name="combinedSearchString"></param>
-    /// <param name="searchString">Combined string to use for lexical and vectorize parameters.</param>
     /// <returns>The document sort builder.</returns>
     public RerankEnumerator<T, TResult> Sort(string combinedSearchString)
     {

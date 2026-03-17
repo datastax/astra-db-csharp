@@ -28,7 +28,7 @@ internal class SimpleDictionaryConverter : JsonConverter<object>
     {
         return typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(Dictionary<,>);
     }
- 
+
     public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
@@ -47,7 +47,7 @@ internal class SimpleDictionaryConverter : JsonConverter<object>
             if (reader.TokenType != JsonTokenType.PropertyName)
                 throw new JsonException("Expected PropertyName");
 
-            var propertyName = reader.GetString()!;
+            string propertyName = reader.GetString() ?? throw new JsonException("Null property name");
             reader.Read();
             dict[propertyName] = JsonSerializer.Deserialize(ref reader, valueType, options);
         }
@@ -76,7 +76,7 @@ internal class SimpleDictionaryConverter : JsonConverter<object>
         {
             var keyType = dict.GetType().GetGenericArguments()[0];
             var valueType = dict.GetType().GetGenericArguments()[1];
-            
+
             writer.WriteStartArray();
             foreach (DictionaryEntry entry in dict)
             {

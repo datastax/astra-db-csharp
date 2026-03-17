@@ -44,6 +44,9 @@ public class UpdateResult
 
 internal class PagedUpdateResult : UpdateResult
 {
+    /// <summary>
+    /// A pagination token used to retrieve the next page of updated documents, or <see langword="null"/> if there are no more pages.
+    /// </summary>
     [JsonPropertyName("nextPageState")]
     public string NextPageState { get; set; }
 }
