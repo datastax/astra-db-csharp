@@ -606,7 +606,7 @@ public class TableTests
             };
 
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithLexical>(tableName);
-            await table.CreateIndexAsync("b_idx", (b) => b.LexicalValue, Builders.TableIndex.Text());
+            await table.CreateTextIndexAsync("b_idx", (b) => b.LexicalValue, Builders.TableIndex.Text());
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var findOptions = new TableFindOptions<SimpleObjectWithLexical>()

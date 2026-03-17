@@ -33,6 +33,7 @@ public class TableIndexesTests
 
             // first creation (should succeed)
             await table.CreateIndexAsync(indexName, (b) => b.Category);
+            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category"}}}
 
             // second creation (should fail)
             var ex = await Assert.ThrowsAsync<CommandException>(() =>
@@ -44,6 +45,7 @@ public class TableIndexesTests
             var ex2 = await Assert.ThrowsAsync<CommandException>(() =>
                 table.CreateIndexAsync(indexName, (b) => b.Category,
                     new CreateIndexCommandOptions(){IfNotExists = false}));
+                // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category"},"options":{"ifNotExists":false}}}
 
             Assert.Contains("already exists", ex2.Message);
 
@@ -52,6 +54,7 @@ public class TableIndexesTests
             {
                 IfNotExists = true
             });
+            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category"},"options":{"ifNotExists":true}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -77,6 +80,7 @@ public class TableIndexesTests
 
             // first creation (should succeed)
             await table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition);
+            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":"true","caseSensitive":"true","normalize":"true"}}}}
 
             // second creation (should fail)
             var ex = await Assert.ThrowsAsync<CommandException>(() =>
@@ -89,12 +93,34 @@ public class TableIndexesTests
             {
                 IfNotExists = true
             });
+            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":"true","caseSensitive":"true","normalize":"true"}},"options":{"ifNotExists":true}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTestsSync_WithOptions()
+    {
+        var tableName = "tableIndexesTestSync_WithOptions";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
+            string indexName = "category_idx";
+            var indexDefinition = new TableIndexDefinition() { Ascii = true,  CaseSensitive = true, Normalize = true };
+
+            table.CreateIndex(indexName, (b) => b.Category, indexDefinition);
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
         }
         finally
         {
@@ -113,6 +139,7 @@ public class TableIndexesTests
             var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
 
             await table.CreateIndexAsync(indexName, (b) => b.StringMap);
+            // compare: {"createIndex":{"name":"map_e_def_idx","definition":{"column":"StringMap"}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -135,6 +162,7 @@ public class TableIndexesTests
             var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
 
             await table.CreateIndexAsync(indexName, (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Entries));
+            // compare: {"createIndex":{"name":"map_e_idx","definition":{"column":"StringMap"}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -157,6 +185,7 @@ public class TableIndexesTests
             var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
 
             await table.CreateIndexAsync(indexName, (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Keys));
+            // compare: {"createIndex":{"name":"map_k_idx","definition":{"column":{"StringMap":"$keys"}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -179,6 +208,7 @@ public class TableIndexesTests
             var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
 
             await table.CreateIndexAsync(indexName, (b) => b.StringMap, Builders.TableIndex.Map(MapIndexType.Values));
+            // compare: {"createIndex":{"name":"map_v_idx","definition":{"column":{"StringMap":"$values"}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -200,7 +230,8 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            await table.CreateVectorIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            // compare: {"createVectorIndex":{"name":"vector_idx_noopt","definition":{"column":"VectorEmbeddings"}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -223,7 +254,8 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.DotProduct));
+            await table.CreateVectorIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.DotProduct));
+            // compare: {"createVectorIndex":{"name":"vector_idx_ptopt","definition":{"column":"VectorEmbeddings","options":{"metric":"dot_product"}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -246,7 +278,8 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.Euclidean, "other"));
+            await table.CreateVectorIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.Euclidean, "other"));
+            // compare: {"createVectorIndex":{"name":"vector_idx_fuopt","definition":{"column":"VectorEmbeddings","options":{"metric":"euclidean","sourceModel":"other"}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -269,7 +302,8 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text());
+            await table.CreateTextIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text());
+            // compare: {"createTextIndex":{"name":"text_idx_noopt","definition":{"column":"Name"}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -278,9 +312,6 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
-            // temporarily for easier check against logs (1. line) and CQL (2. line)
-            // {"createTextIndex":{"name":"text_idx_noopt","definition":{"column":"Name"}}}
-            // CREATE CUSTOM INDEX text_idx_noopt ON default_keyspace."tableIndexesTest_TextIndex_NoOptions" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': 'standard'};
         }
 
     }
@@ -295,7 +326,8 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(TextAnalyzer.Whitespace));
+            await table.CreateTextIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(TextAnalyzer.Whitespace));
+            // compare: {"createTextIndex":{"name":"text_idx_w_analyzer","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -304,9 +336,6 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
-            // temporarily for easier check against logs (1. line) and CQL (2. line)
-            // {"createTextIndex":{"name":"text_idx_w_analyzer","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
-            // CREATE CUSTOM INDEX text_idx_w_analyzer ON default_keyspace."tableIndexesTest_TextIndex_WithAnalyzer" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': 'whitespace'};
         }
 
     }
@@ -321,7 +350,8 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text("whitespace"));
+            await table.CreateTextIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text("whitespace"));
+            // compare: {"createTextIndex":{"name":"text_idx_w_string","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -330,9 +360,6 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
-            // temporarily for easier check against logs (1. line) and CQL (2. line)
-            // {"createTextIndex":{"name":"text_idx_w_string","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
-            // CREATE CUSTOM INDEX text_idx_w_string ON default_keyspace."tableIndexesTest_TextIndex_WithString" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': 'whitespace'};
         }
 
     }
@@ -347,7 +374,7 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(
+            await table.CreateTextIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(
                 new AnalyzerOptions{
                     Tokenizer = new TokenizerOptions { Name = "standard" },
                     Filters = {
@@ -358,6 +385,7 @@ public class TableIndexesTests
                     }
                 }
             ));
+            // compare: {"createTextIndex":{"name":"text_idx_w_aoptions","definition":{"column":"Name","options":{"analyzer":{"tokenizer":{"name":"standard","args":{}},"charFilters":[],"filters":[{"name":"lowercase"},{"name":"stop"},{"name":"porterstem"},{"name":"asciifolding"}]}}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -366,9 +394,6 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
-            // temporarily for easier check against logs (1. line) and CQL (2. line)
-            // {"createTextIndex":{"name":"text_idx_w_aoptions","definition":{"column":"Name","options":{"analyzer":{"tokenizer":{"name":"standard","args":{}},"charFilters":[],"filters":[{"name":"lowercase"},{"name":"stop"},{"name":"porterstem"},{"name":"asciifolding"}]}}}}}
-            // CREATE CUSTOM INDEX text_idx_w_aoptions ON default_keyspace."tableIndexesTest_TextIndex_WithAOptions" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': '{"tokenizer":{"name":"standard","args":{}},"charFilters":[],"filters":[{"name":"lowercase"},{"name":"stop"},{"name":"porterstem"},{"name":"asciifolding"}]}'};
         }
 
     }
@@ -383,7 +408,7 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(
+            await table.CreateTextIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text(
                 new Dictionary<string, object>
                 {
                     ["tokenizer"] = new Dictionary<string, object>
@@ -392,6 +417,7 @@ public class TableIndexesTests
                     }
                 }
             ));
+            // compare: {"createTextIndex":{"name":"text_idx_w_freeform","definition":{"column":"Name","options":{"analyzer":{"tokenizer":{"name":"whitespace"}}}}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);
@@ -400,9 +426,6 @@ public class TableIndexesTests
         finally
         {
             await fixture.Database.DropTableAsync(tableName);
-            // temporarily for easier check against logs (1. line) and CQL (2. line)
-            // {"createTextIndex":{"name":"text_idx_w_freeform","definition":{"column":"Name","options":{"analyzer":{"tokenizer":{"name":"whitespace"}}}}}}
-            // CREATE CUSTOM INDEX text_idx_w_freeform ON default_keyspace."tableIndexesTest_TextIndex_WithFreeform" ("Name") USING 'StorageAttachedIndex' WITH OPTIONS = {'index_analyzer': '{"tokenizer":{"name":"whitespace"}}'};
         }
 
     }
