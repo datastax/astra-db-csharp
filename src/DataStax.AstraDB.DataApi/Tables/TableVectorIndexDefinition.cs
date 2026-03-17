@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <summary>
 /// Definition of a vector index on a table
 /// </summary>
-public class TableVectorIndexDefinition : TableIndexDefinition
+public class TableVectorIndexDefinition : TableBaseIndexDefinition
 {
 
   /// <summary>
@@ -40,8 +40,8 @@ public class TableVectorIndexDefinition : TableIndexDefinition
     }
     set
     {
-      Options ??= new Dictionary<string, object>();
       if ( value != null ){
+        Options ??= new Dictionary<string, object>();
         Options["metric"] = value;
       }
     }
@@ -57,8 +57,8 @@ public class TableVectorIndexDefinition : TableIndexDefinition
     get { return Options != null && Options.ContainsKey("sourceModel") ? (string)Options["sourceModel"] : null; }
     set
     {
-      Options ??= new Dictionary<string, object>();
       if (value != null ){
+        Options ??= new Dictionary<string, object>();
         Options["sourceModel"] = value;
       }
     }

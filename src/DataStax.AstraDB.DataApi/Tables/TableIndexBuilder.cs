@@ -41,7 +41,7 @@ public class TableIndexBuilder
     /// Create a text index using the default analyzer.
     /// </summary>
     /// <returns></returns>
-    public TableIndexDefinition Text()
+    public TableBaseIndexDefinition Text()
     {
         return new TableTextIndexDefinition();
     }
@@ -51,7 +51,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzer"></param>
     /// <returns></returns>
-    public TableIndexDefinition Text(TextAnalyzer analyzer)
+    public TableBaseIndexDefinition Text(TextAnalyzer analyzer)
     {
         return new TableTextIndexDefinition()
         {
@@ -65,7 +65,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzer"></param>
     /// <returns></returns>
-    public TableIndexDefinition Text(string analyzer)
+    public TableBaseIndexDefinition Text(string analyzer)
     {
         return new TableTextIndexDefinition()
         {
@@ -78,7 +78,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzerOptions"></param>
     /// <returns></returns>
-    public TableIndexDefinition Text(AnalyzerOptions analyzerOptions)
+    public TableBaseIndexDefinition Text(AnalyzerOptions analyzerOptions)
     {
         return new TableTextIndexDefinition()
         {
@@ -91,7 +91,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="analyzer"></param>
     /// <returns></returns>
-    public TableIndexDefinition Text(object analyzer)
+    public TableBaseIndexDefinition Text(object analyzer)
     {
         return new TableTextIndexDefinition()
         {
@@ -103,7 +103,7 @@ public class TableIndexBuilder
     /// Create a vector index.
     /// </summary>
     /// <returns></returns>
-    public TableIndexDefinition Vector()
+    public TableBaseIndexDefinition Vector()
     {
         return Vector(null, null);
     }
@@ -113,7 +113,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
     /// <returns></returns>
-    public TableIndexDefinition Vector(SimilarityMetric metric = SimilarityMetric.Cosine)
+    public TableBaseIndexDefinition Vector(SimilarityMetric metric = SimilarityMetric.Cosine)
     {
         return Vector(metric, null);
     }
@@ -123,7 +123,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
     /// <returns></returns>
-    public TableIndexDefinition Vector(string sourceModel = "other")
+    public TableBaseIndexDefinition Vector(string sourceModel = "other")
     {
         return Vector(null, sourceModel);
     }
@@ -134,7 +134,7 @@ public class TableIndexBuilder
     /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
     /// <returns></returns>
-    public TableIndexDefinition Vector(SimilarityMetric? metric, string? sourceModel)
+    public TableBaseIndexDefinition Vector(SimilarityMetric? metric, string? sourceModel)
     {
         return new TableVectorIndexDefinition
         {
@@ -148,7 +148,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="mapIndexType"></param>
     /// <returns></returns>
-    public TableIndexDefinition Map(MapIndexType mapIndexType)
+    public TableBaseIndexDefinition Map(MapIndexType mapIndexType)
     {
         return new TableMapIndexDefinition(mapIndexType);
     }
