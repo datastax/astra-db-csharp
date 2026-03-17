@@ -370,10 +370,10 @@ public class CollectionTests
                 },
             });
 
-            var result = collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Name, "Name1")).ToList();
+            var result = collection.Find(Builders<SimpleObject>.CollectionFilter.Eq(s => s.Name, "Name1")).ToList();
             Assert.Single(result);
             //Cannot filter by a non-indexed column
-            var actInvalid = () => collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Properties.PropertyOne, "groupOne1")).ToList();
+            var actInvalid = () => collection.Find(Builders<SimpleObject>.CollectionFilter.Eq(s => s.Properties.PropertyOne, "groupOne1")).ToList();
             Assert.Throws<CommandException>(actInvalid);
         }
         finally
@@ -431,9 +431,9 @@ public class CollectionTests
                 },
             });
 
-            var result = collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Properties.PropertyOne, "groupOne1")).ToList();
+            var result = collection.Find(Builders<SimpleObject>.CollectionFilter.Eq(s => s.Properties.PropertyOne, "groupOne1")).ToList();
             Assert.Single(result);
-            var actInvalid = () => collection.Find(Builders<SimpleObject>.Filter.Eq(s => s.Name, "Name1")).ToList();
+            var actInvalid = () => collection.Find(Builders<SimpleObject>.CollectionFilter.Eq(s => s.Name, "Name1")).ToList();
             Assert.Throws<CommandException>(actInvalid);
         }
         finally
@@ -640,7 +640,7 @@ public class CollectionTests
     public async Task CountDocuments_Filter_ReturnsCorrectCount()
     {
         var collection = fixture.SearchCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq("Properties.PropertyOne", "grouptwo");
+        var filter = Builders<SimpleObject>.CollectionFilter.Eq("Properties.PropertyOne", "grouptwo");
         var count = await collection.CountDocumentsAsync(filter, 1000);
         Assert.Equal(3, count);
     }
@@ -687,7 +687,7 @@ public class CollectionTests
 
             var result = await collection.InsertOneAsync(newObject);
 
-            var added = collection.Find(Builders<TestByteArray>.Filter.Eq(t => t.Name, "Test Object 1")).FirstOrDefault();
+            var added = collection.Find(Builders<TestByteArray>.CollectionFilter.Eq(t => t.Name, "Test Object 1")).FirstOrDefault();
             Assert.Equal("Test Object 1", added.Name);
             Assert.NotNull(added.Data);
             Assert.Equal("Test Data", Encoding.UTF8.GetString(added.Data));

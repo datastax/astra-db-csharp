@@ -52,7 +52,7 @@ public class Builders<T>
     /// filter = filter.Where(x => x.Name == "NameSearch");
     /// </code>
     /// </example>
-    public static FilterBuilder<T> Filter => new();
+    public static CollectionFilterBuilder<T> CollectionFilter => new();
     /// <summary>
     /// A builder for creating projection definitions
     /// </summary>

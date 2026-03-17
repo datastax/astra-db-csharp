@@ -51,7 +51,7 @@ public class AdditionalTableTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var findOptions = new TableFindOptions<ArrayTestRow>()
             {
-                Filter = Builders<ArrayTestRow>.Filter.In(x => x.StringArray, new string[] { "five" }),
+                Filter = Builders<ArrayTestRow>.TableFilter.In(x => x.StringArray, new string[] { "five" }),
             };
 
             var result = await table.FindOneAsync(findOptions);
@@ -98,7 +98,7 @@ public class AdditionalTableTests
             Assert.Equal(100, result.InsertedCount);
 
             // Query Tests
-            var builder = Builders<TestDataBook>.Filter;
+            var builder = Builders<TestDataBook>.TableFilter;
             var filter = builder.AllPairs(so => so.Metadata,
                 new Dictionary<string, string>
                 {
