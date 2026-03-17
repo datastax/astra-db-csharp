@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.Extensions.Logging;
 using System;
@@ -136,23 +137,30 @@ internal class Command
 
     internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnDocumentData<TData, TDocument, TStatus>(bool runSynchronously)
     {
-        var useDocumentConverter = typeof(TDocument) != typeof(Document);
-        if (useDocumentConverter)
+        if (typeof(TDocument) != typeof(Document))
         {
-            _commandOptionsTree.Add(new CommandOptions()
+            _commandOptionsTree.Add(new()
             {
                 OutputConverter = new DocumentConverter<TDocument>()
             });
         }
-        var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
-        if (response.Errors != null && response.Errors.Count > 0)
-        {
-            throw new CommandException(response.Errors);
-        }
-        return response;
+        return await RunAsyncReturnData<TData, TStatus>(runSynchronously);
     }
 
-    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
+    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnRowData<TData, TRow, TStatus>(bool runSynchronously)
+    {
+        _commandOptionsTree.Add(new()
+        {
+            SerializeGuidAsDollarUuid = false,
+            SerializeDateAsDollarDate = false,
+            OutputConverter = (typeof(TRow) != typeof(Row))
+                ? new RowConverter<TRow>()
+                : null
+        });
+        return await RunAsyncReturnData<TData, TStatus>(runSynchronously);
+    }
+
+    private async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
     {
         var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)

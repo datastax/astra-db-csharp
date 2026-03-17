@@ -796,9 +796,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         where TResult : class
     {
         findOptions.Filter = filter;
-        commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnRowData<ApiFindResult<TResult>, TResult, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
             var columnsInResult = response.Status.ProjectionSchema;
@@ -996,9 +995,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         {
             findOptions.Filter = filter;
         }
-        commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnRowData<DocumentResult<TResult>, TResult, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
             if (response != null && response.Data != null && response.Data.Document != null)
