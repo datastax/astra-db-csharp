@@ -176,6 +176,7 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         serializeOptions ??= new JsonSerializerOptions();
+        serializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         serializeOptions.Converters.Add(new ObjectIdConverter());
         serializeOptions.Converters.Add(new DurationConverter());
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
@@ -221,6 +222,7 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         var deserializeOptions = new JsonSerializerOptions();
+        deserializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         deserializeOptions.Converters.Add(new DurationConverter());
         deserializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         if (commandOptions.OutputConverter != null)

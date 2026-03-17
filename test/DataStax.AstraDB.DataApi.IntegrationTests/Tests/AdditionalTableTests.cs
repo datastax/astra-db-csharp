@@ -661,6 +661,67 @@ public class AdditionalTableTests
         }
     }
 
+    [Fact]
+    public async Task Test_FloatingPoint_StringLiterals()
+    {
+        var tableName = "tableTest_FloatingPoint_StringLiterals";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<FloatingPointTest>(tableName);
+
+            var row = new FloatingPointTest()
+                {
+                    id = "1",
+                    p_float_nan = float.NaN,
+                    p_float_minf = float.NegativeInfinity,
+                    p_float_pinf = float.PositiveInfinity,
+                    p_double_nan = double.NaN,
+                    p_double_minf = double.NegativeInfinity,
+                    p_double_pinf = double.PositiveInfinity,
+                    p_list_double = new double[] {-43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34},
+                    p_list_float = new float[] {-43.21F, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34F},
+                };
+                /*
+                NaN,
+                    Infinity,
+                    -Infinity,
+                    NaN,
+                    Infinity,
+                    -Infinity,
+                    [-43.21, Nan, Infinity, -Infinity, 12.34],
+                    {-43.21, Nan, Infinity, -Infinity, 12.34},
+                    [-43.21, Nan, Infinity, -Infinity, 12.34],
+                    {-43.21, Nan, Infinity, -Infinity, 12.34}
+                */
+            var result = await table.InsertOneAsync(row);
+
+            Console.WriteLine($"Inserted {result.InsertedCount} rows");
+
+            Assert.Equal(1, result.InsertedCount);
+
+            var f = await table.FindOneAsync();
+
+            Assert.Equal(double.NaN, f.p_double_nan);
+            Assert.Equal(double.PositiveInfinity, f.p_double_pinf);
+            Assert.Equal(double.NegativeInfinity, f.p_double_minf);
+            Assert.Equal(float.NaN, f.p_float_nan);
+            Assert.Equal(float.PositiveInfinity, f.p_float_pinf);
+            Assert.Equal(float.NegativeInfinity, f.p_float_minf);
+            Assert.Equivalent(new double[] {-43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34}, f.p_list_double, false);
+            Assert.Equivalent(new float[] {-43.21f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34f}, f.p_list_float, false);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
     [Fact(Skip="Disabled due to database flakiness with 'recursive updates'. Should be run manually.")]
     public async Task Test_DoubleAndFloatConverters()
     {
@@ -668,7 +729,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<DoubleFloatTypeTest>(tableName);
-    
+
             var rows = new List<DoubleFloatTypeTest>
             {
                 new() { DoubleValue = 123.456, FloatValue = 78.9f, FloatDoubleMap = new Dictionary<float, double> { { 1.1f, 2.2 } }, FloatList = new List<float> { 3.3f, 4.4f } },
@@ -676,28 +737,28 @@ public class AdditionalTableTests
                 new() { DoubleValue = double.PositiveInfinity, FloatValue = null, FloatDoubleMap = new Dictionary<float, double> { { float.PositiveInfinity, double.NegativeInfinity } }, FloatList = new List<float> { float.PositiveInfinity } },
                 new() { DoubleValue = double.NegativeInfinity, FloatValue = float.NegativeInfinity, FloatDoubleMap = new Dictionary<float, double> { { 0.0f, 0.0 } }, FloatList = new List<float> { 0.0f } }
             };
-    
+
             var result = await table.InsertManyAsync(rows);
             Assert.Equal(4, result.InsertedCount);
-    
+
             var row0 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, 123.456));
             Assert.Equal(123.456, row0.DoubleValue.Value, 5);
             Assert.Equal(78.9f, row0.FloatValue.Value, 5);
             Assert.Equal(new Dictionary<float, double> { { 1.1f, 2.2 } }, row0.FloatDoubleMap);
             Assert.Equal(new List<float> { 3.3f, 4.4f }, row0.FloatList);
-    
+
             var row1 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, double.NaN));
             Assert.True(double.IsNaN(row1.DoubleValue.Value));
             Assert.True(float.IsNaN(row1.FloatValue.Value));
             Assert.Equal(new Dictionary<float, double> { { float.NaN, double.NaN } }, row1.FloatDoubleMap);
             Assert.Equal(new List<float> { float.NaN }, row1.FloatList);
-    
+
             var row2 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, double.PositiveInfinity));
             Assert.True(double.IsPositiveInfinity(row2.DoubleValue.Value));
             Assert.Null(row2.FloatValue);
             Assert.Equal(new Dictionary<float, double> { { float.PositiveInfinity, double.NegativeInfinity } }, row2.FloatDoubleMap);
             Assert.Equal(new List<float> { float.PositiveInfinity }, row2.FloatList);
-    
+
             var row3 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, double.NegativeInfinity));
             Assert.True(double.IsNegativeInfinity(row3.DoubleValue.Value));
             Assert.True(float.IsNegativeInfinity(row3.FloatValue.Value));
@@ -856,4 +917,19 @@ public class AdditionalTableTests
             await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
+}
+
+public class FloatingPointTest{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public float p_float_nan { get; set; }
+    public float p_float_pinf { get; set; }
+    public float p_float_minf { get; set; }
+    public double p_double_nan { get; set; }
+    public double p_double_pinf { get; set; }
+    public double p_double_minf { get; set; }
+    public double[] p_list_double { get; set; }
+    public List<double> p_set_double { get; set; }
+    public float[] p_list_float { get; set; }
+    public List<float> p_set_float { get; set; }
 }
