@@ -515,5 +515,81 @@ public class AdditionalTableTests
         }
     }
 
+    [Fact]
+    public async Task Test_FloatingPoint_StringLiterals()
+    {
+        var tableName = "tableTest_FloatingPoint_StringLiterals";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<FloatingPointTest>(tableName);
+
+            var row = new FloatingPointTest()
+                {
+                    id = "1",
+                    p_float_nan = float.NaN,
+                    p_float_minf = float.NegativeInfinity,
+                    p_float_pinf = float.PositiveInfinity,
+                    p_double_nan = double.NaN,
+                    p_double_minf = double.NegativeInfinity,
+                    p_double_pinf = double.PositiveInfinity,
+                    p_list_double = new double[] {-43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34},
+                    p_list_float = new float[] {-43.21F, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34F},
+                };
+                /*
+                NaN,
+                    Infinity,
+                    -Infinity,
+                    NaN,
+                    Infinity,
+                    -Infinity,
+                    [-43.21, Nan, Infinity, -Infinity, 12.34],
+                    {-43.21, Nan, Infinity, -Infinity, 12.34},
+                    [-43.21, Nan, Infinity, -Infinity, 12.34],
+                    {-43.21, Nan, Infinity, -Infinity, 12.34}
+                */
+            var result = await table.InsertOneAsync(row);
+
+            Console.WriteLine($"Inserted {result.InsertedCount} rows");
+
+            Assert.Equal(1, result.InsertedCount);
+
+            var f = await table.FindOneAsync();
+
+            Assert.Equal(double.NaN, f.p_double_nan);
+            Assert.Equal(double.PositiveInfinity, f.p_double_pinf);
+            Assert.Equal(double.NegativeInfinity, f.p_double_minf);
+            Assert.Equal(float.NaN, f.p_float_nan);
+            Assert.Equal(float.PositiveInfinity, f.p_float_pinf);
+            Assert.Equal(float.NegativeInfinity, f.p_float_minf);
+            Assert.Equivalent(new double[] {-43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34}, f.p_list_double, false);
+            Assert.Equivalent(new float[] {-43.21f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34f}, f.p_list_float, false);
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+}
+
+public class FloatingPointTest{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public float p_float_nan { get; set; }
+    public float p_float_pinf { get; set; }
+    public float p_float_minf { get; set; }
+    public double p_double_nan { get; set; }
+    public double p_double_pinf { get; set; }
+    public double p_double_minf { get; set; }
+    public double[] p_list_double { get; set; }
+    public List<double> p_set_double { get; set; }
+    public float[] p_list_float { get; set; }
+    public List<float> p_set_float { get; set; }
 }
 

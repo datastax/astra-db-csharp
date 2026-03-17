@@ -55,6 +55,10 @@ public class AdminTests
 	public async Task CheckDatabaseExistsByName()
 	{
 		var dbName = fixture.DatabaseName;
+		if (string.IsNullOrEmpty(dbName))
+		{
+			Console.WriteLine("Skipping CheckDatabaseExistsByName due to missing DATABASE_NAME param");
+		}
 
 		var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbName);
 		Assert.True(found);

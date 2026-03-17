@@ -59,6 +59,15 @@ public class RowConverter<T> : JsonConverter<T> where T : class
                             {
                                 floatList.Add(reader.GetSingle());
                             }
+                            else if (reader.TokenType == JsonTokenType.String)
+                            {
+                                // AllowNamedFloatingPointLiterals encodes NaN/Infinity/-Infinity as strings
+                                var str = reader.GetString();
+                                if (str == "NaN") floatList.Add(float.NaN);
+                                else if (str == "Infinity") floatList.Add(float.PositiveInfinity);
+                                else if (str == "-Infinity") floatList.Add(float.NegativeInfinity);
+                                else throw new JsonException($"Unexpected string value '{str}' within float array for property '{propertyName}'.");
+                            }
                             else
                             {
                                 throw new JsonException($"Unexpected token type '{reader.TokenType}' within float array for property '{propertyName}'. Expected Number.");
