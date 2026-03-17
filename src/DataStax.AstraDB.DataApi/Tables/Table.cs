@@ -187,37 +187,37 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition)"/>
+    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableBaseIndexDefinition)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition)"/>
-    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition)
+    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableBaseIndexDefinition)"/>
+    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableBaseIndexDefinition indexDefinition)
     {
         CreateIndex(indexName, column.GetMemberNameTree(), indexDefinition, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync(string, string, TableIndexDefinition)"/>
+    /// Synchronous version of <see cref="CreateIndexAsync(string, string, TableBaseIndexDefinition)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync(string, string, TableIndexDefinition)"/>
-    public void CreateIndex(string indexName, string columnName, TableIndexDefinition indexDefinition)
+    /// <inheritdoc cref="CreateIndexAsync(string, string, TableBaseIndexDefinition)"/>
+    public void CreateIndex(string indexName, string columnName, TableBaseIndexDefinition indexDefinition)
     {
         CreateIndex(indexName, columnName, indexDefinition, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableBaseIndexDefinition, CreateIndexCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableBaseIndexDefinition, CreateIndexCommandOptions)"/>
+    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableBaseIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
         CreateIndex(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync(string, string, TableIndexDefinition, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateIndexAsync(string, string, TableBaseIndexDefinition, CreateIndexCommandOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync(string, string, TableIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateIndex(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateIndexAsync(string, string, TableBaseIndexDefinition, CreateIndexCommandOptions)"/>
+    public void CreateIndex(string indexName, string columnName, TableBaseIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
         CreateIndexAsync(indexName, columnName, indexDefinition, commandOptions, false).ResultSync();
     }
@@ -241,7 +241,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="columnName">The name of the column to index</param>
     /// <remarks>
     /// This will create a standard index on the column. If you want to create a Text Index (Lexical) or Vector Index, use an overload
-    /// that takes a <see cref="TableIndexDefinition"/> parameter, and use the <see cref="Builders.TableIndex"/> to create the appropriate definition.
+    /// that takes a <see cref="TableBaseIndexDefinition"/> parameter, and use the <see cref="Builders.TableIndex"/> to create the appropriate definition.
     /// </remarks>
     /// <returns></returns>
     public Task CreateIndexAsync(string indexName, string columnName)
@@ -271,7 +271,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="indexName">The index name</param>
     /// <param name="column">The column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition)
+    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableBaseIndexDefinition indexDefinition)
     {
         return CreateIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, null);
     }
@@ -280,7 +280,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="indexName">The index name</param>
     /// <param name="columnName">The name of the column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition)
+    public Task CreateIndexAsync(string indexName, string columnName, TableBaseIndexDefinition indexDefinition)
     {
         return CreateIndexAsync(indexName, columnName, indexDefinition, null);
     }
@@ -290,7 +290,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="column">The column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
     /// <param name="commandOptions"></param>
-    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableBaseIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
         return CreateIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
     }
@@ -300,12 +300,12 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="columnName">The name of the column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
     /// <param name="commandOptions"></param>
-    public Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    public Task CreateIndexAsync(string indexName, string columnName, TableBaseIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
         return CreateIndexAsync(indexName, columnName, indexDefinition, commandOptions, true);
     }
 
-    private async Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions, bool runSynchronously)
+    private async Task CreateIndexAsync(string indexName, string columnName, TableBaseIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions, bool runSynchronously)
     {
         if (indexDefinition == null)
         {
