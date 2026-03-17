@@ -515,5 +515,72 @@ public class AdditionalTableTests
         }
     }
 
-}
+    [Fact]
+    public async Task Test_Table_ColumnJSONString()
+    {
+        const string tableName = "table_columnjsonstring_test";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<ColumnJSONStringTestObject>(tableName);
 
+            var rowId = "row0";
+            var row = new ColumnJSONStringTestObject
+            {
+                Id = rowId,
+                ObjectList = new List<MiniProperties>() {
+                    new MiniProperties() { Genus = "Laccaria", Species = "laccata" },
+                    new MiniProperties() { Genus = "Argiope", Species = "lobata" }
+                },
+                ObjectDictionary = new Dictionary<string, MiniProperties>() {
+                    ["carrot"] = new MiniProperties() { Genus = "Daucus", Species = "carota" }
+                }
+            };
+
+            var result = await table.InsertOneAsync(row);
+
+            Assert.Equal(1, result.InsertedCount);
+            Assert.Equal(new [] {rowId}, result.InsertedId);
+
+            // reading
+            var readRow = await table.FindOneAsync();
+            Assert.Equal(row.Id, readRow.Id);
+            Assert.Equal(2, readRow.ObjectList.Count);
+            Assert.Equal(row.ObjectList[0].Genus, readRow.ObjectList[0].Genus);
+            Assert.Equal(row.ObjectList[0].Species, readRow.ObjectList[0].Species);
+            Assert.Equal(row.ObjectList[1].Genus, readRow.ObjectList[1].Genus);
+            Assert.Equal(row.ObjectList[1].Species, readRow.ObjectList[1].Species);
+            Assert.Equal(1, readRow.ObjectDictionary.Count);
+            Assert.Equal(row.ObjectDictionary["carrot"].Genus, readRow.ObjectDictionary["carrot"].Genus);
+            Assert.Equal(row.ObjectDictionary["carrot"].Species, readRow.ObjectDictionary["carrot"].Species);
+
+            // untyped reading to check the strings on DB
+            var untypedTable = fixture.Database.GetTable(tableName);
+            var untypedRow = await untypedTable.FindOneAsync();
+            Assert.Equal(row.Id, ((System.Text.Json.JsonElement)untypedRow["id"]).GetString());
+
+            var parsedListColumn = ((System.Text.Json.JsonElement)untypedRow["obj_list"]).GetString();
+            var parsedObjColumn = ((System.Text.Json.JsonElement)untypedRow["obj_map"]).GetString();
+
+            // ensure parsedListColumn can be parsed as json and encodes the right list of MiniProperties:
+            var listFromJson = JsonSerializer.Deserialize<List<MiniProperties>>(parsedListColumn);
+            Assert.NotNull(listFromJson);
+            Assert.Equal(2, listFromJson.Count);
+            Assert.Equal("Laccaria", listFromJson[0].Genus);
+            Assert.Equal("laccata", listFromJson[0].Species);
+
+            // ensure parsedObjColumn can be parsed as json and encodes the right string -> MiniProperties mapping:
+            var dictFromJson = JsonSerializer.Deserialize<Dictionary<string, MiniProperties>>(parsedObjColumn);
+            Assert.NotNull(dictFromJson);
+            Assert.Single(dictFromJson);
+            Assert.True(dictFromJson.ContainsKey("carrot"));
+            Assert.Equal("Daucus", dictFromJson["carrot"].Genus);
+            Assert.Equal("carota", dictFromJson["carrot"].Species);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+}

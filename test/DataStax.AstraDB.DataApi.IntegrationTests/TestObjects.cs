@@ -265,6 +265,26 @@ public class RowTestObject
     public Duration Duration { get; set; }
 }
 
+public class MiniProperties
+{
+    public string Genus { get; set; }
+    public string Species { get; set; }
+}
+
+[TableName("tableColumnJSONString")]
+public class ColumnJSONStringTestObject
+{
+    [ColumnPrimaryKey]
+    [ColumnName("id")]
+    public string Id { get; set; }
+    [ColumnJsonString]
+    [ColumnName("obj_list")]
+    public List<MiniProperties> ObjectList { get; set; }
+    [ColumnJsonString]
+    [ColumnName("obj_map")]
+    public Dictionary<string, MiniProperties> ObjectDictionary { get; set; }
+}
+
 [TableName("testTable")]
 public class ArrayTestRow
 {
