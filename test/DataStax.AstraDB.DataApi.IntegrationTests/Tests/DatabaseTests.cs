@@ -741,7 +741,7 @@ public class DatabaseTests
                 Title = "Desert Peace",
                 Author = "Walter Dray",
                 NumberOfPages = 355,
-                DueDate = DateTime.Now - TimeSpan.FromDays(2),
+                DueDate = DateTime.UtcNow - TimeSpan.FromDays(2),
                 Genres = new HashSet<string> { "Fiction" }
             };
             var result = await table.InsertOneAsync(row);
