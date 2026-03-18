@@ -307,7 +307,7 @@ public class AdditionalTableTests
             );
             var rowInUntyped1 = await tableUntyped.FindOneAsync(filterInUntyped1);
             Assert.NotNull(rowInUntyped1);
-            Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped1["Id"]).GetInt32(), 4);
+            Assert.Equal(4, Convert.ToInt32(rowInUntyped1["Id"]));
 
             var filterNinUntyped1 = filterBuilderUntyped.Nin(
                 "StringDictionary",
@@ -334,7 +334,7 @@ public class AdditionalTableTests
             );
             var rowInUntyped2 = await tableUntyped.FindOneAsync(filterInUntyped2);
             Assert.NotNull(rowInUntyped2);
-            Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped2["Id"]).GetInt32(), 4);
+            Assert.Equal(Convert.ToInt32(rowInUntyped2["Id"]), 4);
 
             var filterNinUntyped2 = filterBuilderUntyped.Nin(
                 "IntKey",

@@ -42,6 +42,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         private readonly CommandOptions _adminOptions;
         private readonly DataAPIClient _client;
         private CommandOptions[] _optionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
+        private static readonly CommandOptions _devOpsApiOptions = new CommandOptions { SerializeDateAsDollarDate = false };
 
         internal DatabaseAdminAstra(Database database, DataAPIClient client, CommandOptions adminOptions)
         {
@@ -679,7 +680,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         private Command CreateCommandAdmin()
         {
-            return new Command(_database.Client, _optionsTree, new AdminCommandUrlBuilder());
+            return new Command(_database.Client, [.. _optionsTree, _devOpsApiOptions], new AdminCommandUrlBuilder());
         }
 
         private Command CreateCommandEmbedding()
