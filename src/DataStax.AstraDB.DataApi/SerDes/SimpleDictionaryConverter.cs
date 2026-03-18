@@ -74,12 +74,15 @@ internal class SimpleDictionaryConverter : JsonConverter<object>
         }
         else
         {
+            var keyType = dict.GetType().GetGenericArguments()[0];
+            var valueType = dict.GetType().GetGenericArguments()[1];
+            
             writer.WriteStartArray();
             foreach (DictionaryEntry entry in dict)
             {
                 writer.WriteStartArray();
-                JsonSerializer.Serialize(writer, entry.Key, options);
-                JsonSerializer.Serialize(writer, entry.Value, options);
+                JsonSerializer.Serialize(writer, entry.Key, keyType, options);
+                JsonSerializer.Serialize(writer, entry.Value, valueType, options);
                 writer.WriteEndArray();
             }
             writer.WriteEndArray();
