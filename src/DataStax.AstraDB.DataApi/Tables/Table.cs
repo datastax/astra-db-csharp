@@ -22,8 +22,11 @@ using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -806,7 +809,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
             {
                 foreach (var row in response.Data.Items)
                 {
-                    PopulateMissingColumnsInRow(row as Row, columnsInResult);
+                    ProcessUntypedRow(row as Row, columnsInResult);
                 }
             }
         }
@@ -1003,20 +1006,20 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         {
             if (response != null && response.Data != null && response.Data.Document != null)
             {
-                PopulateMissingColumnsInRow(response.Data.Document as Row, response.Status.ProjectionSchema);
+                ProcessUntypedRow(response.Data.Document as Row, response.Status.ProjectionSchema);
             }
         }
         return response.Data.Document;
     }
 
-    private void PopulateMissingColumnsInRow(Row row, Dictionary<string, SchemaColumn> projectionSchema)
+    private void ProcessUntypedRow(Row row, Dictionary<string, SchemaColumn> projectionSchema)
     {
         foreach (var column in projectionSchema)
         {
+            var columnType = column.Value.Type;
             if (!row.ContainsKey(column.Key))
             {
                 object value = null;
-                var columnType = column.Value.Type;
                 switch (columnType)
                 {
                     case "map":
@@ -1029,7 +1032,95 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
                 }
                 row[column.Key] = value;
             }
+            else
+            {
+                row[column.Key] = ConvertRowValue(row[column.Key], columnType);
+            }
         }
+    }
+
+    private static object ConvertRowValue(object value, string columnType)
+    {
+        if (value is not JsonElement element)
+            return value;
+
+        if (element.ValueKind == JsonValueKind.Null)
+            return null;
+
+        switch (columnType)
+        {
+            case "timeuuid":
+                if (element.ValueKind == JsonValueKind.String && TimeUuid.TryParse(element.GetString(), out var t))
+                    return t;
+                break;
+            case "uuid":
+                if (element.ValueKind == JsonValueKind.String && Guid.TryParse(element.GetString(), out var g))
+                    return g;
+                break;
+#if NET6_0_OR_GREATER
+            case "date":
+                if (element.ValueKind == JsonValueKind.String && DateOnly.TryParse(element.GetString(), CultureInfo.InvariantCulture, out var d))
+                    return d;
+                break;
+            case "time":
+                if (element.ValueKind == JsonValueKind.String && TimeOnly.TryParse(element.GetString(), CultureInfo.InvariantCulture, out var to))
+                    return to;
+                break;
+#endif
+            case "timestamp":
+                if (element.ValueKind == JsonValueKind.String && DateTime.TryParse(element.GetString(), null, DateTimeStyles.RoundtripKind, out var dt))
+                    return dt;
+                break;
+            case "duration":
+                if (element.ValueKind == JsonValueKind.String)
+                    return Duration.Parse(element.GetString());
+                break;
+            case "inet":
+                if (element.ValueKind == JsonValueKind.String && IPAddress.TryParse(element.GetString(), out var ip))
+                    return ip;
+                break;
+            case "blob":
+                if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("$binary", out var binaryEl))
+                    return Convert.FromBase64String(binaryEl.GetString());
+                break;
+            case "int":
+                if (element.ValueKind == JsonValueKind.Number) return element.GetInt32();
+                break;
+            case "smallint":
+                if (element.ValueKind == JsonValueKind.Number) return element.GetInt16();
+                break;
+            case "tinyint":
+                if (element.ValueKind == JsonValueKind.Number) return element.GetSByte();
+                break;
+            case "bigint":
+            case "counter":
+                if (element.ValueKind == JsonValueKind.Number) return element.GetInt64();
+                break;
+            case "float":
+                if (element.ValueKind == JsonValueKind.Number) return element.GetSingle();
+                break;
+            case "double":
+                if (element.ValueKind == JsonValueKind.Number) return element.GetDouble();
+                break;
+            case "decimal":
+            case "varint":
+                if (element.ValueKind == JsonValueKind.Number) return element.GetDecimal();
+                break;
+            case "boolean":
+                if (element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False)
+                    return element.GetBoolean();
+                break;
+        }
+
+        // Generic fallback for unrecognized types or types handled above that fell through
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.TryGetInt64(out var l) ? l : (object)element.GetDouble(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => value
+        };
     }
 
     /// <summary>

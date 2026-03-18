@@ -762,9 +762,11 @@ public class AstraDatabasesAdmin
         return new DatabaseAdminAstra(database, _client, _adminOptions);
     }
 
+    private static readonly CommandOptions _devOpsApiOptions = new CommandOptions { SerializeDateAsDollarDate = false };
+
     private Command CreateCommand()
     {
-        return new Command(_client, OptionsTree, new AdminCommandUrlBuilder());
+        return new Command(_client, [.. OptionsTree, _devOpsApiOptions], new AdminCommandUrlBuilder());
     }
 
 }

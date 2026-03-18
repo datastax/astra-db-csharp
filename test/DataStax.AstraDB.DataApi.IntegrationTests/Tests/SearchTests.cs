@@ -25,7 +25,7 @@ public class SearchTests
 
         try
         {
-            var date = DateTime.Now;
+            var date = DateTime.UtcNow;
             var uuid4 = Uuid.NewRandom();
             Guid urlNamespaceId = Guid.Parse("6ba7b811-9dad-11d1-80b4-00c04fd430c8");
             var uuid5 = Uuid.NewNameBased(urlNamespaceId, "https://github.com/uuid6/uuid6-ietf-draft");
@@ -551,7 +551,7 @@ public class SearchTests
         var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.DateTimeProperty);
         var results = collection.Find(filter).Sort(sort).ToList();
         Assert.Equal(19, results.Count);
-        Assert.Equal(new DateTime(2020, 1, 1, 1, 15, 0).ToUniversalTime().ToString("MMddyyhhmmss"), results.First().Properties.DateTimeProperty.ToUniversalTime().ToString("MMddyyhhmmss"));
+        Assert.Equal(new DateTime(2020, 1, 1, 1, 15, 0, DateTimeKind.Utc).ToString("MMddyyhhmmss"), results.First().Properties.DateTimeProperty.ToUniversalTime().ToString("MMddyyhhmmss"));
     }
 
     [Fact]

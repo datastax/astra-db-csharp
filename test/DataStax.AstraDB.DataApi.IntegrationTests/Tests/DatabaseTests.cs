@@ -489,81 +489,117 @@ public class DatabaseTests
     }
 
     //TODO re-enable this test once the api issue is fixed (https://github.com/stargate/data-api/issues/2141)
-    // [Fact]
-    // public async Task CreateTable_DataTypesTest_FromObject()
-    // {
-    //     const string tableName = "tableDataTypesTestFromObject";
-    //     try
-    //     {
-    //         var table = await fixture.Database.CreateTableAsync<RowTestObject>(tableName);
-    //         Assert.NotNull(table);
-    //         var definitions = await fixture.Database.ListTablesAsync();
-    //         var definition = definitions.FirstOrDefault(d => d.Name == tableName);
-    //         Assert.NotNull(definition);
-    //         Assert.Equal(4, (definition.TableDefinition.Columns["Vector"] as VectorColumn).Dimension);
+    [Fact]
+    public async Task CreateTable_DataTypesTest_FromObject()
+    {
+        const string tableName = "tableDataTypesTestFromObject";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowTestObject>(tableName);
+            Assert.NotNull(table);
+            var definitions = await fixture.Database.ListTablesAsync();
+            var definition = definitions.FirstOrDefault(d => d.Name == tableName);
+            Assert.NotNull(definition);
 
-    //         var row = new RowTestObject
-    //         {
-    //             Name = "Test",
-    //             Vector = new float[4] { 1, 2, 3, 4 },
-    //             StringToVectorize = "TestStringToVectorize",
-    //             Text = "TestText",
-    //             Inet = IPAddress.Parse("192.168.0.1"),
-    //             Int = int.MaxValue,
-    //             TinyInt = byte.MaxValue,
-    //             SmallInt = short.MaxValue,
-    //             BigInt = long.MaxValue,
-    //             Decimal = decimal.MaxValue,
-    //             Double = double.MaxValue,
-    //             Float = float.MaxValue,
-    //             IntDictionary = new Dictionary<string, int>() { { "One", 1 }, { "Two", 2 } },
-    //             DecimalDictionary = new Dictionary<string, decimal>() { { "One", 1.11111m }, { "Two", 2.22222m } },
-    //             StringSet = new HashSet<string>() { "HashSetOne", "HashSetTwo" },
-    //             IntSet = new HashSet<int>() { 1, 2 },
-    //             StringList = new List<string>() { "One", "Two" },
-    //             ObjectList = new List<Properties>() {
-    //                 new Properties() { PropertyOne = "OneOne", PropertyTwo = "OneTwo" },
-    //                 new Properties() { PropertyOne = "TwoOne", PropertyTwo = "TwoTwo" } },
-    //             Boolean = false,
-    //             Date = DateTime.Now,
-    //             UUID = Guid.NewGuid(),
-    //             Blob = Encoding.ASCII.GetBytes("Test Blob"),
-    //             Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us1ns")
-    //         };
-    //         var result = await table.InsertManyAsync(new List<RowTestObject> { row });
-    //         Assert.Equal(1, result.InsertedCount);
-    //         var resultSet = table.Find();
-    //         var resultList = resultSet.ToList();
-    //         var resultRow = resultList.First();
-    //         Assert.Equal(row.Name, resultRow.Name);
-    //         Assert.Equal(row.Vector, resultRow.Vector);
-    //         Assert.Equal(row.Text, resultRow.Text);
-    //         Assert.Equal(row.Inet, resultRow.Inet);
-    //         Assert.Equal(row.Int, resultRow.Int);
-    //         Assert.Equal(row.TinyInt, resultRow.TinyInt);
-    //         Assert.Equal(row.SmallInt, resultRow.SmallInt);
-    //         Assert.Equal(row.BigInt, resultRow.BigInt);
-    //         Assert.Equal(row.Decimal, resultRow.Decimal);
-    //         Assert.Equal(row.Double, resultRow.Double);
-    //         Assert.Equal(row.Float, resultRow.Float);
-    //         Assert.Equal(row.IntDictionary, resultRow.IntDictionary);
-    //         Assert.Equal(row.DecimalDictionary, resultRow.DecimalDictionary);
-    //         Assert.Equal(row.StringSet, resultRow.StringSet);
-    //         Assert.Equal(row.IntSet, resultRow.IntSet);
-    //         Assert.Equal(row.StringList, resultRow.StringList);
-    //         Assert.Equal(JsonSerializer.Serialize(row.ObjectList), JsonSerializer.Serialize(resultRow.ObjectList));
-    //         Assert.Equal(row.Boolean, resultRow.Boolean);
-    //         Assert.Equal(row.Date.ToUniversalTime().ToString("MMddyyhhmmss"), resultRow.Date.ToUniversalTime().ToString("MMddyyhhmmss"));
-    //         Assert.Equal(row.UUID, resultRow.UUID);
-    //         Assert.Equal(row.Blob, resultRow.Blob);
-    //         Assert.Equal(row.Duration, resultRow.Duration);
+            var row = new RowTestObject
+            {
+                Name = "Test",
+                Vector = new float[4] { 1, 2, 3, 4 },
+                StringToVectorize = "TestStringToVectorize",
+                Text = "TestText",
+                Inet = IPAddress.Parse("192.168.0.1"),
+                Int = int.MaxValue,
+                TinyInt = byte.MaxValue,
+                SmallInt = short.MaxValue,
+                BigInt = long.MaxValue,
+                Decimal = decimal.MaxValue,
+                Double = double.MaxValue,
+                Float = float.MaxValue,
+                IntDictionary = new Dictionary<string, int>() { { "One", 1 }, { "Two", 2 } },
+                DecimalDictionary = new Dictionary<string, decimal>() { { "One", 1.11111m }, { "Two", 2.22222m } },
+                StringSet = new HashSet<string>() { "HashSetOne", "HashSetTwo" },
+                IntSet = new HashSet<int>() { 1, 2 },
+                StringList = new List<string>() { "One", "Two" },
+                ObjectList = new List<Properties>() {
+                    new Properties() { PropertyOne = "OneOne", PropertyTwo = "OneTwo" },
+                    new Properties() { PropertyOne = "TwoOne", PropertyTwo = "TwoTwo" } },
+                Boolean = false,
+                Date = DateTime.UtcNow,
+                UUID = Guid.NewGuid(),
+                Blob = Encoding.ASCII.GetBytes("Test Blob"),
+                Duration = Duration.Parse("12y3mo1d12h30m5s12ms7us1ns"),
+            };
+            var result = await table.InsertManyAsync(new List<RowTestObject> { row });
+            Assert.Equal(1, result.InsertedCount);
+            var resultSet = table.Find();
+            var resultList = resultSet.ToList();
+            var resultRow = resultList.First();
+            Assert.Equal(row.Name, resultRow.Name);
+            Assert.Equal(row.Vector, resultRow.Vector);
+            Assert.Equal(row.Text, resultRow.Text);
+            Assert.Equal(row.Inet, resultRow.Inet);
+            Assert.Equal(row.Int, resultRow.Int);
+            Assert.Equal(row.TinyInt, resultRow.TinyInt);
+            Assert.Equal(row.SmallInt, resultRow.SmallInt);
+            Assert.Equal(row.BigInt, resultRow.BigInt);
+            Assert.Equal(row.Decimal, resultRow.Decimal);
+            Assert.Equal(row.Double, resultRow.Double);
+            Assert.Equal(row.Float, resultRow.Float);
+            Assert.Equal(row.IntDictionary, resultRow.IntDictionary);
+            Assert.Equal(row.DecimalDictionary, resultRow.DecimalDictionary);
+            Assert.Equal(row.StringSet, resultRow.StringSet);
+            Assert.Equal(row.IntSet, resultRow.IntSet);
+            Assert.Equal(row.StringList, resultRow.StringList);
+            Assert.Equal(row.Boolean, resultRow.Boolean);
+            Assert.Equal(row.Date.ToUniversalTime().ToString("MMddyyhhmmss"), resultRow.Date.ToUniversalTime().ToString("MMddyyhhmmss"));
+            Assert.Equal(row.UUID, resultRow.UUID);
+            Assert.Equal(row.Blob, resultRow.Blob);
+            Assert.Equal(row.Duration, resultRow.Duration);
 
-    //     }
-    //     finally
-    //     {
-    //         await fixture.Database.DropTableAsync(tableName);
-    //     }
-    // }
+            var untypedTable = fixture.Database.GetTable(tableName);
+            var untypedRow = untypedTable.Find().ToList().First();
+            Assert.IsType<string>(untypedRow["renamed"]);
+            Assert.IsType<string>(untypedRow["StringToVectorize"]);
+            Assert.IsType<string>(untypedRow["Text"]);
+            Assert.IsType<IPAddress>(untypedRow["Inet"]);
+            Assert.IsType<int>(untypedRow["Int"]);
+            Assert.IsType<int>(untypedRow["TinyInt"]);
+            Assert.IsType<int>(untypedRow["SmallInt"]);
+            Assert.IsType<long>(untypedRow["BigInt"]);
+            Assert.IsType<decimal>(untypedRow["Decimal"]);
+            Assert.IsType<double>(untypedRow["Double"]);
+            Assert.IsType<float>(untypedRow["Float"]);
+            Assert.IsType<string>(untypedRow["ObjectList"]);
+            Assert.IsType<bool>(untypedRow["Boolean"]);
+            Assert.IsType<DateTime>(untypedRow["Date"]);
+            Assert.IsType<Guid>(untypedRow["UUID"]);
+            Assert.IsType<byte[]>(untypedRow["Blob"]);
+            Assert.IsType<Duration>(untypedRow["Duration"]);
+
+            //CURRENTLY NOT WORKING
+            //Assert.IsType<List<object>>(untypedRow["Vector"]);
+            //Assert.Equal(JsonSerializer.Serialize(row.ObjectList), JsonSerializer.Serialize(resultRow.ObjectList));
+            //Assert.IsType<Dictionary<string, object>>(untypedRow["IntDictionary"]);
+            //Assert.IsType<Dictionary<string, object>>(untypedRow["DecimalDictionary"]);
+            //Assert.IsType<List<object>>(untypedRow["StringSet"]);
+            //Assert.IsType<List<object>>(untypedRow["IntSet"]);
+            //Assert.IsType<List<object>>(untypedRow["StringList"]);
+
+            //ANY WAY TO AUTO TEST?
+            // This should work, but since you can't create a timeuuid row via the API, not sure how to auto test
+            //Assert.IsType<TimeUuid>(untypedRow["TimeUuid"]);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
 
     [Fact]
     public async Task CreateTable_DataTypesTest_FromDefinition()

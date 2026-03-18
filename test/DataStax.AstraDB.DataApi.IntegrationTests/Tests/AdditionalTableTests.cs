@@ -281,7 +281,7 @@ public class AdditionalTableTests
             );
             var rowInUntyped1 = await tableUntyped.FindOneAsync(filterInUntyped1);
             Assert.NotNull(rowInUntyped1);
-            Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped1["Id"]).GetInt32(), 4);
+            Assert.Equal(4, Convert.ToInt32(rowInUntyped1["Id"]));
 
             var filterInUntyped2 = filterBuilderUntyped.In(
                 "IntKey",
@@ -293,7 +293,7 @@ public class AdditionalTableTests
             );
             var rowInUntyped2 = await tableUntyped.FindOneAsync(filterInUntyped2);
             Assert.NotNull(rowInUntyped2);
-            Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped2["Id"]).GetInt32(), 4);
+            Assert.Equal(Convert.ToInt32(rowInUntyped2["Id"]), 4);
 
             // Test empty maps with non-string keys (#57)
             var emptyMapRow = new DictionaryTypeTest()

@@ -284,6 +284,8 @@ public class DataApiType
     public static DataApiType Text() => new DataApiType("text");
     /// <summary>Creates a time column type.</summary>
     public static DataApiType Time() => new DataApiType("time");
+    /// <summary>Creates a time uuid column type.</summary>
+    public static DataApiType TimeUuid() => new DataApiType("timeuuid");
     /// <summary>Creates a timestamp column type.</summary>
     public static DataApiType Timestamp() => new DataApiType("timestamp");
     /// <summary>Creates a uuid column type.</summary>

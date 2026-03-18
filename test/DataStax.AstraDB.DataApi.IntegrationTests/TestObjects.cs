@@ -228,8 +228,8 @@ public class RowTestObject
     [ColumnVector(4)]
     public float[] Vector { get; set; }
     [ColumnPrimaryKey(3)]
-    [ColumnVectorize(serviceProvider: "nvidia", serviceModelName: "NV-Embed-QA", dimension: 1024)]
-    public object StringToVectorize { get; set; }
+    //[ColumnVectorize(serviceProvider: "nvidia", serviceModelName: "NV-Embed-QA", dimension: 1024)]
+    public string StringToVectorize { get; set; }
     [ColumnPrimaryKey(4)]
     public string Text { get; set; }
     public System.Net.IPAddress Inet { get; set; }
@@ -262,6 +262,8 @@ public class RowTestObject
     public Guid UUID { get; set; }
     public byte[] Blob { get; set; }
     public Duration Duration { get; set; }
+    [ColumnIgnore]
+    public TimeUuid TimeUuid { get; set; }
 }
 
 [TableName("testTable")]
