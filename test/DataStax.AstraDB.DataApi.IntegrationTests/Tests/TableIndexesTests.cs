@@ -69,6 +69,30 @@ public class TableIndexesTests
     }
 
     [Fact]
+    public async Task CreateIndexTests_Untyped_NoOptions()
+    {
+        var tableName = "tableIndexesTest_Untyped_NoOptions";
+        string indexName = "category_idx_untyped_noopt";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
+
+            await table.CreateIndexAsync(indexName, "category");
+            // compare: {"createIndex":{"name":"category_idx_untyped_noopt","definition":{"column":"category"}}}
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
     public async Task CreateIndexTests_WithOptions()
     {
         var tableName = "tableIndexesTest_WithOptions";
@@ -245,6 +269,30 @@ public class TableIndexesTests
     }
 
     [Fact]
+    public async Task CreateIndexTests_VectorIndex_Untyped_NoOptions()
+    {
+        var tableName = "tableIndexesTest_VectorIndex_Untyped_NoOptions";
+        string indexName = "vector_idx_untyped_noopt";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
+
+            await table.CreateVectorIndexAsync(indexName, "VectorEmbeddings");
+            // compare: {"createVectorIndex":{"name":"vector_idx_untyped_noopt","definition":{"column":"VectorEmbeddings"}}}
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
     public async Task CreateIndexTests_VectorIndex_PartialOptions()
     {
         var tableName = "tableIndexesTest_VectorIndex_PartialOptions";
@@ -304,6 +352,30 @@ public class TableIndexesTests
 
             await table.CreateTextIndexAsync(indexName, (b) => b.Name, Builders.TableIndex.Text());
             // compare: {"createTextIndex":{"name":"text_idx_noopt","definition":{"column":"Name"}}}
+
+            var result = await table.ListIndexesAsync();
+            Assert.Contains(result.Indexes, i => i.Name == indexName);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_TextIndex_Untyped_NoOptions()
+    {
+        var tableName = "tableIndexesTest_TextIndex_Untyped_NoOptions";
+        string indexName = "text_idx_untyped_noopt";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleObject>(tableName);
+
+            await table.CreateTextIndexAsync(indexName, "Name");
+            // compare: {"createTextIndex":{"name":"text_idx_untyped_noopt","definition":{"column":"Name"}}}
 
             var result = await table.ListIndexesAsync();
             Assert.Contains(result.Indexes, i => i.Name == indexName);

@@ -219,6 +219,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <inheritdoc cref="CreateIndexAsync(string, string, TableIndexDefinition, CreateIndexCommandOptions)"/>
     public void CreateIndex(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
+        if (indexDefinition == null)
+        {
+            indexDefinition = new TableIndexDefinition();
+        }
         CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, false).ResultSync();
     }
 
@@ -298,6 +302,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="commandOptions"></param>
     public Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
+        if (indexDefinition == null)
+        {
+            indexDefinition = new TableIndexDefinition();
+        }
         return CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, true);
     }
 
@@ -370,6 +378,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <inheritdoc cref="CreateVectorIndexAsync(string, string, TableVectorIndexDefinition, CreateIndexCommandOptions)"/>
     public void CreateVectorIndex(string indexName, string columnName, TableVectorIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
+        if (indexDefinition == null)
+        {
+            indexDefinition = new TableVectorIndexDefinition();
+        }
         CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, false).ResultSync();
     }
 
@@ -449,6 +461,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="commandOptions"></param>
     public Task CreateVectorIndexAsync(string indexName, string columnName, TableVectorIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
+        if (indexDefinition == null)
+        {
+            indexDefinition = new TableVectorIndexDefinition();
+        }
         return CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, true);
     }
 
@@ -521,6 +537,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <inheritdoc cref="CreateTextIndexAsync(string, string, TableTextIndexDefinition, CreateIndexCommandOptions)"/>
     public void CreateTextIndex(string indexName, string columnName, TableTextIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
+        if (indexDefinition == null)
+        {
+            indexDefinition = new TableTextIndexDefinition();
+        }
         CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, false).ResultSync();
     }
 
@@ -600,15 +620,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <param name="commandOptions"></param>
     public Task CreateTextIndexAsync(string indexName, string columnName, TableTextIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
     {
+        if (indexDefinition == null)
+        {
+            indexDefinition = new TableTextIndexDefinition();
+        }
         return CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, true);
     }
 
     private async Task CreateGenericIndexAsync(string indexName, string columnName, TableBaseIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions, bool runSynchronously)
     {
-        if (indexDefinition == null)
-        {
-            indexDefinition = new TableIndexDefinition();
-        }
         indexDefinition.ColumnName = columnName;
 
         var index = new TableIndex
