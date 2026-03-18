@@ -60,7 +60,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -114,7 +114,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -167,7 +167,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -322,7 +322,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -353,7 +353,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -398,7 +398,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -447,7 +447,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -511,7 +511,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -560,7 +560,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
     
@@ -628,7 +628,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
     
@@ -707,7 +707,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 }
