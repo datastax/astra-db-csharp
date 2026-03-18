@@ -732,6 +732,7 @@ public class AstraDatabasesAdmin
 
     private Command CreateCommand()
     {
-        return new Command(_client, [.. OptionsTree, _devOpsApiOptions], new AdminCommandUrlBuilder());
+        var options = OptionsTree.Concat(new[] { _devOpsApiOptions }).ToArray();
+        return new Command(_client, options, new AdminCommandUrlBuilder());
     }
 }

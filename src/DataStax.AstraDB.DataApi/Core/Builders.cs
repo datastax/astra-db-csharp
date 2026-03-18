@@ -54,6 +54,10 @@ public class Builders<T>
     /// </example>
     public static CollectionFilterBuilder<T> CollectionFilter => new();
     /// <summary>
+    /// A builder for creating filter definitions
+    /// </summary>
+    public static CollectionFilterBuilder<T> Filter => new();
+    /// <summary>
     /// A builder for creating projection definitions
     /// </summary>
     /// <example>

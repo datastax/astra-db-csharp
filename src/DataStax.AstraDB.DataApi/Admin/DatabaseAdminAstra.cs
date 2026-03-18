@@ -680,7 +680,8 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         private Command CreateCommandAdmin()
         {
-            return new Command(_database.Client, [.. _optionsTree, _devOpsApiOptions], new AdminCommandUrlBuilder());
+            var options = _optionsTree.Concat(new[] { _devOpsApiOptions }).ToArray();
+            return new Command(_database.Client, options, new AdminCommandUrlBuilder());
         }
 
         private Command CreateCommandEmbedding()
