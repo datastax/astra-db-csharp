@@ -198,11 +198,6 @@ internal class Command
         if (commandOptions.InputConverter != null)
         {
             serializeOptions.Converters.Add(commandOptions.InputConverter);
-            // For untyped Row serialization, add TableDictionaryConverter to handle nested dictionaries
-            // if (commandOptions.InputConverter is SimpleDictionaryConverter)
-            // {
-            //     serializeOptions.Converters.Add(new TableDictionaryConverter());
-            // }
         }
         if (log)
         {
