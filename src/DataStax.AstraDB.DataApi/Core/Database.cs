@@ -612,12 +612,12 @@ public class Database
     public IDatabaseAdmin GetAdmin(CommandOptions options)
     {
         var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
-        
+
         if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
         {
             throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
         }
-        
+
         if (mergedOptions.Destination == DataApiDestination.ASTRA)
         {
             return new DatabaseAdminAstra(this, _client, mergedOptions);
@@ -643,6 +643,17 @@ public class Database
         return GetCollection<Document>(collectionName, options);
     }
 
+    /// <summary>
+    /// Returns a reference to the collection based on the specified document type. 
+    /// The collection name is determined by the <see cref="CollectionNameAttribute"/> on the document type, 
+    /// or the name of the document type if the attribute is not present.
+    /// </summary>
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public Collection<T> GetCollection<T>() where T : class
+    {
+        return GetCollection<T>(null, null);
+    }
+
     /// <inheritdoc cref="GetCollection(string)" />
     /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
     public Collection<T> GetCollection<T>(string collectionName) where T : class
@@ -657,6 +668,18 @@ public class Database
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T>(collectionName, this, options);
+    }
+
+    /// <summary>
+    /// Returns a reference to the collection based on the specified document type. 
+    /// The collection name is determined by the <see cref="CollectionNameAttribute"/> on the document type, 
+    /// or the name of the document type if the attribute is not present.
+    /// </summary>
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Collection<T, TId> GetCollection<T, TId>() where T : class
+    {
+        return GetCollection<T, TId>(null, null);
     }
 
     /// <inheritdoc cref="GetCollection{T}(string)" />
@@ -1565,14 +1588,14 @@ public class Database
         {
             options = new CommandOptions();
         }
-        
+
         var (operationName, operationData) = operation.GetOperation();
         var payload = new Dictionary<string, object>
         {
             ["name"] = typeName,
             [operationName] = operationData
         };
-        
+
         var command = CreateCommand("alterType")
             .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())
