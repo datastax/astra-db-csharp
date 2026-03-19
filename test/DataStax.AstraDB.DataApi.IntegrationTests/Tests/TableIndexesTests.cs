@@ -396,11 +396,16 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
 
-            await table.CreateVectorIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.Euclidean, "other"));
+            await table.CreateVectorIndexAsync(indexName, (b) => b.VectorEmbeddings, Builders.TableIndex.Vector(SimilarityMetric.Euclidean, "bert"));
             // compare: {"createVectorIndex":{"name":"vector_idx_fuopt","definition":{"column":"VectorEmbeddings","options":{"metric":"euclidean","sourceModel":"other"}}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableVectorIndexDefinition>(foundIndex.Definition);
+            Assert.Equal("VectorEmbeddings", foundIndex.Definition.Column);
+            Assert.Equal("bert", ((TableVectorIndexDefinition)foundIndex.Definition).SourceModel);
+            Assert.Equal(SimilarityMetric.Euclidean, ((TableVectorIndexDefinition)foundIndex.Definition).Metric);
 
         }
         finally
@@ -424,7 +429,10 @@ public class TableIndexesTests
             // compare: {"createTextIndex":{"name":"text_idx_noopt","definition":{"column":"Name"}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
+            Assert.Equal("Name", foundIndex.Definition.Column);
 
         }
         finally
@@ -448,7 +456,10 @@ public class TableIndexesTests
             // compare: {"createTextIndex":{"name":"text_idx_untyped_noopt","definition":{"column":"Name"}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
+            Assert.Equal("Name", foundIndex.Definition.Column);
 
         }
         finally
@@ -472,7 +483,11 @@ public class TableIndexesTests
             // compare: {"createTextIndex":{"name":"text_idx_w_analyzer","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
+            Assert.Equal("Name", foundIndex.Definition.Column);
+            Assert.Equal("whitespace", ((TableTextIndexDefinition)foundIndex.Definition).Analyzer);
 
         }
         finally
@@ -496,7 +511,11 @@ public class TableIndexesTests
             // compare: {"createTextIndex":{"name":"text_idx_w_string","definition":{"column":"Name","options":{"analyzer":"whitespace"}}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
+            Assert.Equal("Name", foundIndex.Definition.Column);
+            Assert.Equal("whitespace", ((TableTextIndexDefinition)foundIndex.Definition).Analyzer);
 
         }
         finally
@@ -530,7 +549,15 @@ public class TableIndexesTests
             // compare: {"createTextIndex":{"name":"text_idx_w_aoptions","definition":{"column":"Name","options":{"analyzer":{"tokenizer":{"name":"standard","args":{}},"charFilters":[],"filters":[{"name":"lowercase"},{"name":"stop"},{"name":"porterstem"},{"name":"asciifolding"}]}}}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
+            Assert.Equal("Name", foundIndex.Definition.Column);
+            var theAnalyzer = ((TableTextIndexDefinition)foundIndex.Definition).Analyzer;
+            Assert.Equal(
+                new Dictionary<string, object>{["name"] = "standard", ["args"] = new Dictionary<string, string>()},
+                ((Dictionary<string, object>)theAnalyzer)["tokenizer"]
+            );
 
         }
         finally
