@@ -51,6 +51,7 @@ public abstract class TableBaseIndexDefinition
     [JsonInclude]
     [JsonPropertyName("options")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(SimpleDictionaryConverter))]
     internal Dictionary<string, object> Options { get; set; }
 
     internal abstract string IndexCreationCommandName { get; }
