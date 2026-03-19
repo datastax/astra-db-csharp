@@ -33,11 +33,11 @@ public class TableIndexDefinition : TableBaseIndexDefinition
     [JsonIgnore]
     public bool CaseSensitive
     {
-        get => Options != null && Options.ContainsKey("caseSensitive") && bool.TryParse((string)Options["caseSensitive"], out var result) && result;
+        get => Options != null && Options.ContainsKey("caseSensitive") && Options["caseSensitive"] is bool b && b;
         set
         {
             Options ??= new Dictionary<string, object>();
-            Options["caseSensitive"] = value.ToString().ToLowerInvariant();
+            Options["caseSensitive"] = value;
         }
     }
 
@@ -47,11 +47,11 @@ public class TableIndexDefinition : TableBaseIndexDefinition
     [JsonIgnore]
     public bool Normalize
     {
-        get => Options != null && Options.ContainsKey("normalize") && bool.TryParse((string)Options["normalize"], out var result) && result;
+        get => Options != null && Options.ContainsKey("normalize") && Options["normalize"] is bool b && b;
         set
         {
             Options ??= new Dictionary<string, object>();
-            Options["normalize"] = value.ToString().ToLowerInvariant();
+            Options["normalize"] = value;
         }
     }
 
@@ -61,11 +61,11 @@ public class TableIndexDefinition : TableBaseIndexDefinition
     [JsonIgnore]
     public bool Ascii
     {
-        get => Options != null && Options.ContainsKey("ascii") && bool.TryParse((string)Options["ascii"], out var result) && result;
+        get => Options != null && Options.ContainsKey("ascii") && Options["ascii"] is bool b && b;
         set
         {
             Options ??= new Dictionary<string, object>();
-            Options["ascii"] = value.ToString().ToLowerInvariant();
+            Options["ascii"] = value;
         }
     }
 

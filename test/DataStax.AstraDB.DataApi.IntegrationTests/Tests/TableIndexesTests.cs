@@ -59,6 +59,8 @@ public class TableIndexesTests
             var result = await table.ListIndexesAsync();
             var foundIndex = result.Indexes.Single(i => i.Name == indexName);
             Assert.NotNull(foundIndex);
+            Assert.Equal("category", foundIndex.Definition.Column);
+            Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
@@ -83,7 +85,10 @@ public class TableIndexesTests
             // compare: {"createIndex":{"name":"category_idx_untyped_noopt","definition":{"column":"category"}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.Equal("category", foundIndex.Definition.Column);
+            Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
 
         }
         finally
@@ -105,7 +110,7 @@ public class TableIndexesTests
 
             // first creation (should succeed)
             await table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition);
-            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":"true","caseSensitive":"true","normalize":"true"}}}}
+            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":true,"caseSensitive":true,"normalize":true}}}}
 
             // second creation (should fail)
             var ex = await Assert.ThrowsAsync<CommandException>(() =>
@@ -118,10 +123,16 @@ public class TableIndexesTests
             {
                 IfNotExists = true
             });
-            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":"true","caseSensitive":"true","normalize":"true"}},"options":{"ifNotExists":true}}}
+            // {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":true,"caseSensitive":true,"normalize":true}},"options":{"ifNotExists":true}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.Equal("category", foundIndex.Definition.Column);
+            Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
+            Assert.True(((TableIndexDefinition)foundIndex.Definition).Ascii);
+            Assert.True(((TableIndexDefinition)foundIndex.Definition).CaseSensitive);
+            Assert.True(((TableIndexDefinition)foundIndex.Definition).Normalize);
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
@@ -144,8 +155,17 @@ public class TableIndexesTests
 
             table.CreateIndex(indexName, (b) => b.Category, indexDefinition);
 
-            var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var result = table.ListIndexes();
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.Equal("category", foundIndex.Definition.Column);
+            Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
+            Assert.True(((TableIndexDefinition)foundIndex.Definition).Ascii);
+            Assert.True(((TableIndexDefinition)foundIndex.Definition).CaseSensitive);
+            Assert.True(((TableIndexDefinition)foundIndex.Definition).Normalize);
+
+            var insertResult = await TableIndexesFixture.AddTableRows(table);
+            Assert.Equal(3, insertResult.InsertedCount);
         }
         finally
         {
