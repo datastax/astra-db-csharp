@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Core;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
@@ -36,14 +37,22 @@ public class TableVectorIndexDefinition : TableBaseIndexDefinition
   {
     get
     {
-      return Options != null && Options.ContainsKey("metric") && Enum.TryParse((string)Options["metric"], out SimilarityMetric result) ? result : null;
+        if (Options != null && Options.ContainsKey("metric"))
+        {
+            var value = Options["metric"];
+            return value switch
+            {
+                SimilarityMetric metric => metric,
+                string str => JsonSerializer.Deserialize<SimilarityMetric>($"\"{str}\""),
+                _ => null
+            };
+        }
+        return null;
     }
     set
     {
-      if ( value != null ){
         Options ??= new Dictionary<string, object>();
         Options["metric"] = value;
-      }
     }
   }
 
@@ -54,13 +63,11 @@ public class TableVectorIndexDefinition : TableBaseIndexDefinition
   [JsonIgnore]
   public string SourceModel
   {
-    get { return Options != null && Options.ContainsKey("sourceModel") ? (string)Options["sourceModel"] : null; }
+    get => Options != null && Options.ContainsKey("sourceModel") ? (string)Options["sourceModel"] : null;
     set
     {
-      if (value != null ){
         Options ??= new Dictionary<string, object>();
         Options["sourceModel"] = value;
-      }
     }
   }
 

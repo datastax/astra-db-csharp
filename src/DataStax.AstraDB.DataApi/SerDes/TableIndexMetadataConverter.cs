@@ -59,8 +59,9 @@ public class TableIndexMetadataConverter : JsonConverter<TableIndexMetadata>
 
             metadata.Definition = (TableBaseIndexDefinition)JsonSerializer.Deserialize(
                 definitionElement.GetRawText(), 
-                definitionType, 
-                options);
+                definitionType,
+                options
+                );
         }
 
         return metadata;
