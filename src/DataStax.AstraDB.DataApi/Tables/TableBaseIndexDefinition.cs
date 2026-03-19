@@ -32,6 +32,7 @@ public abstract class TableBaseIndexDefinition
 
     private object _column;
 
+    [JsonInclude]
     [JsonPropertyName("column")]
     [JsonConverter(typeof(IndexColumnConverter))]
     public virtual object Column
