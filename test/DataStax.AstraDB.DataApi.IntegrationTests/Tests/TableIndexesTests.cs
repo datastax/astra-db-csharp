@@ -57,7 +57,8 @@ public class TableIndexesTests
             // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category"},"options":{"ifNotExists":true}}}
 
             var result = await table.ListIndexesAsync();
-            Assert.Contains(result.Indexes, i => i.Name == indexName);
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);

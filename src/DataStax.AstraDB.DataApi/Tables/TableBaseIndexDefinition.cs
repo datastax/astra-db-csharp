@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Utils;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -32,6 +33,7 @@ public abstract class TableBaseIndexDefinition
     private object _column;
 
     [JsonPropertyName("column")]
+    [JsonConverter(typeof(IndexColumnConverter))]
     public virtual object Column
     {
         get
@@ -42,9 +44,8 @@ public abstract class TableBaseIndexDefinition
             }
             return _column;
         }
-        internal set => _column = value is JsonElement je
-        ? DeserializationUtils.UnwrapJsonElement(je)
-        : value;
+        internal set => _column = value;
+
     }
 
     [JsonInclude]
