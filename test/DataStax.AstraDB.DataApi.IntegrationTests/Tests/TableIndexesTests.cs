@@ -607,8 +607,7 @@ public class TableIndexesTests
 
     }
 
-    // [Fact(Skip="Run manually after some CQL setup!")]
-    [Fact]
+    [Fact(Skip="Run manually after some CQL setup!")]
     public async Task ListIndexesTests_UnknownUnsupportedCQLIndex()
     {
         var tableName = "table_with_unsupported_index";
