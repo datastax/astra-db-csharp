@@ -607,6 +607,55 @@ public class TableIndexesTests
 
     }
 
+    // [Fact(Skip="Run manually after some CQL setup!")]
+    [Fact]
+    public async Task ListIndexesTests_UnknownUnsupportedCQLIndex()
+    {
+        var tableName = "table_with_unsupported_index";
+        string indexName = "unsupported_idx";
+
+        /*
+        THIS MUST BE RUN ON HCD!
+        MANUAL CQL SETUP before running this test:
+            CREATE TABLE table_with_unsupported_index(
+                id TEXT PRIMARY KEY, value TEXT, TheCamelVec VECTOR<FLOAT,3>
+            );
+            CREATE INDEX unsupported_idx ON table_with_unsupported_index (value);
+        CORRESPONDING RESPONSE:
+                {
+                    "status": {
+                        "indexes": [
+                            {
+                                "name": "unsupported_idx",
+                                "definition": {
+                                    "column": "UNKNOWN",
+                                    "apiSupport": {
+                                        "createIndex": false,
+                                        "filter": false,
+                                        "cqlDefinition": "CREATE INDEX unsupported_idx ON default_keyspace.table_with_unsupported_index (value);"
+                                    }
+                                },
+                                "indexType": "UNKNOWN"
+                            }
+                        ]
+                    }
+                }
+        */
+
+        var table = fixture.Database.GetTable(tableName);
+
+        var result = await table.ListIndexesAsync();
+        var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+        Assert.NotNull(foundIndex);
+        Assert.IsType<TableUnknownIndexDefinition>(foundIndex.Definition);
+        Assert.Equal("UNKNOWN", foundIndex.Definition.Column);
+
+        Assert.Null(foundIndex.Definition.Options);
+        var apiSupport = ((TableUnknownIndexDefinition)foundIndex.Definition).APISupport;
+        Assert.Null(apiSupport);
+
+    }
+
     [Fact]
     public async Task DropIndexTests()
     {
