@@ -54,7 +54,7 @@ public class TableIndexMetadataConverter : JsonConverter<TableIndexMetadata>
                 "vector" => typeof(TableVectorIndexDefinition),
                 "text" => typeof(TableTextIndexDefinition),
                 "regular" => typeof(TableIndexDefinition),
-                _ => typeof(TableIndexDefinition)
+                _ => typeof(TableUnknownIndexDefinition)
             };
 
             metadata.Definition = (TableBaseIndexDefinition)JsonSerializer.Deserialize(
