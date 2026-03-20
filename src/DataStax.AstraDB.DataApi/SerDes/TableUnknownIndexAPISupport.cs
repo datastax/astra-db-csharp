@@ -22,10 +22,14 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <summary>
 /// Configuration used to create a text index on a table column
 /// </summary>
-public class TableUnknownIndexDefinition : TableBaseIndexDefinition
+public class TableUnknownIndexAPISupport
 {
-    [JsonPropertyName("apiSupport")]
-    public TableUnknownIndexAPISupport APISupport { get; set; }
+    [JsonPropertyName("createIndex")]
+    public bool CreateIndex { get; set; }
 
-    internal override string IndexCreationCommandName => null;
+    [JsonPropertyName("filter")]
+    public bool Filter { get; set; }
+
+    [JsonPropertyName("cqlDefinition")]
+    public string CQLDefinition { get; set; }
 }
