@@ -61,7 +61,7 @@ public class TableIndexMetadataConverter : JsonConverter<TableIndexMetadata>
                 definitionElement.GetRawText(), 
                 definitionType,
                 options
-                );
+            );
         }
 
         return metadata;
