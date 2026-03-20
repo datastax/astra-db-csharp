@@ -247,7 +247,7 @@ public class AdditionalTableTests
             Assert.Single(updatedDocument.IntKey);
             Assert.Equal(32, updatedDocument.IntKey.Keys.First());
 
-            // Tuple-based dictionary $in filtering (typed):
+            // Tuple-based dictionary $in / $nin filtering (typed):
             var filterBuilder = Builders<DictionaryTypeTest>.TableFilter;
 
             var filterIn1 = filterBuilder.In(
@@ -258,6 +258,19 @@ public class AdditionalTableTests
             Assert.NotNull(rowIn1);
             Assert.Equal(rowIn1.Id, 4);
 
+            var filterNin1 = filterBuilder.Nin(
+                b => b.StringDictionary,
+                new[] {
+                    ( "KeyA", "ValueA 100" ),
+                    ( "KeyA", "ValueA 101" ),
+                    ( "KeyA", "ValueA 102" ),
+                    ( "KeyA", "ValueA 103" )
+                }
+            );
+            var rowNin1 = await table.FindOneAsync(filterNin1);
+            Assert.NotNull(rowNin1);
+            Assert.Equal(rowNin1.Id, 4);
+
             var filterIn2 = filterBuilder.In(
                 b => b.IntKey,
                 new[] {(14, "IntValue 4A"), (999, "IntValue ZZZ")}
@@ -265,6 +278,19 @@ public class AdditionalTableTests
             var rowIn2 = await table.FindOneAsync(filterIn2);
             Assert.NotNull(rowIn2);
             Assert.Equal(rowIn2.Id, 4);
+
+            var filterNin2 = filterBuilder.Nin(
+                b => b.IntKey,
+                new[] {
+                    ( 10, "IntValue 0A" ),
+                    ( 11, "IntValue 1A" ),
+                    ( 32, "IntValue 2B" ), // anomalous due to the PullAll earlier
+                    ( 13, "IntValue 3A" ),
+                }
+            );
+            var rowNin2 = await table.FindOneAsync(filterNin2);
+            Assert.NotNull(rowNin2);
+            Assert.Equal(rowNin2.Id, 4);
 
             // Tuple-based dictionary $in filtering (untyped):
             var tableUntyped = fixture.Database.GetTable(tableName);
@@ -283,6 +309,21 @@ public class AdditionalTableTests
             Assert.NotNull(rowInUntyped1);
             Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped1["Id"]).GetInt32(), 4);
 
+            var filterNinUntyped1 = filterBuilderUntyped.Nin(
+                "StringDictionary",
+                new[]
+                {
+                    // tuples also work (see next filter with heterogeneous key/values)
+                    new[] { "KeyA", "ValueA 100" },
+                    new[] { "KeyA", "ValueA 101" },
+                    new[] { "KeyA", "ValueA 102" },
+                    new[] { "KeyA", "ValueA 103" },
+                }
+            );
+            var rowNinUntyped1 = await tableUntyped.FindOneAsync(filterNinUntyped1);
+            Assert.NotNull(rowNinUntyped1);
+            Assert.Equal(((System.Text.Json.JsonElement)rowNinUntyped1["Id"]).GetInt32(), 4);
+
             var filterInUntyped2 = filterBuilderUntyped.In(
                 "IntKey",
                 new[]
@@ -294,6 +335,20 @@ public class AdditionalTableTests
             var rowInUntyped2 = await tableUntyped.FindOneAsync(filterInUntyped2);
             Assert.NotNull(rowInUntyped2);
             Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped2["Id"]).GetInt32(), 4);
+
+            var filterNinUntyped2 = filterBuilderUntyped.Nin(
+                "IntKey",
+                new[]
+                {
+                    ( 10, "IntValue 0A" ),
+                    ( 11, "IntValue 1A" ),
+                    ( 32, "IntValue 2B" ), // anomalous due to the PullAll earlier
+                    ( 13, "IntValue 3A" ),
+                }
+            );
+            var rowNinUntyped2 = await tableUntyped.FindOneAsync(filterNinUntyped2);
+            Assert.NotNull(rowNinUntyped2);
+            Assert.Equal(((System.Text.Json.JsonElement)rowNinUntyped2["Id"]).GetInt32(), 4);
 
             // Test empty maps with non-string keys (#57)
             var emptyMapRow = new DictionaryTypeTest()
