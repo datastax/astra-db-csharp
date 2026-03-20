@@ -523,7 +523,7 @@ public class AdditionalTableTests
         {
             var table = await fixture.Database.CreateTableAsync<DoubleFloatTypeTest>(tableName);
 
-            List<DoubleFloatTypeTest> rows = new List<DoubleFloatTypeTest>
+            var rows = new List<DoubleFloatTypeTest>
             {
                 new() { DoubleValue = 123.456, FloatValue = 78.9f, FloatDoubleMap = new Dictionary<float, double> { { 1.1f, 2.2 } }, FloatList = new List<float> { 3.3f, 4.4f } },
                 new() { DoubleValue = double.NaN, FloatValue = float.NaN, FloatDoubleMap = new Dictionary<float, double> { { float.NaN, double.NaN } }, FloatList = new List<float> { float.NaN } },
