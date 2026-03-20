@@ -633,9 +633,9 @@ public class AdditionalTableTests
     }
     
     [Fact]
-    public async Task SteoNonstringMapTableInsertionTests()
+    public async Task NonstringMapTableInsertionTests()
     {
-        var tableName = "steo_nonstrmap_insertiontest";
+        var tableName = "nonstrmap_insertiontest";
 
         try
         {

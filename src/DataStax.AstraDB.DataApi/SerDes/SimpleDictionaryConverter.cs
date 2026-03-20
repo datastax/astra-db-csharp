@@ -38,20 +38,20 @@ internal class SimpleDictionaryConverter : JsonConverter<object>
 
         var dict = (IDictionary)Activator.CreateInstance(typeToConvert)!;
         var valueType = typeToConvert.GetGenericArguments()[1];
-        
+
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndObject)
                 return dict;
-            
+
             if (reader.TokenType != JsonTokenType.PropertyName)
                 throw new JsonException("Expected PropertyName");
-            
+
             var propertyName = reader.GetString()!;
             reader.Read();
             dict[propertyName] = JsonSerializer.Deserialize(ref reader, valueType, options);
         }
-        
+
         throw new JsonException("Incomplete JSON object");
     }
 
