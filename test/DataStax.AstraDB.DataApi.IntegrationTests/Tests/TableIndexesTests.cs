@@ -649,10 +649,15 @@ public class TableIndexesTests
         Assert.NotNull(foundIndex);
         Assert.IsType<TableUnknownIndexDefinition>(foundIndex.Definition);
         Assert.Equal("UNKNOWN", foundIndex.Definition.Column);
-
         Assert.Null(foundIndex.Definition.Options);
         var apiSupport = ((TableUnknownIndexDefinition)foundIndex.Definition).APISupport;
-        Assert.Null(apiSupport);
+        Assert.IsType<TableUnknownIndexAPISupport>(apiSupport);
+        Assert.False(apiSupport.CreateIndex);
+        Assert.False(apiSupport.Filter);
+        Assert.Equal(
+            "CREATE INDEX unsupported_idx ON default_keyspace.table_with_unsupported_index (value);",
+            apiSupport.CQLDefinition
+        );
 
     }
 
