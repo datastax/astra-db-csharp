@@ -197,28 +197,8 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
                 case "decimal":
                     return element.GetDecimal();
                 case "double":
-                    if (element.ValueKind == JsonValueKind.String) // ugly but TableInsertResultConverter won't exist in the future anyways
-                    {
-                        return element.GetString() switch
-                        {
-                            "NaN" => double.NaN,
-                            "Infinity" => double.PositiveInfinity,
-                            "-Infinity" => double.NegativeInfinity,
-                            _ => throw new JsonException($"Unexpected string value '{element.GetString()}' for double type")
-                        };
-                    }
                     return element.GetDouble();
                 case "float":
-                    if (element.ValueKind == JsonValueKind.String)
-                    {
-                        return element.GetString() switch
-                        {
-                            "NaN" => float.NaN,
-                            "Infinity" => float.PositiveInfinity,
-                            "-Infinity" => float.NegativeInfinity,
-                            _ => throw new JsonException($"Unexpected string value '{element.GetString()}' for float type")
-                        };
-                    }
                     return element.GetSingle();
                 case "boolean":
                     return element.GetBoolean();

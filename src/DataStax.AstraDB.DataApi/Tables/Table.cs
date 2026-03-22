@@ -1057,11 +1057,6 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         commandOptions.SerializeDateAsDollarDate = false;
         if (typeof(TResult) == typeof(Row))
         {
-            // Register SimpleDictionaryConverter for untyped Row serialization
-            if (isInsert && typeof(T) == typeof(Row))
-            {
-                commandOptions.InputConverter = new SimpleDictionaryConverter();
-            }
             return commandOptions;
         }
         if (isInsert)

@@ -17,27 +17,22 @@
 namespace DataStax.AstraDB.DataApi.SerDes;
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-internal class SimpleDictionaryConverter : JsonConverter<object>
+internal class SimpleDictionaryConverter
+    : JsonConverter<Dictionary<string, object>>
 {
-    public override bool CanConvert(Type typeToConvert)
-    {
-        return typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(Dictionary<,>);
-    }
- 
-    public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override Dictionary<string, object> Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
-        {
             throw new JsonException("Expected StartObject");
-        }
 
-        var dict = (IDictionary)Activator.CreateInstance(typeToConvert)!;
-        var valueType = typeToConvert.GetGenericArguments()[1];
+        var dict = new Dictionary<string, object?>();
 
         while (reader.Read())
         {
@@ -47,45 +42,85 @@ internal class SimpleDictionaryConverter : JsonConverter<object>
             if (reader.TokenType != JsonTokenType.PropertyName)
                 throw new JsonException("Expected PropertyName");
 
-            var propertyName = reader.GetString()!;
+            string propertyName = reader.GetString()!;
             reader.Read();
-            dict[propertyName] = JsonSerializer.Deserialize(ref reader, valueType, options);
+
+            dict[propertyName] = ReadValue(ref reader, options);
         }
 
         throw new JsonException("Incomplete JSON object");
     }
 
-    public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+    private static object? ReadValue(
+        ref Utf8JsonReader reader,
+        JsonSerializerOptions options)
     {
-        if (value is not IDictionary dict)
+        return reader.TokenType switch
         {
-            throw new JsonException("Expected dictionary");
+            JsonTokenType.String => reader.GetString(),
+
+            JsonTokenType.Number => reader.TryGetInt64(out var l)
+                ? l
+                : reader.GetDouble(),
+
+            JsonTokenType.True => true,
+            JsonTokenType.False => false,
+            JsonTokenType.Null => null,
+
+            JsonTokenType.StartObject =>
+                JsonSerializer.Deserialize<Dictionary<string, object?>>(
+                    ref reader, options),
+
+            JsonTokenType.StartArray =>
+                JsonSerializer.Deserialize<List<object?>>(
+                    ref reader, options),
+
+            _ => throw new JsonException(
+                $"Unsupported token: {reader.TokenType}")
+        };
+    }
+
+    public override void Write(
+        Utf8JsonWriter writer,
+        Dictionary<string, object?> value,
+        JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+
+        foreach (var kvp in value)
+        {
+            writer.WritePropertyName(kvp.Key);
+            WriteValue(writer, kvp.Value, options);
         }
 
-        if (dict.Count == 0 || dict.GetType().GetGenericArguments()[0] == typeof(string))
+        writer.WriteEndObject();
+    }
+
+    private static void WriteValue(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
+    {
+        if (value != null)
         {
-            writer.WriteStartObject();
-            foreach (DictionaryEntry entry in dict)
+            var type = value.GetType();
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
             {
-                writer.WritePropertyName(entry.Key.ToString()!);
-                JsonSerializer.Serialize(writer, entry.Value, options);
+                var keyType = type.GetGenericArguments()[0];
+                if (keyType != typeof(string))
+                {
+                    var valueType = type.GetGenericArguments()[1];
+                    writer.WriteStartArray();
+                    var dict = (System.Collections.IDictionary)value;
+                    foreach (var key in dict.Keys)
+                    {
+                        writer.WriteStartArray();
+                        JsonSerializer.Serialize(writer, key, keyType, options);
+                        JsonSerializer.Serialize(writer, dict[key], valueType, options);
+                        writer.WriteEndArray();
+                    }
+                    writer.WriteEndArray();
+                    return;
+                }
             }
-            writer.WriteEndObject();
         }
-        else
-        {
-            var keyType = dict.GetType().GetGenericArguments()[0];
-            var valueType = dict.GetType().GetGenericArguments()[1];
-            
-            writer.WriteStartArray();
-            foreach (DictionaryEntry entry in dict)
-            {
-                writer.WriteStartArray();
-                JsonSerializer.Serialize(writer, entry.Key, keyType, options);
-                JsonSerializer.Serialize(writer, entry.Value, valueType, options);
-                writer.WriteEndArray();
-            }
-            writer.WriteEndArray();
-        }
+        JsonSerializer.Serialize(writer, value, options);
     }
 }

@@ -2089,18 +2089,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     private List<CommandOptions> GetOptionsTree()
     {
-        var optionsTree = _commandOptions == null 
-            ? _database.OptionsTree 
-            : _database.OptionsTree.Concat(new[] { _commandOptions });
-
-        if (typeof(T) == typeof(Document))
-        {
-            optionsTree = optionsTree.Concat(new[]
-            {
-                new CommandOptions { SerializeIEEE754SpecialValues = false }
-            });
-        }
-        
+        var optionsTree = _commandOptions == null ? _database.OptionsTree : _database.OptionsTree.Concat(new[] { _commandOptions });
         return optionsTree.ToList();
     }
 

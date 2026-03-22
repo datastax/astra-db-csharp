@@ -25,7 +25,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -194,12 +193,6 @@ internal class Command
             serializeOptions.Converters.Add(new GuidConverter());
         }
         serializeOptions.Converters.Add(new IpAddressConverter());
-        
-        if (commandOptions.SerializeIEEE754SpecialValues == true)
-        {
-            serializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-        }
-        
         if (commandOptions.InputConverter != null)
         {
             serializeOptions.Converters.Add(commandOptions.InputConverter);
@@ -249,11 +242,6 @@ internal class Command
         deserializeOptions.Converters.Add(new IpAddressConverter());
         deserializeOptions.Converters.Add(new AnalyzerOptionsConverter());
 
-        if (commandOptions.SerializeIEEE754SpecialValues == true)
-        {
-            deserializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-        }
-        
         return JsonSerializer.Deserialize<T>(input, deserializeOptions);
     }
 
@@ -401,7 +389,7 @@ internal class Command
                         responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                         MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
                         MaybeLogDebugMessage("Content: {Content}", responseContent);
-                        throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
+                        throw new HttpRequestException($"Request failed with status code {response.StatusCode}.");
                     }
                 }
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);

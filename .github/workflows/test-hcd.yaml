@@ -81,4 +81,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          dotnet test ./test/DataStax.AstraDB.DataApi.IntegrationTests/
+          dotnet restore ./src/DataStax.AstraDB.DataApi/
+          dotnet build ./src/DataStax.AstraDB.DataApi/
+          cd ./test/DataStax.AstraDB.DataApi.IntegrationTests/
+          dotnet test
