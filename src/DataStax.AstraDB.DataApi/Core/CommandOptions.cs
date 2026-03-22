@@ -42,6 +42,7 @@ public class CommandOptions
     internal JsonConverter OutputConverter { get; set; }
     internal bool? SerializeGuidAsDollarUuid { get; set; }
     internal bool? SerializeDateAsDollarDate { get; set; }
+    internal bool? SerializeIEEE754SpecialValues { get; set; }
     internal bool? DeserializeToObjectDictionary { get; set; } = false;
 
     /// <summary>
@@ -153,6 +154,7 @@ public class CommandOptions
             IncludeKeyspaceInUrl = FirstNonNull(x => x.IncludeKeyspaceInUrl) ?? Defaults().IncludeKeyspaceInUrl,
             SerializeGuidAsDollarUuid = FirstNonNull(x => x.SerializeGuidAsDollarUuid) ?? Defaults().SerializeGuidAsDollarUuid,
             SerializeDateAsDollarDate = FirstNonNull(x => x.SerializeDateAsDollarDate) ?? Defaults().SerializeDateAsDollarDate,
+            SerializeIEEE754SpecialValues = FirstNonNull(x => x.SerializeIEEE754SpecialValues) ?? Defaults().SerializeIEEE754SpecialValues,
             DeserializeToObjectDictionary = FirstNonNull(x => x.DeserializeToObjectDictionary) ?? Defaults().DeserializeToObjectDictionary,
             BulkOperationCancellationToken = list.Select(o => o.BulkOperationCancellationToken).Merge(),
             AdditionalHeaders = list
@@ -182,6 +184,7 @@ public class CommandOptions
             IncludeKeyspaceInUrl = true,
             SerializeGuidAsDollarUuid = true,
             SerializeDateAsDollarDate = true,
+            SerializeIEEE754SpecialValues = true,
             TimeoutOptions = new TimeoutOptions
             {
                 ConnectionTimeout = TimeoutDefaults.DefaultConnectionTimeout,
