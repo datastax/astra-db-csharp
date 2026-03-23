@@ -401,7 +401,7 @@ internal class Command
                         responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                         MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
                         MaybeLogDebugMessage("Content: {Content}", responseContent);
-                        throw new HttpRequestException($"Request failed with status code {response.StatusCode} and request {content.ReadAsStringAsync().Result} and response {responseContent}.");
+                        throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
                     }
                 }
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
