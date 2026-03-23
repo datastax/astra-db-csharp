@@ -404,6 +404,9 @@ public class UpdateBuilder<T>
         return this;
     }
 
+
+
+
     /// <summary>
     /// Add a value to a set at a specified position.
     /// </summary>
@@ -433,6 +436,95 @@ public class UpdateBuilder<T>
         _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), new PushUpdateValue<TField> { Each = new List<TField> { value }, Position = position }));
         return this;
     }
+
+
+
+
+
+    // NEW push for typed, with pairs TESTED
+    public UpdateBuilder<T> Push<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, (TKey, TVal) pair)
+    {
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { pair.Item1, pair.Item2 } } }));
+        return this;
+    }
+
+    // NEW push for typed, with 1k-dict - TESTED
+    public UpdateBuilder<T> Push<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IDictionary<TKey, TVal> value)
+    {
+        if (value.Count != 1){
+            throw new ArgumentException("Push operations require an exactly-one-key dicionary input.");
+        }
+        var kvp = value.First();
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { kvp.Key, kvp.Value } } }));
+        return this;
+    }
+
+
+
+    // NEW push for untyped, with pairs - TESTED
+    public UpdateBuilder<T> Push<TKey, TVal>(string fieldName, (TKey, TVal) pair)
+    {
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { pair.Item1, pair.Item2 } } }));
+        return this;
+    }
+
+    // NEW push for untyped, with 1k-dict - TESTED
+    public UpdateBuilder<T> Push<TKey, TVal>(string fieldName, IDictionary<TKey, TVal> value)
+    {
+        if (value.Count != 1){
+            throw new ArgumentException("Push operations require an exactly-one-key dicionary input.");
+        }
+        var kvp = value.First();
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { kvp.Key, kvp.Value } } }));
+        return this;
+    }
+
+
+
+    // NEW pushEach for typed, with pair TESTED
+    public UpdateBuilder<T> PushEach<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, (TKey, TVal)[] pairs)
+    {
+        var pairList = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = pairList }));
+        return this;
+    }
+
+    // TODO pushEach for typed, with 1k-dicts - TESTED
+    public UpdateBuilder<T> PushEach<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IDictionary<TKey, TVal> value)
+    {
+        var pairList = value.Select(kvp => new object[] { kvp.Key, kvp.Value }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = pairList }));
+        return this;
+    }
+
+
+    // NEW pushEach for untyped, with pair - TESTED
+    public UpdateBuilder<T> PushEach<TKey, TVal>(string fieldName, (TKey, TVal)[] pairs)
+    {
+        var pairList = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = pairList }));
+        return this;
+    }
+
+    // TODO pushEach for untyped, with 1k-dicts - TESTED
+    public UpdateBuilder<T> PushEach<TKey, TVal>(string fieldName, IDictionary<TKey, TVal> value)
+    {
+        var pairList = value.Select(kvp => new object[] { kvp.Key, kvp.Value }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = pairList }));
+        return this;
+    }
+
+
+
+
 
     /// <summary>
     /// Add multiple values to a set starting at a specified position.

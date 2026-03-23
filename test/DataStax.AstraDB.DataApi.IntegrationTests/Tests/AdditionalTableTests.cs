@@ -295,6 +295,34 @@ public class AdditionalTableTests
             Assert.NotNull(rowInUntyped2);
             Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped2["Id"]).GetInt32(), 4);
 
+            // push with a single-key dictionary / a tuple (typed):
+            var pusherUpdate = Builders<DictionaryTypeTest>
+                .Update
+                .Push(r => r.DecimalKey, new Dictionary<decimal, string> { { 700.11m, "the 700th" } })
+                .Push(r => r.IntKey, (500, "the 500th"));
+            await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherUpdate);
+
+            // push with a single-key dictionary / a tuple (untyped):
+            var pusherUpdateUntyped = Builders<Row>
+                .Update
+                .Push("DecimalKey", new Dictionary<decimal, string> { { 700.11m, "the 700th" } })
+                .Push("IntKey", (500, "the 500th"));
+            await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherUpdateUntyped);
+
+            // pushEach with single-key dictionaries / tuples (typed):
+            var pusherEachUpdate = Builders<DictionaryTypeTest>
+                .Update
+                .PushEach(r => r.DecimalKey, new Dictionary<decimal, string> { { 701.11m, "the 701th" }, { 702.11m, "the 702th" } })
+                .PushEach(r => r.IntKey, new[] { (501, "the 501th"),  (502, "the 502th") });
+            await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherEachUpdate);
+
+            // pushEach with single-key dictionaries / tuples (untyped):
+            var pusherEachUpdateUntyped = Builders<Row>
+                .Update
+                .PushEach("DecimalKey", new Dictionary<decimal, string> { { 701.11m, "the 701th" }, { 702.11m, "the 702th" } })
+                .PushEach("IntKey", new[] { (501, "the 501th"),  (502, "the 502th") });
+            await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherEachUpdateUntyped);
+
             // Test empty maps with non-string keys (#57)
             var emptyMapRow = new DictionaryTypeTest()
             {
