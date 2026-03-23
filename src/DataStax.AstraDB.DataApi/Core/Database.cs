@@ -929,52 +929,6 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTableIndexAsync{T, TColumn}(Expression{Func{T, TColumn}})"/>
-    /// </summary>
-    /// <inheritdoc cref="DropTableIndexAsync{T, TColumn}(Expression{Func{T, TColumn}})"/>
-    public void DropTableIndex<T, TColumn>(Expression<Func<T, TColumn>> column)
-    {
-        var indexName = $"{column.GetMemberNameTree()}_idx";
-        DropTableIndex(indexName, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTableIndexAsync{T, TColumn}(Expression{Func{T, TColumn}}, DropIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DropTableIndexAsync(string, DropIndexCommandOptions)"/>
-    public void DropTableIndex<T, TColumn>(Expression<Func<T, TColumn>> column, DropIndexCommandOptions commandOptions)
-    {
-        var indexName = $"{column.GetMemberNameTree()}_idx";
-        DropTableIndexAsync(indexName, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Drops an index on the table.
-    /// </summary>
-    /// <param name="column">The column to drop the index from</param>
-    /// <remarks>
-    /// Index name will be generated as "{columnName}_idx". Use an overload that accepts an index name if the index was created with a custom name.
-    /// </remarks>
-    public Task DropTableIndexAsync<T, TColumn>(Expression<Func<T, TColumn>> column)
-    {
-        var indexName = $"{column.GetMemberNameTree()}_idx";
-        return DropTableIndexAsync(indexName, null, false);
-    }
-
-    /// <inheritdoc cref="DropTableIndexAsync(string)"/>
-    /// <param name="column">The column to drop the index from</param>
-    /// <param name="commandOptions"></param>
-    /// <remarks>
-    /// Index name will be generated as "{columnName}_idx". Use an overload that accepts an index name if the index was created with a custom name.
-    /// </remarks>
-    public Task DropTableIndexAsync<T, TColumn>(Expression<Func<T, TColumn>> column, DropIndexCommandOptions commandOptions)
-    {
-        var indexName = $"{column.GetMemberNameTree()}_idx";
-        return DropTableIndexAsync(indexName, commandOptions, false);
-    }
-
-
-    /// <summary>
     /// Synchronous version of <see cref="DropTableIndexAsync(string)"/>
     /// </summary>
     /// <inheritdoc cref="DropTableIndexAsync(string)"/>
@@ -1011,18 +965,19 @@ public class Database
 
     private async Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions, bool runSynchronously)
     {
-        var payload = new
+        var payload = new Dictionary<string, object>
         {
-            name = indexName,
-            options = new
-            {
-                ifExists = commandOptions?.IfExists ?? false,
-            }
+            ["name"] = indexName,
         };
+        if (commandOptions != null)
+        {
+            payload["options"] = new { ifExists = commandOptions.IfExists };
+        }
         var command = CreateCommand("dropIndex")
             .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())
             .AddCommandOptions(commandOptions);
+
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
 

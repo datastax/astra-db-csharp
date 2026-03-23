@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.SerDes;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+[JsonConverter(typeof(TableIndexMetadataConverter))]
 public class TableIndexMetadata
 {
   [JsonPropertyName("name")]
   public string Name { get; set; }
 
   [JsonPropertyName("definition")]
-  public TableIndexDefinition Definition { get; set; }
+  public TableBaseIndexDefinition Definition { get; set; }
 
   [JsonPropertyName("indexType")]
   public string IndexType { get; set; }
