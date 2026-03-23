@@ -295,6 +295,34 @@ public class AdditionalTableTests
             Assert.NotNull(rowInUntyped2);
             Assert.Equal(((System.Text.Json.JsonElement)rowInUntyped2["Id"]).GetInt32(), 4);
 
+            // $set with non-string-keyed dictionaries, using tuples/dicts (typed)
+            var newIntKeyTuples = new (int, string)[] {
+                (199, "the 199th"),
+                (201, "the 201th")
+            };
+            var newDecimalKey = new Dictionary<decimal, string>{
+                {299.99m, "the decimal 299th"},
+                {301.11m, "the decimal 301th"}
+            };
+            var newStringKey = new Dictionary<string, string>{
+                {"abc", "xyz"},
+                {"PQR", "LMN"}
+            };
+            var setterUpdate = Builders<DictionaryTypeTest>
+                .Update
+                .Set(r => r.IntKey, newIntKeyTuples)
+                .Set(r => r.DecimalKey, newDecimalKey)
+                .Set(r => r.StringDictionary, newStringKey);
+            await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), setterUpdate);
+
+            // $set with non-string-keyed dictionaries, using tuples/dicts (untyped)
+            var setterUpdateUntyped = Builders<Row>
+                .Update
+                .Set("IntKey", newIntKeyTuples)
+                .Set("DecimalKey", newDecimalKey)
+                .Set("StringDictionary", newStringKey);
+            await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), setterUpdateUntyped);
+
             // Test empty maps with non-string keys (#57)
             var emptyMapRow = new DictionaryTypeTest()
             {
