@@ -486,3 +486,25 @@ public class TypesTester
     public TimeOnly? MaybeTime { get; set; }
     public DateTime TimestampWithKind { get; set; }
 }
+
+public class DoubleFloatTypeTest
+{
+    [ColumnPrimaryKey()]
+    public double? DoubleValue { get; set; }
+    public float? FloatValue { get; set; }
+    public Dictionary<float, double> FloatDoubleMap { get; set; }
+    public List<float> FloatList { get; set; }
+}
+    
+public class SBook
+{
+    [ColumnPrimaryKey()]
+    [ColumnName("title")]
+    public string Title { get; set; }
+    [ColumnName("author")]
+    public string Author { get; set; }
+    [ColumnName("map_column_int_str")]
+    public Dictionary<int, string> MapColumnIntStr { get; set; }
+    [ColumnName("map_column_str_str")]
+    public Dictionary<string, string> MapColumnStrStr { get; set; }
+}

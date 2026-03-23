@@ -122,16 +122,16 @@ public class TypeUtilities
                     {
                         if (genericArguments.Length == 2)
                         {
-                            return DataApiType.Map(GetDataApiTypeFromUnderlyingType(genericArguments[0]), GetDataApiTypeFromUnderlyingType(genericArguments[1]));
+                            return DataApiType.Map(GetDataApiType(genericArguments[0]), GetDataApiType(genericArguments[1]));
                         }
                     }
                     else if (genericTypeDefinition == typeof(List<>))
                     {
-                        return DataApiType.List(GetDataApiTypeFromUnderlyingType(genericArguments[0]));
+                        return DataApiType.List(GetDataApiType(genericArguments[0]));
                     }
                     else if (genericTypeDefinition == typeof(HashSet<>))
                     {
-                        return DataApiType.Set(GetDataApiTypeFromUnderlyingType(genericArguments[0]));
+                        return DataApiType.Set(GetDataApiType(genericArguments[0]));
                     }
                     else
                     {
