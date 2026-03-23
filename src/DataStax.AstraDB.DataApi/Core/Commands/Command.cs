@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.SerDes;
+using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.Extensions.Logging;
 using System;
@@ -25,6 +26,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -135,23 +137,30 @@ internal class Command
 
     internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnDocumentData<TData, TDocument, TStatus>(bool runSynchronously)
     {
-        var useDocumentConverter = typeof(TDocument) != typeof(Document);
-        if (useDocumentConverter)
+        if (typeof(TDocument) != typeof(Document))
         {
-            _commandOptionsTree.Add(new CommandOptions()
+            _commandOptionsTree.Add(new()
             {
                 OutputConverter = new DocumentConverter<TDocument>()
             });
         }
-        var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
-        if (response.Errors != null && response.Errors.Count > 0)
-        {
-            throw new CommandException(response.Errors);
-        }
-        return response;
+        return await RunAsyncReturnData<TData, TStatus>(runSynchronously);
     }
 
-    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
+    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnRowData<TData, TRow, TStatus>(bool runSynchronously)
+    {
+        _commandOptionsTree.Add(new()
+        {
+            SerializeGuidAsDollarUuid = false,
+            SerializeDateAsDollarDate = false,
+            OutputConverter = (typeof(TRow) != typeof(Row))
+                ? new RowConverter<TRow>()
+                : null
+        });
+        return await RunAsyncReturnData<TData, TStatus>(runSynchronously);
+    }
+
+    private async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
     {
         var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
@@ -193,6 +202,12 @@ internal class Command
             serializeOptions.Converters.Add(new GuidConverter());
         }
         serializeOptions.Converters.Add(new IpAddressConverter());
+        
+        if (commandOptions.SerializeIEEE754SpecialValues == true)
+        {
+            serializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+        }
+        
         if (commandOptions.InputConverter != null)
         {
             serializeOptions.Converters.Add(commandOptions.InputConverter);
@@ -242,6 +257,11 @@ internal class Command
         deserializeOptions.Converters.Add(new IpAddressConverter());
         deserializeOptions.Converters.Add(new AnalyzerOptionsConverter());
 
+        if (commandOptions.SerializeIEEE754SpecialValues == true)
+        {
+            deserializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+        }
+        
         return JsonSerializer.Deserialize<T>(input, deserializeOptions);
     }
 
@@ -389,7 +409,7 @@ internal class Command
                         responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                         MaybeLogDebugMessage("Response Status Code: {StatusCode}", response.StatusCode);
                         MaybeLogDebugMessage("Content: {Content}", responseContent);
-                        throw new HttpRequestException($"Request failed with status code {response.StatusCode}.");
+                        throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
                     }
                 }
                 responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
