@@ -220,7 +220,43 @@ public class UpdateBuilder<T>
     /// </remarks>
     public UpdateBuilder<T> Set(string fieldName, object value)
     {
+        if (value != null)
+        {
+            var valueType = value.GetType();
+            var dictionaryInterface = valueType.GetInterfaces()
+                .FirstOrDefault(i => i.IsGenericType &&
+                                    i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+
+            if (dictionaryInterface != null && value is System.Collections.IDictionary dict)
+            {
+                var pairArrays = new List<object[]>();
+                foreach (var key in dict.Keys)
+                {
+                    pairArrays.Add(new object[] { key, dict[key] });
+                }
+                _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays.ToArray()));
+                return this;
+            }
+        }
         _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, value));
+        return this;
+    }
+
+    /// <summary>
+    /// Set the value of a dictionary field to a specified value.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values</typeparam>
+    /// <param name="fieldName">The name of the field to set.</param>
+    /// <param name="pairs">The value to set, as array of key-value pairs (tuples).</param>
+    /// <returns>The UpdateBuilder instance</returns>
+    /// <remarks>
+    /// We recommend using the strongly-typed version <see cref="Set{TField}(Expression{Func{T, TField}}, TField)"/>.
+    /// </remarks>
+    public UpdateBuilder<T> Set<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
+    {
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
         return this;
     }
 
@@ -233,7 +269,37 @@ public class UpdateBuilder<T>
     /// <returns>The UpdateBuilder instance</returns>
     public UpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> expression, TField value)
     {
+        var dictionaryInterface = typeof(TField).GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType &&
+                                i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+
+        if (dictionaryInterface != null && value is System.Collections.IDictionary dict)
+        {
+            var genericArgs = dictionaryInterface.GetGenericArguments();
+            var pairArrays = new List<object[]>();
+            foreach (var key in dict.Keys)
+            {
+                pairArrays.Add(new object[] { key, dict[key] });
+            }
+            _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairArrays.ToArray()));
+            return this;
+        }
         _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), value));
+        return this;
+    }
+
+    /// <summary>
+    /// Set the value of a dictionary field to a specified value.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values</typeparam>
+    /// <param name="expression">An expression that represents the target dictionary field</param>
+    /// <param name="pairs">The value to set, as array of key-value pairs (tuples).</param>
+    /// <returns>The UpdateBuilder instance</returns>
+    public UpdateBuilder<T> Set<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
+    {
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairArrays));
         return this;
     }
 
