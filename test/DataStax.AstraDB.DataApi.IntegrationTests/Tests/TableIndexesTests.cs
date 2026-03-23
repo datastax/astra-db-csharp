@@ -554,10 +554,10 @@ public class TableIndexesTests
             Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
             Assert.Equal("Name", foundIndex.Definition.Column);
             var theAnalyzer = ((TableTextIndexDefinition)foundIndex.Definition).Analyzer;
-            // Assert.Equal(
-            //     new Dictionary<string, object>{["name"] = "standard", ["args"] = new Dictionary<string, string>()},
-            //     ((Dictionary<string, object>)theAnalyzer)["tokenizer"]
-            // ); <== Fails because nested dictionaries != nested JSONElements
+            Assert.Equal(
+                new Dictionary<string, object>{["name"] = "standard", ["args"] = new Dictionary<string, string>()},
+                ((Dictionary<string, object>)theAnalyzer)["tokenizer"]
+            );
 
         }
         finally
@@ -594,10 +594,10 @@ public class TableIndexesTests
             Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
             Assert.Equal("Name", foundIndex.Definition.Column);
             var theAnalyzer = ((TableTextIndexDefinition)foundIndex.Definition).Analyzer;
-            // Assert.Equal(
-            //     new Dictionary<string, string>{["name"] = "whitespace"},
-            //     ((Dictionary<string, object>)theAnalyzer)["tokenizer"]
-            // ); <== Fails because dictionary != JSONElements
+            Assert.Equal(
+                new Dictionary<string, string>{["name"] = "whitespace"},
+                ((Dictionary<string, object>)theAnalyzer)["tokenizer"]
+            );
 
         }
         finally
@@ -607,7 +607,7 @@ public class TableIndexesTests
 
     }
 
-    [Fact(Skip="Run manually after some CQL setup!")]
+    [Fact(Skip="Run manually on HCD after some CQL setup!")]
     public async Task ListIndexesTests_UnknownUnsupportedCQLIndex()
     {
         var tableName = "table_with_unsupported_index";
