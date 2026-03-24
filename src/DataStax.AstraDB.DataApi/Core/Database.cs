@@ -666,6 +666,15 @@ public class Database
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Collection<T> GetCollection<T>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
+        if (string.IsNullOrEmpty(collectionName))
+        {
+            Type type = typeof(T);
+            var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+            if (nameAttribute != null)
+            {
+                collectionName = nameAttribute.Name;
+            }
+        }
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T>(collectionName, this, options);
     }

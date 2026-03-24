@@ -1,6 +1,7 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
+using DataStax.AstraDB.DataApi.SerDes;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -59,4 +60,75 @@ public class ExamplesTests
             await fixture.Database.DropCollectionAsync("bookTests");
         }
     }
+
+    [Fact]
+    public async Task GetCollection_NameFromAttribute()
+    {
+        try
+        {
+            await fixture.Database.CreateCollectionAsync<CollectionFromAttributeDocument>();
+            var collection = fixture.Database.GetCollection<CollectionFromAttributeDocument>();
+
+            // Insert documents
+            var insertionResult = await collection.InsertManyAsync(
+              new List<CollectionFromAttributeDocument>
+              {
+            new CollectionFromAttributeDocument()
+        {
+          Title = "Ocean Depths",
+          NumberOfPages = 434,
+          IsCheckedOut = false,
+        },
+        new CollectionFromAttributeDocument()
+        {
+            IsCheckedOut = false,
+          Title = "Sky Limits",
+          NumberOfPages = 298,
+        },
+        new CollectionFromAttributeDocument()
+        {
+          Id = Guid.NewGuid(),
+          Title = "Open Plains",
+          IsCheckedOut = true,
+        },
+              }
+            );
+
+            // Find documents
+            var filterBuilder = Builders<CollectionFromAttributeDocument>.Filter;
+            var filter = filterBuilder.And(
+              filterBuilder.Eq(x => x.IsCheckedOut, false),
+              filterBuilder.Lt(x => x.NumberOfPages, 300)
+            );
+            var findResult = collection
+              .Find(filter)
+              .Project(
+                Builders<CollectionFromAttributeDocument>
+                  .Projection.Include(x => x.Title)
+                  .Include(x => x.IsCheckedOut)
+              ).ToList();
+
+            Assert.Single(findResult);
+            Assert.Equal("Sky Limits", findResult.First().Title);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync<CollectionFromAttributeDocument>();
+
+        }
+    }
+
+}
+
+[CollectionName("testCollectionFromAttribute")]
+public class CollectionFromAttributeDocument
+{
+    [DocumentId]
+    public Guid? Id { get; set; }
+
+    public string? Title { get; set; }
+
+    public int? NumberOfPages { get; set; }
+
+    public bool? IsCheckedOut { get; set; }
 }
