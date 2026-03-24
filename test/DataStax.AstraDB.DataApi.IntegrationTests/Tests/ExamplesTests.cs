@@ -95,7 +95,7 @@ public class ExamplesTests
             );
 
             // Find documents
-            var filterBuilder = Builders<CollectionFromAttributeDocument>.Filter;
+            var filterBuilder = Builders<CollectionFromAttributeDocument>.CollectionFilter;
             var filter = filterBuilder.And(
               filterBuilder.Eq(x => x.IsCheckedOut, false),
               filterBuilder.Lt(x => x.NumberOfPages, 300)

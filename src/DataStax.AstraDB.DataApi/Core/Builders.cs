@@ -44,19 +44,15 @@ public class Builders
 public class Builders<T>
 {
     /// <summary>
-    /// A builder for creating filter definitions
+    /// A builder for creating filter definitions for collections
     /// </summary>
     /// <example>
     /// <code>
-    /// var filter = Builders&lt;DocumentType&gt;.Filter;
+    /// var filter = Builders&lt;DocumentType&gt;.CollectionFilter;
     /// filter = filter.Where(x => x.Name == "NameSearch");
     /// </code>
     /// </example>
     public static CollectionFilterBuilder<T> CollectionFilter => new();
-    /// <summary>
-    /// A builder for creating filter definitions
-    /// </summary>
-    public static CollectionFilterBuilder<T> Filter => new();
     /// <summary>
     /// A builder for creating projection definitions
     /// </summary>
