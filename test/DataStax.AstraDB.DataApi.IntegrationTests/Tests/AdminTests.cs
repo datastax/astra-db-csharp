@@ -132,7 +132,7 @@ public class AdminTests
 
 	[SkipWhenNotAstra]
 	[Fact]
-	public void DatabaseAdminAstra_GetDatabaseAdminAstra()
+	public void DatabaseAdminAstra_GetDatabasesAdminAstra()
 	{
 		var daa = fixture.Client.GetAstraDatabasesAdmin();
 
