@@ -25,9 +25,37 @@ public class AdminTests
 
 	[SkipWhenNotAstra]
 	[Fact]
-	public async Task GetDatabasesList()
+	public async Task GetDatabasesListNoOptions()
 	{
 		var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync();
+		Assert.NotNull(list);
+
+		list = fixture.Client.GetAstraDatabasesAdmin().ListDatabases();
+		Assert.NotNull(list);
+
+		Console.WriteLine($"GetDatabasesList: {list.Count} items");
+	}
+
+	[SkipWhenNotAstra]
+	[Fact]
+	public async Task GetDatabasesListPartialOptions()
+	{
+		var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync(new ListDatabaseOptions {
+			StatesToInclude = QueryDatabaseStates.pending, PageSizeLimit = 41 });
+		Assert.NotNull(list);
+
+		list = fixture.Client.GetAstraDatabasesAdmin().ListDatabases();
+		Assert.NotNull(list);
+
+		Console.WriteLine($"GetDatabasesList: {list.Count} items");
+	}
+
+	[SkipWhenNotAstra]
+	[Fact]
+	public async Task GetDatabasesListWithOptions()
+	{
+		var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync(new ListDatabaseOptions {
+			StatesToInclude = QueryDatabaseStates.pending, Provider = QueryCloudProvider.AZURE, PageSizeLimit = 41, StartingAfter = "a" });
 		Assert.NotNull(list);
 
 		list = fixture.Client.GetAstraDatabasesAdmin().ListDatabases();

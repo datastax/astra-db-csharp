@@ -201,6 +201,7 @@ internal class Command
         {
             serializeOptions.Converters.Add(new GuidConverter());
         }
+        serializeOptions.Converters.Add(new JsonStringEnumConverter());
         serializeOptions.Converters.Add(new IpAddressConverter());
 
         if (commandOptions.SerializeIEEE754SpecialValues == true)
