@@ -22,6 +22,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <summary>
 /// Metadata about an existing table index, as returned by the Data API.
 /// </summary>
+[JsonConverter(typeof(TableIndexMetadataConverter))]
 public class TableIndexMetadata
 {
     /// <summary>
@@ -34,7 +35,7 @@ public class TableIndexMetadata
     /// The definition of the index, including the target column and options.
     /// </summary>
     [JsonPropertyName("definition")]
-    public TableIndexDefinition Definition { get; set; }
+    public TableBaseIndexDefinition Definition { get; set; }
 
     /// <summary>
     /// The type of the index (e.g., "regular" or "vector").

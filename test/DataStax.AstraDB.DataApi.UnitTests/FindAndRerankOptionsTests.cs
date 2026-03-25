@@ -29,7 +29,7 @@ public class FindAndRerankOptionsTests
     [Fact]
     public void Clone_WithAllPropertiesSet_ShouldCreateExactCopy()
     {
-        var filterBuilder = Builders<TestDocument>.Filter;
+        var filterBuilder = Builders<TestDocument>.CollectionFilter;
         // Arrange
         var original = new FindAndRerankOptions<TestDocument>
         {
@@ -160,7 +160,7 @@ public class FindAndRerankOptionsTests
     public void Clone_WithComplexFilter_ShouldDeepCloneFilter()
     {
         // Arrange
-        var filterBuilder = Builders<TestDocument>.Filter;
+        var filterBuilder = Builders<TestDocument>.CollectionFilter;
         var filter = filterBuilder.Eq("field1", "value1") |
 
                     (filterBuilder.Gt("field2", 10) & filterBuilder.Lt("field2", 20));
