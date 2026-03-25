@@ -354,14 +354,36 @@ public class AdditionalTableTests
                 .Set(r => r.DecimalKey, newDecimalKey)
                 .Set(r => r.StringDictionary, newStringKey);
             await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), setterUpdate);
+            // read back and verify success
+            var readRowS = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 201th", readRowS.IntKey[201]);
+            Assert.Equal("the decimal 301th", readRowS.DecimalKey[301.11m]);
+            Assert.Equal("LMN", readRowS.StringDictionary["PQR"]);
 
             // $set with non-string-keyed dictionaries, using tuples/dicts (untyped)
+            var newIntKeyTuplesU = new (int, string)[] {
+                (199, "the 199th U"),
+                (201, "the 201th U")
+            };
+            var newDecimalKeyU = new Dictionary<decimal, string>{
+                {299.99m, "the decimal 299th U"},
+                {301.11m, "the decimal 301th U"}
+            };
+            var newStringKeyU = new Dictionary<string, string>{
+                {"abc", "xyz U"},
+                {"PQR", "LMN U"}
+            };
             var setterUpdateUntyped = Builders<Row>
                 .Update
-                .Set("IntKey", newIntKeyTuples)
-                .Set("DecimalKey", newDecimalKey)
-                .Set("StringDictionary", newStringKey);
+                .Set("IntKey", newIntKeyTuplesU)
+                .Set("DecimalKey", newDecimalKeyU)
+                .Set("StringDictionary", newStringKeyU);
             await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), setterUpdateUntyped);
+            // read back and verify success
+            var readRowSu = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 201th U", readRowSu.IntKey[201]);
+            Assert.Equal("the decimal 301th U", readRowSu.DecimalKey[301.11m]);
+            Assert.Equal("LMN U", readRowSu.StringDictionary["PQR"]);
 
             // Test empty maps with non-string keys (#57)
             var emptyMapRow = new DictionaryTypeTest()

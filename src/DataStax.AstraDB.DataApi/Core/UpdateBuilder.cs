@@ -222,19 +222,14 @@ public class UpdateBuilder<T>
     {
         if (value != null)
         {
-            var valueType = value.GetType();
-            var dictionaryInterface = valueType.GetInterfaces()
-                .FirstOrDefault(i => i.IsGenericType &&
-                                    i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
-
-            if (dictionaryInterface != null && value is System.Collections.IDictionary dict)
+            if (value is System.Collections.IDictionary dict)
             {
-                var pairArrays = new List<object[]>();
-                foreach (var key in dict.Keys)
-                {
-                    pairArrays.Add(new object[] { key, dict[key] });
-                }
-                _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays.ToArray()));
+                var pairArrays = dict.Keys
+                    .Cast<object>()
+                    .Select(key => new object[] { key, dict[key]! })
+                    .ToArray();
+
+                _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
                 return this;
             }
         }
