@@ -80,7 +80,8 @@ public class Database
     private readonly string _urlPostfix = "";
     private readonly Guid? _id;
 
-    private DatabaseCommandOptions _dbCommandOptions;
+    private DatabaseCommandOptions _dbCommandOptions = new DatabaseCommandOptions();
+    public string Keyspace => CommandOptions.Merge(OptionsTree).Keyspace;
 
     internal string ApiEndpoint => _apiEndpoint;
     internal DataAPIClient Client => _client;
@@ -114,9 +115,17 @@ public class Database
     /// <param name="keyspace"></param>
     public void UseKeyspace(string keyspace)
     {
+        /*
+        // TODO: assess if this is safe (i.e. if secret defaults enter the picture and disrupt prev layers)
+        // OPTION 1:
         var commandOptions = _dbCommandOptions ?? new DatabaseCommandOptions();
         commandOptions.Keyspace = keyspace;
         _dbCommandOptions = commandOptions;
+        // OPTION 2:
+        // _dbCommandOptions.Keyspace = keyspace;
+        */
+        // Currently seems OK
+        _dbCommandOptions = new DatabaseCommandOptions { Keyspace = keyspace };
     }
 
     ///<summary>
@@ -230,6 +239,9 @@ public class Database
 
     private async Task<T> ListCollectionsAsync<T>(bool includeDetails, DatabaseCommandOptions commandOptions, bool runSynchronously)
     {
+
+        var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), commandOptions);
+
         object payload = new
         {
             options = new { explain = includeDetails }
@@ -237,7 +249,7 @@ public class Database
         var command = CreateCommand("findCollections")
             .WithPayload(payload)
             .WithTimeoutManager(new CollectionAdminTimeoutManager())
-            .AddCommandOptions(commandOptions);
+            .AddCommandOptions(mergedOptions);
         var response = await command.RunAsyncReturnStatus<T>(runSynchronously).ConfigureAwait(false);
         return response.Result;
     }
