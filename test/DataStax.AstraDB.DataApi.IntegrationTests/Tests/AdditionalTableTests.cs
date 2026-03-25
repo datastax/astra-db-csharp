@@ -322,7 +322,7 @@ public class AdditionalTableTests
             );
             var rowNinUntyped1 = await tableUntyped.FindOneAsync(filterNinUntyped1);
             Assert.NotNull(rowNinUntyped1);
-            Assert.Equal(((System.Text.Json.JsonElement)rowNinUntyped1["Id"]).GetInt32(), 4);
+            Assert.Equal(4, Convert.ToInt32(rowInUntyped1["Id"]));
 
             var filterInUntyped2 = filterBuilderUntyped.In(
                 "IntKey",
@@ -334,7 +334,7 @@ public class AdditionalTableTests
             );
             var rowInUntyped2 = await tableUntyped.FindOneAsync(filterInUntyped2);
             Assert.NotNull(rowInUntyped2);
-            Assert.Equal(Convert.ToInt32(rowInUntyped2["Id"]), 4);
+            Assert.Equal(4, Convert.ToInt32(rowInUntyped2["Id"]));
 
             var filterNinUntyped2 = filterBuilderUntyped.Nin(
                 "IntKey",
@@ -812,7 +812,7 @@ public class AdditionalTableTests
             // untyped reading to check the strings on DB
             var untypedTable = fixture.Database.GetTable(tableName);
             var untypedRow = await untypedTable.FindOneAsync();
-            Assert.Equal(row.Id, ((System.Text.Json.JsonElement)untypedRow["id"]).GetString());
+            Assert.Equal(row.Id, untypedRow["id"].ToString());
 
             var parsedListColumn = ((System.Text.Json.JsonElement)untypedRow["obj_list"]).GetString();
             var parsedObjColumn = ((System.Text.Json.JsonElement)untypedRow["obj_map"]).GetString();
