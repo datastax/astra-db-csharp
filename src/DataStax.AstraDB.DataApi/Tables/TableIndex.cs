@@ -26,6 +26,11 @@ internal class TableIndex
 
   [JsonInclude]
   [JsonPropertyName("definition")]
-  internal TableIndexDefinition Definition { get; set; }
+  internal TableBaseIndexDefinition Definition { get; set; }
+
+  [JsonInclude]
+  [JsonPropertyName("options")]
+  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+  internal TableIndexCreationOptions Options { get; set; }
 
 }

@@ -24,33 +24,8 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <summary>
 /// Configuration used to create an index on a table column
 /// </summary>
-public class TableIndexDefinition
+public class TableIndexDefinition : TableBaseIndexDefinition
 {
-    [JsonIgnore]
-    internal string ColumnName { get; set; }
-
-    private object _column;
-
-    [JsonPropertyName("column")]
-    public virtual object Column
-    {
-        get
-        {
-            if (_column == null)
-            {
-                return ColumnName;
-            }
-            return _column;
-        }
-        internal set => _column = value is JsonElement je
-        ? DeserializationUtils.UnwrapJsonElement(je)
-        : value;
-    }
-
-    [JsonInclude]
-    [JsonPropertyName("options")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    internal Dictionary<string, object> Options { get; set; }
 
     /// <summary>
     /// Should the index be case sensitive?
@@ -58,11 +33,11 @@ public class TableIndexDefinition
     [JsonIgnore]
     public bool CaseSensitive
     {
-        get => Options != null && Options.ContainsKey("caseSensitive") && bool.TryParse((string)Options["caseSensitive"], out var result) && result;
+        get => Options != null && Options.ContainsKey("caseSensitive") && Options["caseSensitive"] is bool b && b;
         set
         {
             Options ??= new Dictionary<string, object>();
-            Options["caseSensitive"] = value.ToString().ToLowerInvariant();
+            Options["caseSensitive"] = value;
         }
     }
 
@@ -72,11 +47,11 @@ public class TableIndexDefinition
     [JsonIgnore]
     public bool Normalize
     {
-        get => Options != null && Options.ContainsKey("normalize") && bool.TryParse((string)Options["normalize"], out var result) && result;
+        get => Options != null && Options.ContainsKey("normalize") && Options["normalize"] is bool b && b;
         set
         {
             Options ??= new Dictionary<string, object>();
-            Options["normalize"] = value.ToString().ToLowerInvariant();
+            Options["normalize"] = value;
         }
     }
 
@@ -86,13 +61,13 @@ public class TableIndexDefinition
     [JsonIgnore]
     public bool Ascii
     {
-        get => Options != null && Options.ContainsKey("ascii") && bool.TryParse((string)Options["ascii"], out var result) && result;
+        get => Options != null && Options.ContainsKey("ascii") && Options["ascii"] is bool b && b;
         set
         {
             Options ??= new Dictionary<string, object>();
-            Options["ascii"] = value.ToString().ToLowerInvariant();
+            Options["ascii"] = value;
         }
     }
 
-    internal virtual string IndexCreationCommandName => "createIndex";
+    internal override string IndexCreationCommandName => "createIndex";
 }

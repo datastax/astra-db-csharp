@@ -14,29 +14,13 @@
  * limitations under the License.
  */
 
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-/// <summary>
-/// Configuration used to create a text index on a table column
-/// </summary>
-public class TableTextIndexDefinition : TableBaseIndexDefinition
+internal class TableIndexCreationOptions
 {
-    [JsonIgnore]
-    internal object Analyzer
-    {
-        get => Options?.ContainsKey("analyzer") == true ? Options["analyzer"] : null;
-        set
-        {
-            if (value != null)
-            {
-                Options ??= new Dictionary<string, object>();
-                Options["analyzer"] = value;
-            }
-        }
-    }
-
-    internal override string IndexCreationCommandName => "createTextIndex";
+  [JsonInclude]
+  [JsonPropertyName("ifNotExists")]
+  internal bool IfNotExists { get; set; }
 }
