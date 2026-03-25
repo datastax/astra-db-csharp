@@ -809,9 +809,16 @@ public class DatabaseTests
     public async Task DropExistingTable()
     {
         var tableName = "testDropExistingTable";
-        var table = await fixture.Database.CreateTableAsync<RowBook>(tableName);
-        Assert.NotNull(table);
-        await fixture.Database.DropTableAsync(tableName);
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBook>(tableName);
+            Assert.NotNull(table);
+            await fixture.Database.DropTableAsync(tableName);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
+        }
     }
 
 }
