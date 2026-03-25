@@ -64,6 +64,15 @@ public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>
         {
             unixTimeMilliseconds = reader.GetInt64();
         }
+        else if (reader.TokenType == JsonTokenType.String)
+        {
+            var str = reader.GetString();
+            var underlyingType2 = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            if (underlyingType2 == typeof(DateTimeOffset))
+                return (T)(object)DateTimeOffset.Parse(str, null, System.Globalization.DateTimeStyles.RoundtripKind);
+            else
+                return (T)(object)DateTime.Parse(str, null, System.Globalization.DateTimeStyles.RoundtripKind);
+        }
         else
         {
             throw new JsonException($"Unexpected token {reader.TokenType} when reading date value.");
