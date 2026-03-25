@@ -463,7 +463,7 @@ public class UpdateBuilder<T>
     public UpdateBuilder<T> Push<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IDictionary<TKey, TVal> value)
     {
         if (value.Count != 1){
-            throw new ArgumentException("Push operations require an exactly-one-key dicionary input.");
+            throw new ArgumentException("Push operations require an exactly-one-key dictionary input.");
         }
         var kvp = value.First();
         _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
@@ -503,7 +503,7 @@ public class UpdateBuilder<T>
     public UpdateBuilder<T> Push<TKey, TVal>(string fieldName, IDictionary<TKey, TVal> value)
     {
         if (value.Count != 1){
-            throw new ArgumentException("Push operations require an exactly-one-key dicionary input.");
+            throw new ArgumentException("Push operations require an exactly-one-key dictionary input.");
         }
         var kvp = value.First();
         _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 

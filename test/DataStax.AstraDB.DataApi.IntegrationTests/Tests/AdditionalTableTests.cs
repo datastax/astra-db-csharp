@@ -301,13 +301,19 @@ public class AdditionalTableTests
                 .Push(r => r.DecimalKey, new Dictionary<decimal, string> { { 700.11m, "the 700th" } })
                 .Push(r => r.IntKey, (500, "the 500th"));
             await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherUpdate);
+            // verify write succeeded as intended
+            var readRowP = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 700th", readRowP.DecimalKey[700.11m]);
 
             // push with a single-key dictionary / a tuple (untyped):
             var pusherUpdateUntyped = Builders<Row>
                 .Update
-                .Push("DecimalKey", new Dictionary<decimal, string> { { 700.11m, "the 700th" } })
-                .Push("IntKey", (500, "the 500th"));
+                .Push("DecimalKey", new Dictionary<decimal, string> { { 700.11m, "the 700th U" } })
+                .Push("IntKey", (500, "the 500th U"));
             await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherUpdateUntyped);
+            // verify write succeeded as intended
+            var readRowPu = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 700th U", readRowPu.DecimalKey[700.11m]);
 
             // pushEach with single-key dictionaries / tuples (typed):
             var pusherEachUpdate = Builders<DictionaryTypeTest>
@@ -315,13 +321,19 @@ public class AdditionalTableTests
                 .PushEach(r => r.DecimalKey, new Dictionary<decimal, string> { { 701.11m, "the 701th" }, { 702.11m, "the 702th" } })
                 .PushEach(r => r.IntKey, new[] { (501, "the 501th"),  (502, "the 502th") });
             await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherEachUpdate);
+            // verify write succeeded as intended
+            var readRowPE = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 702th", readRowPE.DecimalKey[702.11m]);
 
             // pushEach with single-key dictionaries / tuples (untyped):
             var pusherEachUpdateUntyped = Builders<Row>
                 .Update
-                .PushEach("DecimalKey", new Dictionary<decimal, string> { { 701.11m, "the 701th" }, { 702.11m, "the 702th" } })
-                .PushEach("IntKey", new[] { (501, "the 501th"),  (502, "the 502th") });
+                .PushEach("DecimalKey", new Dictionary<decimal, string> { { 701.11m, "the 701thU " }, { 702.11m, "the 702th U" } })
+                .PushEach("IntKey", new[] { (501, "the 501th U"),  (502, "the 502th U") });
             await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherEachUpdateUntyped);
+            // verify write succeeded as intended
+            var readRowPEu = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 702th U", readRowPEu.DecimalKey[702.11m]);
 
             // Test empty maps with non-string keys (#57)
             var emptyMapRow = new DictionaryTypeTest()
