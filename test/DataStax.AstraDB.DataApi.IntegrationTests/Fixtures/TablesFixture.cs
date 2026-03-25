@@ -99,8 +99,8 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 rows.Add(row);
             }
             var table = await Database.CreateTableAsync<RowBook>(_queryTableName);
-            await table.CreateIndexAsync((b) => b.NumberOfPages);
-            await table.CreateIndexAsync((b) => b.DueDate);
+            await table.CreateIndexAsync("NumberOfPages_idx", (b) => b.NumberOfPages);
+            await table.CreateIndexAsync("DueDate_idx", (b) => b.DueDate);
             await table.InsertManyAsync(rows);
             SearchTable = table;
         }
@@ -151,7 +151,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
             }
             var table = await Database.CreateTableAsync<RowBookVectorize>(_queryTableNameVectorize);
             await table.CreateIndexAsync("idx_num_pages_vectorize", (b) => b.NumberOfPages);
-            await table.CreateIndexAsync("idx_author_vectorize", (b) => b.Author, Builders.TableIndex.Vector(SimilarityMetric.Cosine));
+            await table.CreateVectorIndexAsync("idx_author_vectorize", (b) => b.Author, Builders.TableIndex.Vector(SimilarityMetric.Cosine));
             await table.CreateIndexAsync("idx_due_date_vectorize", (b) => b.DueDate);
             await table.InsertManyAsync(rows);
             SearchTableVectorize = table;
@@ -183,9 +183,9 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
         UntypedTableSinglePrimaryKey = await Database.CreateTableAsync(_untypedSinglePkTableName, createDefinition);
         if (IsAstra)
         {
-            await UntypedTableSinglePrimaryKey.CreateIndexAsync("vectorize_index", "Vectorize", Builders.TableIndex.Vector());
+            await UntypedTableSinglePrimaryKey.CreateVectorIndexAsync("vectorize_index", "Vectorize", Builders.TableIndex.Vector());
         }
-        await UntypedTableSinglePrimaryKey.CreateIndexAsync("vector_index", "Vector", Builders.TableIndex.Vector());
+        await UntypedTableSinglePrimaryKey.CreateVectorIndexAsync("vector_index", "Vector", Builders.TableIndex.Vector());
 
         // Create a table with a composite primary key
         createDefinition = new TableDefinition()
@@ -204,9 +204,9 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
         UntypedTableCompositePrimaryKey = await Database.CreateTableAsync(_untypedCompositePkTableName, createDefinition);
         if (IsAstra)
         {
-            await UntypedTableCompositePrimaryKey.CreateIndexAsync("composite_vectorize_index", "Vectorize", Builders.TableIndex.Vector());
+            await UntypedTableCompositePrimaryKey.CreateVectorIndexAsync("composite_vectorize_index", "Vectorize", Builders.TableIndex.Vector());
         }
-        await UntypedTableCompositePrimaryKey.CreateIndexAsync("composite_vector_index", "Vector", Builders.TableIndex.Vector());
+        await UntypedTableCompositePrimaryKey.CreateVectorIndexAsync("composite_vector_index", "Vector", Builders.TableIndex.Vector());
 
         // Create a table with a compound primary key
         createDefinition = new TableDefinition()
@@ -229,9 +229,9 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
         UntypedTableCompoundPrimaryKey = await Database.CreateTableAsync(_untypedCompoundPkTableName, createDefinition);
         if (IsAstra)
         {
-            await UntypedTableCompoundPrimaryKey.CreateIndexAsync("compound_vectorize_index", "Vectorize", Builders.TableIndex.Vector());
+            await UntypedTableCompoundPrimaryKey.CreateVectorIndexAsync("compound_vectorize_index", "Vectorize", Builders.TableIndex.Vector());
         }
-        await UntypedTableCompoundPrimaryKey.CreateIndexAsync("compound_vector_index", "Vector", Builders.TableIndex.Vector());
+        await UntypedTableCompoundPrimaryKey.CreateVectorIndexAsync("compound_vector_index", "Vector", Builders.TableIndex.Vector());
 
         // Populate untyped tables with sample data
         List<Row> rows = new List<Row>();
@@ -292,7 +292,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
     //     }
     //     var table = await Database.CreateTableAsync<RowBook>(_deleteTableName);
     //     await table.CreateIndexAsync("delete_table_number_of_pages_index", "NumberOfPages");
-    //     await table.CreateIndexAsync("delete_table_author_vector_index", (b) => b.Author, Builders.TableIndex.Vector());
+    //     await table.CreateVectorIndexAsync("delete_table_author_vector_index", (b) => b.Author, Builders.TableIndex.Vector());
     //     await table.CreateIndexAsync("delete_table_due_date_index", (b) => b.DueDate);
 
     //     await table.InsertManyAsync(rows);

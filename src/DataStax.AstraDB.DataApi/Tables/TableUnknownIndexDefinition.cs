@@ -22,21 +22,10 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <summary>
 /// Configuration used to create a text index on a table column
 /// </summary>
-public class TableTextIndexDefinition : TableBaseIndexDefinition
+public class TableUnknownIndexDefinition : TableBaseIndexDefinition
 {
-    [JsonIgnore]
-    internal object Analyzer
-    {
-        get => Options?.ContainsKey("analyzer") == true ? Options["analyzer"] : null;
-        set
-        {
-            if (value != null)
-            {
-                Options ??= new Dictionary<string, object>();
-                Options["analyzer"] = value;
-            }
-        }
-    }
+    [JsonPropertyName("apiSupport")]
+    public TableUnknownIndexAPISupport APISupport { get; set; }
 
-    internal override string IndexCreationCommandName => "createTextIndex";
+    internal override string IndexCreationCommandName => null;
 }

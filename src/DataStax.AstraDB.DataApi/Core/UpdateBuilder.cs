@@ -220,7 +220,38 @@ public class UpdateBuilder<T>
     /// </remarks>
     public UpdateBuilder<T> Set(string fieldName, object value)
     {
+        if (value != null)
+        {
+            if (value is System.Collections.IDictionary dict)
+            {
+                var pairArrays = dict.Keys
+                    .Cast<object>()
+                    .Select(key => new object[] { key, dict[key]! })
+                    .ToArray();
+
+                _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
+                return this;
+            }
+        }
         _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, value));
+        return this;
+    }
+
+    /// <summary>
+    /// Set the value of a dictionary field to a specified value.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values</typeparam>
+    /// <param name="fieldName">The name of the field to set.</param>
+    /// <param name="pairs">The value to set, as array of key-value pairs (tuples).</param>
+    /// <returns>The UpdateBuilder instance</returns>
+    /// <remarks>
+    /// We recommend using the strongly-typed version <see cref="Set{TField}(Expression{Func{T, TField}}, TField)"/>.
+    /// </remarks>
+    public UpdateBuilder<T> Set<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
+    {
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
         return this;
     }
 
@@ -233,7 +264,37 @@ public class UpdateBuilder<T>
     /// <returns>The UpdateBuilder instance</returns>
     public UpdateBuilder<T> Set<TField>(Expression<Func<T, TField>> expression, TField value)
     {
+        var dictionaryInterface = typeof(TField).GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType &&
+                                i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+
+        if (dictionaryInterface != null && value is System.Collections.IDictionary dict)
+        {
+            var genericArgs = dictionaryInterface.GetGenericArguments();
+            var pairArrays = new List<object[]>();
+            foreach (var key in dict.Keys)
+            {
+                pairArrays.Add(new object[] { key, dict[key] });
+            }
+            _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairArrays.ToArray()));
+            return this;
+        }
         _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), value));
+        return this;
+    }
+
+    /// <summary>
+    /// Set the value of a dictionary field to a specified value.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values</typeparam>
+    /// <param name="expression">An expression that represents the target dictionary field</param>
+    /// <param name="pairs">The value to set, as array of key-value pairs (tuples).</param>
+    /// <returns>The UpdateBuilder instance</returns>
+    public UpdateBuilder<T> Set<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
+    {
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairArrays));
         return this;
     }
 
@@ -404,6 +465,9 @@ public class UpdateBuilder<T>
         return this;
     }
 
+
+
+
     /// <summary>
     /// Add a value to a set at a specified position.
     /// </summary>
@@ -431,6 +495,150 @@ public class UpdateBuilder<T>
     public UpdateBuilder<T> Push<TField>(Expression<Func<T, IEnumerable<TField>>> expression, TField value, int? position = null)
     {
         _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), new PushUpdateValue<TField> { Each = new List<TField> { value }, Position = position }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add a key-value pair to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="expression">The expression to use to get the field name.</param>
+    /// <param name="value">The value to add to the set as a 2-item (key, value) tuple.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    public UpdateBuilder<T> Push<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, (TKey, TVal) pair)
+    {
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { pair.Item1, pair.Item2 } } }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add a key-value pair to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="expression">The expression to use to get the field name.</param>
+    /// <param name="value">The value to add to the set as a single-key dictionary.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    public UpdateBuilder<T> Push<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IDictionary<TKey, TVal> value)
+    {
+        if (value.Count != 1){
+            throw new ArgumentException("Push operations require an exactly-one-key dictionary input.");
+        }
+        var kvp = value.First();
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { kvp.Key, kvp.Value } } }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add a key-value pair to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="fieldName">The name of the field to add the pair to.</param>
+    /// <param name="value">The value to add to the set as a 2-item (key, value) tuple.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    /// <remarks>
+    /// We recommend using the strongly-typed version <see cref="Push{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, ValueTuple{TKey, TVal})"/>.
+    /// </remarks>
+    public UpdateBuilder<T> Push<TKey, TVal>(string fieldName, (TKey, TVal) pair)
+    {
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { pair.Item1, pair.Item2 } } }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add a key-value pair to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="fieldName">The name of the field to add the pair to.</param>
+    /// <param name="value">The value to add to the set as a single-key dictionary.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    /// <remarks>
+    /// We recommend using the strongly-typed version <see cref="Push{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, IDictionary{TKey, TVal})"/>.
+    /// </remarks>
+    public UpdateBuilder<T> Push<TKey, TVal>(string fieldName, IDictionary<TKey, TVal> value)
+    {
+        if (value.Count != 1){
+            throw new ArgumentException("Push operations require an exactly-one-key dictionary input.");
+        }
+        var kvp = value.First();
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = new List<object[]> { new object[] { kvp.Key, kvp.Value } } }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add multiple key-value pairs to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="expression">The expression to use to get the field name.</param>
+    /// <param name="value">The values to add to the set as a list of 2-item (key, value) tuples.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    public UpdateBuilder<T> PushEach<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, (TKey, TVal)[] pairs)
+    {
+        var pairList = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = pairList }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add multiple key-value pairs to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="expression">The expression to use to get the field name.</param>
+    /// <param name="value">The values to add to the set as a dictionary.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    public UpdateBuilder<T> PushEach<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IDictionary<TKey, TVal> value)
+    {
+        var pairList = value.Select(kvp => new object[] { kvp.Key, kvp.Value }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, expression.GetMemberNameTree(), 
+            new PushUpdateValue<object[]> { Each = pairList }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add multiple key-value pairs to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="fieldName">The name of the field to add the pairs to.</param>
+    /// <param name="value">The values to add to the set as a list of 2-item (key, value) tuples.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    /// <remarks>
+    /// We recommend using the strongly-typed version <see cref="PushEach{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, ValueTuple{TKey, TVal}[])"/>.
+    /// </remarks>
+    public UpdateBuilder<T> PushEach<TKey, TVal>(string fieldName, (TKey, TVal)[] pairs)
+    {
+        var pairList = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = pairList }));
+        return this;
+    }
+
+    /// <summary>
+    /// Add multiple key-value pairs to a map.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="fieldName">The name of the field to add the pairs to.</param>
+    /// <param name="value">The values to add to the set as a dictionary.</param>
+    /// <returns>The UpdateBuilder instance.</returns>
+    /// <remarks>
+    /// We recommend using the strongly-typed version <see cref="PushEach{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, IDictionary{TKey, TVal})"/>.
+    /// </remarks>
+    public UpdateBuilder<T> PushEach<TKey, TVal>(string fieldName, IDictionary<TKey, TVal> value)
+    {
+        var pairList = value.Select(kvp => new object[] { kvp.Key, kvp.Value }).ToList();
+        _updates.Add(new Update<T>(UpdateOperator.Push, fieldName, 
+            new PushUpdateValue<object[]> { Each = pairList }));
         return this;
     }
 

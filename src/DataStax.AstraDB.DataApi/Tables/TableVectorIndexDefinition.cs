@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Core;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
@@ -25,23 +26,33 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <summary>
 /// Definition of a vector index on a table
 /// </summary>
-public class TableVectorIndexDefinition : TableIndexDefinition
+public class TableVectorIndexDefinition : TableBaseIndexDefinition
 {
 
   /// <summary>
   /// The similarity metric to use
   /// </summary>
   [JsonIgnore]
-  public SimilarityMetric Metric
+  public SimilarityMetric? Metric
   {
     get
     {
-      return Options != null && Options.ContainsKey("metric") && Enum.TryParse((string)Options["metric"], out SimilarityMetric result) ? result : default;
+        if (Options != null && Options.ContainsKey("metric"))
+        {
+            var value = Options["metric"];
+            return value switch
+            {
+                SimilarityMetric metric => metric,
+                string str => JsonSerializer.Deserialize<SimilarityMetric>($"\"{str}\""),
+                _ => null
+            };
+        }
+        return null;
     }
     set
     {
-      Options ??= new Dictionary<string, object>();
-      Options["metric"] = value;
+        Options ??= new Dictionary<string, object>();
+        Options["metric"] = value;
     }
   }
 
@@ -52,11 +63,11 @@ public class TableVectorIndexDefinition : TableIndexDefinition
   [JsonIgnore]
   public string SourceModel
   {
-    get { return Options != null && Options.ContainsKey("sourceModel") ? (string)Options["sourceModel"] : null; }
+    get => Options != null && Options.ContainsKey("sourceModel") ? (string)Options["sourceModel"] : null;
     set
     {
-      Options ??= new Dictionary<string, object>();
-      Options["sourceModel"] = value;
+        Options ??= new Dictionary<string, object>();
+        Options["sourceModel"] = value;
     }
   }
 

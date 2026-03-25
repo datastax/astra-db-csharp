@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-internal class SimpleDictionaryConverter : JsonConverter<object>
+internal class DeepDictionaryConverter : JsonConverter<object>
 {
     public override bool CanConvert(Type typeToConvert)
     {
@@ -47,12 +47,56 @@ internal class SimpleDictionaryConverter : JsonConverter<object>
             if (reader.TokenType != JsonTokenType.PropertyName)
                 throw new JsonException("Expected PropertyName");
 
-            string propertyName = reader.GetString() ?? throw new JsonException("Null property name");
+            var propertyName = reader.GetString()!;
             reader.Read();
-            dict[propertyName] = JsonSerializer.Deserialize(ref reader, valueType, options);
+
+            var value = JsonSerializer.Deserialize(ref reader, valueType, options);
+
+            // If deserializing to object type and got a JsonElement, convert it to appropriate CLR type
+            if (valueType == typeof(object) && value is JsonElement element)
+            {
+                value = ConvertJsonElement(element);
+            }
+
+            dict[propertyName] = value;
         }
 
         throw new JsonException("Incomplete JSON object");
+    }
+
+    private static object ConvertJsonElement(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.TryGetInt64(out var l) ? l : element.GetDouble(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Null => null,
+            JsonValueKind.Object => ConvertJsonObject(element),  // Convert to Dictionary<string, object>
+            JsonValueKind.Array => ConvertJsonArray(element),    // Convert to object[]
+            _ => element.Clone()
+        };
+    }
+
+    private static Dictionary<string, object> ConvertJsonObject(JsonElement element)
+    {
+        var dict = new Dictionary<string, object>();
+        foreach (var property in element.EnumerateObject())
+        {
+            dict[property.Name] = ConvertJsonElement(property.Value);  // Recursive
+        }
+        return dict;
+    }
+
+    private static object[] ConvertJsonArray(JsonElement element)
+    {
+        var list = new List<object>();
+        foreach (var item in element.EnumerateArray())
+        {
+            list.Add(ConvertJsonElement(item));  // Recursive
+        }
+        return list.ToArray();
     }
 
     public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)

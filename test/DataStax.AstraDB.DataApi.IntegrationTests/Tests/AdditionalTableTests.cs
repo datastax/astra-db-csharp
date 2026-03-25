@@ -46,7 +46,7 @@ public class AdditionalTableTests
             };
 
             var table = await fixture.Database.CreateTableAsync<ArrayTestRow>(tableName);
-            await table.CreateIndexAsync((b) => b.StringArray);
+            await table.CreateIndexAsync("StringArray_idx", (b) => b.StringArray);
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var findOptions = new TableFindOptions<ArrayTestRow>()
@@ -60,7 +60,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -114,7 +114,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -167,7 +167,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -247,7 +247,7 @@ public class AdditionalTableTests
             Assert.Single(updatedDocument.IntKey);
             Assert.Equal(32, updatedDocument.IntKey.Keys.First());
 
-            // Tuple-based dictionary $in filtering (typed):
+            // Tuple-based dictionary $in / $nin filtering (typed):
             var filterBuilder = Builders<DictionaryTypeTest>.TableFilter;
 
             var filterIn1 = filterBuilder.In(
@@ -258,6 +258,19 @@ public class AdditionalTableTests
             Assert.NotNull(rowIn1);
             Assert.Equal(rowIn1.Id, 4);
 
+            var filterNin1 = filterBuilder.Nin(
+                b => b.StringDictionary,
+                new[] {
+                    ( "KeyA", "ValueA 100" ),
+                    ( "KeyA", "ValueA 101" ),
+                    ( "KeyA", "ValueA 102" ),
+                    ( "KeyA", "ValueA 103" )
+                }
+            );
+            var rowNin1 = await table.FindOneAsync(filterNin1);
+            Assert.NotNull(rowNin1);
+            Assert.Equal(rowNin1.Id, 4);
+
             var filterIn2 = filterBuilder.In(
                 b => b.IntKey,
                 new[] {(14, "IntValue 4A"), (999, "IntValue ZZZ")}
@@ -265,6 +278,19 @@ public class AdditionalTableTests
             var rowIn2 = await table.FindOneAsync(filterIn2);
             Assert.NotNull(rowIn2);
             Assert.Equal(rowIn2.Id, 4);
+
+            var filterNin2 = filterBuilder.Nin(
+                b => b.IntKey,
+                new[] {
+                    ( 10, "IntValue 0A" ),
+                    ( 11, "IntValue 1A" ),
+                    ( 32, "IntValue 2B" ), // anomalous due to the PullAll earlier
+                    ( 13, "IntValue 3A" ),
+                }
+            );
+            var rowNin2 = await table.FindOneAsync(filterNin2);
+            Assert.NotNull(rowNin2);
+            Assert.Equal(rowNin2.Id, 4);
 
             // Tuple-based dictionary $in filtering (untyped):
             var tableUntyped = fixture.Database.GetTable(tableName);
@@ -283,6 +309,21 @@ public class AdditionalTableTests
             Assert.NotNull(rowInUntyped1);
             Assert.Equal(4, Convert.ToInt32(rowInUntyped1["Id"]));
 
+            var filterNinUntyped1 = filterBuilderUntyped.Nin(
+                "StringDictionary",
+                new[]
+                {
+                    // tuples also work (see next filter with heterogeneous key/values)
+                    new[] { "KeyA", "ValueA 100" },
+                    new[] { "KeyA", "ValueA 101" },
+                    new[] { "KeyA", "ValueA 102" },
+                    new[] { "KeyA", "ValueA 103" },
+                }
+            );
+            var rowNinUntyped1 = await tableUntyped.FindOneAsync(filterNinUntyped1);
+            Assert.NotNull(rowNinUntyped1);
+            Assert.Equal(((System.Text.Json.JsonElement)rowNinUntyped1["Id"]).GetInt32(), 4);
+
             var filterInUntyped2 = filterBuilderUntyped.In(
                 "IntKey",
                 new[]
@@ -294,6 +335,111 @@ public class AdditionalTableTests
             var rowInUntyped2 = await tableUntyped.FindOneAsync(filterInUntyped2);
             Assert.NotNull(rowInUntyped2);
             Assert.Equal(Convert.ToInt32(rowInUntyped2["Id"]), 4);
+
+            var filterNinUntyped2 = filterBuilderUntyped.Nin(
+                "IntKey",
+                new[]
+                {
+                    ( 10, "IntValue 0A" ),
+                    ( 11, "IntValue 1A" ),
+                    ( 32, "IntValue 2B" ), // anomalous due to the PullAll earlier
+                    ( 13, "IntValue 3A" ),
+                }
+            );
+            var rowNinUntyped2 = await tableUntyped.FindOneAsync(filterNinUntyped2);
+            Assert.NotNull(rowNinUntyped2);
+            Assert.Equal(((System.Text.Json.JsonElement)rowNinUntyped2["Id"]).GetInt32(), 4);
+
+
+            // push with a single-key dictionary / a tuple (typed):
+            var pusherUpdate = Builders<DictionaryTypeTest>
+                .Update
+                .Push(r => r.DecimalKey, new Dictionary<decimal, string> { { 700.11m, "the 700th" } })
+                .Push(r => r.IntKey, (500, "the 500th"));
+            await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherUpdate);
+            // verify write succeeded as intended
+            var readRowP = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 700th", readRowP.DecimalKey[700.11m]);
+
+            // push with a single-key dictionary / a tuple (untyped):
+            var pusherUpdateUntyped = Builders<Row>
+                .Update
+                .Push("DecimalKey", new Dictionary<decimal, string> { { 700.11m, "the 700th U" } })
+                .Push("IntKey", (500, "the 500th U"));
+            await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherUpdateUntyped);
+            // verify write succeeded as intended
+            var readRowPu = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 700th U", readRowPu.DecimalKey[700.11m]);
+
+            // pushEach with single-key dictionaries / tuples (typed):
+            var pusherEachUpdate = Builders<DictionaryTypeTest>
+                .Update
+                .PushEach(r => r.DecimalKey, new Dictionary<decimal, string> { { 701.11m, "the 701th" }, { 702.11m, "the 702th" } })
+                .PushEach(r => r.IntKey, new[] { (501, "the 501th"),  (502, "the 502th") });
+            await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherEachUpdate);
+            // verify write succeeded as intended
+            var readRowPE = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 702th", readRowPE.DecimalKey[702.11m]);
+
+            // pushEach with single-key dictionaries / tuples (untyped):
+            var pusherEachUpdateUntyped = Builders<Row>
+                .Update
+                .PushEach("DecimalKey", new Dictionary<decimal, string> { { 701.11m, "the 701thU " }, { 702.11m, "the 702th U" } })
+                .PushEach("IntKey", new[] { (501, "the 501th U"),  (502, "the 502th U") });
+            await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherEachUpdateUntyped);
+            // verify write succeeded as intended
+            var readRowPEu = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 702th U", readRowPEu.DecimalKey[702.11m]);
+
+            // $set with non-string-keyed dictionaries, using tuples/dicts (typed)
+            var newIntKeyTuples = new (int, string)[] {
+                (199, "the 199th"),
+                (201, "the 201th")
+            };
+            var newDecimalKey = new Dictionary<decimal, string>{
+                {299.99m, "the decimal 299th"},
+                {301.11m, "the decimal 301th"}
+            };
+            var newStringKey = new Dictionary<string, string>{
+                {"abc", "xyz"},
+                {"PQR", "LMN"}
+            };
+            var setterUpdate = Builders<DictionaryTypeTest>
+                .Update
+                .Set(r => r.IntKey, newIntKeyTuples)
+                .Set(r => r.DecimalKey, newDecimalKey)
+                .Set(r => r.StringDictionary, newStringKey);
+            await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), setterUpdate);
+            // read back and verify success
+            var readRowS = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 201th", readRowS.IntKey[201]);
+            Assert.Equal("the decimal 301th", readRowS.DecimalKey[301.11m]);
+            Assert.Equal("LMN", readRowS.StringDictionary["PQR"]);
+
+            // $set with non-string-keyed dictionaries, using tuples/dicts (untyped)
+            var newIntKeyTuplesU = new (int, string)[] {
+                (199, "the 199th U"),
+                (201, "the 201th U")
+            };
+            var newDecimalKeyU = new Dictionary<decimal, string>{
+                {299.99m, "the decimal 299th U"},
+                {301.11m, "the decimal 301th U"}
+            };
+            var newStringKeyU = new Dictionary<string, string>{
+                {"abc", "xyz U"},
+                {"PQR", "LMN U"}
+            };
+            var setterUpdateUntyped = Builders<Row>
+                .Update
+                .Set("IntKey", newIntKeyTuplesU)
+                .Set("DecimalKey", newDecimalKeyU)
+                .Set("StringDictionary", newStringKeyU);
+            await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), setterUpdateUntyped);
+            // read back and verify success
+            var readRowSu = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
+            Assert.Equal("the 201th U", readRowSu.IntKey[201]);
+            Assert.Equal("the decimal 301th U", readRowSu.DecimalKey[301.11m]);
+            Assert.Equal("LMN U", readRowSu.StringDictionary["PQR"]);
 
             // Test empty maps with non-string keys (#57)
             var emptyMapRow = new DictionaryTypeTest()
@@ -322,7 +468,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -353,7 +499,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -364,7 +510,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
-            await table.CreateIndexAsync((b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            await table.CreateVectorIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
 
             List<SimpleObjectWithVector> items = new List<SimpleObjectWithVector>() {
                 new()
@@ -398,7 +544,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -409,7 +555,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithVector>(tableName);
-            await table.CreateIndexAsync((b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
+            await table.CreateVectorIndexAsync("VectorEmbeddings_idx", (b) => b.VectorEmbeddings, Builders.TableIndex.Vector());
 
             List<SimpleObjectWithVector> items = new List<SimpleObjectWithVector>() {
                 new()
@@ -447,7 +593,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -511,7 +657,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
 
@@ -563,7 +709,7 @@ public class AdditionalTableTests
             Assert.Equal(float.NegativeInfinity, f.p_float_minf);
             Assert.Equivalent(new double[] {-43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34}, f.p_list_double, false);
             Assert.Equivalent(new float[] {-43.21f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34f}, f.p_list_float, false);
-            
+
         }
         catch (Exception ex)
         {
@@ -575,6 +721,200 @@ public class AdditionalTableTests
             await fixture.Database.DropTableAsync(tableName);
         }
     }
+
+    [Fact(Skip="Disabled due to database flakiness with 'recursive updates'. Should be run manually.")]
+    public async Task Test_DoubleAndFloatConverters()
+    {
+        var tableName = "tableTestDoubleFloatConverters";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<DoubleFloatTypeTest>(tableName);
+
+            var rows = new List<DoubleFloatTypeTest>
+            {
+                new() { DoubleValue = 123.456, FloatValue = 78.9f, FloatDoubleMap = new Dictionary<float, double> { { 1.1f, 2.2 } }, FloatList = new List<float> { 3.3f, 4.4f } },
+                new() { DoubleValue = double.NaN, FloatValue = float.NaN, FloatDoubleMap = new Dictionary<float, double> { { float.NaN, double.NaN } }, FloatList = new List<float> { float.NaN } },
+                new() { DoubleValue = double.PositiveInfinity, FloatValue = null, FloatDoubleMap = new Dictionary<float, double> { { float.PositiveInfinity, double.NegativeInfinity } }, FloatList = new List<float> { float.PositiveInfinity } },
+                new() { DoubleValue = double.NegativeInfinity, FloatValue = float.NegativeInfinity, FloatDoubleMap = new Dictionary<float, double> { { 0.0f, 0.0 } }, FloatList = new List<float> { 0.0f } }
+            };
+
+            var result = await table.InsertManyAsync(rows);
+            Assert.Equal(4, result.InsertedCount);
+
+            var row0 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, 123.456));
+            Assert.Equal(123.456, row0.DoubleValue.Value, 5);
+            Assert.Equal(78.9f, row0.FloatValue.Value, 5);
+            Assert.Equal(new Dictionary<float, double> { { 1.1f, 2.2 } }, row0.FloatDoubleMap);
+            Assert.Equal(new List<float> { 3.3f, 4.4f }, row0.FloatList);
+
+            var row1 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, double.NaN));
+            Assert.True(double.IsNaN(row1.DoubleValue.Value));
+            Assert.True(float.IsNaN(row1.FloatValue.Value));
+            Assert.Equal(new Dictionary<float, double> { { float.NaN, double.NaN } }, row1.FloatDoubleMap);
+            Assert.Equal(new List<float> { float.NaN }, row1.FloatList);
+
+            var row2 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, double.PositiveInfinity));
+            Assert.True(double.IsPositiveInfinity(row2.DoubleValue.Value));
+            Assert.Null(row2.FloatValue);
+            Assert.Equal(new Dictionary<float, double> { { float.PositiveInfinity, double.NegativeInfinity } }, row2.FloatDoubleMap);
+            Assert.Equal(new List<float> { float.PositiveInfinity }, row2.FloatList);
+
+            var row3 = await table.FindOneAsync(Builders<DoubleFloatTypeTest>.TableFilter.Eq(x => x.DoubleValue, double.NegativeInfinity));
+            Assert.True(double.IsNegativeInfinity(row3.DoubleValue.Value));
+            Assert.True(float.IsNegativeInfinity(row3.FloatValue.Value));
+            Assert.Equal(new Dictionary<float, double> { { 0.0f, 0.0 } }, row3.FloatDoubleMap);
+            Assert.Equal(new List<float> { 0.0f }, row3.FloatList);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
+        }
+    }
+
+    [Fact]
+    public async Task Test_Table_ColumnJSONString()
+    {
+        const string tableName = "table_columnjsonstring_test";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<ColumnJSONStringTestObject>(tableName);
+
+            var rowId = "row0";
+            var row = new ColumnJSONStringTestObject
+            {
+                Id = rowId,
+                ObjectList = new List<MiniProperties>() {
+                    new MiniProperties() { Genus = "Laccaria", Species = "laccata" },
+                    new MiniProperties() { Genus = "Argiope", Species = "lobata" }
+                },
+                ObjectDictionary = new Dictionary<string, MiniProperties>() {
+                    ["carrot"] = new MiniProperties() { Genus = "Daucus", Species = "carota" }
+                }
+            };
+
+            var result = await table.InsertOneAsync(row);
+
+            Assert.Equal(1, result.InsertedCount);
+            Assert.Equal(new [] {rowId}, result.InsertedId);
+
+            // reading
+            var readRow = await table.FindOneAsync();
+            Assert.Equal(row.Id, readRow.Id);
+            Assert.Equal(2, readRow.ObjectList.Count);
+            Assert.Equal(row.ObjectList[0].Genus, readRow.ObjectList[0].Genus);
+            Assert.Equal(row.ObjectList[0].Species, readRow.ObjectList[0].Species);
+            Assert.Equal(row.ObjectList[1].Genus, readRow.ObjectList[1].Genus);
+            Assert.Equal(row.ObjectList[1].Species, readRow.ObjectList[1].Species);
+            Assert.Equal(1, readRow.ObjectDictionary.Count);
+            Assert.Equal(row.ObjectDictionary["carrot"].Genus, readRow.ObjectDictionary["carrot"].Genus);
+            Assert.Equal(row.ObjectDictionary["carrot"].Species, readRow.ObjectDictionary["carrot"].Species);
+
+            // untyped reading to check the strings on DB
+            var untypedTable = fixture.Database.GetTable(tableName);
+            var untypedRow = await untypedTable.FindOneAsync();
+            Assert.Equal(row.Id, ((System.Text.Json.JsonElement)untypedRow["id"]).GetString());
+
+            var parsedListColumn = ((System.Text.Json.JsonElement)untypedRow["obj_list"]).GetString();
+            var parsedObjColumn = ((System.Text.Json.JsonElement)untypedRow["obj_map"]).GetString();
+
+            // ensure parsedListColumn can be parsed as json and encodes the right list of MiniProperties:
+            var listFromJson = JsonSerializer.Deserialize<List<MiniProperties>>(parsedListColumn);
+            Assert.NotNull(listFromJson);
+            Assert.Equal(2, listFromJson.Count);
+            Assert.Equal("Laccaria", listFromJson[0].Genus);
+            Assert.Equal("laccata", listFromJson[0].Species);
+
+            // ensure parsedObjColumn can be parsed as json and encodes the right string -> MiniProperties mapping:
+            var dictFromJson = JsonSerializer.Deserialize<Dictionary<string, MiniProperties>>(parsedObjColumn);
+            Assert.NotNull(dictFromJson);
+            Assert.Single(dictFromJson);
+            Assert.True(dictFromJson.ContainsKey("carrot"));
+            Assert.Equal("Daucus", dictFromJson["carrot"].Genus);
+            Assert.Equal("carota", dictFromJson["carrot"].Species);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
+        }
+    }
+    
+    [Fact]
+    public async Task NonstringMapTableInsertionTests()
+    {
+        var tableName = "nonstrmap_insertiontest";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SBook>(tableName,
+                new CreateTableCommandOptions() { IfNotExists = true });
+            var untypedTable = fixture.Database.GetTable(tableName);
+
+            // typed insertion
+            var row = new SBook()
+            {
+                MapColumnIntStr = new Dictionary<int, string>
+                {
+                    { 1, "value1" },
+                    { 2, "value2" },
+                },
+                MapColumnStrStr = new Dictionary<string, string>
+                {
+                    { "key1", "value1" },
+                    { "key2", "value2" },
+                },
+                Title = "Once in a Living Memory",
+                Author = "Kayla McMaster",
+            };
+            await table.InsertOneAsync(row);
+            var rowE = new SBook()
+            {
+                MapColumnIntStr = new Dictionary<int, string>{},
+                MapColumnStrStr = new Dictionary<string, string>{},
+                Title = "emptyT",
+                Author = "emptyA",
+            };
+            await table.InsertOneAsync(rowE);
+
+            // untyped insertion
+            var untypedRow = new Row()
+            {
+                {
+                    "map_column_int_str",
+                    new Dictionary<int, string> { { 1, "value1" }, { 2, "value2" } }
+                },
+                {
+                    "map_column_str_str",
+                    new Dictionary<string, string>
+                    {
+                        { "key1", "value1" },
+                        { "key2", "value2" },
+                    }
+                },
+                { "title", "UNTY in a Living Memory" },
+                { "author", "UNTYP McMaster" },
+            };
+            await untypedTable.InsertOneAsync(untypedRow);
+
+            var untypedRowE = new Row()
+            {
+                {
+                    "map_column_int_str",
+                    new Dictionary<int, string> {}
+                },
+                {
+                    "map_column_str_str",
+                    new Dictionary<string, string> {}
+                },
+                { "title", "UNTYemptyT" },
+                { "author", "UNTYemptyA" },
+            };
+
+            await untypedTable.InsertOneAsync(untypedRowE);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
+        }
+    }
 }
-
-
