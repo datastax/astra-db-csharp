@@ -149,6 +149,20 @@ public class TableFilterBuilder<T> : FilterBuilder<T>
     public new TableFilter<T> Nin(string field, object value)
         => new TableFilter<T>(field, FilterOperator.NotIn, new object[] { value });
 
+    /// <inheritdoc cref="FilterBuilder{T}.Nin{TKey, TValue}(Expression{Func{T, IDictionary{TKey, TValue}}}, ValueTuple{TKey, TValue}[])"/>
+    public new TableFilter<T> Nin<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
+    {
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        return new TableFilter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, pairArrays);
+    }
+
+    /// <inheritdoc cref="FilterBuilder{T}.Nin{TKey, TValue}(string, ValueTuple{TKey, TValue}[])"/>
+    public new TableFilter<T> Nin<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
+    {
+        var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
+        return new TableFilter<T>(fieldName, FilterOperator.NotIn, pairArrays);
+    }
+
     // ── Existence / Array ────────────────────────────────────────────────────
 
     /// <inheritdoc cref="FilterBuilder{T}.Exists(string)"/>

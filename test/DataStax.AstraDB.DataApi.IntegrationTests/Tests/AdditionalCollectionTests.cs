@@ -263,25 +263,25 @@ public class AdditionalCollectionTests
             var result = await typed.InsertManyAsync(typedDocs);
             Assert.Equal(4, result.InsertedCount);
 
-            var row0 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.Filter.Eq(x => x.DoubleValue, 123.456));
+            var row0 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.CollectionFilter.Eq(x => x.DoubleValue, 123.456));
             Assert.Equal(123.456, row0.DoubleValue.Value, 5);
             Assert.Equal(78.9f, row0.FloatValue.Value, 5);
             Assert.Equal(new Dictionary<float, double> { { 1.1f, 2.2 } }, row0.FloatDoubleMap);
             Assert.Equal(new List<float> { 3.3f, 4.4f }, row0.FloatList);
 
-            var row1 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.Filter.Eq(x => x.DoubleValue, double.NaN));
+            var row1 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.CollectionFilter.Eq(x => x.DoubleValue, double.NaN));
             Assert.True(double.IsNaN(row1.DoubleValue.Value));
             Assert.True(float.IsNaN(row1.FloatValue.Value));
             Assert.Equal(new Dictionary<float, double> { { float.NaN, double.NaN } }, row1.FloatDoubleMap);
             Assert.Equal(new List<float> { float.NaN }, row1.FloatList);
 
-            var row2 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.Filter.Eq(x => x.DoubleValue, double.PositiveInfinity));
+            var row2 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.CollectionFilter.Eq(x => x.DoubleValue, double.PositiveInfinity));
             Assert.True(double.IsPositiveInfinity(row2.DoubleValue.Value));
             Assert.Null(row2.FloatValue);
             Assert.Equal(new Dictionary<float, double> { { float.PositiveInfinity, double.NegativeInfinity } }, row2.FloatDoubleMap);
             Assert.Equal(new List<float> { float.PositiveInfinity }, row2.FloatList);
 
-            var row3 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.Filter.Eq(x => x.DoubleValue, double.NegativeInfinity));
+            var row3 = await typed.FindOneAsync(Builders<DoubleFloatTypeTest>.CollectionFilter.Eq(x => x.DoubleValue, double.NegativeInfinity));
             Assert.True(double.IsNegativeInfinity(row3.DoubleValue.Value));
             Assert.True(float.IsNegativeInfinity(row3.FloatValue.Value));
             Assert.Equal(new Dictionary<float, double> { { 0.0f, 0.0 } }, row3.FloatDoubleMap);
@@ -300,7 +300,8 @@ public class AdditionalCollectionTests
         try
         {
             var collection = await fixture.Database.CreateCollectionAsync<CollectionDatetimeObject>(collectionName);
-            var insertee = new CollectionDatetimeObject {
+            var insertee = new CollectionDatetimeObject
+            {
                 _id = "from_cs",
                 dt_naive = new DateTime(2024, 6, 15, 10, 30, 0, 500, DateTimeKind.Unspecified),
                 dt_aware = new DateTime(2024, 6, 15, 10, 30, 0, 500, DateTimeKind.Utc),
@@ -356,7 +357,7 @@ public class AdditionalCollectionTests
 
             foreach (var doc in okUntypedDocs) // so stupid there's no easy way to compare sets of dictionaries
             {
-                var found = await untyped.FindOneAsync(Builders<Document>.Filter.Eq("DoubleValue", doc["DoubleValue"]));
+                var found = await untyped.FindOneAsync(Builders<Document>.CollectionFilter.Eq("DoubleValue", doc["DoubleValue"]));
                 Assert.NotNull(found);
                 Assert.Equal(doc["DoubleValue"], found["DoubleValue"]);
                 Assert.Equal(doc["FloatValue"], found["FloatValue"]);
