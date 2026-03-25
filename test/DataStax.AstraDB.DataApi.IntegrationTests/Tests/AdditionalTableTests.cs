@@ -252,7 +252,7 @@ public class AdditionalTableTests
 
             var filterIn1 = filterBuilder.In(
                 b => b.StringDictionary,
-                new[] {("KeyA", "ValueA 104"), ("KeyB", "ValueA ZZZ")}
+                new[] { ("KeyA", "ValueA 104"), ("KeyB", "ValueA ZZZ") }
             );
             var rowIn1 = await table.FindOneAsync(filterIn1);
             Assert.NotNull(rowIn1);
@@ -273,7 +273,7 @@ public class AdditionalTableTests
 
             var filterIn2 = filterBuilder.In(
                 b => b.IntKey,
-                new[] {(14, "IntValue 4A"), (999, "IntValue ZZZ")}
+                new[] { (14, "IntValue 4A"), (999, "IntValue ZZZ") }
             );
             var rowIn2 = await table.FindOneAsync(filterIn2);
             Assert.NotNull(rowIn2);
@@ -322,7 +322,7 @@ public class AdditionalTableTests
             );
             var rowNinUntyped1 = await tableUntyped.FindOneAsync(filterNinUntyped1);
             Assert.NotNull(rowNinUntyped1);
-            Assert.Equal(4, Convert.ToInt32(rowInUntyped1["Id"]));
+            Assert.Equal(4, Convert.ToInt32(rowNinUntyped1["Id"]));
 
             var filterInUntyped2 = filterBuilderUntyped.In(
                 "IntKey",
@@ -348,7 +348,7 @@ public class AdditionalTableTests
             );
             var rowNinUntyped2 = await tableUntyped.FindOneAsync(filterNinUntyped2);
             Assert.NotNull(rowNinUntyped2);
-            Assert.Equal(((System.Text.Json.JsonElement)rowNinUntyped2["Id"]).GetInt32(), 4);
+            Assert.Equal(4, Convert.ToInt32(rowNinUntyped2["Id"]));
 
 
             // push with a single-key dictionary / a tuple (typed):
@@ -375,7 +375,7 @@ public class AdditionalTableTests
             var pusherEachUpdate = Builders<DictionaryTypeTest>
                 .Update
                 .PushEach(r => r.DecimalKey, new Dictionary<decimal, string> { { 701.11m, "the 701th" }, { 702.11m, "the 702th" } })
-                .PushEach(r => r.IntKey, new[] { (501, "the 501th"),  (502, "the 502th") });
+                .PushEach(r => r.IntKey, new[] { (501, "the 501th"), (502, "the 502th") });
             await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherEachUpdate);
             // verify write succeeded as intended
             var readRowPE = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
@@ -385,7 +385,7 @@ public class AdditionalTableTests
             var pusherEachUpdateUntyped = Builders<Row>
                 .Update
                 .PushEach("DecimalKey", new Dictionary<decimal, string> { { 701.11m, "the 701thU " }, { 702.11m, "the 702th U" } })
-                .PushEach("IntKey", new[] { (501, "the 501th U"),  (502, "the 502th U") });
+                .PushEach("IntKey", new[] { (501, "the 501th U"), (502, "the 502th U") });
             await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherEachUpdateUntyped);
             // verify write succeeded as intended
             var readRowPEu = await table.FindOneAsync(filterBuilder.Eq(r => r.Id, 0));
@@ -445,14 +445,14 @@ public class AdditionalTableTests
             var emptyMapRow = new DictionaryTypeTest()
             {
                 Id = 100,
-                StringDictionary = new (),
-                DateTimeKey = new (),
-                DecimalKey = new ()
+                StringDictionary = new(),
+                DateTimeKey = new(),
+                DecimalKey = new()
             };
-            
+
             var emptyMapInsertResult = await table.InsertOneAsync(emptyMapRow);
             Assert.NotNull(emptyMapInsertResult.InsertedId);
-            
+
             var emptyMapRetrieved = await table.FindOneAsync(
                 Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 100)
             );
@@ -670,29 +670,29 @@ public class AdditionalTableTests
             var table = await fixture.Database.CreateTableAsync<FloatingPointTest>(tableName);
 
             var row = new FloatingPointTest()
-                {
-                    id = "1",
-                    p_float_nan = float.NaN,
-                    p_float_minf = float.NegativeInfinity,
-                    p_float_pinf = float.PositiveInfinity,
-                    p_double_nan = double.NaN,
-                    p_double_minf = double.NegativeInfinity,
-                    p_double_pinf = double.PositiveInfinity,
-                    p_list_double = new double[] {-43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34},
-                    p_list_float = new float[] {-43.21F, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34F},
-                };
-                /*
+            {
+                id = "1",
+                p_float_nan = float.NaN,
+                p_float_minf = float.NegativeInfinity,
+                p_float_pinf = float.PositiveInfinity,
+                p_double_nan = double.NaN,
+                p_double_minf = double.NegativeInfinity,
+                p_double_pinf = double.PositiveInfinity,
+                p_list_double = new double[] { -43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34 },
+                p_list_float = new float[] { -43.21F, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34F },
+            };
+            /*
+            NaN,
+                Infinity,
+                -Infinity,
                 NaN,
-                    Infinity,
-                    -Infinity,
-                    NaN,
-                    Infinity,
-                    -Infinity,
-                    [-43.21, Nan, Infinity, -Infinity, 12.34],
-                    {-43.21, Nan, Infinity, -Infinity, 12.34},
-                    [-43.21, Nan, Infinity, -Infinity, 12.34],
-                    {-43.21, Nan, Infinity, -Infinity, 12.34}
-                */
+                Infinity,
+                -Infinity,
+                [-43.21, Nan, Infinity, -Infinity, 12.34],
+                {-43.21, Nan, Infinity, -Infinity, 12.34},
+                [-43.21, Nan, Infinity, -Infinity, 12.34],
+                {-43.21, Nan, Infinity, -Infinity, 12.34}
+            */
             var result = await table.InsertOneAsync(row);
 
             Console.WriteLine($"Inserted {result.InsertedCount} rows");
@@ -707,8 +707,8 @@ public class AdditionalTableTests
             Assert.Equal(float.NaN, f.p_float_nan);
             Assert.Equal(float.PositiveInfinity, f.p_float_pinf);
             Assert.Equal(float.NegativeInfinity, f.p_float_minf);
-            Assert.Equivalent(new double[] {-43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34}, f.p_list_double, false);
-            Assert.Equivalent(new float[] {-43.21f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34f}, f.p_list_float, false);
+            Assert.Equivalent(new double[] { -43.21, double.NaN, double.PositiveInfinity, double.NegativeInfinity, 12.34 }, f.p_list_double, false);
+            Assert.Equivalent(new float[] { -43.21f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 12.34f }, f.p_list_float, false);
 
         }
         catch (Exception ex)
@@ -722,7 +722,7 @@ public class AdditionalTableTests
         }
     }
 
-    [Fact(Skip="Disabled due to database flakiness with 'recursive updates'. Should be run manually.")]
+    [Fact(Skip = "Disabled due to database flakiness with 'recursive updates'. Should be run manually.")]
     public async Task Test_DoubleAndFloatConverters()
     {
         var tableName = "tableTestDoubleFloatConverters";
@@ -787,7 +787,8 @@ public class AdditionalTableTests
                     new MiniProperties() { Genus = "Laccaria", Species = "laccata" },
                     new MiniProperties() { Genus = "Argiope", Species = "lobata" }
                 },
-                ObjectDictionary = new Dictionary<string, MiniProperties>() {
+                ObjectDictionary = new Dictionary<string, MiniProperties>()
+                {
                     ["carrot"] = new MiniProperties() { Genus = "Daucus", Species = "carota" }
                 }
             };
@@ -795,7 +796,7 @@ public class AdditionalTableTests
             var result = await table.InsertOneAsync(row);
 
             Assert.Equal(1, result.InsertedCount);
-            Assert.Equal(new [] {rowId}, result.InsertedId);
+            Assert.Equal(new[] { rowId }, result.InsertedId);
 
             // reading
             var readRow = await table.FindOneAsync();
@@ -814,8 +815,8 @@ public class AdditionalTableTests
             var untypedRow = await untypedTable.FindOneAsync();
             Assert.Equal(row.Id, untypedRow["id"].ToString());
 
-            var parsedListColumn = ((System.Text.Json.JsonElement)untypedRow["obj_list"]).GetString();
-            var parsedObjColumn = ((System.Text.Json.JsonElement)untypedRow["obj_map"]).GetString();
+            var parsedListColumn = untypedRow["obj_list"].ToString();
+            var parsedObjColumn = untypedRow["obj_map"].ToString();
 
             // ensure parsedListColumn can be parsed as json and encodes the right list of MiniProperties:
             var listFromJson = JsonSerializer.Deserialize<List<MiniProperties>>(parsedListColumn);
@@ -838,7 +839,7 @@ public class AdditionalTableTests
             await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
-    
+
     [Fact]
     public async Task NonstringMapTableInsertionTests()
     {
@@ -869,8 +870,8 @@ public class AdditionalTableTests
             await table.InsertOneAsync(row);
             var rowE = new SBook()
             {
-                MapColumnIntStr = new Dictionary<int, string>{},
-                MapColumnStrStr = new Dictionary<string, string>{},
+                MapColumnIntStr = new Dictionary<int, string> { },
+                MapColumnStrStr = new Dictionary<string, string> { },
                 Title = "emptyT",
                 Author = "emptyA",
             };

@@ -76,11 +76,13 @@ public class DatabaseTests
             {
                 maxAttempts--;
                 // Wait for the keyspace to be created
-                await Task.Delay(1000, TestContext.Current.CancellationToken);
+                await Task.Delay(2000, TestContext.Current.CancellationToken);
                 keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             }
             Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist now.");
 
+            //Wait a minute before dropping to ensure db is in a stable state
+            await Task.Delay(1 * 60 * 1000, TestContext.Current.CancellationToken);
             await admin.DropKeyspaceAsync(keyspaceName, false);
             keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should still be being dropped.");
