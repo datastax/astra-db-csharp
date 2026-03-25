@@ -511,20 +511,53 @@ public class AdminTests
 	// [Fact(Skip = AdminCollection.SkipMessage)] // TODO reinstate
 	[Fact]
 	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_Update()
-	// TODO: bring the test for non Astra here and verify
 	{
+		/* Complete verification involves manual inspection of the logs
+		// to ensure the Url sequence for the various findCollections is as follows:
+		//		default_keyspace
+		//		drop_this_keyspace_x
+		//		default_keyspace
+		//		drop_this_keyspace_x
+		//		drop_this_keyspace_x
+		//		default_keyspace
+		*/
 		var keyspaceName = "drop_this_keyspace_x";
 		var adminOptions = new CommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
-		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
+		// LCN fixDB on 'default_keyspace'
+		await fixture.Database.ListCollectionNamesAsync();
+
+		var theDatabase = fixture.Client.GetDatabase(fixture.DatabaseUrl,
+			new DatabaseCommandOptions() { Keyspace = "some_throwaway_keyspace_name" });
+		Assert.Equal("some_throwaway_keyspace_name", theDatabase.Keyspace);
+		theDatabase.UseKeyspace("another_silly_puppet_keyspace");
+		Assert.Equal("another_silly_puppet_keyspace", theDatabase.Keyspace);
+		var daa = new DatabaseAdminAstra(theDatabase, fixture.Client, adminOptions);
 
 		await daa.CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		Assert.Equal(keyspaceName, theDatabase.Keyspace);
+		// LCN myDB on keyspaceName
+		await theDatabase.ListCollectionNamesAsync();
 
-		Console.WriteLine($"DatabaseAdminAstra_CreateKeyspaceAsync_Update > adminOptions.Keyspace: {adminOptions.Keyspace}");
-		Assert.Equal(keyspaceName, adminOptions.Keyspace);
-		// todo: better test result here; for now we assume if no error, this was successful
+		theDatabase.UseKeyspace(Database.DefaultKeyspace);
+		// LCN myDB on 'default_keyspace'
+		await theDatabase.ListCollectionNamesAsync();
+
+		theDatabase.UseKeyspace(keyspaceName);
+		// LCN myDB on keyspaceName
+		await theDatabase.ListCollectionNamesAsync();
+
+		fixture.Database.UseKeyspace(keyspaceName);
+		// LCN fixDB on keyspaceName
+		await fixture.Database.ListCollectionNamesAsync();
+
+		fixture.Database.UseKeyspace(Database.DefaultKeyspace);
+		// LCN fixDB on 'default_keyspace'
+		await fixture.Database.ListCollectionNamesAsync();
+
+		Assert.Contains(keyspaceName, daa.ListKeyspaces());
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminNonAstra_CreateKeyspaceAsync_Update
@@ -578,6 +611,14 @@ public class AdminTests
 		await fixture.Database.ListCollectionNamesAsync();
 
 		Assert.Contains(keyspaceName, daa.ListKeyspaces());
+
+		// HCD-specific one-liner idiom
+		var swiftDatabase = fixture.Client.GetDatabase(fixture.DatabaseUrl,
+			new DatabaseCommandOptions() { Keyspace = "some_throwaway_keyspace_name" });
+		Assert.NotEqual(keyspaceName, swiftDatabase.Keyspace);
+		await swiftDatabase.GetAdmin().CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		Assert.Equal(keyspaceName, swiftDatabase.Keyspace);
+
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync

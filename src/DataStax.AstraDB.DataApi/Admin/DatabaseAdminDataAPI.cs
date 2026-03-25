@@ -165,7 +165,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         public void CreateKeyspace(string keyspace)
         {
-            CreateKeyspace(keyspace, false);
+            CreateKeyspace(keyspace, false, true, null);
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <inheritdoc cref="CreateKeyspaceAsync(string, bool)"/>
         public void CreateKeyspace(string keyspace, bool updateDBKeyspace)
         {
-            CreateKeyspace(keyspace, updateDBKeyspace, null);
+            CreateKeyspace(keyspace, updateDBKeyspace, true, null);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <inheritdoc cref="CreateKeyspaceAsync(string, CommandOptions)"/>
         public void CreateKeyspace(string keyspace, CommandOptions options)
         {
-            CreateKeyspace(keyspace, false, false, options);
+            CreateKeyspace(keyspace, false, true, options);
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <inheritdoc cref="CreateKeyspaceAsync(string, bool, CommandOptions)"/>
         public void CreateKeyspace(string keyspace, bool updateDBKeyspace, CommandOptions options)
         {
-            CreateKeyspace(keyspace, updateDBKeyspace, false, options);
+            CreateKeyspace(keyspace, updateDBKeyspace, true, options);
         }
 
         /// <summary>
@@ -224,15 +224,15 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </example>
         public Task CreateKeyspaceAsync(string keyspace)
         {
-            return CreateKeyspaceAsync(keyspace, false, false, null, false);
+            return CreateKeyspaceAsync(keyspace, false, true, null);
         }
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace on the database.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
         public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace)
         {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, false, null, false);
+            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, true, null);
         }
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
@@ -240,30 +240,30 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <param name="options">Optional settings that influence request execution.</param>
         public Task CreateKeyspaceAsync(string keyspace, CommandOptions options)
         {
-            return CreateKeyspaceAsync(keyspace, false, false, options, false);
+            return CreateKeyspaceAsync(keyspace, false, true, options);
         }
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace on the database.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
         /// <param name="waitForCompletion">Whether to wait for the keyspace to be created before returning.</param>
         public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion)
         {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, waitForCompletion, null, false);
+            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, waitForCompletion, null);
         }
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace on the database.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, CommandOptions options)
         {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, false, options, false);
+            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, true, options);
         }
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace on the database.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
         /// <param name="waitForCompletion">Whether to wait for the keyspace to be created before returning.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, bool waitForCompletion, CommandOptions options)
