@@ -11,6 +11,10 @@ The run the tests:
 ```
 dotnet test
 ```
+For more info during the run:
+```
+dotnet test -l:"console;verbosity=normal"
+```
 
 ### HCD
 
