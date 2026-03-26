@@ -639,7 +639,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
             IndexName = indexName,
             Definition = indexDefinition
         };
-        if (commandOptions != null){
+        if (commandOptions != null)
+        {
             index.Options = new TableIndexCreationOptions { IfNotExists = commandOptions.IfNotExists };
         }
         var command = CreateCommand(indexDefinition.IndexCreationCommandName).WithPayload(index).AddCommandOptions(commandOptions);
@@ -875,7 +876,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <remarks>
     /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
     /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
-    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enueration.
+    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
     public FindEnumerator<T, T, TableSortBuilder<T>> Find()
@@ -1163,6 +1164,8 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
                         value = new Dictionary<object, object>();
                         break;
                     case "set":
+                        value = new HashSet<object>();
+                        break;
                     case "list":
                         value = new List<object>();
                         break;

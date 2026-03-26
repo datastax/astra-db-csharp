@@ -19,7 +19,7 @@ using System.Collections.Generic;
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
 /// <summary>
-/// Describes an embedding provider (such as OpenAI or Cohere) that can generate vector embeddings for use with the Data API.
+/// Describes an embedding provider (such as OpenAI) that can generate vector embeddings for use with the Data API.
 /// </summary>
 public class EmbeddingProvider
 {

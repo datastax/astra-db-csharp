@@ -135,7 +135,7 @@ public enum AstraDatabaseStatus
     TERMINATING,
     /// <summary>The database status is unknown.</summary>
     UNKNOWN,
-    /// <summary>The database is being unparked (resumed from suspension).</summary>
+    /// <summary>The database is being unparked.</summary>
     UNPARKING,
     /// <summary>The database is synchronizing.</summary>
     SYNCHRONIZING,

@@ -73,25 +73,25 @@ public class ExamplesTests
             var insertionResult = await collection.InsertManyAsync(
               new List<CollectionFromAttributeDocument>
               {
-            new CollectionFromAttributeDocument()
-        {
-          Title = "Ocean Depths",
-          NumberOfPages = 434,
-          IsCheckedOut = false,
-        },
-        new CollectionFromAttributeDocument()
-        {
-            IsCheckedOut = false,
-          Title = "Sky Limits",
-          NumberOfPages = 298,
-        },
-        new CollectionFromAttributeDocument()
-        {
-          Id = Guid.NewGuid(),
-          Title = "Open Plains",
-          IsCheckedOut = true,
-        },
-              }
+                new CollectionFromAttributeDocument()
+                    {
+                    Title = "Ocean Depths",
+                    NumberOfPages = 434,
+                    IsCheckedOut = false,
+                    },
+                    new CollectionFromAttributeDocument()
+                    {
+                        IsCheckedOut = false,
+                    Title = "Sky Limits",
+                    NumberOfPages = 298,
+                    },
+                    new CollectionFromAttributeDocument()
+                    {
+                    Id = Guid.NewGuid(),
+                    Title = "Open Plains",
+                    IsCheckedOut = true,
+                    },
+                }
             );
 
             // Find documents

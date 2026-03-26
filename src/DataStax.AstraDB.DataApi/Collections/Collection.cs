@@ -636,7 +636,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <remarks>
     /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
     /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
-    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enueration.
+    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
     public FindEnumerator<T, T, DocumentSortBuilder<T>> Find()
@@ -1147,7 +1147,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     // {
     //     return new RerankSorter<T, TResult>(() => CreateCommand("findAndRerank"), filter, commandOptions);
     // }
-    
+
     /// <summary>
     /// Synchronous version of <see cref="ReplaceOneAsync(CollectionFilter{T}, T)"/>
     /// </summary>
@@ -2089,8 +2089,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
 
     private List<CommandOptions> GetOptionsTree()
     {
-        var optionsTree = _commandOptions == null 
-            ? _database.OptionsTree 
+        var optionsTree = _commandOptions == null
+            ? _database.OptionsTree
             : _database.OptionsTree.Concat(new[] { _commandOptions });
 
         if (typeof(T) == typeof(Document))
@@ -2100,7 +2100,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
                 new CommandOptions { SerializeIEEE754SpecialValues = false }
             });
         }
-        
+
         return optionsTree.ToList();
     }
 
