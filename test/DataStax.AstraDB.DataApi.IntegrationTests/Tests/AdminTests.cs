@@ -428,12 +428,17 @@ public class AdminTests
 			new (){
 				Name = dbName,
 				CloudProvider = CloudProviderType.AWS,
-				Region = "us-east-2"
+				Region = "us-east-1" // for TEST: use "us-east-1"; for DEV: "europe-west4"
 			},
 			true
 		);
 
-		// todo: better test result here; for now we assume if no error, this was successful
+		// verify by creating a keyspace (devops), listing it (devops) and listing the DB tables (data api)
+		await admin.CreateKeyspaceAsync("throwaway_ks");
+		Assert.True(admin.DoesKeyspaceExist("throwaway_ks"));
+		var database = admin.GetDatabase();
+		var tableNames = await database.ListTableNamesAsync();
+		Assert.NotNull(tableNames);
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabase
