@@ -620,6 +620,24 @@ public class AdminTests
 
 	}
 
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminNonAstra_CreateKeyspaceAsync_WithOptions
+	[SkipWhenAstra]
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task DatabaseAdminNonAstra_CreateKeyspaceAsync_WithOptions()
+	{
+		var keyspaceName = "throwaway_keyspace_with_options";
+		var adminOptions = new CommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client, adminOptions);
+
+		var replicationOptions = new Dictionary<string, object> { ["class"] = "SimpleStrategy", ["replication_factor"] = 1 };
+		await daa.CreateKeyspaceAsync(keyspaceName, false, true, replicationOptions, adminOptions);
+
+		Assert.Contains(keyspaceName, daa.ListKeyspaces());
+	}
+
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync
 	[SkipWhenNotAstra]
 	[Fact(Skip = AdminCollection.SkipMessage)]
