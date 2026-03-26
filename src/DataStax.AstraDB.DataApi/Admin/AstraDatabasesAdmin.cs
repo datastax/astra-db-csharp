@@ -500,7 +500,24 @@ public class AstraDatabasesAdmin
     /// Drops the database with the specified ID using provided command options.
     /// </summary>
     /// <param name="dbGuid">The ID of the database to drop.</param>
+    /// <param name="options"></param>
+    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// <code>
+    /// bool dropped = admin.DropDatabase("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
+    /// </code>
+    /// </example>
+    public bool DropDatabase(string dbGuid, CommandOptions options)
+    {
+        return DropDatabaseAsync(dbGuid, true, options, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Drops the database with the specified ID using provided command options.
+    /// </summary>
+    /// <param name="dbGuid">The ID of the database to drop.</param>
     /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
+    /// <param name="options"></param>
     /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
     /// <code>
@@ -510,6 +527,21 @@ public class AstraDatabasesAdmin
     public bool DropDatabase(string dbGuid, bool waitForDb, CommandOptions options)
     {
         return DropDatabaseAsync(dbGuid, waitForDb, options, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Asynchronously drops the database with the specified ID.
+    /// </summary>
+    /// <param name="dbGuid">The ID of the database to drop.</param>
+    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// <code>
+    /// bool dropped = await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    /// </code>
+    /// </example>
+    public Task<bool> DropDatabaseAsync(string dbGuid)
+    {
+        return DropDatabaseAsync(dbGuid, true, null, true);
     }
 
     /// <summary>
@@ -526,6 +558,22 @@ public class AstraDatabasesAdmin
     public Task<bool> DropDatabaseAsync(string dbGuid, bool waitForDb)
     {
         return DropDatabaseAsync(dbGuid, waitForDb, null, true);
+    }
+
+    /// <summary>
+    /// Asynchronously drops the database with the specified ID using provided command options.
+    /// </summary>
+    /// <param name="dbGuid">The ID of the database to drop.</param>
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
+    /// <example>
+    /// <code>
+    /// bool dropped = await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
+    /// </code>
+    /// </example>
+    public Task<bool> DropDatabaseAsync(string dbGuid, CommandOptions options)
+    {
+        return DropDatabaseAsync(dbGuid, true, options, true);
     }
 
     /// <summary>

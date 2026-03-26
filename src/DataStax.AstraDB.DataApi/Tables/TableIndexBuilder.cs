@@ -144,7 +144,7 @@ public class TableIndexBuilder
     /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
     /// <returns></returns>
-    public TableVectorIndexDefinition Vector(SimilarityMetric? metric, string? sourceModel)
+    public TableVectorIndexDefinition Vector(SimilarityMetric? metric, string sourceModel)
     {
         return new TableVectorIndexDefinition
         {
