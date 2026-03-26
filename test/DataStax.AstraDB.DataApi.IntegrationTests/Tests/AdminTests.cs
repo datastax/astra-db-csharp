@@ -508,8 +508,7 @@ public class AdminTests
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_Update
 	[SkipWhenNotAstra]
-	// [Fact(Skip = AdminCollection.SkipMessage)] // TODO reinstate
-	[Fact]
+	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_Update()
 	{
 		/* Complete verification involves manual inspection of the logs
@@ -622,8 +621,8 @@ public class AdminTests
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync
-	// [Fact(Skip = AdminCollection.SkipMessage)] // TODO reinstate
-	[Fact]
+	[SkipWhenNotAstra]
+	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_DropKeyspaceAsync()
 	{
 		var keyspaceName = "drop_this_keyspace_x";
@@ -633,7 +632,25 @@ public class AdminTests
 		};
 		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
 
+		Assert.True(daa.DoesKeyspaceExist(keyspaceName));
 		await daa.DropKeyspaceAsync(keyspaceName, adminOptions);
-		// todo: better test result here; for now we assume if no error, this was successful
+		Assert.False(daa.DoesKeyspaceExist(keyspaceName));
+	}
+
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminNonAstra_DropKeyspaceAsync
+	[SkipWhenAstra]
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task DatabaseAdminNonAstra_DropKeyspaceAsync()
+	{
+		var keyspaceName = "drop_this_keyspace_x";
+		var adminOptions = new CommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client, adminOptions);
+
+		Assert.True(daa.DoesKeyspaceExist(keyspaceName));
+		await daa.DropKeyspaceAsync(keyspaceName, adminOptions);
+		Assert.False(daa.DoesKeyspaceExist(keyspaceName));
 	}
 }
