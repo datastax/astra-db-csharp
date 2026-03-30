@@ -214,6 +214,21 @@ public class SerializationTests
 		Assert.Equal(TimeUuid.Parse("a448ba80-1723-11f1-aedc-e7a263c8acfc"), deserialized.Data.Document.tuid);
 	}
 
+	[Fact]
+	public void Test_TimeOnly()
+	{
+		var serializationTestString = @"
+			{""TimestampWithKind"":""2026-03-26T21:30:03.269Z"",""Duration"":""P12Y3M1DT12H30M5.012007002S"",""Time"":""22:30:03.269601500"",""String"":""Test 3"",""Double"":1.7976931348623157E308,""Timestamp"":""2026-03-26T21:30:03.269Z"",""Int"":2147483647,""Date"":""2026-03-26"",""TinyInt"":255,""Float"":3.4028235E38,""Decimal"":79228162514264337593543950335,""MaybeDate"":""2026-03-26"",""BigInt"":9223372036854775807,""SmallInt"":32767,""Boolean"":false,""UUID"":""74cf37ac-db3f-49f5-abd2-3dcbf0add03c""}
+		";
+		var collection = fixture.Database.GetCollection<TypesTester>("serializationTest2");
+		var commandOptions = new CommandOptions()
+		{
+			OutputConverter = new DocumentConverter<TypesTester>()
+		};
+		var deserialized = collection.CheckDeserialization(serializationTestString, commandOptions);
+		Assert.Equal(TimeOnly.Parse("22:30:03.2696015"), deserialized.Time);
+	}
+
 
 }
 

@@ -181,6 +181,10 @@ internal class Command
         serializeOptions.Converters.Add(new DurationConverter());
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         serializeOptions.Converters.Add(new TimeUuidJsonConverter());
+#if NET6_0_OR_GREATER
+        serializeOptions.Converters.Add(new TimeOnlyConverter());
+        serializeOptions.Converters.Add(new TimeOnlyNullableConverter());
+#endif
         if (commandOptions.SerializeDateAsDollarDate == true)
         {
             serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset>());
@@ -229,6 +233,10 @@ internal class Command
         deserializeOptions.Converters.Add(new DurationConverter());
         deserializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         deserializeOptions.Converters.Add(new TimeUuidJsonConverter());
+#if NET6_0_OR_GREATER
+        deserializeOptions.Converters.Add(new TimeOnlyConverter());
+        deserializeOptions.Converters.Add(new TimeOnlyNullableConverter());
+#endif
         if (commandOptions.OutputConverter != null)
         {
             deserializeOptions.Converters.Add(commandOptions.OutputConverter);
