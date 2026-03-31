@@ -451,7 +451,7 @@ public class AdditionalTableTests
             };
 
             var emptyMapInsertResult = await table.InsertOneAsync(emptyMapRow);
-            Assert.NotNull(emptyMapInsertResult.InsertedId);
+            Assert.NotNull(emptyMapInsertResult.InsertedIdTuple);
 
             var emptyMapRetrieved = await table.FindOneAsync(
                 Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 100)
@@ -796,7 +796,7 @@ public class AdditionalTableTests
             var result = await table.InsertOneAsync(row);
 
             Assert.Equal(1, result.InsertedCount);
-            Assert.Equal(new[] { rowId }, result.InsertedId);
+            Assert.Equal(new[] { rowId }, result.InsertedIdTuple);
 
             // reading
             var readRow = await table.FindOneAsync();

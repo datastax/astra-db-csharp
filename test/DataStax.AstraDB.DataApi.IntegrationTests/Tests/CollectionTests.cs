@@ -41,7 +41,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             var secondObject = new SimpleObjectWithObjectId()
             {
@@ -49,7 +49,7 @@ public class CollectionTests
             };
 
             result = await collection.InsertOneAsync(secondObject);
-            var newId2 = result.InsertedId;
+            var newId2 = result.InsertedIdTuple;
 
             Assert.NotEqual(newId, newId2);
         }
@@ -79,7 +79,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             var secondObject = new SimpleObjectWithGuidId()
             {
@@ -87,7 +87,7 @@ public class CollectionTests
             };
 
             result = await collection.InsertOneAsync(secondObject);
-            var newId2 = result.InsertedId;
+            var newId2 = result.InsertedIdTuple;
 
             Assert.NotEqual(newId, newId2);
         }
@@ -117,7 +117,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             var secondObject = new SimpleObjectWithGuidId()
             {
@@ -125,7 +125,7 @@ public class CollectionTests
             };
 
             result = await collection.InsertOneAsync(secondObject);
-            var newId2 = result.InsertedId;
+            var newId2 = result.InsertedIdTuple;
 
             Assert.NotEqual(newId, newId2);
         }
@@ -155,7 +155,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             var secondObject = new SimpleObjectWithGuidId()
             {
@@ -163,7 +163,7 @@ public class CollectionTests
             };
 
             result = await collection.InsertOneAsync(secondObject);
-            var newId2 = result.InsertedId;
+            var newId2 = result.InsertedIdTuple;
 
             Assert.NotEqual(newId, newId2);
         }
@@ -222,7 +222,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             Assert.NotEqual(Guid.Empty, newId);
         }
@@ -245,7 +245,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             Assert.NotEqual(Guid.Empty, newId);
         }
@@ -268,7 +268,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             Assert.NotEqual(Guid.Empty, newId);
         }
@@ -291,7 +291,7 @@ public class CollectionTests
             };
 
             var result = await collection.InsertOneAsync(newObject);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
 
             Assert.NotEqual(ObjectId.Empty, newId);
         }
@@ -462,7 +462,7 @@ public class CollectionTests
             };
             var collection = await fixture.Database.CreateCollectionAsync<Restaurant>(collectionName);
             var result = await collection.InsertOneAsync(newRestaurant);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
             Assert.NotNull(newId);
         }
         finally
@@ -490,7 +490,7 @@ public class CollectionTests
                 Name = "Test Object",
             };
             var result = await collection.InsertOneAsync(newItem);
-            var newId = result.InsertedId;
+            var newId = result.InsertedIdTuple;
             var parsed = ObjectId.TryParse(newId.ToString(), out var newIdAsObjectId);
             Assert.True(parsed);
         }

@@ -836,8 +836,11 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         };
         commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
         var command = CreateCommand("insertOne").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<TableInsertOneResult>(runSynchronously).ConfigureAwait(false);
-        return response.Result;
+        var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
+        return new TableInsertOneResult
+        {
+            InsertedIdTuple = response.Result.InsertedIdTuples.Count > 0 ? response.Result.InsertedIdTuples[0] : null
+        };
     }
 
     /// <summary>

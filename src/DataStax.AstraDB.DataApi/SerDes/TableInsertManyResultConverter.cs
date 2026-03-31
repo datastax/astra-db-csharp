@@ -23,23 +23,14 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
-internal class TableInsertOneResultConverter : TableInsertResultConverter<TableInsertOneResult>
+internal class TableInsertManyResultConverter : JsonConverter<TableInsertManyResult>
 {
-}
-
-internal class TableInsertManyResultConverter : TableInsertResultConverter<TableInsertManyResult>
-{
-}
-
-internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableInsertManyResult, new()
-{
-
-    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override TableInsertManyResult Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException("Expected StartObject token");
 
-        var result = new T();
+        var result = new TableInsertManyResult();
         JsonDocument insertedIdsDoc = null;
 
         while (reader.Read())
@@ -135,7 +126,7 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
                 case "decimal":
                     return element.GetDecimal();
                 case "double":
-                    if (element.ValueKind == JsonValueKind.String) // ugly but TableInsertResultConverter won't exist in the future anyway
+                    if (element.ValueKind == JsonValueKind.String) // ugly but TableInsertManyResultConverter won't exist in the future anyway
                     {
                         return element.GetString() switch
                         {
@@ -174,7 +165,7 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
         }
     }
 
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, TableInsertManyResult value, JsonSerializerOptions options)
     {
         throw new NotSupportedException("Serialization is not implemented for TableInsertManyResult");
     }

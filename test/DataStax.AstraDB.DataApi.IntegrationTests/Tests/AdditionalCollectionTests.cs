@@ -208,7 +208,7 @@ public class AdditionalCollectionTests
             };
 
             var insertOneResult = await collection.InsertOneAsync(row1);
-            Assert.NotNull(insertOneResult.InsertedId);
+            Assert.NotNull(insertOneResult.InsertedIdTuple);
 
             await Assert.ThrowsAsync<BulkOperationException<CollectionInsertManyResult<object>>>(async () =>
             {
@@ -236,7 +236,7 @@ public class AdditionalCollectionTests
             };
 
             var insertOneResult = await collection.InsertOneAsync(row1);
-            Assert.NotNull(insertOneResult.InsertedId);
+            Assert.NotNull(insertOneResult.InsertedIdTuple);
         }
         finally
         {
