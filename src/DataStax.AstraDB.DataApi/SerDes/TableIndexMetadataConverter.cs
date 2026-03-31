@@ -27,6 +27,7 @@ namespace DataStax.AstraDB.DataApi.SerDes;
 /// </summary>
 public class TableIndexMetadataConverter : JsonConverter<TableIndexMetadata>
 {
+    /// <inheritdoc />
     public override TableIndexMetadata Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using JsonDocument document = JsonDocument.ParseValue(ref reader);
@@ -67,6 +68,7 @@ public class TableIndexMetadataConverter : JsonConverter<TableIndexMetadata>
         return metadata;
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, TableIndexMetadata value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();

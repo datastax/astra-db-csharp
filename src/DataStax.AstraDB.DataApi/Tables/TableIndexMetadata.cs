@@ -19,17 +19,29 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Metadata about an existing table index, as returned by the Data API.
+/// </summary>
 [JsonConverter(typeof(TableIndexMetadataConverter))]
 public class TableIndexMetadata
 {
-  [JsonPropertyName("name")]
-  public string Name { get; set; }
+    /// <summary>
+    /// The name of the index.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
 
-  [JsonPropertyName("definition")]
-  public TableBaseIndexDefinition Definition { get; set; }
+    /// <summary>
+    /// The definition of the index, including the target column and options.
+    /// </summary>
+    [JsonPropertyName("definition")]
+    public TableBaseIndexDefinition Definition { get; set; }
 
-  [JsonPropertyName("indexType")]
-  public string IndexType { get; set; }
+    /// <summary>
+    /// The type of the index (e.g., "regular" or "vector").
+    /// </summary>
+    [JsonPropertyName("indexType")]
+    public string IndexType { get; set; }
 }
 
 //{"indexes":[{"name":"author_index",

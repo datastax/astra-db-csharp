@@ -23,6 +23,10 @@ using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
+/// <summary>
+/// Builds filter expressions for querying documents or rows in a collection or table.
+/// </summary>
+/// <typeparam name="T">The type of the document or row being filtered.</typeparam>
 public class FilterBuilder<T>
 {
     /// <summary>
@@ -32,7 +36,7 @@ public class FilterBuilder<T>
     /// <returns>The combined filter</returns>
     /// <example>
     /// <code>
-    /// // Find documents where the "field" property equals "value" and "field2" property equals "value2"
+    /// // Find items where the "field" property equals "value" and "field2" property equals "value2"
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.And(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"), builder.Eq(so =&gt; so.Properties.PropertyTwo, "value2"));
     /// </code>
@@ -52,7 +56,7 @@ public class FilterBuilder<T>
     /// <returns>The combined filter</returns>
     /// <example>
     /// <code>
-    /// // Find documents where the "field" property equals "value" or "field2" property equals "value2"
+    /// // Find items where the "field" property equals "value" or "field2" property equals "value2"
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.Or(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"), builder.Eq(so =&gt; so.Properties.PropertyTwo, "value2"));
     /// </code>
@@ -72,7 +76,7 @@ public class FilterBuilder<T>
     /// <returns>The negated filter</returns>
     /// <example>
     /// <code>
-    /// // Find documents where the "field" property does not equal "value"
+    /// // Find items where the "field" property does not equal "value"
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.Not(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"));
     /// </code>
@@ -86,7 +90,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Greater than operator -- Matches documents where the specified field's value is greater than the specified value.
+    /// Greater than operator -- Matches items where the specified field's value is greater than the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -101,7 +105,7 @@ public class FilterBuilder<T>
 
 
     /// <summary>
-    /// Greater than operator -- Matches documents where the specified field's value is greater than the specified value.
+    /// Greater than operator -- Matches items where the specified field's value is greater than the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -113,7 +117,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Greater than or equal to operator -- Matches documents where the specified field's value is greater than or equal to the specified value.
+    /// Greater than or equal to operator -- Matches items where the specified field's value is greater than or equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -127,7 +131,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Greater than or equal to operator -- Matches documents where the specified field's value is greater than or equal to the specified value.
+    /// Greater than or equal to operator -- Matches items where the specified field's value is greater than or equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -139,7 +143,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than operator -- Matches documents where the specified field's value is less than the specified value.
+    /// Less than operator -- Matches items where the specified field's value is less than the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -153,7 +157,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than operator -- Matches documents where the specified field's value is less than the specified value.
+    /// Less than operator -- Matches items where the specified field's value is less than the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -165,7 +169,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than or equal to operator -- Matches documents where the specified field's value is less than or equal to the specified value.
+    /// Less than or equal to operator -- Matches items where the specified field's value is less than or equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -179,7 +183,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Less than or equal to operator -- Matches documents where the specified field's value is less than or equal to the specified value.
+    /// Less than or equal to operator -- Matches items where the specified field's value is less than or equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -191,7 +195,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Equal to operator -- Matches documents where the specified field's value is equal to the specified value.
+    /// Equal to operator -- Matches items where the specified field's value is equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -205,7 +209,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Equal to operator -- Matches documents where the specified field's value is equal to the specified value.
+    /// Equal to operator -- Matches items where the specified field's value is equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -217,7 +221,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not equal to operator -- Matches documents where the specified field's value is not equal to the specified value.
+    /// Not equal to operator -- Matches items where the specified field's value is not equal to the specified value.
     /// </summary>
     /// <param name="fieldName">The name of the field to compare</param>
     /// <param name="value">The value to compare against</param>
@@ -231,7 +235,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not equal to operator -- Matches documents where the specified field's value is not equal to the specified value.
+    /// Not equal to operator -- Matches items where the specified field's value is not equal to the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to compare</typeparam>
     /// <param name="expression">An expression that represents the field to compare</param>
@@ -252,7 +256,7 @@ public class FilterBuilder<T>
     /// <param name="values">The array of values</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="In{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="In{TField}(Expression{Func{T, TField[]}},TField)"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> In<T2>(string fieldName, T2[] values)
     {
@@ -291,7 +295,7 @@ public class FilterBuilder<T>
     /// <param name="value">The value to check for.</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="In{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="In{TField}(Expression{Func{T, TField[]}},TField)"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> In(string fieldName, object value)
     {
@@ -342,14 +346,14 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the field does not match any of the specified values.
+    /// Not in operator -- Match items where the field does not match any of the specified values.
     /// </summary>
     /// <typeparam name="T2">The type of the values in the array to check</typeparam>
     /// <param name="fieldName">The name of the field for this filter</param>
     /// <param name="values">The array of values</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="Nin{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="Nin{TField}(Expression{Func{T, TField}},TField[])"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> Nin<T2>(string fieldName, T2[] values)
     {
@@ -357,7 +361,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the field does not match any of the specified values.
+    /// Not in operator -- Match items where the field does not match any of the specified values.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
@@ -369,7 +373,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the field does not match any of the specified values where the field itself is an array.
+    /// Not in operator -- Match items where the field does not match any of the specified values where the field itself is an array.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
@@ -381,12 +385,11 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the array field does not match the specified value.
+    /// Not in operator -- Match items where the array field does not match the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="value"></param>
-    /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField value)
     {
@@ -394,12 +397,10 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Not in operator -- Match documents where the array field does not match the specified value.
+    /// Not in operator -- Match items where the array field does not match the specified value.
     /// </summary>
-    /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="field"></param>
     /// <param name="value"></param>
-    /// <param name="array">The value to not match</param>
     /// <returns>The filter</returns>
     public Filter<T> Nin(string field, object value)
     {
@@ -438,7 +439,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Exists operator -- Match documents where the field exists.
+    /// Exists operator -- Match items where the field exists.
     /// </summary>
     /// <param name="fieldName">The name of the field to check for</param>
     /// <returns>The filter</returns>
@@ -451,7 +452,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Exists operator -- Match documents where the field exists.
+    /// Exists operator -- Match items where the field exists.
     /// </summary>
     /// <typeparam name="TField">The type of the field</typeparam>
     /// <param name="expression">An expression that represents the field to check for</param>
@@ -469,7 +470,7 @@ public class FilterBuilder<T>
     /// <param name="array">The array of values to check against</param>
     /// <returns>The filter</returns>
     /// <remarks>
-    /// We recommend using the <see cref="All{TField}"/> method with expressions instead of strings for clarity and type safety.
+    /// We recommend using the <see cref="All{TField}(Expression{Func{T,TField[]}}, TField[])"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
     public Filter<T> All<TField>(string fieldName, TField[] array)
     {
@@ -528,7 +529,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Size operator -- Matches documents where the specified array has the specified size.
+    /// Size operator -- Matches items where the specified array has the specified size.
     /// </summary>
     /// <param name="fieldName">The name of the field for this filter</param>
     /// <param name="size">The size of the array to match</param>
@@ -542,7 +543,7 @@ public class FilterBuilder<T>
     }
 
     /// <summary>
-    /// Size operator -- Matches documents where the specified array has the specified size.
+    /// Size operator -- Matches items where the specified array has the specified size.
     /// </summary>
     /// <typeparam name="TField">The type of the field</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
@@ -587,32 +588,43 @@ public class FilterBuilder<T>
         return new Filter<T>(null, dictionary);
     }
 
-    /// <summary>
-    /// Lexical match operator -- Matches documents where the document's lexical field value is a lexicographical match to the specified string of space-separated keywords or terms
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public Filter<T> CollectionLexicalMatch(string value)
-    {
-        return new Filter<T>(DataApiKeywords.Lexical, FilterOperator.Match, value);
-    }
-
 }
 
+/// <summary>
+/// Represents a primary key column filter restricted to a single column name and value.
+/// Used in table operations that require filtering by primary key fields.
+/// </summary>
 public class PrimaryKeyFilter
 {
+    /// <summary>
+    /// Initializes a new <see cref="PrimaryKeyFilter"/> with a column name and value.
+    /// </summary>
+    /// <param name="columnName">The name of the primary key column.</param>
+    /// <param name="value">The value to match.</param>
     public PrimaryKeyFilter(string columnName, object value)
     {
         ColumnName = columnName;
         Value = value;
     }
 
+    /// <summary>The name of the primary key column.</summary>
     public string ColumnName { get; set; }
+    /// <summary>The value to match for this primary key column.</summary>
     public object Value { get; set; }
 }
 
+/// <summary>
+/// A strongly-typed primary key column filter using a member expression to specify the column.
+/// </summary>
+/// <typeparam name="T">The type of the row or document.</typeparam>
+/// <typeparam name="TValue">The type of the primary key column value.</typeparam>
 public class PrimaryKeyFilter<T, TValue> : PrimaryKeyFilter
 {
+    /// <summary>
+    /// Initializes a new <see cref="PrimaryKeyFilter{T, TValue}"/> using a member expression and value.
+    /// </summary>
+    /// <param name="columnExpression">An expression identifying the primary key column.</param>
+    /// <param name="value">The value to match.</param>
     public PrimaryKeyFilter(Expression<Func<T, TValue>> columnExpression, TValue value)
         : base(columnExpression.GetMemberNameTree(), value)
     {

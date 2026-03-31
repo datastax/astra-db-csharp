@@ -29,11 +29,16 @@ public class TableBaseIndexDefinitionConverter : JsonConverter<TableBaseIndexDef
 {
     private readonly string _indexType;
 
+    /// <summary>
+    /// Initializes a converter that selects a concrete table index definition type from the supplied index type.
+    /// </summary>
+    /// <param name="indexType">The Data API index type name used to choose the concrete definition type.</param>
     public TableBaseIndexDefinitionConverter(string indexType)
     {
         _indexType = indexType;
     }
 
+    /// <inheritdoc />
     public override TableBaseIndexDefinition Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         // Parse the JSON into a JsonDocument to inspect it
@@ -53,6 +58,7 @@ public class TableBaseIndexDefinitionConverter : JsonConverter<TableBaseIndexDef
         return (TableBaseIndexDefinition)JsonSerializer.Deserialize(root.GetRawText(), concreteType, options);
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, TableBaseIndexDefinition value, JsonSerializerOptions options)
     {
         // Serialize using the actual runtime type

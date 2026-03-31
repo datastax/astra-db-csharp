@@ -16,8 +16,13 @@
 
 namespace DataStax.AstraDB.DataApi.Core;
 
+/// <summary>
+/// Specifies the direction of a sort operation.
+/// </summary>
 public enum SortDirection
 {
+    /// <summary>Sort results from lowest to highest.</summary>
     Ascending,
+    /// <summary>Sort results from highest to lowest.</summary>
     Descending
 }

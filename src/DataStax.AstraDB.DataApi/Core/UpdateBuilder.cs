@@ -502,9 +502,9 @@ public class UpdateBuilder<T>
     /// Add a key-value pair to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="expression">The expression to use to get the field name.</param>
-    /// <param name="value">The value to add to the set as a 2-item (key, value) tuple.</param>
+    /// <param name="pair">The key-value pair to add to the map as a 2-item tuple.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     public UpdateBuilder<T> Push<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, (TKey, TVal) pair)
     {
@@ -517,9 +517,9 @@ public class UpdateBuilder<T>
     /// Add a key-value pair to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="expression">The expression to use to get the field name.</param>
-    /// <param name="value">The value to add to the set as a single-key dictionary.</param>
+    /// <param name="value">The key-value pair to add to the map as a single-entry dictionary.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     public UpdateBuilder<T> Push<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IDictionary<TKey, TVal> value)
     {
@@ -536,9 +536,9 @@ public class UpdateBuilder<T>
     /// Add a key-value pair to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="fieldName">The name of the field to add the pair to.</param>
-    /// <param name="value">The value to add to the set as a 2-item (key, value) tuple.</param>
+    /// <param name="pair">The key-value pair to add to the map as a 2-item tuple.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     /// <remarks>
     /// We recommend using the strongly-typed version <see cref="Push{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, ValueTuple{TKey, TVal})"/>.
@@ -554,9 +554,9 @@ public class UpdateBuilder<T>
     /// Add a key-value pair to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="fieldName">The name of the field to add the pair to.</param>
-    /// <param name="value">The value to add to the set as a single-key dictionary.</param>
+    /// <param name="value">The key-value pair to add to the map as a single-entry dictionary.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     /// <remarks>
     /// We recommend using the strongly-typed version <see cref="Push{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, IDictionary{TKey, TVal})"/>.
@@ -576,9 +576,9 @@ public class UpdateBuilder<T>
     /// Add multiple key-value pairs to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="expression">The expression to use to get the field name.</param>
-    /// <param name="value">The values to add to the set as a list of 2-item (key, value) tuples.</param>
+    /// <param name="pairs">The key-value pairs to add to the map as 2-item tuples.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     public UpdateBuilder<T> PushEach<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, (TKey, TVal)[] pairs)
     {
@@ -592,9 +592,9 @@ public class UpdateBuilder<T>
     /// Add multiple key-value pairs to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="expression">The expression to use to get the field name.</param>
-    /// <param name="value">The values to add to the set as a dictionary.</param>
+    /// <param name="value">The key-value pairs to add to the map as a dictionary.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     public UpdateBuilder<T> PushEach<TKey, TVal>(Expression<Func<T, IDictionary<TKey, TVal>>> expression, IDictionary<TKey, TVal> value)
     {
@@ -608,9 +608,9 @@ public class UpdateBuilder<T>
     /// Add multiple key-value pairs to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="fieldName">The name of the field to add the pairs to.</param>
-    /// <param name="value">The values to add to the set as a list of 2-item (key, value) tuples.</param>
+    /// <param name="pairs">The key-value pairs to add to the map as 2-item tuples.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     /// <remarks>
     /// We recommend using the strongly-typed version <see cref="PushEach{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, ValueTuple{TKey, TVal}[])"/>.
@@ -627,9 +627,9 @@ public class UpdateBuilder<T>
     /// Add multiple key-value pairs to a map.
     /// </summary>
     /// <typeparam name="TKey">The type of the map keys</typeparam>
-    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <typeparam name="TVal">The type of the map values</typeparam>
     /// <param name="fieldName">The name of the field to add the pairs to.</param>
-    /// <param name="value">The values to add to the set as a dictionary.</param>
+    /// <param name="value">The key-value pairs to add to the map as a dictionary.</param>
     /// <returns>The UpdateBuilder instance.</returns>
     /// <remarks>
     /// We recommend using the strongly-typed version <see cref="PushEach{TKey, TVal}(Expression{Func{T, IDictionary{TKey, TVal}}}, IDictionary{TKey, TVal})"/>.

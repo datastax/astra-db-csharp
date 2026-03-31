@@ -18,11 +18,21 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Marks a column as a vector column with a specified number of dimensions.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 public class ColumnVectorAttribute : Attribute
 {
+    /// <summary>
+    /// The number of dimensions for the vector column.
+    /// </summary>
     public int Dimension { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="ColumnVectorAttribute"/> with the specified dimension.
+    /// </summary>
+    /// <param name="dimension">The number of dimensions for the vector column.</param>
     public ColumnVectorAttribute(int dimension)
     {
         Dimension = dimension;

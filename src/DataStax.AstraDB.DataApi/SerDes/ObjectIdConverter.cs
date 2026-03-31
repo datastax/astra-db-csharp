@@ -26,6 +26,9 @@ using System.Text.Json.Serialization;
 /// </summary>
 public class ObjectIdConverter : JsonConverter<ObjectId>
 {
+    /// <summary>
+    /// Reads and converts JSON to an <see cref="ObjectId"/> value.
+    /// </summary>
     public override ObjectId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.StartObject)
@@ -63,6 +66,9 @@ public class ObjectIdConverter : JsonConverter<ObjectId>
         }
     }
 
+    /// <summary>
+    /// Writes an <see cref="ObjectId"/> value as a JSON object with a <c>$objectId</c> property.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, ObjectId value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();

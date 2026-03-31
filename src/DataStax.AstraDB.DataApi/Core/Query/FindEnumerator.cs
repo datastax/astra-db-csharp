@@ -28,6 +28,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// </summary>
 /// <typeparam name="T">The type representing the document or row.</typeparam>
 /// <typeparam name="TResult">The type to deserialize the results to (i.e. if using <see cref="Projection"/>).</typeparam>
+/// <typeparam name="TSort">The type to use for sorting.</typeparam>
 public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnumerable<TResult>
     where T : class
     where TResult : class
@@ -186,10 +187,10 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
     /// <param name="cancellationToken">An optional cancellation token to use for the operation.</param>
     /// <returns>An async enumerator</returns>
     /// <remarks>
-    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="CommandOptions.TimeoutOptions.ConnectionTimeout"/>
-    /// and <see cref="CommandOptions.TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API.
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to this method.
-    /// <see cref="CommandOptions.BulkOperationCancellationToken"/> settings are ignored for this operation.
+    /// <c>BulkOperationCancellationToken</c> settings are ignored for this operation.
     /// </remarks>
     public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {

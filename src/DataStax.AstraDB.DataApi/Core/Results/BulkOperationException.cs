@@ -24,14 +24,24 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 /// </summary>
 public class BulkOperationException<T> : Exception
 {
+    /// <summary>
+    /// Initializes a new instance with the specified error message and partial result.
+    /// </summary>
     public BulkOperationException(string message, T partialResult) : base(message)
     {
         PartialResult = partialResult;
     }
+
+    /// <summary>
+    /// Initializes a new instance using the message and details from a causing exception, along with the partial result.
+    /// </summary>
     public BulkOperationException(Exception causingException, T partialResult) : base(causingException.Message, causingException)
     {
         PartialResult = partialResult;
     }
 
+    /// <summary>
+    /// The partial result from the operations that completed successfully before the failure occurred.
+    /// </summary>
     public T PartialResult { get; set; }
 }

@@ -20,10 +20,13 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
-/// Configuration used to create a text index on a table column
+/// Metadata for a table index definition returned by the Data API when the SDK does not recognize the index type.
 /// </summary>
 public class TableUnknownIndexDefinition : TableBaseIndexDefinition
 {
+    /// <summary>
+    /// Gets or sets the API support metadata returned for an index type that does not map to a known concrete definition.
+    /// </summary>
     [JsonPropertyName("apiSupport")]
     public TableUnknownIndexAPISupport APISupport { get; set; }
 

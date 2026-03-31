@@ -28,10 +28,15 @@ public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>
 {
     private static readonly DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
+    /// <summary>
+    /// Reads and converts a JSON <c>$date</c> object or Unix timestamp (milliseconds) to a <typeparamref name="T"/> value.
+    /// </summary>
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
             return default;
+
+        long unixTimeMilliseconds;
 
         if (reader.TokenType == JsonTokenType.StartObject)
         {
@@ -43,26 +48,11 @@ public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>
                     throw new JsonException("Expected number for Unix timestamp");
                 }
 
-                long unixTimeMilliseconds = reader.GetInt64();
+                unixTimeMilliseconds = reader.GetInt64();
                 reader.Read();
                 if (reader.TokenType != JsonTokenType.EndObject)
                 {
                     throw new JsonException("Expected end of object");
-                }
-
-                DateTimeOffset dto = UnixEpoch.AddMilliseconds(unixTimeMilliseconds);
-
-                if (typeof(T) == typeof(DateTimeOffset))
-                {
-                    return (T)(object)dto;
-                }
-                else if (typeof(T) == typeof(DateTime))
-                {
-                    return (T)(object)dto.UtcDateTime;
-                }
-                else
-                {
-                    throw new JsonException($"Cannot convert Unix timestamp to {typeof(T)}");
                 }
             }
             else
@@ -72,28 +62,42 @@ public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>
         }
         else if (reader.TokenType == JsonTokenType.Number)
         {
-            long unixTimeMilliseconds = reader.GetInt64();
-            DateTimeOffset dto = UnixEpoch.AddMilliseconds(unixTimeMilliseconds);
-
-            if (typeof(T) == typeof(DateTimeOffset))
-            {
-                return (T)(object)dto;
-            }
-            else if (typeof(T) == typeof(DateTime))
-            {
-                return (T)(object)dto.UtcDateTime;
-            }
+            unixTimeMilliseconds = reader.GetInt64();
+        }
+        else if (reader.TokenType == JsonTokenType.String)
+        {
+            var str = reader.GetString();
+            var underlyingType2 = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            if (underlyingType2 == typeof(DateTimeOffset))
+                return (T)(object)DateTimeOffset.Parse(str, null, System.Globalization.DateTimeStyles.RoundtripKind);
             else
-            {
-                throw new JsonException($"Cannot convert Unix timestamp to {typeof(T)}");
-            }
+                return (T)(object)DateTime.Parse(str, null, System.Globalization.DateTimeStyles.RoundtripKind);
         }
         else
         {
-            return default;
+            throw new JsonException($"Unexpected token {reader.TokenType} when reading date value.");
+        }
+
+        DateTimeOffset dto = UnixEpoch.AddMilliseconds(unixTimeMilliseconds);
+
+        var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+        if (underlyingType == typeof(DateTimeOffset))
+        {
+            return (T)(object)dto;
+        }
+        else if (underlyingType == typeof(DateTime))
+        {
+            return (T)(object)dto.UtcDateTime;
+        }
+        else
+        {
+            throw new JsonException($"Cannot convert Unix timestamp to {typeof(T)}");
         }
     }
 
+    /// <summary>
+    /// Writes a <typeparamref name="T"/> value as a JSON <c>$date</c> object with Unix milliseconds.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         if (value == null)
@@ -103,16 +107,24 @@ public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>
         }
 
         long timestampMilliseconds;
-        switch (value)
+        var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+        if (underlyingType == typeof(DateTime))
         {
-            case DateTime dt:
-                timestampMilliseconds = (long)(dt.ToUniversalTime() - UnixEpoch).TotalMilliseconds;
-                break;
-            case DateTimeOffset dto:
-                timestampMilliseconds = (long)(dto - UnixEpoch).TotalMilliseconds;
-                break;
-            default:
-                throw new JsonException($"Unsupported type: {value.GetType()}");
+            var dt = (DateTime)(object)value;
+            if (dt.Kind == DateTimeKind.Local)
+                throw new JsonException("DateTime with DateTimeKind.Local cannot be serialized. Convert to UTC using .ToUniversalTime() or use DateTimeOffset.");
+            var dtUtc = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            timestampMilliseconds = (long)(dtUtc - UnixEpoch.UtcDateTime).TotalMilliseconds;
+        }
+        else if (underlyingType == typeof(DateTimeOffset))
+        {
+            var dto = (DateTimeOffset)(object)value;
+            timestampMilliseconds = (long)(dto - UnixEpoch).TotalMilliseconds;
+        }
+        else
+        {
+            throw new JsonException($"Unsupported type: {typeof(T)}");
         }
 
         writer.WriteStartObject();

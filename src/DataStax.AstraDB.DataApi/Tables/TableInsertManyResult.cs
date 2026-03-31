@@ -21,6 +21,9 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Represents the result of inserting multiple rows into a table.
+/// </summary>
 [JsonConverter(typeof(TableInsertManyResultConverter))]
 public class TableInsertManyResult
 {

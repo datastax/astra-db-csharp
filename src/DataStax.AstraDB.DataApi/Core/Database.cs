@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -296,7 +297,6 @@ public class Database
     /// <inheritdoc cref="CreateCollectionAsync(string)" />
     /// <param name="collectionName"></param>
     /// <param name="commandOptions"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Task<Collection<Document>> CreateCollectionAsync(string collectionName, DatabaseCollectionCommandOptions commandOptions)
     {
         return CreateCollectionAsync<Document>(collectionName, null, commandOptions);
@@ -356,6 +356,38 @@ public class Database
     }
 
     /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}()"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>() where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition)"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(DatabaseCollectionCommandOptions)"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>(DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, options, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition, DatabaseCollectionCommandOptions)"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, options, false).ResultSync();
+    }
+
+    /// <summary>
     /// Create a new collection in the database, using the keyspace specified in the <see cref="DatabaseCommandOptions"/>
     /// passed to the <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/> method, or the default keyspace otherwise.
     /// </summary>
@@ -392,6 +424,30 @@ public class Database
         return CreateCollectionAsync<T>(collectionName, definition, options, false);
     }
 
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>() where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, DatabaseCollectionCommandOptions)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>(DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, null, options);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    public Task<Collection<T>> CreateCollectionAsync<T>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, options, false);
+    }
+
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string)"/>
     /// </summary>
@@ -419,7 +475,32 @@ public class Database
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, false).ResultSync();
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}()"/>
+    /// </summary>
+    public Collection<T, TId> CreateCollection<T, TId>() where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, null, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition)"/>
+    /// </summary>
+    public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, null, false).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition, DatabaseCollectionCommandOptions)"/>
+    /// </summary>
+    public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, options, false).ResultSync();
+    }
+
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
     public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName) where T : class
     {
@@ -427,6 +508,7 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
     public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition) where T : class
     {
@@ -434,20 +516,49 @@ public class Database
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
     public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, false);
     }
 
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
+    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>() where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, null, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CollectionDefinition definition) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, null);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
+    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, options, false);
+    }
+
     private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options, bool runSynchronously) where T : class
     {
+        collectionName = MaybeGetCollectionNameFromAttribute<T>(collectionName);
+        Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         await CreateCollectionAsync<T, object>(collectionName, definition, options, runSynchronously);
         return GetCollection<T>(collectionName, options);
     }
 
     private async Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options, bool runSynchronously) where T : class
     {
+        collectionName = MaybeGetCollectionNameFromAttribute<T>(collectionName);
+        Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         if (definition == null)
         {
             definition = CollectionDefinition.Create<T>();
@@ -469,6 +580,20 @@ public class Database
         return GetCollection<T, TId>(collectionName, options);
     }
 
+    private string MaybeGetCollectionNameFromAttribute<T>(string collectionName)
+    {
+        if (string.IsNullOrEmpty(collectionName))
+        {
+            Type type = typeof(T);
+            var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+            if (nameAttribute != null)
+            {
+                collectionName = nameAttribute.Name;
+            }
+        }
+        return collectionName;
+    }
+
     /// <summary>
     /// Returns an instance of <see cref="IDatabaseAdmin"/> that can be used to perform database management operations for this database
     /// </summary>
@@ -487,12 +612,12 @@ public class Database
     public IDatabaseAdmin GetAdmin(CommandOptions options)
     {
         var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
-        
+
         if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
         {
             throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
         }
-        
+
         if (mergedOptions.Destination == DataApiDestination.ASTRA)
         {
             return new DatabaseAdminAstra(this, _client, mergedOptions);
@@ -518,6 +643,17 @@ public class Database
         return GetCollection<Document>(collectionName, options);
     }
 
+    /// <summary>
+    /// Returns a reference to the collection based on the specified document type. 
+    /// The collection name is determined by the <see cref="CollectionNameAttribute"/> on the document type, 
+    /// or the name of the document type if the attribute is not present.
+    /// </summary>
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public Collection<T> GetCollection<T>() where T : class
+    {
+        return GetCollection<T>(null, null);
+    }
+
     /// <inheritdoc cref="GetCollection(string)" />
     /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
     public Collection<T> GetCollection<T>(string collectionName) where T : class
@@ -530,12 +666,34 @@ public class Database
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Collection<T> GetCollection<T>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
+        if (string.IsNullOrEmpty(collectionName))
+        {
+            Type type = typeof(T);
+            var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+            if (nameAttribute != null)
+            {
+                collectionName = nameAttribute.Name;
+            }
+        }
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T>(collectionName, this, options);
     }
 
+    /// <summary>
+    /// Returns a reference to the collection based on the specified document type. 
+    /// The collection name is determined by the <see cref="CollectionNameAttribute"/> on the document type, 
+    /// or the name of the document type if the attribute is not present.
+    /// </summary>
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    public Collection<T, TId> GetCollection<T, TId>() where T : class
+    {
+        return GetCollection<T, TId>(null, null);
+    }
+
     /// <inheritdoc cref="GetCollection{T}(string)" />
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    /// <typeparam name="T">The type to use for the document.</typeparam>
     public Collection<T, TId> GetCollection<T, TId>(string collectionName) where T : class
     {
         return GetCollection<T, TId>(collectionName, null);
@@ -546,6 +704,15 @@ public class Database
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
     public Collection<T, TId> GetCollection<T, TId>(string collectionName, DatabaseCollectionCommandOptions options) where T : class
     {
+        if (string.IsNullOrEmpty(collectionName))
+        {
+            Type type = typeof(T);
+            var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+            if (nameAttribute != null)
+            {
+                collectionName = nameAttribute.Name;
+            }
+        }
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         return new Collection<T, TId>(collectionName, this, options);
     }
@@ -560,11 +727,38 @@ public class Database
     }
 
     /// <summary>
+    /// Synchronous version of <see cref="DropCollectionAsync{T}()"/>
+    /// </summary>
+    /// <inheritdoc cref="DropCollection()" />
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public void DropCollection<T>()
+    {
+        DropCollection<T>(null);
+    }
+
+    /// <summary>
     /// Synchronous version of <see cref="DropCollectionAsync(string, DatabaseCommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="DropCollection(string, DatabaseCommandOptions)" />
     public void DropCollection(string collectionName, DatabaseCommandOptions options)
     {
+        DropCollectionAsync(collectionName, options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropCollectionAsync{T}(DatabaseCommandOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DropCollection(string, DatabaseCommandOptions)" />
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public void DropCollection<T>(DatabaseCommandOptions options)
+    {
+        string collectionName = null;
+        Type type = typeof(T);
+        var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+        if (nameAttribute != null)
+        {
+            collectionName = nameAttribute.Name;
+        }
         DropCollectionAsync(collectionName, options, true).ResultSync();
     }
 
@@ -586,6 +780,28 @@ public class Database
         return DropCollectionAsync(collectionName, options, false);
     }
 
+    /// <inheritdoc cref="DropCollectionAsync(string)" />
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public Task DropCollectionAsync<T>()
+    {
+        return DropCollectionAsync<T>(null);
+    }
+
+    /// <inheritdoc cref="DropCollectionAsync(string)" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
+    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
+    public Task DropCollectionAsync<T>(DatabaseCommandOptions options)
+    {
+        string collectionName = null;
+        Type type = typeof(T);
+        var nameAttribute = type.GetCustomAttribute<CollectionNameAttribute>();
+        if (nameAttribute != null)
+        {
+            collectionName = nameAttribute.Name;
+        }
+        return DropCollectionAsync(collectionName, options, false);
+    }
+
     private async Task DropCollectionAsync(string collectionName, DatabaseCommandOptions options, bool runSynchronously)
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
@@ -600,22 +816,46 @@ public class Database
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Creates a table using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public Task<Table<TRow>> CreateTableAsync<TRow>() where TRow : class, new()
     {
         return CreateTableAsync<TRow>(null as CreateTableCommandOptions);
     }
 
+    /// <summary>
+    /// Creates a table using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public Task<Table<TRow>> CreateTableAsync<TRow>(CreateTableCommandOptions options) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
         return CreateTableAsync<TRow>(tableName, options);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName) where TRow : class, new()
     {
         return CreateTableAsync<TRow>(tableName, null);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
     public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CreateTableCommandOptions options) where TRow : class, new()
     {
         var udtProperties = TypeUtilities.FindPropertiesWithUserDefinedTypeAttribute(typeof(TRow));
@@ -635,11 +875,24 @@ public class Database
         return await CreateTableAsync<TRow>(tableName, definition, options, false);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name and definition.
+    /// </summary>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="definition">The table definition describing columns and primary key.</param>
+    /// <returns>A <see cref="Table{Row}"/> instance for the created table.</returns>
     public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition)
     {
         return CreateTableAsync(tableName, definition, null);
     }
 
+    /// <summary>
+    /// Creates a table with the specified name, definition, and options.
+    /// </summary>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="definition">The table definition describing columns and primary key.</param>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{Row}"/> instance for the created table.</returns>
     public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, CreateTableCommandOptions options)
     {
         if (definition.PrimaryKey == null)
@@ -1042,7 +1295,7 @@ public class Database
     /// Create a User Defined Type dynamically by specifying the class that defines the type
     /// </summary>
     /// <remarks>
-    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
     /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
     /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
@@ -1086,7 +1339,7 @@ public class Database
         return CreateTypeAsync(typeName, definition, null);
     }
 
-    /// <inheritdoc cref="CreateTypeAsync(UserDefinedTypeDefinition)"/>
+    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition)"/>
     /// <param name="typeName"></param>
     /// <param name="definition"></param>
     /// <param name="options"></param>
@@ -1124,7 +1377,7 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTypeAsync{T}(string)"/> 
+    /// Synchronous version of <see cref="DropTypeAsync(string)"/> 
     /// </summary>
     /// <inheritdoc cref="DropTypeAsync(string)"/>
     public void DropType(string typeName)
@@ -1164,7 +1417,7 @@ public class Database
     /// Drop a User Defined Type dynamically by specifying the class that defines the type
     /// </summary>
     /// <remarks>
-    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
     /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
     /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
@@ -1256,7 +1509,7 @@ public class Database
     /// Alter a User Defined Type by specifying the class that defines the type
     /// </summary>
     /// <remarks>
-    /// If the class includes a <see cref="UserDefinedTypeNameAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
     /// </remarks>
     /// <typeparam name="T">The type that defines the User Defined Type</typeparam>
     /// <param name="operation">The operation to apply to the User Defined Type.</param>
@@ -1299,14 +1552,14 @@ public class Database
         {
             options = new CommandOptions();
         }
-        
+
         var (operationName, operationData) = operation.GetOperation();
         var payload = new Dictionary<string, object>
         {
             ["name"] = typeName,
             [operationName] = operationData
         };
-        
+
         var command = CreateCommand("alterType")
             .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())

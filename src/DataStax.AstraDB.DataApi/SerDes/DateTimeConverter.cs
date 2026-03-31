@@ -44,14 +44,9 @@ public class DateTimeConverter : JsonConverter<DateTime>
     /// <param name="options"></param>
     public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
     {
-        DateTime dateTimeToWrite = value;
-
-        if (value.Kind == DateTimeKind.Unspecified)
-        {
-            dateTimeToWrite = DateTime.SpecifyKind(value, DateTimeKind.Local);
-        }
-
-        writer.WriteStringValue(dateTimeToWrite);
+        if (value.Kind == DateTimeKind.Local)
+            throw new JsonException("DateTime with DateTimeKind.Local cannot be serialized. Convert to UTC using .ToUniversalTime() or use DateTimeOffset.");
+        writer.WriteStringValue(DateTime.SpecifyKind(value, DateTimeKind.Utc));
     }
 }
 
@@ -91,13 +86,8 @@ public class DateTimeNullableConverter : JsonConverter<DateTime?>
             return;
         }
 
-        DateTime dateTimeToWrite = value.Value;
-
-        if (value.Value.Kind == DateTimeKind.Unspecified)
-        {
-            dateTimeToWrite = DateTime.SpecifyKind(value.Value, DateTimeKind.Local);
-        }
-
-        writer.WriteStringValue(dateTimeToWrite);
+        if (value.Value.Kind == DateTimeKind.Local)
+            throw new JsonException("DateTime with DateTimeKind.Local cannot be serialized. Convert to UTC using .ToUniversalTime() or use DateTimeOffset.");
+        writer.WriteStringValue(DateTime.SpecifyKind(value.Value, DateTimeKind.Utc));
     }
 }

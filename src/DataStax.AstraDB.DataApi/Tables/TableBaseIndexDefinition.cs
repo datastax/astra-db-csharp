@@ -32,6 +32,9 @@ public abstract class TableBaseIndexDefinition
 
     private object _column;
 
+    /// <summary>
+    /// Gets the indexed column identifier, which may be a column name or a structured column selector for complex indexes.
+    /// </summary>
     [JsonInclude]
     [JsonPropertyName("column")]
     [JsonConverter(typeof(IndexColumnConverter))]

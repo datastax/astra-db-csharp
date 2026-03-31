@@ -19,8 +19,14 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Results;
 
+/// <summary>
+/// The result of listing index names for a table.
+/// </summary>
 public class ListTableIndexNamesResult
 {
+    /// <summary>
+    /// The names of the indexes defined on the table.
+    /// </summary>
     [JsonPropertyName("indexes")]
     public List<string> IndexNames { get; set; }
 }

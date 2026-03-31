@@ -18,15 +18,40 @@ using System;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+/// <summary>
+/// Marks a column to use automatic vectorization (embedding generation) via a configured embedding service.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 public class ColumnVectorizeAttribute : Attribute
 {
+    /// <summary>
+    /// The number of dimensions for the generated vector. If not specified, the service default is used.
+    /// </summary>
     public int? Dimension { get; set; }
+
+    /// <summary>
+    /// The name of the embedding service provider.
+    /// </summary>
     public string ServiceProvider { get; set; }
+
+    /// <summary>
+    /// The model name to use for embedding generation.
+    /// </summary>
     public string ServiceModelName { get; set; }
+
+    /// <summary>
+    /// Key-value pairs used for authenticating with the embedding service, supplied as alternating key and value strings.
+    /// </summary>
     public string[] AuthenticationPairs { get; set; }
+
+    /// <summary>
+    /// Additional key-value parameter pairs for the embedding service, supplied as alternating key and value strings.
+    /// </summary>
     public string[] ParameterPairs { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="ColumnVectorizeAttribute"/> with the specified embedding service configuration.
+    /// </summary>
     public ColumnVectorizeAttribute(
         string serviceProvider,
         string serviceModelName,

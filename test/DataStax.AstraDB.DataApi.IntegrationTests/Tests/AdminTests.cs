@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
@@ -54,6 +55,10 @@ public class AdminTests
 	public async Task CheckDatabaseExistsByName()
 	{
 		var dbName = fixture.DatabaseName;
+		if (string.IsNullOrEmpty(dbName))
+		{
+			Console.WriteLine("Skipping CheckDatabaseExistsByName due to missing DATABASE_NAME param");
+		}
 
 		var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbName);
 		Assert.True(found);
@@ -217,7 +222,7 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_FindEmbeddingProvidersAsync()
 	{
-		var adminOptions = new CommandOptions
+		var adminOptions = new FindEmbeddingProvidersCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
@@ -235,6 +240,25 @@ public class AdminTests
 		}
 
 		var providers = result.EmbeddingProviders;
+
+		Assert.NotNull(providers);
+		Assert.NotEmpty(providers);
+	}
+
+	[SkipWhenNotAstra]
+	[Fact]
+	public async Task DatabaseAdminAstra_FindRerankingProvidersAsync()
+	{
+		var adminOptions = new FindRerankingProvidersCommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+			
+		};
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
+
+		var result = await daa.FindRerankingProvidersAsync(adminOptions, runSynchronously: false);
+		Assert.NotNull(result);
+		var providers = result.RerankingProviders;
 
 		Assert.NotNull(providers);
 		Assert.NotEmpty(providers);

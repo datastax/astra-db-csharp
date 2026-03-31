@@ -176,13 +176,21 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         serializeOptions ??= new JsonSerializerOptions();
+        serializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         serializeOptions.Converters.Add(new ObjectIdConverter());
         serializeOptions.Converters.Add(new DurationConverter());
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
+        serializeOptions.Converters.Add(new TimeUuidJsonConverter());
+#if NET6_0_OR_GREATER
+        serializeOptions.Converters.Add(new TimeOnlyConverter());
+        serializeOptions.Converters.Add(new TimeOnlyNullableConverter());
+#endif
         if (commandOptions.SerializeDateAsDollarDate == true)
         {
             serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset>());
             serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime>());
+            serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset?>());
+            serializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime?>());
         }
         else
         {
@@ -194,12 +202,12 @@ internal class Command
             serializeOptions.Converters.Add(new GuidConverter());
         }
         serializeOptions.Converters.Add(new IpAddressConverter());
-        
+
         if (commandOptions.SerializeIEEE754SpecialValues == true)
         {
             serializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         }
-        
+
         if (commandOptions.InputConverter != null)
         {
             serializeOptions.Converters.Add(commandOptions.InputConverter);
@@ -221,8 +229,14 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         var deserializeOptions = new JsonSerializerOptions();
+        deserializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         deserializeOptions.Converters.Add(new DurationConverter());
         deserializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
+        deserializeOptions.Converters.Add(new TimeUuidJsonConverter());
+#if NET6_0_OR_GREATER
+        deserializeOptions.Converters.Add(new TimeOnlyConverter());
+        deserializeOptions.Converters.Add(new TimeOnlyNullableConverter());
+#endif
         if (commandOptions.OutputConverter != null)
         {
             deserializeOptions.Converters.Add(commandOptions.OutputConverter);
@@ -236,6 +250,8 @@ internal class Command
         {
             deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset>());
             deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime>());
+            deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTimeOffset?>());
+            deserializeOptions.Converters.Add(new DateTimeAsDollarDateConverter<DateTime?>());
         }
         else
         {
@@ -253,7 +269,7 @@ internal class Command
         {
             deserializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         }
-        
+
         return JsonSerializer.Deserialize<T>(input, deserializeOptions);
     }
 
@@ -329,7 +345,7 @@ internal class Command
 
         var ctsForTimeout = new CancellationTokenSource();
         var requestTimeout = TimeoutManager.GetRequestTimeout(commandOptions);
-        if (requestTimeout.Milliseconds > 0)
+        if (requestTimeout.TotalMilliseconds > 0)
         {
             ctsForTimeout.CancelAfter(requestTimeout);
         }

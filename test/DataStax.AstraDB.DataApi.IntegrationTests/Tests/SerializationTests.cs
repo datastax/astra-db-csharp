@@ -34,7 +34,7 @@ public class SerializationTests
 				IntProperty = 1,
 				StringArrayProperty = new string[] { "One", "Two", "Three" },
 				BoolProperty = true,
-				DateTimeProperty = DateTime.Now,
+				DateTimeProperty = DateTime.UtcNow,
 				DateTimeOffsetProperty = DateTimeOffset.Now,
 				SkipWhenNull = null
 			}
@@ -66,7 +66,7 @@ public class SerializationTests
 				IntProperty = 1,
 				StringArrayProperty = new string[] { "One", "Two", "Three" },
 				BoolProperty = true,
-				DateTimeProperty = DateTime.Now,
+				DateTimeProperty = DateTime.UtcNow,
 				DateTimeOffsetProperty = DateTimeOffset.Now,
 				SkipWhenNull = null
 			}
@@ -89,7 +89,7 @@ public class SerializationTests
 	[Fact]
 	public void TestSpecific()
 	{
-		string serializationTestString = "{\"_id\":19,\"Name\":\"Animal19\",\"Properties\":{\"PropertyOne\":\"groupthree\",\"PropertyTwo\":\"animal19\",\"IntProperty\":20,\"StringArrayProperty\":[\"animal19\",\"animal119\",\"animal219\"],\"BoolProperty\":true,\"DateTimeProperty\":\"2019-05-19T00:00:00\",\"DateTimeOffsetProperty\":\"0001-01-01T00:00:00+00:00\"}}";
+		string serializationTestString = "{\"_id\":19,\"Name\":\"Animal19\",\"Properties\":{\"PropertyOne\":\"groupthree\",\"PropertyTwo\":\"animal19\",\"IntProperty\":20,\"StringArrayProperty\":[\"animal19\",\"animal119\",\"animal219\"],\"BoolProperty\":true,\"DateTimeProperty\":\"2019-05-19T00:00:00\",\"DateTimeOffsetProperty\":\"2001-01-01T00:00:00+00:00\"}}";
 		var collection = fixture.Database.GetCollection<SimpleObject>("serializationTest2");
 		var commandOptions = new CommandOptions()
 		{
@@ -168,4 +168,72 @@ public class SerializationTests
 		Assert.NotEmpty(deserialized.Status.DocumentResponses.First().Scores);
 	}
 
+	[Fact]
+	public void TimeUuid_TypedTest()
+	{
+		var serializationTestString = @"
+			{
+				""data"": {
+					""document"": {
+						""tuid"": ""a448ba80-1723-11f1-aedc-e7a263c8acfc"",
+						""id"": ""the_row""
+					}
+				},
+				""status"": {
+					""projectionSchema"": {
+						""id"": {
+							""type"": ""text""
+						},
+						""tuid"": {
+							""type"": ""timeuuid"",
+							""apiSupport"": {
+								""createTable"": false,
+								""insert"": true,
+								""read"": true,
+								""filter"": true,
+								""cqlDefinition"": ""timeuuid""
+							}
+						}
+					}
+				}
+			}
+		";
+		var commandOptions = new List<CommandOptions>
+		{
+			new CommandOptions()
+			{
+				OutputConverter = new DocumentConverter<TimeUuidObject>()
+			}
+		};
+		var command = new Command("deserializationTest", new DataAPIClient(), commandOptions.ToArray(), null);
+
+		var deserialized = command.Deserialize<ApiResponseWithData<DocumentResult<TimeUuidObject>, TableFindStatusResult>>(serializationTestString);
+		Assert.NotNull(deserialized);
+		Assert.NotNull(deserialized.Data);
+		Assert.NotNull(deserialized.Data.Document);
+		Assert.Equal(TimeUuid.Parse("a448ba80-1723-11f1-aedc-e7a263c8acfc"), deserialized.Data.Document.tuid);
+	}
+
+	[Fact]
+	public void Test_TimeOnly()
+	{
+		var serializationTestString = @"
+			{""TimestampWithKind"":""2026-03-26T21:30:03.269Z"",""Duration"":""P12Y3M1DT12H30M5.012007002S"",""Time"":""22:30:03.269601500"",""String"":""Test 3"",""Double"":1.7976931348623157E308,""Timestamp"":""2026-03-26T21:30:03.269Z"",""Int"":2147483647,""Date"":""2026-03-26"",""TinyInt"":255,""Float"":3.4028235E38,""Decimal"":79228162514264337593543950335,""MaybeDate"":""2026-03-26"",""BigInt"":9223372036854775807,""SmallInt"":32767,""Boolean"":false,""UUID"":""74cf37ac-db3f-49f5-abd2-3dcbf0add03c""}
+		";
+		var collection = fixture.Database.GetCollection<TypesTester>("serializationTest2");
+		var commandOptions = new CommandOptions()
+		{
+			OutputConverter = new DocumentConverter<TypesTester>()
+		};
+		var deserialized = collection.CheckDeserialization(serializationTestString, commandOptions);
+		Assert.Equal(TimeOnly.Parse("22:30:03.2696015"), deserialized.Time);
+	}
+
+
 }
+
+public class TimeUuidObject
+{
+	public string id { get; set; }
+	public TimeUuid tuid { get; set; }
+};

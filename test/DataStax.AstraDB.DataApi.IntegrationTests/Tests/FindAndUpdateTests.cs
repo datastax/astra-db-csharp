@@ -19,7 +19,7 @@ public class FindAndUpdateTests
     public async Task FindAndUpdateOne_DefaultReturnsOriginalDocument()
     {
         var collection = fixture.UpdatesCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Cat");
         var updater = Builders<SimpleObject>.Update;
         var update = updater.Set(so => so.Properties.PropertyTwo, "CatUpdated")
@@ -33,7 +33,7 @@ public class FindAndUpdateTests
     public async Task FindAndUpdateOne_ReturnsUpdatedDocument()
     {
         var collection = fixture.UpdatesCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Animal5");
         var updater = Builders<SimpleObject>.Update;
         var update = updater.Set(so => so.Properties.PropertyTwo, "Animal5Updated")
@@ -48,7 +48,7 @@ public class FindAndUpdateTests
     public async Task FindAndUpdateOne_WithInclusiveProjection()
     {
         var collection = fixture.UpdatesCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Horse");
         var updater = Builders<SimpleObject>.Update;
         var update = updater.Set(so => so.Properties.PropertyTwo, "HorseUpdated");
@@ -65,7 +65,7 @@ public class FindAndUpdateTests
     public async Task FindAndUpdateOne_WithExclusiveProjection()
     {
         var collection = fixture.UpdatesCollection;
-        var filter = Builders<SimpleObject>.Filter
+        var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Cow");
         var updater = Builders<SimpleObject>.Update;
         var combinedUpdate = updater.Set(so => so.Properties.PropertyTwo, "CowUpdated");
@@ -82,7 +82,7 @@ public class FindAndUpdateTests
     public async Task FindAndUpdateByIdString()
     {
         var collection = fixture.UpdatesCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq("_id", 4);
+        var filter = Builders<SimpleObject>.CollectionFilter.Eq("_id", 4);
         var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
         var update = Builders<SimpleObject>.Update.Set(so => so.Properties.PropertyTwo, "AlligatorUpdated");
         var result = await collection.FindOneAndUpdateAsync(filter, update, options);
@@ -93,7 +93,7 @@ public class FindAndUpdateTests
     public async Task FindOneAndUpdate_SetOnInsert()
     {
         var collection = fixture.UpdatesCollection;
-        var filter = Builders<SimpleObject>.Filter.Eq(so => so._id, 111);
+        var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 111);
         var update = Builders<SimpleObject>.Update.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
         var result = await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<SimpleObject> { IsUpsert = true, ReturnDocument = ReturnDocumentDirective.After });
         Assert.Equal(111, result._id);

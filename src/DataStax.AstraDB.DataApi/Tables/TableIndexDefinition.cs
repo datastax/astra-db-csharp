@@ -26,7 +26,6 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// </summary>
 public class TableIndexDefinition : TableBaseIndexDefinition
 {
-
     /// <summary>
     /// Should the index be case sensitive?
     /// </summary>

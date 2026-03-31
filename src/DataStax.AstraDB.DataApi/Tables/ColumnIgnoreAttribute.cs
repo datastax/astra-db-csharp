@@ -19,6 +19,9 @@ using System;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 
+/// <summary>
+/// Marks a property or field to be ignored when mapping to or from a table column.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
 public class ColumnIgnoreAttribute : Attribute
 {

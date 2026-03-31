@@ -28,6 +28,7 @@ namespace DataStax.AstraDB.DataApi.SerDes;
 /// </summary>
 public class IndexColumnConverter : JsonConverter<object>
 {
+    /// <inheritdoc />
     public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.String)
@@ -44,6 +45,7 @@ public class IndexColumnConverter : JsonConverter<object>
         throw new JsonException($"Unexpected token type {reader.TokenType} for column property.");
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
     {
         if (value == null)

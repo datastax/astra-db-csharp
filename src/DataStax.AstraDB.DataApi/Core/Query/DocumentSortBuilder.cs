@@ -76,6 +76,11 @@ public class DocumentSortBuilder<T> : SortBuilder<T>
     }
 
 
+    /// <summary>
+    /// Adds a sort by lexical relevance score using the specified search string.
+    /// </summary>
+    /// <param name="value">The search string for lexical (BM25) scoring.</param>
+    /// <returns>The sort builder.</returns>
     public DocumentSortBuilder<T> Lexical(string value)
     {
         Sorts.Add(Sort.Lexical(value));

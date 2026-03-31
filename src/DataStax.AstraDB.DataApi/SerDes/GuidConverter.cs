@@ -25,6 +25,9 @@ using System.Text.Json.Serialization;
 /// </summary>
 public class GuidConverter : JsonConverter<Guid>
 {
+    /// <summary>
+    /// Reads and converts JSON to a <see cref="Guid"/> value.
+    /// </summary>
     public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.StartObject)
@@ -75,6 +78,9 @@ public class GuidConverter : JsonConverter<Guid>
         }
     }
 
+    /// <summary>
+    /// Writes a <see cref="Guid"/> value as a JSON object with a <c>$uuid</c> property.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();

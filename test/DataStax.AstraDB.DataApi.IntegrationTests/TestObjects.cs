@@ -228,8 +228,8 @@ public class RowTestObject
     [ColumnVector(4)]
     public float[] Vector { get; set; }
     [ColumnPrimaryKey(3)]
-    [ColumnVectorize(serviceProvider: "nvidia", serviceModelName: "NV-Embed-QA", dimension: 1024)]
-    public object StringToVectorize { get; set; }
+    //[ColumnVectorize(serviceProvider: "nvidia", serviceModelName: "NV-Embed-QA", dimension: 1024)]
+    public string StringToVectorize { get; set; }
     [ColumnPrimaryKey(4)]
     public string Text { get; set; }
     public System.Net.IPAddress Inet { get; set; }
@@ -252,7 +252,6 @@ public class RowTestObject
     public HashSet<string> StringSet { get; set; }
     public HashSet<int> IntSet { get; set; }
     public List<string> StringList { get; set; }
-    //[JsonConverter(typeof(JsonStringConverter<List<Properties>>))]
     [ColumnJsonString]
     public List<Properties> ObjectList { get; set; }
     [ColumnPrimaryKey(12)]
@@ -263,6 +262,8 @@ public class RowTestObject
     public Guid UUID { get; set; }
     public byte[] Blob { get; set; }
     public Duration Duration { get; set; }
+    [ColumnIgnore]
+    public TimeUuid TimeUuid { get; set; }
 }
 
 public class MiniProperties
@@ -495,7 +496,7 @@ public class DoubleFloatTypeTest
     public Dictionary<float, double> FloatDoubleMap { get; set; }
     public List<float> FloatList { get; set; }
 }
-    
+
 public class SBook
 {
     [ColumnPrimaryKey()]
@@ -507,4 +508,28 @@ public class SBook
     public Dictionary<int, string> MapColumnIntStr { get; set; }
     [ColumnName("map_column_str_str")]
     public Dictionary<string, string> MapColumnStrStr { get; set; }
+}
+
+public class FloatingPointTest{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public float p_float_nan { get; set; }
+    public float p_float_pinf { get; set; }
+    public float p_float_minf { get; set; }
+    public double p_double_nan { get; set; }
+    public double p_double_pinf { get; set; }
+    public double p_double_minf { get; set; }
+    public double[] p_list_double { get; set; }
+    public List<double> p_set_double { get; set; }
+    public float[] p_list_float { get; set; }
+    public List<float> p_set_float { get; set; }
+}
+
+public class CollectionDatetimeObject
+{
+    [DocumentId]
+    public string _id {get; set;}
+    public DateTime dt_naive { get; set; }
+    public DateTime dt_aware { get; set; }
+    public DateTime dt_unspecified { get; set; }
 }

@@ -42,6 +42,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         private readonly CommandOptions _adminOptions;
         private readonly DataAPIClient _client;
         private CommandOptions[] _optionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
+        private static readonly CommandOptions _devOpsApiOptions = new CommandOptions { SerializeDateAsDollarDate = false };
 
         internal DatabaseAdminAstra(Database database, DataAPIClient client, CommandOptions adminOptions)
         {
@@ -153,7 +154,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <summary>
         /// Synchronous version of <see cref="CreateKeyspaceAsync(string)"/>
         /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         public void CreateKeyspace(string keyspace)
         {
             CreateKeyspace(keyspace, false);
@@ -218,7 +219,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, false, true, null);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <example>
@@ -231,7 +232,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, updateDBKeyspace, false, null);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
@@ -245,7 +246,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, updateDBKeyspace, waitForCompletion, null);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <example>
@@ -258,7 +259,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, false, false, options, false);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
@@ -272,7 +273,7 @@ namespace DataStax.AstraDB.DataApi.Admin
             return CreateKeyspaceAsync(keyspace, false, waitForCompletion, options, false);
         }
 
-        /// <inheritdoc cref="CreateKeyspaceAsync()"/>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
         /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace in the command options.</param>
         /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
@@ -542,7 +543,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// var providers = admin.FindEmbeddingProviders(options);
         /// </code>
         /// </example>
-        public FindEmbeddingProvidersResult FindEmbeddingProviders(CommandOptions options)
+        public FindEmbeddingProvidersResult FindEmbeddingProviders(FindEmbeddingProvidersCommandOptions options)
         {
             return FindEmbeddingProvidersAsync(options, true).ResultSync();
         }
@@ -560,17 +561,24 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// var providers = await admin.FindEmbeddingProvidersAsync(options);
         /// </code>
         /// </example>
-        public Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(CommandOptions options)
+        public Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersCommandOptions options)
         {
             return FindEmbeddingProvidersAsync(options, false);
         }
 
-        internal async Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(CommandOptions options, bool runSynchronously)
+        internal async Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersCommandOptions options, bool runSynchronously)
         {
             var command = CreateCommandEmbedding()
                .AddCommandOptions(options)
                .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-               .WithPayload(new { findEmbeddingProviders = new { } });
+               .WithPayload(new { findEmbeddingProviders = new
+                    {
+                        options = new
+                       {
+                           filterModelStatus = options.FilterModelStatus.ToString()
+                       }
+                    }
+               });
 
             var response = await command
                 .RunAsyncReturnStatus<FindEmbeddingProvidersResult>(runSynchronously)
@@ -579,100 +587,101 @@ namespace DataStax.AstraDB.DataApi.Admin
             return response.Result;
         }
         
-        // /// <summary>
-        // /// Finds and returns available reranking providers for the current database.
-        // /// </summary>
-        // /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
-        // /// <example>
-        // /// <code>
-        // /// var providers = admin.FindRerankingProviders();
-        // /// </code>
-        // /// </example>
-        // public FindRerankingProvidersResult FindRerankingProviders()
-        // {
-        //     return FindRerankingProvidersAsync(null, true).ResultSync();
-        // }
-        //
-        // /// <summary>
-        // /// Asynchronously finds and returns available reranking providers for the current database.
-        // /// </summary>
-        // /// <returns>
-        // /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
-        // /// </returns>
-        // /// <example>
-        // /// <code>
-        // /// var providers = await admin.FindRerankingProvidersAsync();
-        // /// </code>
-        // /// </example>
-        // public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync()
-        // {
-        //     return FindRerankingProvidersAsync(null, false);
-        // }
-        //
-        // /// <summary>
-        // /// Finds and returns available reranking providers for the current database using the specified command options.
-        // /// </summary>
-        // /// <param name="options">Optional settings that influence request execution.</param>
-        // /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
-        // /// <example>
-        // /// <code>
-        // /// var providers = admin.FindRerankingProviders(options);
-        // /// </code>
-        // /// </example>
-        // public FindRerankingProvidersResult FindRerankingProviders(FindRerankingProvidersCommandOptions options)
-        // {
-        //     return FindRerankingProvidersAsync(options, true).ResultSync();
-        // }
-        //
-        // /// <summary>
-        // /// Asynchronously finds and returns available reranking providers for the current database
-        // /// using the specified command options.
-        // /// </summary>
-        // /// <param name="options">Optional settings that influence request execution.</param>
-        // /// <returns>
-        // /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
-        // /// </returns>
-        // /// <example>
-        // /// <code>
-        // /// var providers = await admin.FindRerankingProvidersAsync(options);
-        // /// </code>
-        // /// </example>
-        // public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options)
-        // {
-        //     return FindRerankingProvidersAsync(options, false);
-        // }
-        //
-        // internal async Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options, bool runSynchronously)
-        // {
-        //     if (options == null)
-        //     {
-        //         options = new FindRerankingProvidersCommandOptions();
-        //     }
-        //     options.DeserializeToObjectDictionary = true;
-        //     var command = CreateCommandEmbedding()
-        //        .AddCommandOptions(options)
-        //        .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-        //        .WithPayload(new
-        //        {
-        //            findRerankingProviders = new
-        //            {
-        //                options = new
-        //                {
-        //                    filterModelStatus = options.StatusString
-        //                }
-        //            }
-        //        });
-        //
-        //     var response = await command
-        //         .RunAsyncReturnStatus<FindRerankingProvidersResult>(runSynchronously)
-        //         .ConfigureAwait(false);
-        //
-        //     return response.Result;
-        // }
+        /// <summary>
+        /// Finds and returns available reranking providers for the current database.
+        /// </summary>
+        /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
+        /// <example>
+        /// <code>
+        /// var providers = admin.FindRerankingProviders();
+        /// </code>
+        /// </example>
+        public FindRerankingProvidersResult FindRerankingProviders()
+        {
+            return FindRerankingProvidersAsync(null, true).ResultSync();
+        }
+        
+        /// <summary>
+        /// Asynchronously finds and returns available reranking providers for the current database.
+        /// </summary>
+        /// <returns>
+        /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var providers = await admin.FindRerankingProvidersAsync();
+        /// </code>
+        /// </example>
+        public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync()
+        {
+            return FindRerankingProvidersAsync(null, false);
+        }
+        
+        /// <summary>
+        /// Finds and returns available reranking providers for the current database using the specified command options.
+        /// </summary>
+        /// <param name="options">Optional settings that influence request execution.</param>
+        /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
+        /// <example>
+        /// <code>
+        /// var providers = admin.FindRerankingProviders(options);
+        /// </code>
+        /// </example>
+        public FindRerankingProvidersResult FindRerankingProviders(FindRerankingProvidersCommandOptions options)
+        {
+            return FindRerankingProvidersAsync(options, true).ResultSync();
+        }
+        
+        /// <summary>
+        /// Asynchronously finds and returns available reranking providers for the current database
+        /// using the specified command options.
+        /// </summary>
+        /// <param name="options">Optional settings that influence request execution.</param>
+        /// <returns>
+        /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
+        /// </returns>
+        /// <example>
+        /// <code>
+        /// var providers = await admin.FindRerankingProvidersAsync(options);
+        /// </code>
+        /// </example>
+        public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options)
+        {
+            return FindRerankingProvidersAsync(options, false);
+        }
+        
+        internal async Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options, bool runSynchronously)
+        {
+            if (options == null)
+            {
+                options = new FindRerankingProvidersCommandOptions();
+            }
+            options.DeserializeToObjectDictionary = true;
+            var command = CreateCommandEmbedding()
+               .AddCommandOptions(options)
+               .WithTimeoutManager(new DatabaseAdminTimeoutManager())
+               .WithPayload(new
+               {
+                   findRerankingProviders = new
+                   {
+                       options = new
+                       {
+                           filterModelStatus = options.FilterModelStatus.ToString()
+                       }
+                   }
+               });
+        
+            var response = await command
+                .RunAsyncReturnStatus<FindRerankingProvidersResult>(runSynchronously)
+                .ConfigureAwait(false);
+        
+            return response.Result;
+        }
 
         private Command CreateCommandAdmin()
         {
-            return new Command(_database.Client, _optionsTree, new AdminCommandUrlBuilder());
+            var options = _optionsTree.Concat(new[] { _devOpsApiOptions }).ToArray();
+            return new Command(_database.Client, options, new AdminCommandUrlBuilder());
         }
 
         private Command CreateCommandEmbedding()

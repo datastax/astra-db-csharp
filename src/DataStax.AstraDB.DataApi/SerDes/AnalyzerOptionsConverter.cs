@@ -22,8 +22,15 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.SerDes;
 
 
+/// <summary>
+/// JSON converter for <see cref="AnalyzerOptions"/>, supporting both shorthand (string tokenizer name)
+/// and full object representations used in text/lexical search configuration.
+/// </summary>
 public class AnalyzerOptionsConverter : JsonConverter<AnalyzerOptions>
 {
+    /// <summary>
+    /// Reads and converts JSON (either a string shorthand or full object) to an <see cref="AnalyzerOptions"/> value.
+    /// </summary>
     public override AnalyzerOptions Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.String)
@@ -41,6 +48,9 @@ public class AnalyzerOptionsConverter : JsonConverter<AnalyzerOptions>
         throw new JsonException("Unexpected token type for AnalyzerOptions");
     }
 
+    /// <summary>
+    /// Writes an <see cref="AnalyzerOptions"/> value as JSON.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, AnalyzerOptions value, JsonSerializerOptions options)
     {
         JsonSerializer.Serialize(writer, value, options);

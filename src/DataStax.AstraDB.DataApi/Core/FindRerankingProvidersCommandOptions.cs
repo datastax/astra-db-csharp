@@ -17,50 +17,12 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Status filter for reranking providers.
-/// </summary>
-public enum RerankingProviderStatus
-{
-  /// <summary>
-  /// Only supported providers (default)
-  /// </summary>
-  Supported,
-  /// <summary>
-  /// Only deprecated providers
-  /// </summary>
-  Deprecated,
-  /// <summary>
-  /// Only end-of-life providers
-  /// </summary>
-  EndOfLife,
-  /// <summary>
-  /// All providers
-  /// </summary>
-  All
-}
-
-/// <summary>
 /// Options for Find Reranking Providers command.
 /// </summary>
 public class FindRerankingProvidersCommandOptions : CommandOptions
 {
   /// <summary>
-  /// Filter reranking providers by status.
+  /// Filter reranking providers by status, defaults to "Supported".
   /// </summary>
-  public RerankingProviderStatus Status { get; set; } = RerankingProviderStatus.Supported;
-
-  internal string StatusString
-  {
-    get
-    {
-      return Status switch
-      {
-        RerankingProviderStatus.Supported => "SUPPORTED",
-        RerankingProviderStatus.Deprecated => "DEPRECATED",
-        RerankingProviderStatus.EndOfLife => "END_OF_LIFE",
-        RerankingProviderStatus.All => "",
-        _ => "SUPPORTED",
-      };
-    }
-  }
+  public ModelLifecycleStatus FilterModelStatus { get; set; } = ModelLifecycleStatus.Supported;
 }
