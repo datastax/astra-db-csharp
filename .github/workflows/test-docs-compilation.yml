@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   test-compilation:
     runs-on: ubuntu-latest
@@ -21,9 +25,23 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Run compilation tests
+        id: compile_step
+        continue-on-error: true
         uses: datastax/astra-client-docs-tests/.github/actions/test-compilation@master
         with:
           clients: 'csharp'
           args: -A csharp='<ProjectReference Include=\"${{ github.workspace }}/src/DataStax.AstraDB.DataApi/DataStax.AstraDB.DataApi.csproj\"/>'
           docs-repo-token: ${{ secrets.DOC_GITHUB_PAT_CROSS_ORG }}
           docs-repo: '@ske-csharp-client'
+
+      - name: Label PR in failure
+        uses: actions-ecosystem/action-add-labels@v1
+        if: steps.compile_step.outcome == 'failure' && github.event_name == 'pull_request'
+        with:
+          labels: Breaks Docs Compilation Tests
+
+      - name: Remove label on success
+        uses: actions-ecosystem/action-remove-labels@v1
+        if: steps.compile_step.outcome == 'success' && github.event_name == 'pull_request'
+        with:
+          labels: Breaks Docs Compilation Tests
