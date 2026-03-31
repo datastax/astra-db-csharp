@@ -522,12 +522,13 @@ namespace DataStax.AstraDB.DataApi.Admin
                 .AddCommandOptions(options)
                 .WithTimeoutManager(new DatabaseAdminTimeoutManager())
                 .WithPayload(new { findEmbeddingProviders = new
-                {
-                    options = new
-                       {
-                           filterModelStatus = options.FilterModelStatus.ToString()
-                       }
-                } });
+                    {
+                        options = new
+                        {
+                            filterModelStatus = options.FilterModelStatus.ToApiString()
+                        }
+                    }
+                });
 
             var response = await command
                 .RunAsyncReturnStatus<FindEmbeddingProvidersResult>(runSynchronously)
@@ -609,12 +610,13 @@ namespace DataStax.AstraDB.DataApi.Admin
                 .AddCommandOptions(options)
                 .WithTimeoutManager(new DatabaseAdminTimeoutManager())
                 .WithPayload(new { findRerankingProviders = new
-                {
-                    options = new
-                       {
-                           filterModelStatus = options.FilterModelStatus.ToString()
-                       }
-                } });
+                    {
+                        options = new
+                        {
+                            filterModelStatus = options.FilterModelStatus.ToApiString()
+                        }
+                    }
+                });
 
             var response = await command
                 .RunAsyncReturnStatus<FindRerankingProvidersResult>(runSynchronously)

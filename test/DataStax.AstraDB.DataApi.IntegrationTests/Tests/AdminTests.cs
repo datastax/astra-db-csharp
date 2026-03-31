@@ -222,46 +222,272 @@ public class AdminTests
 	[Fact]
 	public async Task DatabaseAdminAstra_FindEmbeddingProvidersAsync()
 	{
-		var adminOptions = new FindEmbeddingProvidersCommandOptions
-		{
+
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = await daa.FindEmbeddingProvidersAsync();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.EmbeddingProviders);
+
+		// options with token
+		var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.EmbeddingProviders);
+
+		// options with token and filter
+		var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
 			Token = fixture.Client.ClientOptions.Token,
-		};
-		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.EmbeddingProviders);
 
-		var result = await daa.FindEmbeddingProvidersAsync(adminOptions, runSynchronously: false);
-		Assert.NotNull(result);
-		if (result.EmbeddingProviders.Count == 0)
-		{
-			Console.WriteLine("No embedding providers returned.");
-		}
-		else
-		{
-			Assert.NotEmpty(result.EmbeddingProviders);
-		}
+		// options with filter
+		var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.EmbeddingProviders);
 
-		var providers = result.EmbeddingProviders;
+	}
 
-		Assert.NotNull(providers);
-		Assert.NotEmpty(providers);
+	[SkipWhenNotAstra]
+	[Fact]
+	public void DatabaseAdminAstra_FindEmbeddingProvidersSync()
+	{
+
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = daa.FindEmbeddingProviders();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.EmbeddingProviders);
+
+		// options with token
+		var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.EmbeddingProviders);
+
+		// options with token and filter
+		var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token,
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.EmbeddingProviders);
+
+		// options with filter
+		var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.EmbeddingProviders);
+
 	}
 
 	[SkipWhenNotAstra]
 	[Fact]
 	public async Task DatabaseAdminAstra_FindRerankingProvidersAsync()
 	{
-		var adminOptions = new FindRerankingProvidersCommandOptions
-		{
+
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = await daa.FindRerankingProvidersAsync();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.RerankingProviders);
+
+		// options with token
+		var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.RerankingProviders);
+
+		// options with token and filter
+		var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
 			Token = fixture.Client.ClientOptions.Token,
-			
-		};
-		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.RerankingProviders);
 
-		var result = await daa.FindRerankingProvidersAsync(adminOptions, runSynchronously: false);
-		Assert.NotNull(result);
-		var providers = result.RerankingProviders;
+		// options with filter
+		var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.RerankingProviders);
 
-		Assert.NotNull(providers);
-		Assert.NotEmpty(providers);
+	}
+
+	[SkipWhenNotAstra]
+	[Fact]
+	public void DatabaseAdminAstra_FindRerankingProvidersSync()
+	{
+
+		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = daa.FindRerankingProviders();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.RerankingProviders);
+
+		// options with token
+		var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.RerankingProviders);
+
+		// options with token and filter
+		var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token,
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.RerankingProviders);
+
+		// options with filter
+		var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.RerankingProviders);
+
+	}
+
+	// [SkipWhenAstra]
+	[Fact]
+	public async Task DatabaseAdminDataAPI_FindEmbeddingProvidersAsync()
+	{
+
+		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = await daa.FindEmbeddingProvidersAsync();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.EmbeddingProviders);
+
+		// options with token
+		var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.EmbeddingProviders);
+
+		// options with token and filter
+		var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token,
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.EmbeddingProviders);
+
+		// options with filter
+		var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.EmbeddingProviders);
+
+	}
+
+	// [SkipWhenAstra]
+	[Fact]
+	public void DatabaseAdminDataAPI_FindEmbeddingProvidersSync()
+	{
+
+		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = daa.FindEmbeddingProviders();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.EmbeddingProviders);
+
+		// options with token
+		var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.EmbeddingProviders);
+
+		// options with token and filter
+		var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token,
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.EmbeddingProviders);
+
+		// options with filter
+		var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.EmbeddingProviders);
+
+	}
+
+	// [SkipWhenAstra]
+	[Fact]
+	public async Task DatabaseAdminDataAPI_FindRerankingProvidersAsync()
+	{
+
+		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = await daa.FindRerankingProvidersAsync();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.RerankingProviders);
+
+		// options with token
+		var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.RerankingProviders);
+
+		// options with token and filter
+		var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token,
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.RerankingProviders);
+
+		// options with filter
+		var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.RerankingProviders);
+
+	}
+
+	// [SkipWhenAstra]
+	[Fact]
+	public void DatabaseAdminDataAPI_FindRerankingProvidersSync()
+	{
+
+		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client,
+			new CommandOptions { Token = fixture.Client.ClientOptions.Token });
+
+		// no options
+		var result_no = daa.FindRerankingProviders();
+		Assert.NotNull(result_no);
+		Assert.NotNull(result_no.RerankingProviders);
+
+		// options with token
+		var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token });
+		Assert.NotNull(result_tk);
+		Assert.NotNull(result_tk.RerankingProviders);
+
+		// options with token and filter
+		var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+			Token = fixture.Client.ClientOptions.Token,
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_tf);
+		Assert.NotNull(result_tf.RerankingProviders);
+
+		// options with filter
+		var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+			FilterModelStatus = ModelLifecycleStatus.EndOfLife });
+		Assert.NotNull(result_fi);
+		Assert.NotNull(result_fi.RerankingProviders);
+
 	}
 
 	[SkipWhenNotAstra]

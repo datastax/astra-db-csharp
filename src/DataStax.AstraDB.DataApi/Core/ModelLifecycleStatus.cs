@@ -41,7 +41,7 @@ public enum ModelLifecycleStatus
 
 internal static class Extensions
 {
-    internal static string ToString(ModelLifecycleStatus status)
+    internal static string ToApiString(this ModelLifecycleStatus status)
     {
         return status switch
       {

@@ -568,17 +568,21 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         internal async Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersCommandOptions options, bool runSynchronously)
         {
+            if (options == null)
+            {
+                options = new FindEmbeddingProvidersCommandOptions();
+            }
             var command = CreateCommandEmbedding()
-               .AddCommandOptions(options)
-               .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-               .WithPayload(new { findEmbeddingProviders = new
+                .AddCommandOptions(options)
+                .WithTimeoutManager(new DatabaseAdminTimeoutManager())
+                .WithPayload(new { findEmbeddingProviders = new
                     {
                         options = new
-                       {
-                           filterModelStatus = options.FilterModelStatus.ToString()
-                       }
+                        {
+                            filterModelStatus = options.FilterModelStatus.ToApiString()
+                        }
                     }
-               });
+                });
 
             var response = await command
                 .RunAsyncReturnStatus<FindEmbeddingProvidersResult>(runSynchronously)
@@ -660,16 +664,14 @@ namespace DataStax.AstraDB.DataApi.Admin
             var command = CreateCommandEmbedding()
                .AddCommandOptions(options)
                .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-               .WithPayload(new
-               {
-                   findRerankingProviders = new
-                   {
-                       options = new
-                       {
-                           filterModelStatus = options.FilterModelStatus.ToString()
-                       }
-                   }
-               });
+               .WithPayload(new { findRerankingProviders = new
+                    {
+                        options = new
+                        {
+                            filterModelStatus = options.FilterModelStatus.ToApiString()
+                        }
+                    }
+                });
         
             var response = await command
                 .RunAsyncReturnStatus<FindRerankingProvidersResult>(runSynchronously)
