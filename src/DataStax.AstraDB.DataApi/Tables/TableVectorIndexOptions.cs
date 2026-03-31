@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Utils;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -22,17 +23,23 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
-/// Configuration used to create an index on a table column
+/// Options for creating a vector index on a table column
 /// </summary>
-public class TableIndexDefinition : TableBaseIndexDefinition
+public class TableVectorIndexOptions
 {
 
     /// <summary>
-    /// Options for the index.
+    /// The similarity metric to use
     /// </summary>
-    [JsonPropertyName("options")]
+    [JsonPropertyName("metric")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public TableIndexOptions Options { get; set; }
+    public SimilarityMetric? Metric { get; set; }
 
-    internal override string IndexCreationCommandName => "createIndex";
+    /// <summary>
+    /// The source model
+    /// </summary>
+    [JsonPropertyName("sourceModel")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string SourceModel { get; set; }
+
 }

@@ -106,7 +106,7 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
             string indexName = "category_idx";
-            var indexDefinition = new TableIndexDefinition() { Ascii = true,  CaseSensitive = true, Normalize = true };
+            var indexDefinition = new TableIndexDefinition() { Options = new TableIndexOptions { Ascii = true,  CaseSensitive = true, Normalize = true } };
 
             // first creation (should succeed)
             await table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition);
@@ -130,9 +130,10 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.Equal("category", foundIndex.Definition.Column);
             Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
-            Assert.True(((TableIndexDefinition)foundIndex.Definition).Ascii);
-            Assert.True(((TableIndexDefinition)foundIndex.Definition).CaseSensitive);
-            Assert.True(((TableIndexDefinition)foundIndex.Definition).Normalize);
+            var foundOptions = ((TableIndexDefinition)foundIndex.Definition).Options;
+            Assert.True(foundOptions.Ascii);
+            Assert.True(foundOptions.CaseSensitive);
+            Assert.True(foundOptions.Normalize);
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
@@ -151,7 +152,7 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
             string indexName = "category_idx";
-            var indexDefinition = new TableIndexDefinition() { Ascii = true,  CaseSensitive = true, Normalize = true };
+            var indexDefinition = new TableIndexDefinition() { Options = new TableIndexOptions { Ascii = true,  CaseSensitive = true, Normalize = true} };
 
             table.CreateIndex(indexName, (b) => b.Category, indexDefinition);
 
@@ -160,9 +161,10 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.Equal("category", foundIndex.Definition.Column);
             Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
-            Assert.True(((TableIndexDefinition)foundIndex.Definition).Ascii);
-            Assert.True(((TableIndexDefinition)foundIndex.Definition).CaseSensitive);
-            Assert.True(((TableIndexDefinition)foundIndex.Definition).Normalize);
+            var foundOptions = ((TableIndexDefinition)foundIndex.Definition).Options;
+            Assert.True(foundOptions.Ascii);
+            Assert.True(foundOptions.CaseSensitive);
+            Assert.True(foundOptions.Normalize);
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
@@ -200,7 +202,7 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_MapIndex_Entries()
+    public async Task CreateIndexTests_MapIndex_EntriesExplicitly()
     {
         var tableName = "tableIndexesTest_MapIndex_Entries";
         string indexName = "map_e_idx";
@@ -332,7 +334,7 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_VectorIndex_PartialOptions()
+    public async Task CreateIndexTests_VectorIndex_PartialOptionsM()
     {
         var tableName = "tableIndexesTest_VectorIndex_PartialOptions";
         string indexName = "vector_idx_ptopt";
@@ -349,7 +351,8 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableVectorIndexDefinition>(foundIndex.Definition);
             Assert.Equal("VectorEmbeddings", foundIndex.Definition.Column);
-            Assert.Equal(SimilarityMetric.DotProduct, ((TableVectorIndexDefinition)foundIndex.Definition).Metric);
+            var foundOptions = ((TableVectorIndexDefinition)foundIndex.Definition).Options;
+            Assert.Equal(SimilarityMetric.DotProduct, foundOptions.Metric);
 
         }
         finally
@@ -360,7 +363,7 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_VectorIndex_PartialSMOptions()
+    public async Task CreateIndexTests_VectorIndex_PartialOptionsSM()
     {
         var tableName = "tableIndexesTest_VectorIndex_PartialSMOptions";
         string indexName = "vector_idx_ptsmopt";
@@ -376,7 +379,8 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableVectorIndexDefinition>(foundIndex.Definition);
             Assert.Equal("VectorEmbeddings", foundIndex.Definition.Column);
-            Assert.Equal("bert", ((TableVectorIndexDefinition)foundIndex.Definition).SourceModel);
+            var foundOptions = ((TableVectorIndexDefinition)foundIndex.Definition).Options;
+            Assert.Equal("bert", foundOptions.SourceModel);
 
         }
         finally
@@ -404,8 +408,9 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableVectorIndexDefinition>(foundIndex.Definition);
             Assert.Equal("VectorEmbeddings", foundIndex.Definition.Column);
-            Assert.Equal("bert", ((TableVectorIndexDefinition)foundIndex.Definition).SourceModel);
-            Assert.Equal(SimilarityMetric.Euclidean, ((TableVectorIndexDefinition)foundIndex.Definition).Metric);
+            var foundOptions = ((TableVectorIndexDefinition)foundIndex.Definition).Options;
+            Assert.Equal("bert", foundOptions.SourceModel);
+            Assert.Equal(SimilarityMetric.Euclidean, foundOptions.Metric);
 
         }
         finally
@@ -487,7 +492,8 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
             Assert.Equal("Name", foundIndex.Definition.Column);
-            Assert.Equal("whitespace", ((TableTextIndexDefinition)foundIndex.Definition).Analyzer);
+            var foundOptions = ((TableTextIndexDefinition)foundIndex.Definition).Options;
+            Assert.Equal("whitespace", foundOptions.Analyzer);
 
         }
         finally
@@ -515,7 +521,8 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
             Assert.Equal("Name", foundIndex.Definition.Column);
-            Assert.Equal("whitespace", ((TableTextIndexDefinition)foundIndex.Definition).Analyzer);
+            var foundOptions = ((TableTextIndexDefinition)foundIndex.Definition).Options;
+            Assert.Equal("whitespace", foundOptions.Analyzer);
 
         }
         finally
@@ -553,7 +560,8 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
             Assert.Equal("Name", foundIndex.Definition.Column);
-            var theAnalyzer = ((TableTextIndexDefinition)foundIndex.Definition).Analyzer;
+            var foundOptions = ((TableTextIndexDefinition)foundIndex.Definition).Options;
+            var theAnalyzer = foundOptions.Analyzer;
             Assert.Equal(
                 new Dictionary<string, object>{["name"] = "standard", ["args"] = new Dictionary<string, string>()},
                 ((Dictionary<string, object>)theAnalyzer)["tokenizer"]
@@ -593,7 +601,8 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableTextIndexDefinition>(foundIndex.Definition);
             Assert.Equal("Name", foundIndex.Definition.Column);
-            var theAnalyzer = ((TableTextIndexDefinition)foundIndex.Definition).Analyzer;
+            var foundOptions = ((TableTextIndexDefinition)foundIndex.Definition).Options;
+            var theAnalyzer = foundOptions.Analyzer;
             Assert.Equal(
                 new Dictionary<string, string>{["name"] = "whitespace"},
                 ((Dictionary<string, object>)theAnalyzer)["tokenizer"]
@@ -607,6 +616,7 @@ public class TableIndexesTests
 
     }
 
+    // [SkipWhenAstra] // TODO: reinstate this attribute once 115 is merged
     [Fact(Skip="Run manually on HCD after some CQL setup!")]
     public async Task ListIndexesTests_UnknownUnsupportedCQLIndex()
     {
@@ -648,7 +658,6 @@ public class TableIndexesTests
         Assert.NotNull(foundIndex);
         Assert.IsType<TableUnknownIndexDefinition>(foundIndex.Definition);
         Assert.Equal("UNKNOWN", foundIndex.Definition.Column);
-        Assert.Null(foundIndex.Definition.Options);
         var apiSupport = ((TableUnknownIndexDefinition)foundIndex.Definition).APISupport;
         Assert.IsType<TableUnknownIndexAPISupport>(apiSupport);
         Assert.False(apiSupport.CreateIndex);

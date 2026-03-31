@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
@@ -23,18 +24,18 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// </summary>
 public enum MapIndexType
 {
-  /// <summary>
-  /// Index the keys of the map.
-  /// </summary>
-  Keys,
-  /// <summary>
-  /// Index the values of the map.
-  /// </summary>
-  Values,
-  /// <summary>
-  /// Index the entries of the map.
-  /// </summary>
-  Entries
+    /// <summary>
+    /// Index the keys of the map.
+    /// </summary>
+    Keys,
+    /// <summary>
+    /// Index the values of the map.
+    /// </summary>
+    Values,
+    /// <summary>
+    /// Index the entries of the map.
+    /// </summary>
+    Entries
 }
 
 /// <summary>
@@ -43,35 +44,36 @@ public enum MapIndexType
 public class TableMapIndexDefinition : TableIndexDefinition
 {
 
-  internal TableMapIndexDefinition(MapIndexType indexType)
-  {
-    IndexType = indexType;
-  }
-
-  /// <summary>
-  /// The column to index.
-  /// </summary>
-  public override object Column
-  {
-    get
+    internal TableMapIndexDefinition(MapIndexType indexType)
     {
-      if (IndexType == MapIndexType.Entries)
-      {
-        return ColumnName;
-      }
-      string indexTypeToken = IndexType switch
-      {
-        MapIndexType.Values => "$values",
-        MapIndexType.Keys => "$keys",
-        _ => throw new System.InvalidOperationException("Invalid MapIndexType")
-      };
-      return new Dictionary<string, string>
-      {
-        [ColumnName] = indexTypeToken
-      };
+        IndexType = indexType;
     }
-  }
 
-  internal MapIndexType IndexType { get; set; }
+    /// <summary>
+    /// The column to index.
+    /// </summary>
+    [JsonPropertyName("column")]
+    public override object Column
+    {
+        get
+        {
+            if (IndexType == MapIndexType.Entries)
+            {
+                return ColumnName;
+            }
+            string indexTypeToken = IndexType switch
+            {
+                MapIndexType.Values => "$values",
+                MapIndexType.Keys => "$keys",
+                _ => throw new System.InvalidOperationException("Invalid MapIndexType")
+            };
+            return new Dictionary<string, string>
+            {
+                [ColumnName] = indexTypeToken
+            };
+        }
+    }
+
+    internal MapIndexType IndexType { get; set; }
 
 }
