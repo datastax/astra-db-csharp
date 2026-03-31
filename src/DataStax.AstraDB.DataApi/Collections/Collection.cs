@@ -63,7 +63,7 @@ public class Collection<T> : Collection<T, object> where T : class
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <typeparam name="TId">The type of the id field for documents in the collection.</typeparam>
-public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where T : class
+public class Collection<T, TId> where T : class
 {
     private readonly string _collectionName;
     private readonly Database _database;
@@ -716,9 +716,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return new FindEnumerator<T, TResult, DocumentSortBuilder<T>>(this, findOptions, commandOptions);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        findOptions.Filter = filter;
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnDocumentData<ApiFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response;
@@ -2110,8 +2109,8 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _collectionName));
     }
 
-    Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, DocumentSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        return RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously);
-    }
+    // Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, DocumentSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    // {
+    //     return RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously);
+    // }
 }

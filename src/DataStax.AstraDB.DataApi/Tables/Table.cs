@@ -37,7 +37,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// This is the main entry point for interacting with a table in the Astra DB Data API.
 /// </summary>
 /// <typeparam name="T">The type to use for rows in the table (when not specified, defaults to <see cref="Row"/> </typeparam>
-public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
+public class Table<T> where T : class
 {
     private readonly string _tableName;
     private readonly Database _database;
@@ -927,16 +927,9 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return new FindEnumerator<T, TResult, TableSortBuilder<T>>(this, findOptions, commandOptions);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, TableFindStatusResult>> RunFindManyAsync<TResult>(
-            Filter<T> filter,
-            IFindManyOptions<T,
-            TableSortBuilder<T>> findOptions,
-            CommandOptions commandOptions,
-            bool runSynchronously
-    )
-        where TResult : class
+    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, TableFindStatusResult>> RunFindManyAsync<TResult>( IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+        where TResult : class 
     {
-        findOptions.Filter = filter;
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
@@ -1649,17 +1642,5 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     {
         var optionsTree = GetOptionsTree().ToArray();
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _tableName));
-    }
-
-    async Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, TableSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, TableSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        var result = await RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously).ConfigureAwait(false);
-        return new ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>
-        {
-            Data = result.Data,
-            Status = result.Status,
-            Errors = result.Errors,
-            Warnings = result.Warnings
-        };
     }
 }
