@@ -747,12 +747,10 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions.IsOrdered, insertOptions.ReturnDocumentResponses, commandOptions, runSynchronously).ConfigureAwait(false);
-                            lock (result.InsertedIds)
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions.IsOrdered, commandOptions, runSynchronously).ConfigureAwait(false);
+                            lock (result.InsertedIdTuples)
                             {
-                                result.PrimaryKeys = runResult.PrimaryKeys;
-                                result.InsertedIds.AddRange(runResult.InsertedIds);
-                                result.DocumentResponses.AddRange(runResult.DocumentResponses);
+                                result.InsertedIdTuples.AddRange(runResult.InsertedIdTuples);
                             }
                         }
                         finally
@@ -778,7 +776,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         }
     }
 
-    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, bool insertOrdered, bool returnDocumentResponses, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
     {
         var payload = new
         {
@@ -786,7 +784,6 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
             options = new
             {
                 ordered = insertOrdered,
-                returnDocumentResponses
             }
         };
         commandOptions = SetRowSerializationOptions<T>(commandOptions, true);

@@ -130,7 +130,7 @@ public class SerializationTests
 		var command = new Command("deserializationTest", new DataAPIClient(), commandOptions, null);
 		var deserialized = command.Deserialize<TableInsertManyResult>(serializationTestString);
 		Assert.Equal("text", deserialized.PrimaryKeys["Name"].Type);
-		Assert.Equal("Test", deserialized.InsertedIds.First().First().ToString());
+		Assert.Equal("Test", deserialized.InsertedIdTuples.First().First().ToString());
 	}
 
 	[Fact]

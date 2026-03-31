@@ -48,7 +48,7 @@ public class AdditionalTableTests
             var table = await fixture.Database.CreateTableAsync<ArrayTestRow>(tableName);
             await table.CreateIndexAsync("StringArray_idx", (b) => b.StringArray);
             var insertResult = await table.InsertManyAsync(items);
-            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
             var findOptions = new TableFindOptions<ArrayTestRow>()
             {
                 Filter = Builders<ArrayTestRow>.TableFilter.In(x => x.StringArray, new string[] { "five" }),

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.Tables;
 using System;
 using System.Collections.Generic;
@@ -42,7 +41,6 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
 
         var result = new T();
         JsonDocument insertedIdsDoc = null;
-        JsonDocument documentResponsesDoc = null;
 
         while (reader.Read())
         {
@@ -51,14 +49,8 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
                 // Process insertedIds after all properties are read
                 if (insertedIdsDoc != null && result.PrimaryKeys.Count > 0)
                 {
-                    result.InsertedIds = DeserializeInsertedIds(insertedIdsDoc, result.PrimaryKeys, options);
+                    result.InsertedIdTuples = DeserializeInsertedIds(insertedIdsDoc, result.PrimaryKeys, options);
                     insertedIdsDoc.Dispose();
-                }
-                // Process documentResponses after all properties are read
-                if (documentResponsesDoc != null && result.PrimaryKeys.Count > 0)
-                {
-                    result.DocumentResponses = DeserializeDocumentResponses(documentResponsesDoc, result.PrimaryKeys, options);
-                    documentResponsesDoc.Dispose();
                 }
                 return result;
             }
@@ -78,11 +70,6 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
             {
                 // Capture raw JSON for insertedIds
                 insertedIdsDoc = JsonDocument.ParseValue(ref reader);
-            }
-            else if (propertyName == "documentResponses")
-            {
-                // Capture raw JSON for documentResponses
-                documentResponsesDoc = JsonDocument.ParseValue(ref reader);
             }
             else
             {
@@ -129,55 +116,6 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
         return insertedIds;
     }
 
-    private List<DocumentInsertResult> DeserializeDocumentResponses(JsonDocument documentResponsesDoc, Dictionary<string, PrimaryKeySchema> primaryKeys, JsonSerializerOptions options)
-    {
-        var documentResponses = new List<DocumentInsertResult>();
-        if (documentResponsesDoc.RootElement.ValueKind != JsonValueKind.Array)
-            throw new JsonException("Expected array for documentResponses");
-
-        foreach (var responseElement in documentResponsesDoc.RootElement.EnumerateArray())
-        {
-            if (responseElement.ValueKind != JsonValueKind.Object)
-                throw new JsonException("Expected object for documentResponses item");
-
-            var docResult = new DocumentInsertResult();
-            foreach (var property in responseElement.EnumerateObject())
-            {
-                if (property.Name == "_id")
-                {
-                    if (property.Value.ValueKind != JsonValueKind.Array)
-                        throw new JsonException("Expected array for _id");
-
-                    var ids = new List<object>();
-                    int index = 0;
-                    foreach (var idElement in property.Value.EnumerateArray())
-                    {
-                        if (index >= primaryKeys.Count)
-                            throw new JsonException("More values in _id than schema fields");
-
-                        var fieldName = primaryKeys.Keys.ElementAt(index);
-                        var schema = primaryKeys[fieldName];
-                        object value = DeserializeValue(idElement, schema, options);
-                        ids.Add(value);
-                        index++;
-                    }
-
-                    if (index != primaryKeys.Count)
-                        throw new JsonException("Fewer values in _id than schema fields");
-
-                    docResult.Ids = ids;
-                }
-                else if (property.Name == "status")
-                {
-                    docResult.Status = property.Value.GetString()!;
-                }
-            }
-            documentResponses.Add(docResult);
-        }
-
-        return documentResponses;
-    }
-
     private object DeserializeValue(JsonElement element, PrimaryKeySchema schema, JsonSerializerOptions options)
     {
         try
@@ -188,7 +126,7 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
                 case "ascii":
                     return element.GetString()!;
                 case "vector":
-                    var floatList = JsonSerializer.Deserialize<List<float>>(element, options)!;
+                    var floatList = element.Deserialize<List<float>>(options)!;
                     return floatList.ToArray();
                 case "int":
                     return element.GetInt32();
@@ -197,7 +135,7 @@ internal class TableInsertResultConverter<T> : JsonConverter<T> where T : TableI
                 case "decimal":
                     return element.GetDecimal();
                 case "double":
-                    if (element.ValueKind == JsonValueKind.String) // ugly but TableInsertResultConverter won't exist in the future anyways
+                    if (element.ValueKind == JsonValueKind.String) // ugly but TableInsertResultConverter won't exist in the future anyway
                     {
                         return element.GetString() switch
                         {

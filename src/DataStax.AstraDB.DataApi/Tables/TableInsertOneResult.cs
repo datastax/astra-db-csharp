@@ -25,11 +25,9 @@ namespace DataStax.AstraDB.DataApi.Tables;
 [JsonConverter(typeof(TableInsertOneResultConverter))]
 public class TableInsertOneResult : TableInsertManyResult
 {
-
   /// <summary>
   /// A list of the Ids of the inserted documents
   /// </summary>
   [JsonPropertyName("insertedIds")]
-  public object InsertedId => InsertedIds.Count > 0 ? InsertedIds[0] : null;
-
+  public object InsertedId => InsertedIdTuples.Count > 0 ? InsertedIdTuples[0] : null;
 }
