@@ -22,7 +22,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class FindRerankingProvidersCommandOptions : CommandOptions
 {
   /// <summary>
-  /// Filter reranking providers by status, defaults to "Supported".
+  /// Filter reranking providers by status.
   /// </summary>
-  public ModelLifecycleStatus FilterModelStatus { get; set; } = ModelLifecycleStatus.Supported;
+  public ModelLifecycleStatus? FilterModelStatus { get; set; } = null;
 }

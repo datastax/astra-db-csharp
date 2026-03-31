@@ -355,7 +355,7 @@ public class AdminTests
 	}
 
 	// [SkipWhenAstra]
-	[Fact]
+	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
 	public async Task DatabaseAdminDataAPI_FindEmbeddingProvidersAsync()
 	{
 
@@ -389,7 +389,7 @@ public class AdminTests
 	}
 
 	// [SkipWhenAstra]
-	[Fact]
+	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
 	public void DatabaseAdminDataAPI_FindEmbeddingProvidersSync()
 	{
 
@@ -423,7 +423,7 @@ public class AdminTests
 	}
 
 	// [SkipWhenAstra]
-	[Fact]
+	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
 	public async Task DatabaseAdminDataAPI_FindRerankingProvidersAsync()
 	{
 
@@ -457,7 +457,7 @@ public class AdminTests
 	}
 
 	// [SkipWhenAstra]
-	[Fact]
+	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
 	public void DatabaseAdminDataAPI_FindRerankingProvidersSync()
 	{
 
