@@ -684,4 +684,3 @@ namespace DataStax.AstraDB.DataApi.Admin
         }
     }
 }
-
