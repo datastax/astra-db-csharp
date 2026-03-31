@@ -694,10 +694,7 @@ public class AdditionalTableTests
                 {-43.21, Nan, Infinity, -Infinity, 12.34}
             */
             var result = await table.InsertOneAsync(row);
-
-            Console.WriteLine($"Inserted {result.InsertedCount} rows");
-
-            Assert.Equal(1, result.InsertedCount);
+            Assert.NotEmpty(result.InsertedIdTuple);
 
             var f = await table.FindOneAsync();
 
@@ -794,8 +791,6 @@ public class AdditionalTableTests
             };
 
             var result = await table.InsertOneAsync(row);
-
-            Assert.Equal(1, result.InsertedCount);
             Assert.Equal(new[] { rowId }, result.InsertedIdTuple);
 
             // reading
