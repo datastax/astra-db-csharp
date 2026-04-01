@@ -597,7 +597,6 @@ public class AdditionalTableTests
         }
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_EmptyColumnValues()
     {
@@ -629,6 +628,31 @@ public class AdditionalTableTests
             Assert.Null(findResult.Rating);
             Assert.Null(findResult.Genres);
 
+            var findManyResult = table.Find().ToList();
+            foreach (var item in findManyResult)
+            {
+                Assert.NotNull(item.Title);
+                Assert.Null(item.Rating);
+                Assert.Null(item.Genres);
+            }
+
+            // same reading, with a class whose 'Genres' is non-nullable (expect empty set)
+            var tableNonNullable = fixture.Database.GetTable<TestDataBookNonNullableCollections>(tableName);
+
+            var findResultNonNullable = await tableNonNullable.FindOneAsync();
+
+            // THESE CURRENTLY FAIL (both of course):
+            Assert.NotNull(findResultNonNullable.Genres);
+            Assert.Equal(0, findResultNonNullable.Genres.Count);
+
+            var findManyResultNonNullable = tableNonNullable.Find().ToList();
+            foreach (var itemNonNullable in findManyResultNonNullable)
+            {
+                // THESE CURRENTLY FAIL (both of course):
+                Assert.NotNull(itemNonNullable.Genres);
+                Assert.Equal(0, itemNonNullable.Genres.Count);
+            }
+
             //Test the non-typed version
             var tableNotTyped = fixture.Database.GetTable(tableName);
             var findUntyped = await tableNotTyped.FindOneAsync();
@@ -636,18 +660,20 @@ public class AdditionalTableTests
             Assert.Contains("rating", findUntyped);
             Assert.Null(findUntyped["rating"]);
             Assert.Contains("genres", findUntyped);
+
             Assert.NotNull(findUntyped["genres"]);
-            Assert.Empty(findUntyped["genres"] as List<object>);
+            Assert.Empty(findUntyped["genres"] as IEnumerable<object> ?? Enumerable.Empty<object>());
 
             var findManyUntypedResult = tableNotTyped.Find().ToList();
-            foreach (var item in findManyUntypedResult)
+            foreach (var untypedItem in findManyUntypedResult)
             {
-                Assert.NotNull(item["title"]);
-                Assert.Contains("rating", item);
-                Assert.Null(item["rating"]);
-                Assert.Contains("genres", item);
-                Assert.NotNull(item["genres"]);
-                Assert.Empty(item["genres"] as List<object>);
+                Assert.NotNull(untypedItem["title"]);
+                Assert.Contains("rating", untypedItem);
+                Assert.Null(untypedItem["rating"]);
+                Assert.Contains("genres", untypedItem);
+
+                Assert.NotNull(untypedItem["genres"]);
+                Assert.Empty(untypedItem["genres"] as IEnumerable<object> ?? Enumerable.Empty<object>());
             }
         }
         catch (Exception ex)
