@@ -99,9 +99,9 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_WithOptions()
+    public async Task CreateIndexTests_WithOptions_NoBuilder()
     {
-        var tableName = "tableIndexesTest_WithOptions";
+        var tableName = "tableIndexesTest_WithOptions_NoBuilder";
         try
         {
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
@@ -145,9 +145,9 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTestsSync_WithOptions()
+    public async Task CreateIndexTestsSync_WithOptions_NoBuilder()
     {
-        var tableName = "tableIndexesTestSync_WithOptions";
+        var tableName = "tableIndexesTestSync_WithOptions_NoBuilder";
         try
         {
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
@@ -157,6 +157,38 @@ public class TableIndexesTests
             table.CreateIndex(indexName, (b) => b.Category, indexDefinition);
 
             var result = table.ListIndexes();
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.Equal("category", foundIndex.Definition.Column);
+            Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
+            var foundOptions = ((TableIndexDefinition)foundIndex.Definition).Options;
+            Assert.True(foundOptions.Ascii);
+            Assert.True(foundOptions.CaseSensitive);
+            Assert.True(foundOptions.Normalize);
+
+            var insertResult = await TableIndexesFixture.AddTableRows(table);
+            Assert.Equal(3, insertResult.InsertedCount);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_WithOptions_WithBuilder()
+    {
+        var tableName = "tableIndexesTest_WithOptions_WithBuilder";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
+            string indexName = "category_idx";
+            var indexDefinition = new TableIndexDefinition() { Options = new TableIndexOptions { Ascii = true,  CaseSensitive = true, Normalize = true } };
+
+            await table.CreateIndexAsync(indexName, (b) => b.Category, Builders.TableIndex.Index(true, true, true));
+            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":true,"caseSensitive":true,"normalize":true}}}}
+
+            var result = await table.ListIndexesAsync();
             var foundIndex = result.Indexes.Single(i => i.Name == indexName);
             Assert.NotNull(foundIndex);
             Assert.Equal("category", foundIndex.Definition.Column);

@@ -28,6 +28,11 @@ namespace DataStax.AstraDB.DataApi.Tables;
 public class TableTextIndexOptions
 {
 
+    /// <summary>
+    /// The analyzer configuration for the text index.
+    /// It can be a string, a TextAnalyzer value, an object, or an AnalyzerOptions instance.
+    /// See https://docs.datastax.com/en/astra-db-serverless/databases/analyzers.html#supported-built-in-analyzers
+    /// </summary>
     [JsonPropertyName("analyzer")]
     [JsonConverter(typeof(ObjectOrStringConverter))]
     public object Analyzer { get; set; }
