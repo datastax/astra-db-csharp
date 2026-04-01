@@ -514,20 +514,25 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         internal async Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersCommandOptions options, bool runSynchronously)
         {
-            if (options == null)
-            {
-                options = new FindEmbeddingProvidersCommandOptions();
+
+            if (options == null){
+                options = new FindEmbeddingProvidersCommandOptions {};
             }
+
+            object epPayload = options.FilterModelStatus == null
+                ? new { }
+                : new
+                {
+                    options = new
+                    {
+                        filterModelStatus = options.FilterModelStatus.Value.ToApiString()
+                    }
+                };
+
             var command = CreateCommand()
                 .AddCommandOptions(options)
                 .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-                .WithPayload(new { findEmbeddingProviders = new
-                {
-                    options = new
-                       {
-                           filterModelStatus = options.FilterModelStatus.ToString()
-                       }
-                } });
+                .WithPayload(new { findEmbeddingProviders = epPayload });
 
             var response = await command
                 .RunAsyncReturnStatus<FindEmbeddingProvidersResult>(runSynchronously)
@@ -601,20 +606,25 @@ namespace DataStax.AstraDB.DataApi.Admin
         
         internal async Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options, bool runSynchronously)
         {
-            if (options == null)
-            {
-                options = new FindRerankingProvidersCommandOptions();
+
+            if (options == null){
+                options = new FindRerankingProvidersCommandOptions {};
             }
+
+            object epPayload = options.FilterModelStatus == null
+                ? new { }
+                : new
+                {
+                    options = new
+                    {
+                        filterModelStatus = options.FilterModelStatus.Value.ToApiString()
+                    }
+                };
+
             var command = CreateCommand()
                 .AddCommandOptions(options)
                 .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-                .WithPayload(new { findRerankingProviders = new
-                {
-                    options = new
-                       {
-                           filterModelStatus = options.FilterModelStatus.ToString()
-                       }
-                } });
+                .WithPayload(new { findRerankingProviders = epPayload });
 
             var response = await command
                 .RunAsyncReturnStatus<FindRerankingProvidersResult>(runSynchronously)

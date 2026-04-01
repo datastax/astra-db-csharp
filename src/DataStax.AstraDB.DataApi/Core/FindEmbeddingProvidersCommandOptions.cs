@@ -22,7 +22,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class FindEmbeddingProvidersCommandOptions : CommandOptions
 {
   /// <summary>
-  /// Filter Embedding providers by status, defaults to "Supported".
+  /// Filter Embedding providers by status.
   /// </summary>
-  public ModelLifecycleStatus FilterModelStatus { get; set; } = ModelLifecycleStatus.Supported;
+  public ModelLifecycleStatus? FilterModelStatus { get; set; } = null;
 }
