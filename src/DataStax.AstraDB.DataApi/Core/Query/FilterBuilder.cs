@@ -556,6 +556,10 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
         }
         return Make(null, dictionary);
     }
+
+    /// <inheritdoc cref="FilterBuilder{T, TFilter}.CompoundKey(PrimaryKeyFilter[], Filter{T}[])"/>
+    public TFilter CompoundKey(PrimaryKeyFilterBuilder<T> partitionColumns, Filter<T>[] clusteringColumns)
+        => CompoundKey(partitionColumns.Build(), clusteringColumns);
 }
 
 /// <summary>
