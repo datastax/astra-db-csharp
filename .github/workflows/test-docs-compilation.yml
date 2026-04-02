@@ -33,25 +33,20 @@ jobs:
           docs-repo-token: ${{ secrets.DOC_GITHUB_PAT_CROSS_ORG }}
           docs-repo: '@ske-csharp-client'
 
-      - name: Verify dotnet
-        if: always()
+      - name: Confusion
         shell: bash
         run: |
           set -x
-          which dotnet
-          dotnet --version
-          dotnet --list-sdks
-          eval 'which dotnet'
-          eval 'dotnet --list-sdks'
+          dotnet --info
 
       - name: Label PR on failure
         uses: actions-ecosystem/action-add-labels@v1
-        if: steps.compile_step.outcome == 'failure' && github.event.pull_request
+        if: steps.compile_step.outputs.failed_tests == 'true' && github.event.pull_request
         with:
           labels: 'Breaks Docs Compilation Tests'
 
       - name: Remove label on success
         uses: actions-ecosystem/action-remove-labels@v1
-        if: steps.compile_step.outcome != 'failure' && github.event.pull_request
+        if: steps.compile_step.outputs.failed_tests == 'false' && github.event.pull_request
         with:
           labels: 'Breaks Docs Compilation Tests'
