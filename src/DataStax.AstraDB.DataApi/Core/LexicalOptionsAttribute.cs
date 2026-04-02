@@ -21,9 +21,9 @@ using System.Text.Json;
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Specifies options for creating lexical analysis based on a property
+/// Specifies lexical analysis options for a collection.
 /// </summary>
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class LexicalOptionsAttribute : Attribute
 {
     /// <summary>The name of the tokenizer to use. Defaults to "standard".</summary>

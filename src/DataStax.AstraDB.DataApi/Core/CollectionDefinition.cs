@@ -67,7 +67,6 @@ public class CollectionDefinition
         Type type = typeof(T);
         PropertyInfo idProperty = null;
         DocumentIdAttribute idAttribute = null;
-        LexicalOptionsAttribute lexicalAttribute = null;
 
         foreach (var property in type.GetProperties())
         {
@@ -77,12 +76,10 @@ public class CollectionDefinition
                 idProperty = property;
                 idAttribute = attr;
             }
-            var checkLexicalAttribute = property.GetCustomAttribute<LexicalOptionsAttribute>();
-            if (checkLexicalAttribute != null)
-            {
-                lexicalAttribute = checkLexicalAttribute;
-            }
         }
+
+        var lexicalAttribute = type.GetCustomAttribute<LexicalOptionsAttribute>();
+        var vectorAttribute = type.GetCustomAttribute<VectorOptionsAttribute>();
 
         if (definition.DefaultId == null && idProperty != null)
         {
@@ -107,6 +104,33 @@ public class CollectionDefinition
                     CharacterFilters = lexicalAttribute.CharacterFilters != null ? new List<string>(lexicalAttribute.CharacterFilters) : new List<string>()
                 }
             };
+        }
+
+        if (vectorAttribute != null)
+        {
+            if (definition.Vector == null)
+            {
+                definition.Vector = new VectorOptions();
+            }
+            if (vectorAttribute.Dimension != -1)
+            {
+                definition.Vector.Dimension = vectorAttribute.Dimension;
+            }
+            definition.Vector.Metric = vectorAttribute.Metric;
+            if (!string.IsNullOrEmpty(vectorAttribute.SourceModel))
+            {
+                definition.Vector.SourceModel = vectorAttribute.SourceModel;
+            }
+            if (!string.IsNullOrEmpty(vectorAttribute.Provider))
+            {
+                definition.Vector.Service = new VectorServiceOptions()
+                {
+                    Provider = vectorAttribute.Provider,
+                    ModelName = vectorAttribute.ModelName,
+                    Authentication = vectorAttribute.GetAuthentication(),
+                    Parameters = vectorAttribute.GetParameters()
+                };
+            }
         }
 
 

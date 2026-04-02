@@ -200,4 +200,44 @@ public class FindAndUpdateTests
         }
     }
 
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task FindOneAndUpdate_MostSimilarToSearchString_VectorizeAttribute()
+    {
+        var collectionName = "findAndUpdateObjectWithVectorizeAttr";
+        try
+        {
+            List<SimpleObjectWithVectorizeAttribute> items = new() {
+                new()
+                {
+                    Id = 0,
+                    Name = "This is about a cat.",
+                },
+                new()
+                {
+                    Id = 1,
+                    Name = "This is about a dog.",
+                },
+                new()
+                {
+                    Id = 2,
+                    Name = "This is about a horse.",
+                },
+            };
+            var dogQueryVectorString = "dog";
+
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttribute>(collectionName);
+            var insertResult = await collection.InsertManyAsync(items);
+            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            var sort = Builders<SimpleObjectWithVectorizeAttribute>.Sort.Vectorize(dogQueryVectorString);
+            var update = Builders<SimpleObjectWithVectorizeAttribute>.Update.Set(so => so.Name, "Updated Dog Name");
+            var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVectorizeAttribute> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            Assert.Equal("Updated Dog Name", result.Name);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
 }
