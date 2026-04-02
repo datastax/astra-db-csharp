@@ -34,8 +34,10 @@ jobs:
         shell: bash
         run: |
           set -x
+          which dotnet
           dotnet --version
           dotnet --list-sdks
+          eval 'which dotnet'
           eval 'dotnet --list-sdks'
 
       - name: Label PR on failure
