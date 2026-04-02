@@ -606,7 +606,7 @@ public class TableTests
             var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
-                Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch<SimpleObjectWithLexical, string>((b) => b.LexicalValue, "dog"),
+                Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch((b) => b.LexicalValue, "dog"),
             };
 
             var result = await table.FindOneAsync(findOptions);

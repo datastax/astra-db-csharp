@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
@@ -24,11 +23,40 @@ using System.Linq.Expressions;
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 /// <summary>
-/// Builds filter expressions for querying documents or rows in a collection or table.
+/// Base class for all filter builders. Provides all shared filter construction methods.
+/// Subclasses supply a <see cref="Make(string, object)"/> factory so every method returns the correct
+/// strongly-typed filter (<typeparamref name="TFilter"/>) without method hiding.
 /// </summary>
 /// <typeparam name="T">The type of the document or row being filtered.</typeparam>
-public class FilterBuilder<T>
+/// <typeparam name="TFilter">The concrete filter type produced by this builder.</typeparam>
+public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
 {
+    /// <summary>
+    /// Creates a filter node with the given name and value.
+    /// All builder methods delegate to this factory.
+    /// </summary>
+    protected abstract TFilter Make(string name, object value);
+
+    private TFilter Make(LogicalOperator op, object value)
+        => Make(op.ToApiString(), value);
+
+    // Internal helper: wraps value in an operator node, then wraps that in a field node.
+    // Produces: TFilter{ Name=fieldName, Value=TFilter{ Name=op, Value=value } }
+    // which serialises as  { "fieldName": { "op": value } }
+    private TFilter MakeOp(string fieldName, string op, object value)
+        => Make(fieldName, Make(op, value));
+
+    private static readonly HashSet<string> _allowedClusteringOps = new()
+    {
+        FilterOperator.GreaterThan,
+        FilterOperator.GreaterThanOrEqualTo,
+        FilterOperator.LessThan,
+        FilterOperator.LessThanOrEqualTo,
+        FilterOperator.EqualsTo,
+    };
+
+    // ── Logical ──────────────────────────────────────────────────────────────
+
     /// <summary>
     /// Logical AND operator for combining multiple filters.
     /// </summary>
@@ -36,18 +64,15 @@ public class FilterBuilder<T>
     /// <returns>The combined filter</returns>
     /// <example>
     /// <code>
-    /// // Find items where the "field" property equals "value" and "field2" property equals "value2"
-    /// var builder = Builders&lt;SimpleObject&gt;.Filter;
-    /// var filter = builder.And(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"), builder.Eq(so =&gt; so.Properties.PropertyTwo, "value2"));
+    /// var builder = Builders&lt;SimpleObject&gt;.CollectionFilter;
+    /// var filter = builder.And(builder.Eq(so =&gt; so.PropertyOne, "value"), builder.Eq(so =&gt; so.PropertyTwo, "value2"));
     /// </code>
     /// </example>
     /// <remarks>
     /// This method is equivalent to using the <see cref="Filter{T}.op_BitwiseAnd"/> operator.
     /// </remarks>
-    public Filter<T> And(params Filter<T>[] filters)
-    {
-        return new LogicalFilter<T>(LogicalOperator.And, filters);
-    }
+    public TFilter And(params TFilter[] filters)
+        => Make(LogicalOperator.And, filters);
 
     /// <summary>
     /// Logical OR operator for combining multiple filters.
@@ -56,18 +81,15 @@ public class FilterBuilder<T>
     /// <returns>The combined filter</returns>
     /// <example>
     /// <code>
-    /// // Find items where the "field" property equals "value" or "field2" property equals "value2"
-    /// var builder = Builders&lt;SimpleObject&gt;.Filter;
-    /// var filter = builder.Or(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"), builder.Eq(so =&gt; so.Properties.PropertyTwo, "value2"));
+    /// var builder = Builders&lt;SimpleObject&gt;.CollectionFilter;
+    /// var filter = builder.Or(builder.Eq(so =&gt; so.PropertyOne, "value"), builder.Eq(so =&gt; so.PropertyTwo, "value2"));
     /// </code>
     /// </example>
     /// <remarks>
     /// This method is equivalent to using the <see cref="Filter{T}.op_BitwiseOr"/> operator.
     /// </remarks>
-    public Filter<T> Or(params Filter<T>[] filters)
-    {
-        return new LogicalFilter<T>(LogicalOperator.Or, filters);
-    }
+    public TFilter Or(params TFilter[] filters)
+        => Make(LogicalOperator.Or, filters);
 
     /// <summary>
     /// Logical NOT operator for negating a filter.
@@ -76,18 +98,17 @@ public class FilterBuilder<T>
     /// <returns>The negated filter</returns>
     /// <example>
     /// <code>
-    /// // Find items where the "field" property does not equal "value"
-    /// var builder = Builders&lt;SimpleObject&gt;.Filter;
-    /// var filter = builder.Not(builder.Eq(so =&gt; so.Properties.PropertyOne, "value"));
+    /// var builder = Builders&lt;SimpleObject&gt;.CollectionFilter;
+    /// var filter = builder.Not(builder.Eq(so =&gt; so.PropertyOne, "value"));
     /// </code>
     /// </example>
     /// <remarks>
     /// This method is equivalent to using the <see cref="Filter{T}.op_LogicalNot"/> operator.
     /// </remarks>
-    public Filter<T> Not(Filter<T> filter)
-    {
-        return new LogicalFilter<T>(LogicalOperator.Not, filter);
-    }
+    public TFilter Not(TFilter filter)
+        => Make(LogicalOperator.Not, filter);
+
+    // ── Comparison ───────────────────────────────────────────────────────────
 
     /// <summary>
     /// Greater than operator -- Matches items where the specified field's value is greater than the specified value.
@@ -98,11 +119,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Gt{TField}"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Gt(string fieldName, object value)
-    {
-        return new Filter<T>(fieldName, FilterOperator.GreaterThan, value);
-    }
-
+    public TFilter Gt(string fieldName, object value)
+        => MakeOp(fieldName, FilterOperator.GreaterThan, value);
 
     /// <summary>
     /// Greater than operator -- Matches items where the specified field's value is greater than the specified value.
@@ -111,10 +129,8 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field to compare</param>
     /// <param name="value">The value to compare against</param>
     /// <returns>The filter</returns>
-    public Filter<T> Gt<TField>(Expression<Func<T, TField>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.GreaterThan, value);
-    }
+    public TFilter Gt<TField>(Expression<Func<T, TField>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.GreaterThan, value);
 
     /// <summary>
     /// Greater than or equal to operator -- Matches items where the specified field's value is greater than or equal to the specified value.
@@ -125,10 +141,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Gte{TField}"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Gte(string fieldName, object value)
-    {
-        return new Filter<T>(fieldName, FilterOperator.GreaterThanOrEqualTo, value);
-    }
+    public TFilter Gte(string fieldName, object value)
+        => MakeOp(fieldName, FilterOperator.GreaterThanOrEqualTo, value);
 
     /// <summary>
     /// Greater than or equal to operator -- Matches items where the specified field's value is greater than or equal to the specified value.
@@ -137,10 +151,8 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field to compare</param>
     /// <param name="value">The value to compare against</param>
     /// <returns>The filter</returns>
-    public Filter<T> Gte<TField>(Expression<Func<T, TField>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.GreaterThanOrEqualTo, value);
-    }
+    public TFilter Gte<TField>(Expression<Func<T, TField>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.GreaterThanOrEqualTo, value);
 
     /// <summary>
     /// Less than operator -- Matches items where the specified field's value is less than the specified value.
@@ -151,10 +163,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Lt{TField}"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Lt(string fieldName, object value)
-    {
-        return new Filter<T>(fieldName, FilterOperator.LessThan, value);
-    }
+    public TFilter Lt(string fieldName, object value)
+        => MakeOp(fieldName, FilterOperator.LessThan, value);
 
     /// <summary>
     /// Less than operator -- Matches items where the specified field's value is less than the specified value.
@@ -163,10 +173,8 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field to compare</param>
     /// <param name="value">The value to compare against</param>
     /// <returns>The filter</returns>
-    public Filter<T> Lt<TField>(Expression<Func<T, TField>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.LessThan, value);
-    }
+    public TFilter Lt<TField>(Expression<Func<T, TField>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.LessThan, value);
 
     /// <summary>
     /// Less than or equal to operator -- Matches items where the specified field's value is less than or equal to the specified value.
@@ -177,10 +185,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Lte{TField}"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Lte(string fieldName, object value)
-    {
-        return new Filter<T>(fieldName, FilterOperator.LessThanOrEqualTo, value);
-    }
+    public TFilter Lte(string fieldName, object value)
+        => MakeOp(fieldName, FilterOperator.LessThanOrEqualTo, value);
 
     /// <summary>
     /// Less than or equal to operator -- Matches items where the specified field's value is less than or equal to the specified value.
@@ -189,10 +195,8 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field to compare</param>
     /// <param name="value">The value to compare against</param>
     /// <returns>The filter</returns>
-    public Filter<T> Lte<TField>(Expression<Func<T, TField>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.LessThanOrEqualTo, value);
-    }
+    public TFilter Lte<TField>(Expression<Func<T, TField>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.LessThanOrEqualTo, value);
 
     /// <summary>
     /// Equal to operator -- Matches items where the specified field's value is equal to the specified value.
@@ -202,11 +206,9 @@ public class FilterBuilder<T>
     /// <returns>The filter</returns>
     /// <remarks>
     /// We recommend using the <see cref="Eq{TField}"/> method with expressions instead of strings for clarity and type safety.
-    /// </remarks>  
-    public Filter<T> Eq(string fieldName, object value)
-    {
-        return new Filter<T>(fieldName, FilterOperator.EqualsTo, value);
-    }
+    /// </remarks>
+    public TFilter Eq(string fieldName, object value)
+        => MakeOp(fieldName, FilterOperator.EqualsTo, value);
 
     /// <summary>
     /// Equal to operator -- Matches items where the specified field's value is equal to the specified value.
@@ -215,10 +217,8 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field to compare</param>
     /// <param name="value">The value to compare against</param>
     /// <returns>The filter</returns>
-    public Filter<T> Eq<TField>(Expression<Func<T, TField>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.EqualsTo, value);
-    }
+    public TFilter Eq<TField>(Expression<Func<T, TField>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.EqualsTo, value);
 
     /// <summary>
     /// Not equal to operator -- Matches items where the specified field's value is not equal to the specified value.
@@ -229,10 +229,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Ne{TField}"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Ne(string fieldName, object value)
-    {
-        return new Filter<T>(fieldName, FilterOperator.NotEqualsTo, value);
-    }
+    public TFilter Ne(string fieldName, object value)
+        => MakeOp(fieldName, FilterOperator.NotEqualsTo, value);
 
     /// <summary>
     /// Not equal to operator -- Matches items where the specified field's value is not equal to the specified value.
@@ -241,14 +239,13 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field to compare</param>
     /// <param name="value">The value to compare against</param>
     /// <returns>The filter</returns>
-    public Filter<T> Ne<TField>(Expression<Func<T, TField>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotEqualsTo, value);
-    }
+    public TFilter Ne<TField>(Expression<Func<T, TField>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.NotEqualsTo, value);
+
+    // ── In / Nin ─────────────────────────────────────────────────────────────
 
     /// <summary>
     /// In operator -- Match one or more of an array of specified values.
-    /// 
     /// If the field is an array, this will function as a contains query.
     /// </summary>
     /// <typeparam name="T2">The type of the values in the array to check</typeparam>
@@ -258,10 +255,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="In{TField}(Expression{Func{T, TField[]}},TField)"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> In<T2>(string fieldName, T2[] values)
-    {
-        return new Filter<T>(fieldName, FilterOperator.In, values);
-    }
+    public TFilter In<T2>(string fieldName, T2[] values)
+        => MakeOp(fieldName, FilterOperator.In, values);
 
     /// <summary>
     /// In operator -- Match one or more of an array of specified values.
@@ -270,23 +265,19 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="array">The array of values</param>
     /// <returns>The filter</returns>
-    public Filter<T> In<TField>(Expression<Func<T, TField>> expression, TField[] array)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, array);
-    }
+    public TFilter In<TField>(Expression<Func<T, TField>> expression, TField[] array)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.In, array);
 
     /// <summary>
     /// In operator -- Match one or more of an array of specified values where the field itself is an array
-    /// (functions as a contains query)
+    /// (functions as a contains query).
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="array">The array of values</param>
     /// <returns>The filter</returns>
-    public Filter<T> In<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, array);
-    }
+    public TFilter In<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.In, array);
 
     /// <summary>
     /// In operator -- Match where the specified array field contains the specified value.
@@ -297,10 +288,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="In{TField}(Expression{Func{T, TField[]}},TField)"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> In(string fieldName, object value)
-    {
-        return new Filter<T>(fieldName, FilterOperator.In, new object[] { value });
-    }
+    public TFilter In(string fieldName, object value)
+        => MakeOp(fieldName, FilterOperator.In, new object[] { value });
 
     /// <summary>
     /// In operator -- Match where the specified array field contains the specified value.
@@ -309,10 +298,8 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field for this filter.</param>
     /// <param name="value">The value to check for.</param>
     /// <returns>The filter</returns>
-    public Filter<T> In<TField>(Expression<Func<T, TField[]>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, new object[] { value });
-    }
+    public TFilter In<TField>(Expression<Func<T, TField[]>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.In, new object[] { value });
 
     /// <summary>
     /// In operator -- Match one or more key-value pairs in a dictionary field.
@@ -322,10 +309,10 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the dictionary field for this filter</param>
     /// <param name="pairs">Array of key-value pairs as tuples</param>
     /// <returns>The filter</returns>
-    public Filter<T> In<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
+    public TFilter In<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
     {
         var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.In, pairArrays);
+        return MakeOp(expression.GetMemberNameTree(), FilterOperator.In, pairArrays);
     }
 
     /// <summary>
@@ -339,10 +326,10 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the In method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> In<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
+    public TFilter In<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
     {
         var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
-        return new Filter<T>(fieldName, FilterOperator.In, pairArrays);
+        return MakeOp(fieldName, FilterOperator.In, pairArrays);
     }
 
     /// <summary>
@@ -355,10 +342,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Nin{TField}(Expression{Func{T, TField}},TField[])"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Nin<T2>(string fieldName, T2[] values)
-    {
-        return new Filter<T>(fieldName, FilterOperator.NotIn, values);
-    }
+    public TFilter Nin<T2>(string fieldName, T2[] values)
+        => MakeOp(fieldName, FilterOperator.NotIn, values);
 
     /// <summary>
     /// Not in operator -- Match items where the field does not match any of the specified values.
@@ -367,10 +352,8 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="array">The array of values</param>
     /// <returns>The filter</returns>
-    public Filter<T> Nin<TField>(Expression<Func<T, TField>> expression, TField[] array)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, array);
-    }
+    public TFilter Nin<TField>(Expression<Func<T, TField>> expression, TField[] array)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.NotIn, array);
 
     /// <summary>
     /// Not in operator -- Match items where the field does not match any of the specified values where the field itself is an array.
@@ -379,33 +362,27 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="array">The array of values</param>
     /// <returns>The filter</returns>
-    public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, array);
-    }
+    public TFilter Nin<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.NotIn, array);
 
     /// <summary>
     /// Not in operator -- Match items where the array field does not match the specified value.
     /// </summary>
     /// <typeparam name="TField">The type of the field to check</typeparam>
     /// <param name="expression">An expression that represents the field for this filter</param>
-    /// <param name="value"></param>
+    /// <param name="value">The value to check for</param>
     /// <returns>The filter</returns>
-    public Filter<T> Nin<TField>(Expression<Func<T, TField[]>> expression, TField value)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, new object[] { value });
-    }
+    public TFilter Nin<TField>(Expression<Func<T, TField[]>> expression, TField value)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.NotIn, new object[] { value });
 
     /// <summary>
     /// Not in operator -- Match items where the array field does not match the specified value.
     /// </summary>
-    /// <param name="field"></param>
-    /// <param name="value"></param>
+    /// <param name="field">The name of the field for this filter</param>
+    /// <param name="value">The value to check for</param>
     /// <returns>The filter</returns>
-    public Filter<T> Nin(string field, object value)
-    {
-        return new Filter<T>(field, FilterOperator.NotIn, new object[] { value });
-    }
+    public TFilter Nin(string field, object value)
+        => MakeOp(field, FilterOperator.NotIn, new object[] { value });
 
     /// <summary>
     /// Not in operator -- Match documents where a dictionary field does not contain any of the specified pairs.
@@ -415,10 +392,10 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the dictionary field for this filter</param>
     /// <param name="pairs">Array of key-value pairs as tuples</param>
     /// <returns>The filter</returns>
-    public Filter<T> Nin<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
+    public TFilter Nin<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
     {
         var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.NotIn, pairArrays);
+        return MakeOp(expression.GetMemberNameTree(), FilterOperator.NotIn, pairArrays);
     }
 
     /// <summary>
@@ -432,11 +409,13 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the Nin method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Nin<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
+    public TFilter Nin<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
     {
         var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
-        return new Filter<T>(fieldName, FilterOperator.NotIn, pairArrays);
+        return MakeOp(fieldName, FilterOperator.NotIn, pairArrays);
     }
+
+    // ── Existence / Array ────────────────────────────────────────────────────
 
     /// <summary>
     /// Exists operator -- Match items where the field exists.
@@ -446,10 +425,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Exists{TField}"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Exists(string fieldName)
-    {
-        return new Filter<T>(fieldName, FilterOperator.Exists, true);
-    }
+    public TFilter Exists(string fieldName)
+        => MakeOp(fieldName, FilterOperator.Exists, true);
 
     /// <summary>
     /// Exists operator -- Match items where the field exists.
@@ -457,10 +434,8 @@ public class FilterBuilder<T>
     /// <typeparam name="TField">The type of the field</typeparam>
     /// <param name="expression">An expression that represents the field to check for</param>
     /// <returns>The filter</returns>
-    public Filter<T> Exists<TField>(Expression<Func<T, IEnumerable<TField>>> expression)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.Exists, true);
-    }
+    public TFilter Exists<TField>(Expression<Func<T, IEnumerable<TField>>> expression)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.Exists, true);
 
     /// <summary>
     /// All operator -- Matches arrays that contain all elements in the specified array.
@@ -472,10 +447,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="All{TField}(Expression{Func{T,TField[]}}, TField[])"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> All<TField>(string fieldName, TField[] array)
-    {
-        return new Filter<T>(fieldName, FilterOperator.All, array);
-    }
+    public TFilter All<TField>(string fieldName, TField[] array)
+        => MakeOp(fieldName, FilterOperator.All, array);
 
     /// <summary>
     /// All operator -- Matches arrays that contain all elements in the specified array.
@@ -484,48 +457,47 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="array">The array of values to check against</param>
     /// <returns>The filter</returns>
-    public Filter<T> All<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
+    public TFilter All<TField>(Expression<Func<T, TField[]>> expression, TField[] array)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.All, array);
+
+    /// <summary>
+    /// All operator -- Matches rows where the column contains all of the specified elements.
+    /// </summary>
+    /// <typeparam name="TField">The element type</typeparam>
+    /// <param name="fieldName">The name of the field for this filter</param>
+    /// <param name="array">The array of values to check against</param>
+    /// <returns>The filter</returns>
+    public TFilter AllPairs<TField>(string fieldName, TField[] array)
+        => MakeOp(fieldName, FilterOperator.All, array);
+
+    /// <summary>
+    /// All operator -- Matches rows where the map column contains all of the specified key-value pairs.
+    /// To match specific keys or values only, use the $keys or $values operators instead.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="fieldName">The name of the field for this filter</param>
+    /// <param name="pairs">The key-value pairs to check against</param>
+    /// <returns>The filter</returns>
+    public TFilter AllPairs<TKey, TValue>(string fieldName, IEnumerable<KeyValuePair<TKey, TValue>> pairs)
     {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.All, array);
+        var array = pairs.Select(kv => new object[] { kv.Key, kv.Value }).ToArray();
+        return MakeOp(fieldName, FilterOperator.All, array);
     }
 
     /// <summary>
-    /// All operator -- The $all operator matches rows where the column contains all of the specified key-value pairs.
-    /// To match specific keys or specific values, rather than key-value pairs, use the $keys or $values operator.
+    /// All operator -- Matches rows where the map column contains all of the specified key-value pairs.
+    /// To match specific keys or values only, use the $keys or $values operators instead.
     /// </summary>
-    /// <typeparam name="TField"></typeparam>
-    /// <param name="fieldName"></param>
-    /// <param name="array"></param>
-    /// <returns></returns>
-    public Filter<T> AllPairs<TField>(string fieldName,
-        TField[] array)
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="expression">An expression that represents the map field for this filter</param>
+    /// <param name="pairs">The key-value pairs to check against</param>
+    /// <returns>The filter</returns>
+    public TFilter AllPairs<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, IEnumerable<KeyValuePair<TKey, TValue>> pairs)
     {
-        return new Filter<T>(
-            fieldName,
-            FilterOperator.All,
-            array);
-    }
-
-    /// <summary>
-    /// All operator -- The $all operator matches rows where the column contains all of the specified key-value pairs.
-    /// To match specific keys or specific values, rather than key-value pairs, use the $keys or $values operator.
-    /// </summary>
-    /// <typeparam name="TKey"></typeparam>
-    /// <typeparam name="TValue"></typeparam>
-    /// <param name="expression"></param>
-    /// <param name="pairs"></param>
-    /// <returns></returns>
-    public Filter<T> AllPairs<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression,
-        IEnumerable<KeyValuePair<TKey, TValue>> pairs)
-    {
-        var array = pairs
-            .Select(kv => new object[] { kv.Key, kv.Value })
-            .ToArray();
-
-        return new Filter<T>(
-            expression.GetMemberNameTree(),
-            FilterOperator.All,
-            array);
+        var array = pairs.Select(kv => new object[] { kv.Key, kv.Value }).ToArray();
+        return MakeOp(expression.GetMemberNameTree(), FilterOperator.All, array);
     }
 
     /// <summary>
@@ -537,10 +509,8 @@ public class FilterBuilder<T>
     /// <remarks>
     /// We recommend using the <see cref="Size{TField}"/> method with expressions instead of strings for clarity and type safety.
     /// </remarks>
-    public Filter<T> Size(string fieldName, int size)
-    {
-        return new Filter<T>(fieldName, FilterOperator.Size, size);
-    }
+    public TFilter Size(string fieldName, int size)
+        => MakeOp(fieldName, FilterOperator.Size, size);
 
     /// <summary>
     /// Size operator -- Matches items where the specified array has the specified size.
@@ -549,45 +519,53 @@ public class FilterBuilder<T>
     /// <param name="expression">An expression that represents the field for this filter</param>
     /// <param name="size">The size of the array to match</param>
     /// <returns>The filter</returns>
-    public Filter<T> Size<TField>(Expression<Func<T, TField[]>> expression, int size)
-    {
-        return new Filter<T>(expression.GetMemberNameTree(), FilterOperator.Size, size);
-    }
+    public TFilter Size<TField>(Expression<Func<T, TField[]>> expression, int size)
+        => MakeOp(expression.GetMemberNameTree(), FilterOperator.Size, size);
+
+    // ── Key / Compound ───────────────────────────────────────────────────────
 
     /// <summary>
     /// Build a composite key filter using a dictionary of primary key names and the values to match.
     /// </summary>
-    /// <param name="values"></param>
-    /// <returns></returns>
-    public Filter<T> CompositeKey(params PrimaryKeyFilter[] values)
+    /// <param name="values">The primary key column name/value pairs.</param>
+    /// <returns>The filter</returns>
+    public TFilter CompositeKey(params PrimaryKeyFilter[] values)
     {
         var dictionary = values.ToDictionary(x => x.ColumnName, x => x.Value);
-        return new Filter<T>(null, dictionary);
+        return Make(null, dictionary);
     }
 
     /// <summary>
-    /// Build a compound key filter using a dictionary of partition key names and the values to match, and a dictionary of clustering key names and filters to match.
+    /// Build a compound key filter using partition key columns and range/equality filters on clustering columns.
     /// </summary>
-    /// <param name="partitionColumns"></param>
-    /// <param name="clusteringColumns"></param>
-    /// <returns></returns>
-    public Filter<T> CompoundKey(PrimaryKeyFilter[] partitionColumns, Filter<T>[] clusteringColumns)
+    /// <param name="partitionColumns">Exact partition key values.</param>
+    /// <param name="clusteringColumns">
+    /// Range or equality filters on clustering columns. Only Gt, Gte, Lt, Lte, and Eq are permitted;
+    /// any other operator throws <see cref="ArgumentException"/>.
+    /// </param>
+    /// <returns>The filter</returns>
+    public TFilter CompoundKey(PrimaryKeyFilter[] partitionColumns, Filter<T>[] clusteringColumns)
     {
         var dictionary = partitionColumns.ToDictionary(x => x.ColumnName, x => x.Value);
         foreach (var clusteringColumn in clusteringColumns)
         {
-            if (clusteringColumn.Value is Filter<T> filter)
-            {
+            if (clusteringColumn.Value is Filter<T> filter && _allowedClusteringOps.Contains(filter.Name))
                 dictionary.Add(clusteringColumn.Name, new Filter<T>(filter.Name, filter.Value));
-            }
             else
-            {
                 throw new ArgumentException("Only the following filters are allowed for clustering column filters: Gt, Gte, Lt, Lte, Eq");
-            }
         }
-        return new Filter<T>(null, dictionary);
+        return Make(null, dictionary);
     }
+}
 
+/// <summary>
+/// Builds filter expressions for querying documents or rows in a collection or table.
+/// </summary>
+/// <typeparam name="T">The type of the document or row being filtered.</typeparam>
+public class FilterBuilder<T> : FilterBuilder<T, Filter<T>>
+{
+    /// <inheritdoc/>
+    protected override Filter<T> Make(string name, object value) => new(name, value);
 }
 
 /// <summary>
