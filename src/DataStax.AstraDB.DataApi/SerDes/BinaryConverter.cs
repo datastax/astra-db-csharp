@@ -27,29 +27,21 @@ namespace DataStax.AstraDB.DataApi.SerDes;
 /// </summary>
 public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
 {
-    /// <summary>
-    /// Reads and converts a JSON <c>$binary</c> object to a <see cref="byte"/> array.
-    /// </summary>
+    /// <inheritdoc />
     public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
-        {
             throw new JsonException($"Expected start of object when reading byte array, but got {reader.TokenType}.");
-        }
 
         string base64String = null;
 
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndObject)
-            {
                 break;
-            }
 
             if (reader.TokenType != JsonTokenType.PropertyName)
-            {
                 throw new JsonException($"Expected property name when reading byte array, but got {reader.TokenType}.");
-            }
 
             string propertyName = reader.GetString();
 
@@ -57,9 +49,7 @@ public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
             {
                 reader.Read();
                 if (reader.TokenType != JsonTokenType.String)
-                {
                     throw new JsonException($"Expected string value for '{DataApiKeywords.Binary}', but got {reader.TokenType}.");
-                }
                 base64String = reader.GetString();
             }
             else
@@ -69,9 +59,7 @@ public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
         }
 
         if (base64String == null)
-        {
             throw new JsonException($"Missing required property '{DataApiKeywords.Binary}'.");
-        }
 
         try
         {
@@ -83,13 +71,143 @@ public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
         }
     }
 
-    /// <summary>
-    /// Writes a <see cref="byte"/> array as a JSON <c>$binary</c> object with a base-64 encoded value.
-    /// </summary>
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
         writer.WriteString(DataApiKeywords.Binary, Convert.ToBase64String(value));
+        writer.WriteEndObject();
+    }
+}
+
+/// <summary>
+/// JSON converter for float arrays. Serializes as a JSON array (<c>[1.0, 2.0]</c>)
+/// and deserializes from either a JSON array or the Data API binary format
+/// (<c>{ "$binary": "&lt;base64&gt;" }</c>). Use <see cref="FloatBinaryWriter"/> to serialize as binary instead.
+/// </summary>
+public class FloatArrayJsonConverterBase : JsonConverter<float[]>
+{
+    /// <inheritdoc />
+    public override float[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return reader.TokenType switch
+        {
+            JsonTokenType.StartArray => ReadAsArray(ref reader),
+            JsonTokenType.StartObject => ReadAsBinary(ref reader),
+            _ => throw new JsonException($"Expected array or object when reading float array, but got {reader.TokenType}.")
+        };
+    }
+
+    private static float[] ReadAsArray(ref Utf8JsonReader reader)
+    {
+        var list = new System.Collections.Generic.List<float>();
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndArray)
+                break;
+            if (reader.TokenType != JsonTokenType.Number)
+                throw new JsonException($"Expected number in float array, but got {reader.TokenType}.");
+            list.Add(reader.GetSingle());
+        }
+        return list.ToArray();
+    }
+
+    private static float[] ReadAsBinary(ref Utf8JsonReader reader)
+    {
+        string base64String = null;
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+                break;
+
+            if (reader.TokenType != JsonTokenType.PropertyName)
+                throw new JsonException($"Expected property name when reading float array, but got {reader.TokenType}.");
+
+            string propertyName = reader.GetString();
+
+            if (propertyName == DataApiKeywords.Binary)
+            {
+                reader.Read();
+                if (reader.TokenType != JsonTokenType.String)
+                    throw new JsonException($"Expected string value for '{DataApiKeywords.Binary}', but got {reader.TokenType}.");
+                base64String = reader.GetString();
+            }
+            else
+            {
+                reader.Skip();
+            }
+        }
+
+        if (base64String == null)
+            throw new JsonException($"Missing required property '{DataApiKeywords.Binary}'.");
+
+        byte[] bytes;
+        try
+        {
+            bytes = Convert.FromBase64String(base64String);
+        }
+        catch (FormatException ex)
+        {
+            throw new JsonException($"Invalid Base64 string: '{base64String}'.", ex);
+        }
+
+        if (bytes.Length % 4 != 0)
+            throw new JsonException($"Binary data length {bytes.Length} is not a multiple of 4 (required for float array).");
+
+        var floats = new float[bytes.Length / 4];
+        for (int i = 0; i < floats.Length; i++)
+        {
+            int offset = i * 4;
+            if (BitConverter.IsLittleEndian)
+            {
+                var chunk = new byte[] { bytes[offset + 3], bytes[offset + 2], bytes[offset + 1], bytes[offset] };
+                floats[i] = BitConverter.ToSingle(chunk, 0);
+            }
+            else
+            {
+                floats[i] = BitConverter.ToSingle(bytes, offset);
+            }
+        }
+        return floats;
+    }
+
+    /// <inheritdoc />
+    public override void Write(Utf8JsonWriter writer, float[] value, JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        foreach (var f in value)
+            writer.WriteNumberValue(f);
+        writer.WriteEndArray();
+    }
+}
+
+/// <summary>
+/// Serializes a float array to a JSON array: <c>[1.0, 2.0, 3.0]</c>.
+/// Deserializes from either JSON array or binary format.
+/// </summary>
+public class FloatArrayWriter : FloatArrayJsonConverterBase { }
+
+/// <summary>
+/// Serializes a float array to the Data API binary format:
+/// <c>{ "$binary": "&lt;base64&gt;" }</c> with big-endian IEEE 754 encoding.
+/// Deserializes from either binary or JSON array format.
+/// </summary>
+public class FloatBinaryWriter : FloatArrayJsonConverterBase
+{
+    /// <inheritdoc />
+    public override void Write(Utf8JsonWriter writer, float[] value, JsonSerializerOptions options)
+    {
+        var bytes = new byte[value.Length * 4];
+        for (int i = 0; i < value.Length; i++)
+        {
+            var chunk = BitConverter.GetBytes(value[i]);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(chunk);
+            Buffer.BlockCopy(chunk, 0, bytes, i * 4, 4);
+        }
+        writer.WriteStartObject();
+        writer.WriteString(DataApiKeywords.Binary, Convert.ToBase64String(bytes));
         writer.WriteEndObject();
     }
 }

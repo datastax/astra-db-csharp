@@ -510,7 +510,8 @@ public class SBook
     public Dictionary<string, string> MapColumnStrStr { get; set; }
 }
 
-public class FloatingPointTest{
+public class FloatingPointTest
+{
     [ColumnPrimaryKey]
     public string id { get; set; }
     public float p_float_nan { get; set; }
@@ -528,8 +529,33 @@ public class FloatingPointTest{
 public class CollectionDatetimeObject
 {
     [DocumentId]
-    public string _id {get; set;}
+    public string _id { get; set; }
     public DateTime dt_naive { get; set; }
     public DateTime dt_aware { get; set; }
     public DateTime dt_unspecified { get; set; }
+}
+
+public class BinaryVectorObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    [ColumnVector(3)]
+    public float[] TheVector { get; set; }
+}
+
+public class FloatArrayWriterObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [JsonConverter(typeof(FloatArrayWriter))]
+    public float[] Vector { get; set; }
+}
+
+public class FloatBinaryWriterObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [JsonConverter(typeof(FloatBinaryWriter))]
+    public float[] Vector { get; set; }
 }
