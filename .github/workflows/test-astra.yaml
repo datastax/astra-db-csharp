@@ -16,6 +16,10 @@ env:
   ASTRA_DB_TOKEN: ${{ secrets.ASTRA_DB_TOKEN }}
   ASTRA_DB_DATABASE_NAME: ${{ secrets.ASTRA_DB_DATABASE_NAME }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }} # should probably be globally unique
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest

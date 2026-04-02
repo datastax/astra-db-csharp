@@ -20,6 +20,10 @@ env:
   AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
   AWS_ECR_HCD_IMAGE_TAG: "1.2.3"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     env:
