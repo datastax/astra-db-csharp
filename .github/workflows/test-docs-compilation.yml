@@ -19,7 +19,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        
+
+      - name: Force .NET 10
+        run: |
+          echo '{"sdk": { "version": "10.0.201", "rollForward": "latestFeature" } }' > global.json
+
       - name: Run compilation tests
         id: compile_step
         uses: datastax/astra-client-docs-tests/.github/actions/test-compilation@master
