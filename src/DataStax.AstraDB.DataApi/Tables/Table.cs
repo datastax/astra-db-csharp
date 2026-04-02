@@ -1132,7 +1132,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
         where TResult : class
     {
-        findOptions ??= new TableFindOptions<T>();
+        findOptions = findOptions != null ? findOptions.Clone() : new TableFindOptions<T>();
         if (findOptions.Filter == null && filter != null)
         {
             findOptions.Filter = filter;
