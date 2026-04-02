@@ -261,7 +261,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="waitForCompletion">Whether or not to wait for the keyspace to be created before returning.</param>
+        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <example>
         /// <code>

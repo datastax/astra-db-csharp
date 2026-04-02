@@ -81,6 +81,10 @@ public class Database
     private readonly Guid? _id;
 
     private DatabaseCommandOptions _dbCommandOptions = new DatabaseCommandOptions();
+
+    /// <summary>
+    /// The working keyspace for this database. Unless otherwise specified, this keyspace will be targeted when invoking a method.
+    /// </summary>
     public string Keyspace => CommandOptions.Merge(OptionsTree).Keyspace;
 
     internal string ApiEndpoint => _apiEndpoint;

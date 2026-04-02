@@ -42,7 +42,7 @@ public class ListDatabaseOptions
     /// </summary>
     [JsonPropertyName("starting_after")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? StartingAfter { get; set; } = null;
+    public string StartingAfter { get; set; } = null;
 
     /// <summary>
     /// Number of items to return "per page".
