@@ -30,6 +30,7 @@ jobs:
           docs-repo: '@ske-csharp-client'
 
       - name: Verify dotnet
+        if: always()
         shell: bash
         run: |
           set -x
