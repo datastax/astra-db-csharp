@@ -19,22 +19,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: |
-            8.0.x
-            9.0.x
-            10.0.x
-
-      - name: Verify dotnet
-        shell: bash
-        run: |
-          set -x
-          dotnet --version
-          dotnet --list-sdks
-
+        
       - name: Run compilation tests
         id: compile_step
         uses: datastax/astra-client-docs-tests/.github/actions/test-compilation@master
@@ -43,6 +28,14 @@ jobs:
           args: -A csharp='<ProjectReference Include=\"${{ github.workspace }}/src/DataStax.AstraDB.DataApi/DataStax.AstraDB.DataApi.csproj\"/>' --allow-failures
           docs-repo-token: ${{ secrets.DOC_GITHUB_PAT_CROSS_ORG }}
           docs-repo: '@ske-csharp-client'
+
+      - name: Verify dotnet
+        shell: bash
+        run: |
+          set -x
+          dotnet --version
+          dotnet --list-sdks
+          eval 'dotnet --list-sdks'
 
       - name: Label PR on failure
         uses: actions-ecosystem/action-add-labels@v1
