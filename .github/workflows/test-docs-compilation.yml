@@ -27,12 +27,13 @@ jobs:
             8.0.x
             9.0.x
             10.0.x
-            
+
       - name: Verify dotnet
         shell: bash
         run: |
           set -x
           dotnet --version
+          dotnet --list-sdks
 
       - name: Run compilation tests
         id: compile_step
