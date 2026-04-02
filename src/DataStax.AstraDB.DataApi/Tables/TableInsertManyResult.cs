@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -31,23 +30,17 @@ public class TableInsertManyResult
   /// The primary key schema of the returned rows
   /// </summary>
   [JsonPropertyName("primaryKeySchema")]
-  public Dictionary<string, PrimaryKeySchema> PrimaryKeys { get; set; }
+  internal Dictionary<string, PrimaryKeySchema> PrimaryKeys { get; set; }
 
   /// <summary>
   /// A list of the Ids of the inserted documents
   /// </summary>
   [JsonPropertyName("insertedIds")]
-  public List<List<object>> InsertedIds { get; set; } = new List<List<object>>();
-
-  /// <summary>
-  /// A list of the document responses
-  /// </summary>
-  [JsonPropertyName("documentResponses")]
-  public List<DocumentInsertResult> DocumentResponses { get; set; } = new List<DocumentInsertResult>();
+  public List<List<object>> InsertedIdTuples { get; set; } = new();
 
   /// <summary>
   /// The number of documents that were inserted
   /// </summary>
   [JsonIgnore]
-  public int InsertedCount => InsertedIds.Count != 0 ? InsertedIds.Count : DocumentResponses.Count;
+  public int InsertedCount => InsertedIdTuples.Count;
 }

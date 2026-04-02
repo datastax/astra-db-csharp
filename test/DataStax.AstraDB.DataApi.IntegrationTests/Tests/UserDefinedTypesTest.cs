@@ -109,7 +109,7 @@ public class UserDefinedTypesTests
 
             var table = await fixture.Database.CreateTableAsync<UdtTestMinimal>(tableName);
             var insertResult = await table.InsertManyAsync(items);
-            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
             var filter = Builders<UdtTestMinimal>.TableFilter.Eq(b => b.Udt.Name, "Test 3");
 
             //TODO: Can you filter on UDT fields?
@@ -257,7 +257,7 @@ public class UserDefinedTypesTests
 
             var table = await fixture.Database.CreateTableAsync<UdtTest>(tableName);
             var insertResult = await table.InsertManyAsync(items);
-            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
             var filter = Builders<UdtTest>.TableFilter.Eq(b => b.Id, 2);
             var result = await table.FindOneAsync(filter);
             Assert.NotNull(result);

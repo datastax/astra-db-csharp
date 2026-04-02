@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.SerDes;
-using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
 /// Represents the result of inserting a single row into a table.
 /// </summary>
-[JsonConverter(typeof(TableInsertOneResultConverter))]
-public class TableInsertOneResult : TableInsertManyResult
+public class TableInsertOneResult
 {
-
   /// <summary>
-  /// A list of the Ids of the inserted documents
+  /// The Id of the inserted row
   /// </summary>
-  [JsonPropertyName("insertedIds")]
-  public object InsertedId => InsertedIds.Count > 0 ? InsertedIds[0] : null;
-
+  public List<object> InsertedIdTuple { get; set; }
 }

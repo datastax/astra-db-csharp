@@ -48,7 +48,7 @@ public class AdditionalTableTests
             var table = await fixture.Database.CreateTableAsync<ArrayTestRow>(tableName);
             await table.CreateIndexAsync("StringArray_idx", (b) => b.StringArray);
             var insertResult = await table.InsertManyAsync(items);
-            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
             var findOptions = new TableFindOptions<ArrayTestRow>()
             {
                 Filter = Builders<ArrayTestRow>.TableFilter.In(x => x.StringArray, new string[] { "five" }),
@@ -451,7 +451,7 @@ public class AdditionalTableTests
             };
 
             var emptyMapInsertResult = await table.InsertOneAsync(emptyMapRow);
-            Assert.NotNull(emptyMapInsertResult.InsertedId);
+            Assert.NotNull(emptyMapInsertResult.InsertedIdTuple);
 
             var emptyMapRetrieved = await table.FindOneAsync(
                 Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 100)
@@ -694,10 +694,7 @@ public class AdditionalTableTests
                 {-43.21, Nan, Infinity, -Infinity, 12.34}
             */
             var result = await table.InsertOneAsync(row);
-
-            Console.WriteLine($"Inserted {result.InsertedCount} rows");
-
-            Assert.Equal(1, result.InsertedCount);
+            Assert.NotEmpty(result.InsertedIdTuple);
 
             var f = await table.FindOneAsync();
 
@@ -794,9 +791,7 @@ public class AdditionalTableTests
             };
 
             var result = await table.InsertOneAsync(row);
-
-            Assert.Equal(1, result.InsertedCount);
-            Assert.Equal(new[] { rowId }, result.InsertedId);
+            Assert.Equal(new[] { rowId }, result.InsertedIdTuple);
 
             // reading
             var readRow = await table.FindOneAsync();

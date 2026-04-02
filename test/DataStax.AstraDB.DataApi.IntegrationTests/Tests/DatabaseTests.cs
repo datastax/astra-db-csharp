@@ -4,10 +4,8 @@ using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Utils;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text;
-using System.Text.Json;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -783,8 +781,7 @@ public class DatabaseTests
                 Genres = new HashSet<string> { "Fiction" }
             };
             var result = await table.InsertOneAsync(row);
-            Assert.Equal(1, result.InsertedCount);
-            var id = result.InsertedIds.First().First().ToString();
+            var id = result.InsertedIdTuple.First().ToString();
             var filter = Builders<RowBook>.TableFilter.Eq(b => b.Title, id);
             var foundRow = await foundTable2.FindOneAsync(filter);
             Assert.Equal(row.Title, foundRow.Title);

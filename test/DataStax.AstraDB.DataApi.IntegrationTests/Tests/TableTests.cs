@@ -74,13 +74,9 @@ public class TableTests
                 };
                 rows.Add(row);
             }
-            var options = new InsertManyOptions
-            {
-                ReturnDocumentResponses = true
-            };
-            var result = await table.InsertManyAsync(rows, options);
+            var result = await table.InsertManyAsync(rows);
             Assert.Equal(rows.Count, result.InsertedCount);
-            Assert.Equal(rows.Count, result.DocumentResponses.Count);
+            Assert.Equal(rows.Count, result.InsertedIdTuples.Count);
         }
         finally
         {
@@ -118,15 +114,13 @@ public class TableTests
             });
             var options = new InsertManyOptions
             {
-                ReturnDocumentResponses = true,
                 IsOrdered = true,
                 ChunkSize = 2
             };
             var result = await table.InsertManyAsync(rows, options);
             Assert.Equal(rows.Count, result.InsertedCount);
-            Assert.Equal(rows.Count, result.DocumentResponses.Count);
-            var updatedRow = result.DocumentResponses.FirstOrDefault(r => r.Ids.Contains("Title1"));
-            Assert.Equal("OK", updatedRow.Status);
+            Assert.Equal(rows.Count, result.InsertedIdTuples.Count);
+            Assert.Contains(result.InsertedIdTuples, r => r.Contains("Title1") && r.Contains(1000));
         }
         finally
         {
@@ -608,7 +602,7 @@ public class TableTests
             var table = await fixture.Database.CreateTableAsync<SimpleObjectWithLexical>(tableName);
             await table.CreateTextIndexAsync("b_idx", (b) => b.LexicalValue, Builders.TableIndex.Text());
             var insertResult = await table.InsertManyAsync(items);
-            Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
             var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
