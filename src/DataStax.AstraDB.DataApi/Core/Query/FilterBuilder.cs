@@ -46,17 +46,6 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
     private TFilter MakeOp(string fieldName, string op, object value)
         => Make(fieldName, Make(op, value));
 
-    private static readonly HashSet<string> _allowedClusteringOps = new()
-    {
-        FilterOperator.GreaterThan,
-        FilterOperator.GreaterThanOrEqualTo,
-        FilterOperator.LessThan,
-        FilterOperator.LessThanOrEqualTo,
-        FilterOperator.EqualsTo,
-    };
-
-    // ── Logical ──────────────────────────────────────────────────────────────
-
     /// <summary>
     /// Logical AND operator for combining multiple filters.
     /// </summary>
@@ -415,8 +404,6 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
         return MakeOp(fieldName, FilterOperator.NotIn, pairArrays);
     }
 
-    // ── Existence / Array ────────────────────────────────────────────────────
-
     /// <summary>
     /// Exists operator -- Match items where the field exists.
     /// </summary>
@@ -522,44 +509,6 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
     public TFilter Size<TField>(Expression<Func<T, TField[]>> expression, int size)
         => MakeOp(expression.GetMemberNameTree(), FilterOperator.Size, size);
 
-    // ── Key / Compound ───────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Build a composite key filter using a dictionary of primary key names and the values to match.
-    /// </summary>
-    /// <param name="values">The primary key column name/value pairs.</param>
-    /// <returns>The filter</returns>
-    public TFilter CompositeKey(params PrimaryKeyFilter[] values)
-    {
-        var dictionary = values.ToDictionary(x => x.ColumnName, x => x.Value);
-        return Make(null, dictionary);
-    }
-
-    /// <summary>
-    /// Build a compound key filter using partition key columns and range/equality filters on clustering columns.
-    /// </summary>
-    /// <param name="partitionColumns">Exact partition key values.</param>
-    /// <param name="clusteringColumns">
-    /// Range or equality filters on clustering columns. Only Gt, Gte, Lt, Lte, and Eq are permitted;
-    /// any other operator throws <see cref="ArgumentException"/>.
-    /// </param>
-    /// <returns>The filter</returns>
-    public TFilter CompoundKey(PrimaryKeyFilter[] partitionColumns, Filter<T>[] clusteringColumns)
-    {
-        var dictionary = partitionColumns.ToDictionary(x => x.ColumnName, x => x.Value);
-        foreach (var clusteringColumn in clusteringColumns)
-        {
-            if (clusteringColumn.Value is Filter<T> filter && _allowedClusteringOps.Contains(filter.Name))
-                dictionary.Add(clusteringColumn.Name, new Filter<T>(filter.Name, filter.Value));
-            else
-                throw new ArgumentException("Only the following filters are allowed for clustering column filters: Gt, Gte, Lt, Lte, Eq");
-        }
-        return Make(null, dictionary);
-    }
-
-    /// <inheritdoc cref="FilterBuilder{T, TFilter}.CompoundKey(PrimaryKeyFilter[], Filter{T}[])"/>
-    public TFilter CompoundKey(PrimaryKeyFilterBuilder<T> partitionColumns, Filter<T>[] clusteringColumns)
-        => CompoundKey(partitionColumns.Build(), clusteringColumns);
 }
 
 /// <summary>

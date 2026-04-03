@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
@@ -92,4 +93,50 @@ public class TableFilterBuilder<T> : FilterBuilder<T, TableFilter<T>>
     /// </summary>
     public TableFilter<T> LexicalMatch<TValue>(Expression<Func<T, TValue>> expression, string value)
         => Make(expression.GetMemberNameTree(), Make(FilterOperator.Match, value));
+
+    /// <summary>
+    /// Build a composite key filter using a dictionary of primary key names and the values to match.
+    /// </summary>
+    /// <param name="values">The primary key column name/value pairs.</param>
+    /// <returns>The filter</returns>
+    public TableFilter<T> CompositeKey(params PrimaryKeyFilter[] values)
+    {
+        var dictionary = values.ToDictionary(x => x.ColumnName, x => x.Value);
+        return Make(null, dictionary);
+    }
+
+    /// <summary>
+    /// Build a compound key filter using partition key columns and range/equality filters on clustering columns.
+    /// </summary>
+    /// <param name="partitionColumns">Exact partition key values.</param>
+    /// <param name="clusteringColumns">
+    /// Range or equality filters on clustering columns. Only Gt, Gte, Lt, Lte, and Eq are permitted;
+    /// any other operator throws <see cref="ArgumentException"/>.
+    /// </param>
+    /// <returns>The filter</returns>
+    public TableFilter<T> CompoundKey(PrimaryKeyFilter[] partitionColumns, Filter<T>[] clusteringColumns)
+    {
+        var dictionary = partitionColumns.ToDictionary(x => x.ColumnName, x => x.Value);
+        foreach (var clusteringColumn in clusteringColumns)
+        {
+            if (clusteringColumn.Value is Filter<T> filter && _allowedClusteringOps.Contains(filter.Name))
+                dictionary.Add(clusteringColumn.Name, new Filter<T>(filter.Name, filter.Value));
+            else
+                throw new ArgumentException("Only the following filters are allowed for clustering column filters: Gt, Gte, Lt, Lte, Eq");
+        }
+        return Make(null, dictionary);
+    }
+
+    /// <inheritdoc cref="CompoundKey(PrimaryKeyFilter[], Filter{T}[])"/>
+    public TableFilter<T> CompoundKey(PrimaryKeyFilterBuilder<T> partitionColumns, Filter<T>[] clusteringColumns)
+        => CompoundKey(partitionColumns.Build(), clusteringColumns);
+
+    private static readonly HashSet<string> _allowedClusteringOps = new()
+    {
+        FilterOperator.GreaterThan,
+        FilterOperator.GreaterThanOrEqualTo,
+        FilterOperator.LessThan,
+        FilterOperator.LessThanOrEqualTo,
+        FilterOperator.EqualsTo,
+    };
 }
