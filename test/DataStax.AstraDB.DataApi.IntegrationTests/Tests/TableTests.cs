@@ -216,7 +216,7 @@ public class TableTests
     public async Task Update_Test_PrimaryKeyFilterBuilder()
     {
         var table = fixture.SearchTable;
-        var pk = Builders<RowBook>.PrimaryKey
+        var pk = Builders<RowBook>.PrimaryKeyFilter
             .Add(x => x.Title, "Title 30")
             .Add(x => x.NumberOfPages, 430);
         var filter = Builders<RowBook>.TableFilter.CompositeKey(pk);

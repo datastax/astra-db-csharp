@@ -125,5 +125,5 @@ public class Builders<T>
     /// filter = Builders&lt;MyRow&gt;.TableFilter.CompositeKey(pk);
     /// </code>
     /// </example>
-    public static PrimaryKeyFilterBuilder<T> PrimaryKey => new();
+    public static PrimaryKeyFilterBuilder<T> PrimaryKeyFilter => new();
 }
