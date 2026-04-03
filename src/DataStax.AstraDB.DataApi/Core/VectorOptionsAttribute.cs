@@ -37,45 +37,9 @@ public class VectorOptionsAttribute : Attribute
     /// </summary>
     public string SourceModel { get; set; }
 
-    /// <summary>The name of the embedding service provider.</summary>
-    public string Provider { get; set; }
-
-    /// <summary>The model name to use for embedding generation.</summary>
-    public string ModelName { get; set; }
-
-    /// <summary>
-    /// Key-value pairs used for authenticating with the embedding service, supplied as alternating key and value strings.
-    /// </summary>
-    public string[] AuthenticationPairs { get; set; }
-
-    /// <summary>
-    /// Additional key-value parameter pairs for the embedding service, supplied as alternating key and value strings.
-    /// </summary>
-    public string[] ParameterPairs { get; set; }
-
     /// <summary>
     /// Initializes a new instance of <see cref="VectorOptionsAttribute"/> with default settings.
     /// </summary>
     public VectorOptionsAttribute() { }
 
-    internal Dictionary<string, string> GetAuthentication()
-    {
-        return PairsToDict(AuthenticationPairs);
-    }
-
-    internal Dictionary<string, string> GetParameters()
-    {
-        return PairsToDict(ParameterPairs);
-    }
-
-    private static Dictionary<string, string> PairsToDict(string[] pairs)
-    {
-        if (pairs == null || pairs.Length == 0)
-            return null;
-
-        var dict = new Dictionary<string, string>();
-        for (int i = 0; i + 1 < pairs.Length; i += 2)
-            dict[pairs[i]] = pairs[i + 1];
-        return dict.Count > 0 ? dict : null;
-    }
 }

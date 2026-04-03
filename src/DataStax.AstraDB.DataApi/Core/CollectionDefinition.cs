@@ -80,6 +80,7 @@ public class CollectionDefinition
 
         var lexicalAttribute = type.GetCustomAttribute<LexicalOptionsAttribute>();
         var vectorAttribute = type.GetCustomAttribute<VectorOptionsAttribute>();
+        var vectorizeAttribute = type.GetCustomAttribute<VectorizeOptionsAttribute>();
 
         if (definition.DefaultId == null && idProperty != null)
         {
@@ -121,14 +122,27 @@ public class CollectionDefinition
             {
                 definition.Vector.SourceModel = vectorAttribute.SourceModel;
             }
-            if (!string.IsNullOrEmpty(vectorAttribute.Provider))
+        }
+
+        if (vectorizeAttribute != null)
+        {
+            if (definition.Vector == null)
+            {
+                definition.Vector = new VectorOptions();
+            }
+            if (vectorizeAttribute.Dimension != -1)
+            {
+                definition.Vector.Dimension = vectorizeAttribute.Dimension;
+            }
+            definition.Vector.Metric = vectorizeAttribute.Metric;
+            if (!string.IsNullOrEmpty(vectorizeAttribute.Provider))
             {
                 definition.Vector.Service = new VectorServiceOptions()
                 {
-                    Provider = vectorAttribute.Provider,
-                    ModelName = vectorAttribute.ModelName,
-                    Authentication = vectorAttribute.GetAuthentication(),
-                    Parameters = vectorAttribute.GetParameters()
+                    Provider = vectorizeAttribute.Provider,
+                    ModelName = vectorizeAttribute.ModelName,
+                    Authentication = vectorizeAttribute.GetAuthentication(),
+                    Parameters = vectorizeAttribute.GetParameters()
                 };
             }
         }
