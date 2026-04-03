@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run compilation tests
-        id: compile_step
+        id: compile-step
         uses: datastax/astra-client-docs-tests/.github/actions/test-compilation@master
         with:
           clients: 'csharp'
@@ -32,12 +32,12 @@ jobs:
 
       - name: Label PR on failure
         uses: actions-ecosystem/action-add-labels@v1
-        if: steps.compile_step.outputs.failed_tests == 'true' && github.event.pull_request
+        if: steps.compile-step.outputs.failed_tests == 'true' && github.event.pull_request
         with:
           labels: 'Breaks Docs Compilation Tests'
 
       - name: Remove label on success
         uses: actions-ecosystem/action-remove-labels@v1
-        if: steps.compile_step.outputs.failed_tests == 'false' && github.event.pull_request
+        if: steps.compile-step.outputs.failed_tests == 'false' && github.event.pull_request
         with:
           labels: 'Breaks Docs Compilation Tests'
