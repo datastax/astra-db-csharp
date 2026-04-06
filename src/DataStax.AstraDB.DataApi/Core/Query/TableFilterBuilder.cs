@@ -131,6 +131,46 @@ public class TableFilterBuilder<T> : FilterBuilder<T, TableFilter<T>>
     public TableFilter<T> CompoundKey(PrimaryKeyFilterBuilder<T> partitionColumns, Filter<T>[] clusteringColumns)
         => CompoundKey(partitionColumns.Build(), clusteringColumns);
 
+    /// <summary>
+    /// All Pairs operator -- Matches rows where the column contains all of the specified elements.
+    /// </summary>
+    /// <typeparam name="TField">The element type</typeparam>
+    /// <param name="fieldName">The name of the field for this filter</param>
+    /// <param name="array">The array of values to check against</param>
+    /// <returns>The filter</returns>
+    public TableFilter<T> AllPairs<TField>(string fieldName, TField[] array)
+        => MakeOp(fieldName, FilterOperator.All, array);
+
+    /// <summary>
+    /// All Pairs operator -- Matches rows where the map column contains all of the specified key-value pairs.
+    /// To match specific keys or values only, use the $keys or $values operators instead.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="fieldName">The name of the field for this filter</param>
+    /// <param name="pairs">The key-value pairs to check against</param>
+    /// <returns>The filter</returns>
+    public TableFilter<T> AllPairs<TKey, TValue>(string fieldName, IEnumerable<KeyValuePair<TKey, TValue>> pairs)
+    {
+        var array = pairs.Select(kv => new object[] { kv.Key, kv.Value }).ToArray();
+        return MakeOp(fieldName, FilterOperator.All, array);
+    }
+
+    /// <summary>
+    /// All Pairs operator -- Matches rows where the map column contains all of the specified key-value pairs.
+    /// To match specific keys or values only, use the $keys or $values operators instead.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the map keys</typeparam>
+    /// <typeparam name="TValue">The type of the map values</typeparam>
+    /// <param name="expression">An expression that represents the map field for this filter</param>
+    /// <param name="pairs">The key-value pairs to check against</param>
+    /// <returns>The filter</returns>
+    public TableFilter<T> AllPairs<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, IEnumerable<KeyValuePair<TKey, TValue>> pairs)
+    {
+        var array = pairs.Select(kv => new object[] { kv.Key, kv.Value }).ToArray();
+        return MakeOp(expression.GetMemberNameTree(), FilterOperator.All, array);
+    }
+
     private static readonly HashSet<string> _allowedClusteringOps = new()
     {
         FilterOperator.GreaterThan,
