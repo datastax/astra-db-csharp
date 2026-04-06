@@ -40,10 +40,18 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
     private TFilter Make(LogicalOperator op, object value)
         => Make(op.ToApiString(), value);
 
-    // Internal helper: wraps value in an operator node, then wraps that in a field node.
-    // Produces: TFilter{ Name=fieldName, Value=TFilter{ Name=op, Value=value } }
-    // which serialises as  { "fieldName": { "op": value } }
-    private TFilter MakeOp(string fieldName, string op, object value)
+    /// <summary>
+    /// Internal helper: wraps value in an operator node, then wraps that in a field node.
+    /// </summary>
+    /// <param name="fieldName"></param>
+    /// <param name="op"></param>
+    /// <param name="value"></param>
+    /// <remarks>
+    /// Produces: TFilter{ Name=fieldName, Value=TFilter{ Name=op, Value=value } }
+    /// which serialises as  { "fieldName": { "op": value } }
+    /// </remarks>
+    /// <returns></returns>
+    protected TFilter MakeOp(string fieldName, string op, object value)
         => Make(fieldName, Make(op, value));
 
     /// <summary>
@@ -405,26 +413,6 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
     }
 
     /// <summary>
-    /// Exists operator -- Match items where the field exists.
-    /// </summary>
-    /// <param name="fieldName">The name of the field to check for</param>
-    /// <returns>The filter</returns>
-    /// <remarks>
-    /// We recommend using the <see cref="Exists{TField}"/> method with expressions instead of strings for clarity and type safety.
-    /// </remarks>
-    public TFilter Exists(string fieldName)
-        => MakeOp(fieldName, FilterOperator.Exists, true);
-
-    /// <summary>
-    /// Exists operator -- Match items where the field exists.
-    /// </summary>
-    /// <typeparam name="TField">The type of the field</typeparam>
-    /// <param name="expression">An expression that represents the field to check for</param>
-    /// <returns>The filter</returns>
-    public TFilter Exists<TField>(Expression<Func<T, IEnumerable<TField>>> expression)
-        => MakeOp(expression.GetMemberNameTree(), FilterOperator.Exists, true);
-
-    /// <summary>
     /// All operator -- Matches arrays that contain all elements in the specified array.
     /// </summary>
     /// <typeparam name="TField">The type of the field</typeparam>
@@ -486,28 +474,6 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
         var array = pairs.Select(kv => new object[] { kv.Key, kv.Value }).ToArray();
         return MakeOp(expression.GetMemberNameTree(), FilterOperator.All, array);
     }
-
-    /// <summary>
-    /// Size operator -- Matches items where the specified array has the specified size.
-    /// </summary>
-    /// <param name="fieldName">The name of the field for this filter</param>
-    /// <param name="size">The size of the array to match</param>
-    /// <returns>The filter</returns>
-    /// <remarks>
-    /// We recommend using the <see cref="Size{TField}"/> method with expressions instead of strings for clarity and type safety.
-    /// </remarks>
-    public TFilter Size(string fieldName, int size)
-        => MakeOp(fieldName, FilterOperator.Size, size);
-
-    /// <summary>
-    /// Size operator -- Matches items where the specified array has the specified size.
-    /// </summary>
-    /// <typeparam name="TField">The type of the field</typeparam>
-    /// <param name="expression">An expression that represents the field for this filter</param>
-    /// <param name="size">The size of the array to match</param>
-    /// <returns>The filter</returns>
-    public TFilter Size<TField>(Expression<Func<T, TField[]>> expression, int size)
-        => MakeOp(expression.GetMemberNameTree(), FilterOperator.Size, size);
 
 }
 
