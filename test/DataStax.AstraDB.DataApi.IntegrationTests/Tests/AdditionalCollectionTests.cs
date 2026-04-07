@@ -322,7 +322,7 @@ public class AdditionalCollectionTests
         }
     }
 
-    [Fact(Skip = "Currently the Assert.ThrowsAsync on 342 is not working. Needs analysis")]
+    [Fact]
     public async Task Test_DoubleAndFloatConverters_Untyped()
     {
         var collectionName = "collectionTestDoubleFloatConverters";
