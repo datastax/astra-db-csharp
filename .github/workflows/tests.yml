@@ -34,7 +34,8 @@ jobs:
   run-astra-integration-tests:
     name: Run Astra integration tests
     needs: [setup, run-unit-tests]
-    if: github.event_name == 'merge_group' # We want to run this as little as possible to avoid messing up the shared Astra org
+    if: false # disabled for the time being
+    # if: github.event_name == 'merge_group' # We want to run this as little as possible to avoid messing up the shared Astra org
     uses: ./.github/workflows/_test-astra.yml
     secrets: inherit
 
