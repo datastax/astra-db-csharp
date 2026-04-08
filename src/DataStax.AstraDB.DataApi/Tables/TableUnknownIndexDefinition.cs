@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 public class TableUnknownIndexDefinition : TableBaseIndexDefinition
 {
     /// <summary>
-    /// Gets or sets the API support metadata returned for an index type that does not map to a known concrete definition.
+    /// The API support metadata for an UNKNOWN index described by the Data API.
     /// </summary>
     [JsonPropertyName("apiSupport")]
     public TableUnknownIndexAPISupport APISupport { get; set; }

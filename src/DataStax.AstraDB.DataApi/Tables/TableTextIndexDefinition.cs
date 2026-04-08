@@ -24,19 +24,13 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// </summary>
 public class TableTextIndexDefinition : TableBaseIndexDefinition
 {
-    [JsonIgnore]
-    internal object Analyzer
-    {
-        get => Options?.ContainsKey("analyzer") == true ? Options["analyzer"] : null;
-        set
-        {
-            if (value != null)
-            {
-                Options ??= new Dictionary<string, object>();
-                Options["analyzer"] = value;
-            }
-        }
-    }
+
+    /// <summary>
+    /// Options for the text index.
+    /// </summary>
+    [JsonPropertyName("options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public TableTextIndexOptions Options { get; set; }
 
     internal override string IndexCreationCommandName => "createTextIndex";
 }
