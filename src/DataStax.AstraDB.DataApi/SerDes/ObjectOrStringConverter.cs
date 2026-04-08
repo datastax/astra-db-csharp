@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Utils;
-using System.Collections.Generic;
+namespace DataStax.AstraDB.DataApi.SerDes;
+
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Tables;
-
-/// <summary>
-/// Configuration used to create an index on a table column
-/// </summary>
-public class TableIndexDefinition : TableBaseIndexDefinition
+internal class ObjectOrStringConverter : JsonConverter<object>
 {
+    public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var element = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
+        return DeepDictionaryConverter.ConvertJsonElement(element);
+    }
 
-    /// <summary>
-    /// Options for the index.
-    /// </summary>
-    [JsonPropertyName("options")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public TableIndexOptions Options { get; set; }
-
-    internal override string IndexCreationCommandName => "createIndex";
+    public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, value, options);
+    }
 }

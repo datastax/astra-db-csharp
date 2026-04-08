@@ -80,7 +80,12 @@ public class Database
     private readonly string _urlPostfix = "";
     private readonly Guid? _id;
 
-    private DatabaseCommandOptions _dbCommandOptions;
+    private DatabaseCommandOptions _dbCommandOptions = new DatabaseCommandOptions();
+
+    /// <summary>
+    /// The working keyspace for this database. Unless otherwise specified, this keyspace will be targeted when invoking a method.
+    /// </summary>
+    public string Keyspace => CommandOptions.Merge(OptionsTree).Keyspace;
 
     internal string ApiEndpoint => _apiEndpoint;
     internal DataAPIClient Client => _client;
@@ -114,9 +119,14 @@ public class Database
     /// <param name="keyspace"></param>
     public void UseKeyspace(string keyspace)
     {
-        var commandOptions = _dbCommandOptions ?? new DatabaseCommandOptions();
-        commandOptions.Keyspace = keyspace;
-        _dbCommandOptions = commandOptions;
+        if (_dbCommandOptions == null)
+        {
+            _dbCommandOptions = new DatabaseCommandOptions { Keyspace = keyspace };
+        }
+        else
+        {
+            _dbCommandOptions.Keyspace = keyspace;
+        }
     }
 
     ///<summary>
