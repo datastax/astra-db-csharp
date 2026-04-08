@@ -27,25 +27,29 @@ public class ListDatabaseOptions
     /// Filter databases based on specific states.
     /// </summary>
     [JsonPropertyName("include")]
-    public QueryDatabaseStates StatesToInclude { get; set; } = QueryDatabaseStates.nonterminated;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public QueryDatabaseStates? StatesToInclude { get; set; } = null;
 
     /// <summary>
     /// Filter databases based on cloud provider.
     /// </summary>
-    [JsonPropertyName("cloudProvider")]
-    public QueryCloudProvider Provider { get; set; } = QueryCloudProvider.ALL;
+    [JsonPropertyName("provider")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public QueryCloudProvider? Provider { get; set; } = null;
 
     /// <summary>
     /// See <see cref="PageSizeLimit"/>. If getting an additional page of data, pass in the id of the last database in the previous page. 
     /// </summary>
     [JsonPropertyName("starting_after")]
-    internal string StartingAfter { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string StartingAfter { get; set; } = null;
 
     /// <summary>
     /// Number of items to return "per page".
     /// </summary>
     [JsonPropertyName("limit")]
-    public int PageSizeLimit = 100;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? PageSizeLimit { get; set; } = null;
 }
 
 /// <summary>
