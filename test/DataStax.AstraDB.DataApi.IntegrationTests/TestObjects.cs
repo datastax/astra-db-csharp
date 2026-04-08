@@ -510,7 +510,8 @@ public class SBook
     public Dictionary<string, string> MapColumnStrStr { get; set; }
 }
 
-public class FloatingPointTest{
+public class FloatingPointTest
+{
     [ColumnPrimaryKey]
     public string id { get; set; }
     public float p_float_nan { get; set; }
@@ -528,8 +529,18 @@ public class FloatingPointTest{
 public class CollectionDatetimeObject
 {
     [DocumentId]
-    public string _id {get; set;}
+    public string _id { get; set; }
     public DateTime dt_naive { get; set; }
     public DateTime dt_aware { get; set; }
     public DateTime dt_unspecified { get; set; }
 }
+
+public class TripleMapObject
+{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public Dictionary<string, string> map_e { get; set; }
+    public Dictionary<string, string> map_k { get; set; }
+    public Dictionary<string, string> map_v { get; set; }
+}
+
