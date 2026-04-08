@@ -559,3 +559,13 @@ public class FloatBinaryWriterObject
     [JsonConverter(typeof(FloatBinaryWriter))]
     public float[] Vector { get; set; }
 }
+
+public class TripleMapObject
+{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public Dictionary<string, string> map_e { get; set; }
+    public Dictionary<string, string> map_k { get; set; }
+    public Dictionary<string, string> map_v { get; set; }
+}
+

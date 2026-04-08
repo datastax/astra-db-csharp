@@ -111,6 +111,19 @@ public class AdditionalTableTests
             Assert.True(first.Metadata.ContainsKey("language"));
             Assert.Equal("Italian", first.Metadata["language"]);
 
+            //untyped AllPairs
+            filter = builder.AllPairs("metadata",
+                new Dictionary<string, string>
+                {
+                    { "language", "Italian" },
+                    { "edition", "Illustrated Edition" }
+                });
+            results = table.Find(filter).ToList();
+
+            first = results.First();
+            Assert.True(first.Metadata.ContainsKey("language"));
+            Assert.Equal("Italian", first.Metadata["language"]);
+
         }
         finally
         {
@@ -913,4 +926,104 @@ public class AdditionalTableTests
             await fixture.Database.DropTableAsync(tableName, new() { IfExists = true });
         }
     }
+
+    [Fact]
+    public async Task TableMapKeyValueFilteringTest()
+    {
+        var tableName = "test_map_table";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TripleMapObject>(tableName, new CreateTableCommandOptions()
+            {
+                IfNotExists = true
+            });
+
+            await table.CreateIndexAsync("tmp_map_e_idx", (b) => b.map_e, new CreateIndexCommandOptions()
+            {
+                IfNotExists = true
+            });
+            await table.CreateIndexAsync("tmp_map_k_idx", (b) => b.map_k, Builders.TableIndex.Map(MapIndexType.Keys), new CreateIndexCommandOptions()
+            {
+                IfNotExists = true
+            });
+            await table.CreateIndexAsync("tmp_map_v_idx", (b) => b.map_v, Builders.TableIndex.Map(MapIndexType.Values), new CreateIndexCommandOptions()
+            {
+                IfNotExists = true
+            });
+
+            await table.InsertOneAsync(new TripleMapObject()
+            {
+                id = "base",
+                map_e = new Dictionary<string, string>()
+                {
+                    {"e0_key", "e0_val"},
+                    {"e1_key", "e1_val"}
+                },
+                map_k = new Dictionary<string, string>()
+                {
+                    {"k0_key", "k0_val"},
+                    {"k1_key", "k1_val"}
+                },
+                map_v = new Dictionary<string, string>()
+                {
+                    {"v0_key", "v0_val"},
+                    {"v1_key", "v1_val"}
+                },
+            });
+
+            var projectingOptions = new TableFindOptions<TripleMapObject>()
+            {
+                Projection = Builders<TripleMapObject>.Projection.Include(r => r.id)
+            };
+
+            // searches with ENTRIES
+
+            // MARK A
+            var row_full_eA = await table.FindOneAsync(
+                Builders<TripleMapObject>.TableFilter.In(
+                    r => r.map_e,
+                    new[]
+                    {
+                        ( "e0_key", "e0_val" )
+                    }
+                ),
+                projectingOptions
+            );
+            Assert.NotNull(row_full_eA);
+            Assert.Equal("base", row_full_eA.id);
+
+            var row_full_eB = await table.FindOneAsync(
+                Builders<TripleMapObject>.TableFilter.In(
+                    r => r.map_e,
+                    new[]
+                    {
+                        ( "e0_key", "e0_val" ),
+                        ( "x", "y" )
+                    }
+                ),
+                projectingOptions
+            );
+            Assert.NotNull(row_full_eB);
+            Assert.Equal("base", row_full_eB.id);
+            // MARK B
+
+            var row_full_eC = await table.FindOneAsync(
+                Builders<TripleMapObject>.TableFilter.In(
+                    r => r.map_e,
+                    new[]
+                    {
+                        ( "e0_key", "z" )
+                    }
+                ),
+                projectingOptions
+            );
+            Assert.Null(row_full_eC);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
 }

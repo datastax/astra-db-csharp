@@ -29,4 +29,15 @@ public class TableFindOptions<T> : FindOptions<T, TableSortBuilder<T>>
     /// </summary>
     [JsonIgnore]
     public override TableSortBuilder<T> Sort { get; set; }
+
+    internal TableFindOptions<T> Clone()
+    {
+        return new TableFindOptions<T>
+        {
+            Filter = Filter != null ? Filter.Clone() : null,
+            IncludeSimilarity = IncludeSimilarity,
+            Projection = Projection != null ? Projection.Clone() : null,
+            Sort = Sort != null ? Sort.Clone() : null
+        };
+    }
 }
