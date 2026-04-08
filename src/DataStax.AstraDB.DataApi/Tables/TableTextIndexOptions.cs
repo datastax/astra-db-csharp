@@ -15,6 +15,7 @@
  */
 
 using DataStax.AstraDB.DataApi.Utils;
+using DataStax.AstraDB.DataApi.SerDes;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,17 +23,18 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
-/// Configuration used to create an index on a table column
+/// Options for creating a text index on a table column
 /// </summary>
-public class TableIndexDefinition : TableBaseIndexDefinition
+public class TableTextIndexOptions
 {
 
     /// <summary>
-    /// Options for the index.
+    /// The analyzer configuration for the text index.
+    /// It can be a string, a TextAnalyzer value, an object, or an AnalyzerOptions instance.
+    /// See https://docs.datastax.com/en/astra-db-serverless/databases/analyzers.html#supported-built-in-analyzers
     /// </summary>
-    [JsonPropertyName("options")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public TableIndexOptions Options { get; set; }
+    [JsonPropertyName("analyzer")]
+    [JsonConverter(typeof(ObjectOrStringConverter))]
+    public object Analyzer { get; set; }
 
-    internal override string IndexCreationCommandName => "createIndex";
 }

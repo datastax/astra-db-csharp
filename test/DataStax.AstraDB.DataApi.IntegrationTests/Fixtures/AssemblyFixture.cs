@@ -16,6 +16,7 @@ public class AssemblyFixture
     public string DatabaseUrl { get; private set; }
     public string DatabaseName { get; private set; }
     public string Destination { get; private set; } = "astra";
+    public string Environment { get; private set; } = "prod";
 
     public AssemblyFixture()
     {
@@ -31,6 +32,7 @@ public class AssemblyFixture
         DatabaseName = configuration["DATABASE_NAME"] ?? configuration["AstraDB:DatabaseName"];
         DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:Url"];
         Destination = configuration["DESTINATION"] ?? configuration["AstraDB:Destination"] ?? "astra";
+        Environment = configuration["ENVIRONMENT"] ?? configuration["AstraDB:Environment"] ?? "production";
 
     }
 
@@ -65,12 +67,33 @@ public class AssemblyFixture
                 break;
         }
 
+        DBEnvironment? environment = DBEnvironment.Production;
+        switch (Environment?.ToLower())
+        {
+            case "production":
+            case "prod":
+                environment = DBEnvironment.Production;
+                break;
+            case "testing":
+            case "test":
+                environment = DBEnvironment.Test;
+                break;
+            case "development":
+            case "dev":
+                environment = DBEnvironment.Dev;
+                break;
+            default:
+                environment = DBEnvironment.Production;
+                break;
+        }
+
         logger.LogInformation("Using destination: {Destination}", destination.ToString());
 
         var clientOptions = new CommandOptions
         {
             RunMode = RunMode.Debug,
             Destination = destination,
+            Environment = environment,
         };
 
         return new DataAPIClient(useToken ? Token : null, clientOptions, logger);

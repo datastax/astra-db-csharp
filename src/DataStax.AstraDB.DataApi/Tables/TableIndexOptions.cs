@@ -22,17 +22,30 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
-/// Configuration used to create an index on a table column
+/// Options for creating an index on a table column
 /// </summary>
-public class TableIndexDefinition : TableBaseIndexDefinition
+public class TableIndexOptions
 {
 
     /// <summary>
-    /// Options for the index.
+    /// Should the index be case sensitive?
     /// </summary>
-    [JsonPropertyName("options")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public TableIndexOptions Options { get; set; }
+    [JsonPropertyName("caseSensitive")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool CaseSensitive { get; set; }
 
-    internal override string IndexCreationCommandName => "createIndex";
+    /// <summary>
+    /// Should the index normalize the text?
+    /// </summary>
+    [JsonPropertyName("normalize")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Normalize { get; set; }
+
+    /// <summary>
+    /// Should the index use ASCII conversion?
+    /// </summary>
+    [JsonPropertyName("ascii")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Ascii { get; set; }
+
 }

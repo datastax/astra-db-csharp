@@ -176,7 +176,6 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         serializeOptions ??= new JsonSerializerOptions();
-        serializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         serializeOptions.Converters.Add(new ObjectIdConverter());
         serializeOptions.Converters.Add(new DurationConverter());
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
@@ -201,6 +200,7 @@ internal class Command
         {
             serializeOptions.Converters.Add(new GuidConverter());
         }
+        serializeOptions.Converters.Add(new JsonStringEnumConverter());
         serializeOptions.Converters.Add(new IpAddressConverter());
 
         if (commandOptions.SerializeIEEE754SpecialValues == true)
@@ -229,7 +229,6 @@ internal class Command
     {
         var commandOptions = CommandOptions.Merge(_commandOptionsTree.ToArray());
         var deserializeOptions = new JsonSerializerOptions();
-        deserializeOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         deserializeOptions.Converters.Add(new DurationConverter());
         deserializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
         deserializeOptions.Converters.Add(new TimeUuidJsonConverter());

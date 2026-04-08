@@ -59,6 +59,14 @@ public class AstraDatabasesAdmin
         _adminOptions = adminOptions;
     }
 
+    internal string DevOpsAPISuffix(DBEnvironment? environment) => environment switch
+    {
+        DBEnvironment.Production => "apps.astra.datastax.com",
+        DBEnvironment.Dev => "apps.astra-dev.datastax.com",
+        DBEnvironment.Test => "apps.astra-test.datastax.com",
+        _ => "apps.astra.datastax.com"
+    };
+
     /// <summary>
     /// Returns a list of database names.
     /// </summary>
@@ -779,14 +787,14 @@ public class AstraDatabasesAdmin
 
     private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
     {
-        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.apps.astra.datastax.com";
+        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.{DevOpsAPISuffix(_adminOptions.Environment)}";
         var database = _client.GetDatabase(apiEndpoint);
         return new DatabaseAdminAstra(database, _client, _adminOptions);
     }
 
     private DatabaseAdminAstra GetDatabaseAdmin(string dbGuid, string region)
     {
-        var apiEndpoint = $"https://{dbGuid}-{region}.apps.astra.datastax.com";
+        var apiEndpoint = $"https://{dbGuid}-{region}.{DevOpsAPISuffix(_adminOptions.Environment)}";
         var database = _client.GetDatabase(apiEndpoint);
         return new DatabaseAdminAstra(database, _client, _adminOptions);
     }
