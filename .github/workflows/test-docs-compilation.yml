@@ -1,0 +1,43 @@
+name: Compile against documentation examples
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-compilation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run compilation tests
+        id: compile-step
+        uses: datastax/astra-client-docs-tests/.github/actions/test-compilation@master
+        with:
+          clients: 'csharp'
+          args: -A csharp='<ProjectReference Include="${{ github.workspace }}/src/DataStax.AstraDB.DataApi/DataStax.AstraDB.DataApi.csproj"/>'
+          allow-failures: 'true'
+          docs-repo-token: ${{ secrets.DOC_GITHUB_PAT_CROSS_ORG }}
+          docs-repo: '@ske-csharp-client'
+
+      - name: Label PR on failure
+        uses: actions-ecosystem/action-add-labels@v1
+        if: steps.compile-step.outputs.failed_tests == 'true' && github.event.pull_request
+        with:
+          labels: 'Breaks Docs Compilation Tests'
+
+      - name: Remove label on success
+        uses: actions-ecosystem/action-remove-labels@v1
+        if: steps.compile-step.outputs.failed_tests == 'false' && github.event.pull_request
+        with:
+          labels: 'Breaks Docs Compilation Tests'
