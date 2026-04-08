@@ -64,7 +64,7 @@ internal class DeepDictionaryConverter : JsonConverter<object>
         throw new JsonException("Incomplete JSON object");
     }
 
-    private static object ConvertJsonElement(JsonElement element)
+    internal static object ConvertJsonElement(JsonElement element)
     {
         return element.ValueKind switch
         {

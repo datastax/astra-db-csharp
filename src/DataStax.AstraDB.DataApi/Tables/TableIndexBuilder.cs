@@ -31,9 +31,11 @@ public class TableIndexBuilder
     {
         return new TableIndexDefinition
         {
-            CaseSensitive = caseSensitive,
-            Normalize = normalize,
-            Ascii = ascii
+            Options = new TableIndexOptions {
+                CaseSensitive = caseSensitive,
+                Normalize = normalize,
+                Ascii = ascii
+            }
         };
     }
 
@@ -65,7 +67,9 @@ public class TableIndexBuilder
     {
         return new TableTextIndexDefinition()
         {
-            Analyzer = analyzer
+            Options = new TableTextIndexOptions {
+                Analyzer = analyzer
+            }
         };
     }
 
@@ -79,7 +83,9 @@ public class TableIndexBuilder
     {
         return new TableTextIndexDefinition()
         {
-            Analyzer = analyzer
+            Options = new TableTextIndexOptions {
+                Analyzer = analyzer
+            }
         };
     }
 
@@ -92,7 +98,9 @@ public class TableIndexBuilder
     {
         return new TableTextIndexDefinition()
         {
-            Analyzer = analyzerOptions
+            Options = new TableTextIndexOptions {
+                Analyzer = analyzerOptions
+            }
         };
     }
 
@@ -105,7 +113,9 @@ public class TableIndexBuilder
     {
         return new TableTextIndexDefinition()
         {
-            Analyzer = analyzer
+            Options = new TableTextIndexOptions {
+                Analyzer = analyzer
+            }
         };
     }
 
@@ -123,7 +133,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
     /// <returns></returns>
-    public TableVectorIndexDefinition Vector(SimilarityMetric metric = SimilarityMetric.Cosine)
+    public TableVectorIndexDefinition Vector(SimilarityMetric metric)
     {
         return Vector(metric, null);
     }
@@ -133,7 +143,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
     /// <returns></returns>
-    public TableVectorIndexDefinition Vector(string sourceModel = "other")
+    public TableVectorIndexDefinition Vector(string sourceModel)
     {
         return Vector(null, sourceModel);
     }
@@ -141,15 +151,17 @@ public class TableIndexBuilder
     /// <summary>
     /// Create a vector index.
     /// </summary>
-    /// <param name="metric">Optional similarity metric to use for vector searches on this index</param>
-    /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
+    /// <param name="metric">Similarity metric to use for vector searches on this index</param>
+    /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors. Pass a null for server default.</param>
     /// <returns></returns>
     public TableVectorIndexDefinition Vector(SimilarityMetric? metric, string sourceModel)
     {
         return new TableVectorIndexDefinition
         {
-            Metric = metric,
-            SourceModel = sourceModel
+            Options = new TableVectorIndexOptions {
+                Metric = metric,
+                SourceModel = sourceModel
+            }
         };
     }
 

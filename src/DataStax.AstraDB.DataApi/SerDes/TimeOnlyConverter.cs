@@ -41,6 +41,9 @@ public class TimeOnlyConverter : JsonConverter<TimeOnly>
         "HH:mm:ss.fffffff",
     };
 
+    /// <summary>
+    /// Reads and converts a JSON strin from the Data API to a <see cref="TimeOnly"/> value.
+    /// </summary>
     public override TimeOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var s = reader.GetString();
@@ -57,6 +60,9 @@ public class TimeOnlyConverter : JsonConverter<TimeOnly>
         throw new JsonException($"Unable to convert \"{reader.GetString()}\" to TimeOnly.");
     }
 
+    /// <summary>
+    /// Writes a <see cref="TimeOnly"/> value as a Data API-compatible JSON string.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, TimeOnly value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(value.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture));
@@ -70,6 +76,9 @@ public class TimeOnlyNullableConverter : JsonConverter<TimeOnly?>
 {
     private static readonly TimeOnlyConverter _inner = new();
 
+    /// <summary>
+    /// Reads and converts a JSON strin from the Data API to a <see cref="TimeOnly"/> value.
+    /// </summary>
     public override TimeOnly? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
@@ -77,6 +86,9 @@ public class TimeOnlyNullableConverter : JsonConverter<TimeOnly?>
         return _inner.Read(ref reader, typeof(TimeOnly), options);
     }
 
+    /// <summary>
+    /// Writes a <see cref="TimeOnly"/> value as a Data API-compatible JSON string.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, TimeOnly? value, JsonSerializerOptions options)
     {
         if (value == null)
