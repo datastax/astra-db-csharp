@@ -1,15 +1,8 @@
 name: Run integration tests on Astra Prod
 
 on:
+  workflow_call:
   workflow_dispatch:
-# ASTRA IT DISABLED until effort at fixing flakiness:
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
 
 env:
   ASTRA_DB_URL: ${{ secrets.ASTRA_DB_URL }}
@@ -31,4 +24,4 @@ jobs:
 
       - name: Run integration tests
         run: |
-          dotnet test ./test/DataStax.AstraDB.DataApi.IntegrationTests/
+          dotnet test ./test/DataStax.AstraDB.DataApi.UnitTests/

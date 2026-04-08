@@ -1,0 +1,59 @@
+name: Tests
+
+on:
+  merge_group:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      is_full_run: ${{ github.event_name == 'merge_group' || contains(github.event.pull_request.labels.*.name, 'Run Full Tests') }}
+    steps:
+      - run: exit 0
+
+  build:
+    name: Build client
+    needs: [setup]
+    uses: ./.github/workflows/_build.yml
+
+  run-unit-tests:
+    name: Run unit tests
+    needs: [setup]
+    uses: ./.github/workflows/_unit-tests.yml
+
+  run-hcd-integration-tests:
+    name: Run HCD integration tests
+    needs: [setup, run-unit-tests]
+    if: needs.setup.outputs.is_full_run == 'true'
+    uses: ./.github/workflows/_test-hcd.yml
+    secrets: inherit
+
+  run-astra-integration-tests:
+    name: Run Astra integration tests
+    needs: [setup, run-unit-tests]
+    if: github.event_name == 'merge_group' # We want to run this as little as possible to avoid messing up the shared Astra org
+    uses: ./.github/workflows/_test-astra.yml
+    secrets: inherit
+
+  can-enqueue:
+    name: Can enqueue
+    needs: [setup, build, run-unit-tests]
+    if: always() && github.event_name != 'merge_group'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check outcomes
+        run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | map(.value.result == "success" or .value.result == "skipped") | all'
+
+  can-merge:
+    name: Can merge
+    needs: [setup, build, run-unit-tests, run-hcd-integration-tests, run-astra-integration-tests]
+    if: always() && github.event_name == 'merge_group'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check outcomes
+        run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'to_entries | map(.value.result == "success" or .value.result == "skipped") | all'
