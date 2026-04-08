@@ -111,6 +111,19 @@ public class AdditionalTableTests
             Assert.True(first.Metadata.ContainsKey("language"));
             Assert.Equal("Italian", first.Metadata["language"]);
 
+            //untyped AllPairs
+            filter = builder.AllPairs("metadata",
+                new Dictionary<string, string>
+                {
+                    { "language", "Italian" },
+                    { "edition", "Illustrated Edition" }
+                });
+            results = table.Find(filter).ToList();
+
+            first = results.First();
+            Assert.True(first.Metadata.ContainsKey("language"));
+            Assert.Equal("Italian", first.Metadata["language"]);
+
         }
         finally
         {

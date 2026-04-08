@@ -213,6 +213,24 @@ public class TableTests
     }
 
     [Fact]
+    public async Task Update_Test_PrimaryKeyFilterBuilder()
+    {
+        var table = fixture.SearchTable;
+        var pk = Builders<RowBook>.PrimaryKeyFilter
+            .Add(x => x.Title, "Title 30")
+            .Add(x => x.NumberOfPages, 430);
+        var filter = Builders<RowBook>.TableFilter.CompositeKey(pk);
+        var update = Builders<RowBook>.Update.Set(x => x.Rating, 3.07)
+            .Set(x => x.Genres, new HashSet<string> { "SetItem1", "SetItem2" })
+            .Unset(x => x.DueDate);
+        await table.UpdateOneAsync(filter, update);
+        var updatedDocument = await table.FindOneAsync(filter);
+        Assert.Equal(3.07f, updatedDocument.Rating);
+        Assert.Equal(new HashSet<string> { "SetItem1", "SetItem2" }, updatedDocument.Genres);
+        Assert.Equal(default, updatedDocument.DueDate);
+    }
+
+    [Fact]
     public async Task Delete_One()
     {
         var tableName = "testDeleteOne";
@@ -606,7 +624,7 @@ public class TableTests
             var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
-                Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch<SimpleObjectWithLexical, string>((b) => b.LexicalValue, "dog"),
+                Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch((b) => b.LexicalValue, "dog"),
             };
 
             var result = await table.FindOneAsync(findOptions);
