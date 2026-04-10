@@ -260,9 +260,9 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_MapIndex_Keys()
+    public async Task CreateIndexTests_MapIndex_KeysNoOptions()
     {
-        var tableName = "tableIndexesTest_MapIndex_Keys";
+        var tableName = "CreateIndexTests_MapIndex_KeysNoOptions";
         string indexName = "map_k_idx";
 
         try
@@ -286,9 +286,41 @@ public class TableIndexesTests
     }
 
     [Fact]
-    public async Task CreateIndexTests_MapIndex_Values()
+    public async Task CreateIndexTests_MapIndex_KeysWithOptions()
     {
-        var tableName = "tableIndexesTest_MapIndex_Values";
+        var tableName = "CreateIndexTests_MapIndex_KeysWithOptions";
+        string indexName = "map_k_idx";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.StringMap,
+                Builders.TableIndex.Map(MapIndexType.Keys, true, true, true));
+            // compare: {"createIndex":{"name":"map_k_idx","definition":{"column":{"StringMap":"$keys"},"options":{"caseSensitive":true,"normalize":true,"ascii":true}}}}
+
+            var result = await table.ListIndexesAsync();
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
+            Assert.Equal(new Dictionary<string,string> { ["StringMap"] = "$keys" }, foundIndex.Definition.Column);
+            var indexDefinition = (TableIndexDefinition)foundIndex.Definition;
+            Assert.NotNull(indexDefinition.Options);
+            Assert.True(indexDefinition.Options.CaseSensitive);
+            Assert.True(indexDefinition.Options.Normalize);
+            Assert.True(indexDefinition.Options.Ascii);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_MapIndex_ValuesNoOptions()
+    {
+        var tableName = "CreateIndexTests_MapIndex_ValuesNoOptions";
         string indexName = "map_v_idx";
 
         try
@@ -303,6 +335,38 @@ public class TableIndexesTests
             Assert.NotNull(foundIndex);
             Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
             Assert.Equal(new Dictionary<string,string> { ["StringMap"] = "$values" }, foundIndex.Definition.Column);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task CreateIndexTests_MapIndex_ValuesWithOptions()
+    {
+        var tableName = "tableIndexesTest_MapIndex_Values";
+        string indexName = "map_v_idx";
+
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
+
+            await table.CreateIndexAsync(indexName, (b) => b.StringMap,
+                Builders.TableIndex.Map(MapIndexType.Values, true, true, true));
+            // compare: {"createIndex":{"name":"map_v_idx","definition":{"column":{"StringMap":"$values"},"options":{"caseSensitive":true,"normalize":true,"ascii":true}}}}
+
+            var result = await table.ListIndexesAsync();
+            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            Assert.NotNull(foundIndex);
+            Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
+            Assert.Equal(new Dictionary<string,string> { ["StringMap"] = "$values" }, foundIndex.Definition.Column);
+            var indexDefinition = (TableIndexDefinition)foundIndex.Definition;
+            Assert.NotNull(indexDefinition.Options);
+            Assert.True(indexDefinition.Options.CaseSensitive);
+            Assert.True(indexDefinition.Options.Normalize);
+            Assert.True(indexDefinition.Options.Ascii);
 
         }
         finally
