@@ -183,10 +183,16 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<RowEventByDay>(tableName);
             string indexName = "category_idx";
-            var indexDefinition = new TableIndexDefinition() { Options = new TableIndexOptions { Ascii = true,  CaseSensitive = true, Normalize = true } };
 
-            await table.CreateIndexAsync(indexName, (b) => b.Category, Builders.TableIndex.Index(true, true, true));
-            // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category","options":{"ascii":true,"caseSensitive":true,"normalize":true}}}}
+            await table.CreateIndexAsync(indexName, (b) => b.Category,
+                Builders.TableIndex.Index(new TableIndexOptions
+                    {
+                        CaseSensitive = true,
+                        Normalize = true,
+                        Ascii = true
+                    }
+                ));
+            // compare: {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":true,"normalize":true,"ascii":true},"column":"category"}}}
 
             var result = await table.ListIndexesAsync();
             var foundIndex = result.Single(i => i.Name == indexName);
@@ -296,7 +302,13 @@ public class TableIndexesTests
             var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
 
             await table.CreateIndexAsync(indexName, (b) => b.StringMap,
-                Builders.TableIndex.Map(MapIndexType.Keys, true, true, true));
+                Builders.TableIndex.Map(MapIndexType.Keys, new TableIndexOptions
+                    {
+                        CaseSensitive = true,
+                        Normalize = true,
+                        Ascii = true
+                    }
+                ));
             // compare: {"createIndex":{"name":"map_k_idx","definition":{"column":{"StringMap":"$keys"},"options":{"caseSensitive":true,"normalize":true,"ascii":true}}}}
 
             var result = await table.ListIndexesAsync();
@@ -353,8 +365,15 @@ public class TableIndexesTests
         {
             var table = await fixture.Database.CreateTableAsync<TableMapTest>(tableName);
 
-            await table.CreateIndexAsync(indexName, (b) => b.StringMap,
-                Builders.TableIndex.Map(MapIndexType.Values, true, true, true));
+            await table.CreateIndexAsync(
+                indexName, (b) => b.StringMap,
+                Builders.TableIndex.Map(MapIndexType.Values, new TableIndexOptions
+                    {
+                        CaseSensitive = true,
+                        Normalize = true,
+                        Ascii = true
+                    }
+                ));
             // compare: {"createIndex":{"name":"map_v_idx","definition":{"column":{"StringMap":"$values"},"options":{"caseSensitive":true,"normalize":true,"ascii":true}}}}
 
             var result = await table.ListIndexesAsync();
@@ -712,8 +731,9 @@ public class TableIndexesTests
 
     }
 
-    // [SkipWhenAstra] // TODO: reinstate this attribute once 115 is merged
-    [Fact(Skip="Run manually on HCD after some CQL setup!")]
+    [SkipWhenAstra]
+    // [Fact(Skip="Run manually on HCD after some CQL setup!")]
+    [Fact]
     public async Task ListIndexesTests_UnknownUnsupportedCQLIndex()
     {
         var tableName = "table_with_unsupported_index";

@@ -26,18 +26,17 @@ public class TableIndexBuilder
     /// <summary>
     /// Create a default table index.
     /// </summary>
-    /// <param name="caseSensitive">Whether the index should be case sensitive</param>
-    /// <param name="normalize">Whether the index should normalize the text</param>
-    /// <param name="ascii">Whether the index should use ASCII conversion</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
-    public TableIndexDefinition Index(bool caseSensitive = true, bool normalize = false, bool ascii = false)
+    /// <param name="options">A <see cref="TableIndexOptions"/> specification for the indexing options. Pass null for defaults</param>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
+    public TableIndexDefinition Index(TableIndexOptions options = null)
     {
         return new TableIndexDefinition
         {
-            Options = new TableIndexOptions {
-                CaseSensitive = caseSensitive,
-                Normalize = normalize,
-                Ascii = ascii
+            Options = options ?? new TableIndexOptions
+            {
+                CaseSensitive = true,
+                Normalize = false,
+                Ascii = false
             }
         };
     }
@@ -46,7 +45,7 @@ public class TableIndexBuilder
     /// Create a table index for a map column.
     /// </summary>
     /// <param name="mapIndexType">A <see cref="MapIndexType"/> value specifying how the map is indexed (keys, values or entries).</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableIndexDefinition Map(MapIndexType mapIndexType)
     {
         return new TableMapIndexDefinition(mapIndexType);
@@ -56,18 +55,17 @@ public class TableIndexBuilder
     /// Create a table index for a map column.
     /// </summary>
     /// <param name="mapIndexType">A <see cref="MapIndexType"/> value specifying how the map is indexed (keys, values or entries).</param>
-    /// <param name="caseSensitive">Whether the index should be case sensitive</param>
-    /// <param name="normalize">Whether the index should normalize the text</param>
-    /// <param name="ascii">Whether the index should use ASCII conversion</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
-    public TableIndexDefinition Map(MapIndexType mapIndexType, bool caseSensitive = true, bool normalize = false, bool ascii = false)
+    /// <param name="options">A <see cref="TableIndexOptions"/> specification for the indexing options. Pass null for defaults</param>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
+    public TableIndexDefinition Map(MapIndexType mapIndexType, TableIndexOptions options = null)
     {
-        return new TableMapIndexDefinition (
+        return new TableMapIndexDefinition(
             mapIndexType,
-            new TableIndexOptions {
-                CaseSensitive = caseSensitive,
-                Normalize = normalize,
-                Ascii = ascii
+            options ?? new TableIndexOptions
+            {
+                CaseSensitive = true,
+                Normalize = false,
+                Ascii = false
             }
         );
     }
@@ -75,7 +73,7 @@ public class TableIndexBuilder
     /// <summary>
     /// Create a table text index using the default analyzer.
     /// </summary>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableTextIndexDefinition Text()
     {
         return new TableTextIndexDefinition();
@@ -86,7 +84,7 @@ public class TableIndexBuilder
     /// See https://docs.datastax.com/en/astra-db-serverless/databases/analyzers.html#supported-built-in-analyzers
     /// </summary>
     /// <param name="analyzer">A <see cref="TextAnalyzer"/> value specifying a preset indexing method.</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableTextIndexDefinition Text(TextAnalyzer analyzer)
     {
         return new TableTextIndexDefinition()
@@ -102,7 +100,7 @@ public class TableIndexBuilder
     /// See https://docs.datastax.com/en/astra-db-serverless/databases/analyzers.html#supported-built-in-analyzers
     /// </summary>
     /// <param name="analyzer">A string value specifying a preset indexing method.</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableTextIndexDefinition Text(string analyzer)
     {
         return new TableTextIndexDefinition()
@@ -118,7 +116,7 @@ public class TableIndexBuilder
     /// See https://docs.datastax.com/en/astra-db-serverless/databases/analyzers.html#supported-built-in-analyzers
     /// </summary>
     /// <param name="analyzerOptions">An <see cref="AnalyzerOptions"/> object defining the analyzer options for the indexing.</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableTextIndexDefinition Text(AnalyzerOptions analyzerOptions)
     {
         return new TableTextIndexDefinition()
@@ -134,7 +132,7 @@ public class TableIndexBuilder
     /// See https://docs.datastax.com/en/astra-db-serverless/databases/analyzers.html#supported-built-in-analyzers
     /// </summary>
     /// <param name="analyzer">A free-form object defining the analyzer options for the indexing.</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableTextIndexDefinition Text(object analyzer)
     {
         return new TableTextIndexDefinition()
@@ -148,7 +146,7 @@ public class TableIndexBuilder
     /// <summary>
     /// Create a table vector index.
     /// </summary>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableVectorIndexDefinition Vector()
     {
         return Vector(null, null);
@@ -158,7 +156,7 @@ public class TableIndexBuilder
     /// Create a table vector index.
     /// </summary>
     /// <param name="metric">Similarity metric to use for vector searches on this index</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableVectorIndexDefinition Vector(SimilarityMetric metric)
     {
         return Vector(metric, null);
@@ -168,7 +166,7 @@ public class TableIndexBuilder
     /// Create a table vector index.
     /// </summary>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableVectorIndexDefinition Vector(string sourceModel)
     {
         return Vector(null, sourceModel);
@@ -179,7 +177,7 @@ public class TableIndexBuilder
     /// </summary>
     /// <param name="metric">Similarity metric to use for vector searches on this index</param>
     /// <param name="sourceModel">Allows enabling certain vector optimizations on the index by specifying the source model for your vectors. Pass a null for server default.</param>
-    /// <returns>An index definition for use in a <see cref="Table"/> CreateIndex method call.</returns>
+    /// <returns>An index definition for use in a <see cref="Table{T}"/> CreateIndex method call.</returns>
     public TableVectorIndexDefinition Vector(SimilarityMetric? metric, string sourceModel)
     {
         return new TableVectorIndexDefinition
