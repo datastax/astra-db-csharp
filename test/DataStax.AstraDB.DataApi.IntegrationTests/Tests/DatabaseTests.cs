@@ -348,8 +348,9 @@ public class DatabaseTests
         await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
+    [SkipWhenNotAstra]
     [Fact]
-    public async Task CreateCollection_WithVectorizeHeader()
+    public async Task CreateCollection_WithVectorizeNone_Untyped()
     {
         var collectionName = "collectionVectorizeHeader";
         var options = new CollectionDefinition
@@ -368,29 +369,46 @@ public class DatabaseTests
         var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
         Assert.NotNull(collection);
         Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new Document
+            {
+                { "$vectorize", "bla" }
+            });
+
         await fixture.Database.DropCollectionAsync(collectionName);
     }
 
-    [Fact]
-    public async Task CreateCollection_WithVectorizeSharedKey()
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateCollection_WithVectorizesharedSecret_Untyped()
     {
-        var collectionName = "collectionVectorizeSharedKey";
+        var collectionName = "collectionVectorizesharedSecret_Untyped";
         var options = new CollectionDefinition
         {
             Vector = new VectorOptions
             {
-                Dimension = 1024,
+                Dimension = 1536,
                 Metric = SimilarityMetric.DotProduct,
                 Service = new VectorServiceOptions()
                 {
-                    Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    Provider = "openai",
+                    ModelName = "text-embedding-3-small",
+                    Authentication = new Dictionary<string, string>
+                    {
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI" }
+                    }
                 }
             }
         };
         var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
         Assert.NotNull(collection);
         Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new Document
+            {
+                { "$vectorize", "bla" }
+            });
+
         await fixture.Database.DropCollectionAsync(collectionName);
     }
 
@@ -503,6 +521,108 @@ public class DatabaseTests
         finally
         {
             await fixture.Database.DropTableAsync<SimpleRowObject>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task CreateTable_WithVectorizeNone_Typed()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBookVectorize>();
+
+            await table.InsertOneAsync(new RowBookVectorize() {Title = "t", Author = "a", NumberOfPages = 123});
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorize>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateTable_WithVectorizeSharedSecret_Typed()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBookVectorizeSharedSecret>();
+
+            await table.InsertOneAsync(new RowBookVectorizeSharedSecret() {Title = "t", Author = "a", NumberOfPages = 123});
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorizeSharedSecret>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task CreateTable_WithVectorizeNone_Untyped()
+    {
+        var tableName = "bookTestTableVectorizeNone_Untyped";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddColumn("Title", DataApiType.Text())
+                .AddColumn("NumberOfPages", DataApiType.Int())
+                .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
+                {
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                }))
+                .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+
+            await table.InsertOneAsync(new Row() {
+                {"Title", "t"},
+                {"Author", "a"},
+                {"NumberOfPages", 123}
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateTable_WithVectorizeSharedSecret_Untyped()
+    {
+        var tableName = "bookTestTableVectorizeSharedSecret_Untyped";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddColumn("Title", DataApiType.Text())
+                .AddColumn("NumberOfPages", DataApiType.Int())
+                .AddColumn("Author", DataApiType.Vectorize(1536, new VectorServiceOptions
+                {
+                    Provider = "openai",
+                    ModelName = "text-embedding-3-small",
+                    Authentication = new Dictionary<string, string>
+                    {
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI" }
+                    }
+                }))
+                .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+
+            await table.InsertOneAsync(new Row() {
+                {"Title", "t"},
+                {"Author", "a"},
+                {"NumberOfPages", 123}
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
         }
     }
 
