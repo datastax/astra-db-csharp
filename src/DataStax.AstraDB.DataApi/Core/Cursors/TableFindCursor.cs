@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Tables;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataStax.AstraDB.DataApi.Core.Query.Cursors;
+namespace DataStax.AstraDB.DataApi.Core.Cursors;
 
-public class TableFindCursor<T> : FindCursor<T> where T : class
+public class TableFindCursor<T> : FindCursor<T, TableFindCursor<T>> where T : class
 {
     private readonly Table<T> _table;
 
@@ -38,42 +38,7 @@ public class TableFindCursor<T> : FindCursor<T> where T : class
         return new TableFindCursor<T>(_table, FindOptions.Clone(), CommandOptions);
     }
 
-    public new TableFindCursor<T> Filter(Filter<T> filter)
-    {
-        return (TableFindCursor<T>)base.Filter(filter);
-    }
-
-    public new TableFindCursor<T> Sort(SortBuilder<T> sort)
-    {
-        return (TableFindCursor<T>)base.Sort(sort);
-    }
-
-    public new TableFindCursor<T> Limit(int limit)
-    {
-        return (TableFindCursor<T>)base.Limit(limit);
-    }
-
-    public new TableFindCursor<T> Skip(int skip)
-    {
-        return (TableFindCursor<T>)base.Skip(skip);
-    }
-
-    public new TableFindCursor<T> Project(IProjectionBuilder projection)
-    {
-        return (TableFindCursor<T>)base.Project(projection);
-    }
-
-    public new TableFindCursor<T> IncludeSimilarity(bool include = true)
-    {
-        return (TableFindCursor<T>)base.IncludeSimilarity(include);
-    }
-
-    public new TableFindCursor<T> IncludeSortVector(bool include = true)
-    {
-        return (TableFindCursor<T>)base.IncludeSortVector(include);
-    }
-
-    internal override FindCursor<T> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options)
+    internal override FindCursor<T, TableFindCursor<T>> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options)
     {
         return new TableFindCursor<T>(_table, options, CommandOptions);
     }

@@ -15,12 +15,12 @@
  */
 
 using DataStax.AstraDB.DataApi.Collections;
-using System.Threading;
+using DataStax.AstraDB.DataApi.Core.Query;
 using System.Threading.Tasks;
 
-namespace DataStax.AstraDB.DataApi.Core.Query.Cursors;
+namespace DataStax.AstraDB.DataApi.Core.Cursors;
 
-public class CollectionFindCursor<T> : FindCursor<T> where T : class
+public class CollectionFindCursor<T> : FindCursor<T, CollectionFindCursor<T>> where T : class
 {
     private readonly Collection<T> _collection;
 
@@ -38,42 +38,7 @@ public class CollectionFindCursor<T> : FindCursor<T> where T : class
         return new CollectionFindCursor<T>(_collection, FindOptions.Clone(), CommandOptions);
     }
 
-    public new CollectionFindCursor<T> Filter(Filter<T> filter)
-    {
-        return (CollectionFindCursor<T>)base.Filter(filter);
-    }
-
-    public new CollectionFindCursor<T> Sort(SortBuilder<T> sort)
-    {
-        return (CollectionFindCursor<T>)base.Sort(sort);
-    }
-
-    public new CollectionFindCursor<T> Limit(int limit)
-    {
-        return (CollectionFindCursor<T>)base.Limit(limit);
-    }
-
-    public new CollectionFindCursor<T> Skip(int skip)
-    {
-        return (CollectionFindCursor<T>)base.Skip(skip);
-    }
-
-    public new CollectionFindCursor<T> Project(IProjectionBuilder projection)
-    {
-        return (CollectionFindCursor<T>)base.Project(projection);
-    }
-
-    public new CollectionFindCursor<T> IncludeSimilarity(bool include = true)
-    {
-        return (CollectionFindCursor<T>)base.IncludeSimilarity(include);
-    }
-
-    public new CollectionFindCursor<T> IncludeSortVector(bool include = true)
-    {
-        return (CollectionFindCursor<T>)base.IncludeSortVector(include);
-    }
-
-    internal override FindCursor<T> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options)
+    internal override FindCursor<T, CollectionFindCursor<T>> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options)
     {
         return new CollectionFindCursor<T>(_collection, options, CommandOptions);
     }

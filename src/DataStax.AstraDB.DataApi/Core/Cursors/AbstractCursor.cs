@@ -22,7 +22,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataStax.AstraDB.DataApi.Core.Query.Cursors;
+namespace DataStax.AstraDB.DataApi.Core.Cursors;
 
 public enum CursorState
 {
