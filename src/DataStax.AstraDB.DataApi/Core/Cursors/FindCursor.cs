@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataStax.AstraDB.DataApi.Core.Query.Cursors;
+namespace DataStax.AstraDB.DataApi.Core.Cursors;
 
 public class FindPage<T>
 {
@@ -36,10 +37,10 @@ public class FindPage<T>
     public float[] SortVector { get; }
 }
 
-public abstract class FindCursor<T> : AbstractCursor<T>
+public abstract class FindCursor<T, TCursor> : AbstractCursor<T> where TCursor : FindCursor<T, TCursor>
 {
-    internal IFindManyOptions<T, SortBuilder<T>> FindOptions { get; private set; }
-    internal CommandOptions CommandOptions { get; private set; }
+    internal IFindManyOptions<T, SortBuilder<T>> FindOptions { get; }
+    internal CommandOptions CommandOptions { get; }
     
     private FindPage<T> _currentPage;
     protected override List<T> _buffer => _currentPage?.Result;
@@ -50,39 +51,39 @@ public abstract class FindCursor<T> : AbstractCursor<T>
         CommandOptions = commandOptions;
     }
     
-    public FindCursor<T> Filter(Filter<T> filter)
+    public TCursor Filter(Filter<T> filter)
     {
-        return UpdateOptions(options => options.Filter = filter);
+        return (TCursor)UpdateOptions(options => options.Filter = filter);
     }
     
-    public FindCursor<T> Sort(SortBuilder<T> sort)
+    public TCursor Sort(SortBuilder<T> sort)
     {
-        return UpdateOptions(options => options.Sort = sort);
+        return (TCursor)UpdateOptions(options => options.Sort = sort);
     }
     
-    public FindCursor<T> Limit(int limit)
+    public TCursor Limit(int limit)
     {
-        return UpdateOptions(options => options.Limit = limit);
+        return (TCursor)UpdateOptions(options => options.Limit = limit);
     }
     
-    public FindCursor<T> Skip(int skip)
+    public TCursor Skip(int skip)
     {
-        return UpdateOptions(options => options.Skip = skip);
+        return (TCursor)UpdateOptions(options => options.Skip = skip);
     }
     
-    public FindCursor<T> Project(IProjectionBuilder projection) // TODO add a version with a NewT generic
+    public TCursor Project(IProjectionBuilder projection) // TODO add a version with a NewT generic
     {
-        return UpdateOptions(options => options.Projection = projection);
+        return (TCursor)UpdateOptions(options => options.Projection = projection);
     }
     
-    public FindCursor<T> IncludeSimilarity(bool include = true)
+    public TCursor IncludeSimilarity(bool include = true)
     {
-        return UpdateOptions(options => options.IncludeSimilarity = include);
+        return (TCursor)UpdateOptions(options => options.IncludeSimilarity = include);
     }
     
-    public FindCursor<T> IncludeSortVector(bool include = true)
+    public TCursor IncludeSortVector(bool include = true)
     {
-        return UpdateOptions(options => options.IncludeSortVector = include);
+        return (TCursor)UpdateOptions(options => options.IncludeSortVector = include);
     }
     
     public float[] GetSortVector()
@@ -129,14 +130,14 @@ public abstract class FindCursor<T> : AbstractCursor<T>
         return page.NextPageState != null;
     }
 
-    private FindCursor<T> UpdateOptions(Action<IFindManyOptions<T, SortBuilder<T>>> optionsUpdater)
+    private FindCursor<T, TCursor> UpdateOptions(Action<IFindManyOptions<T, SortBuilder<T>>> optionsUpdater)
     {
         var newOptions = FindOptions.Clone();
         optionsUpdater(newOptions);
         return CloneWithOptions(newOptions);
     }
     
-    internal abstract FindCursor<T> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options);
+    internal abstract FindCursor<T, TCursor> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options);
     
     protected abstract Task<FindPage<T>> FetchPageInternalAsync(bool runSynchronously);
 }
