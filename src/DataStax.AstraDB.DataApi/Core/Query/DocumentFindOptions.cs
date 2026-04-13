@@ -29,5 +29,4 @@ public class DocumentFindOptions<T> : FindOptions<T, DocumentSortBuilder<T>>
     /// </summary>
     [JsonIgnore]
     public override DocumentSortBuilder<T> Sort { get; set; }
-
 }

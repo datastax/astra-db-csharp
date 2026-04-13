@@ -20,12 +20,13 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Cursors;
 
-public class TableFindCursor<T> : FindCursor<T, TableFindCursor<T>> where T : class
+public class TableFindCursor<T> : FindCursor<T, TableFindCursor<T>> 
+    where T : class
 {
-    private readonly Table<T> _table;
+    private readonly Table<T, object> _table;
 
     internal TableFindCursor(
-        Table<T> table,
+        Table<T, object> table,
         IFindManyOptions<T, SortBuilder<T>> options,
         CommandOptions commandOptions
     ) : base(options, commandOptions)

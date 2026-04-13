@@ -37,7 +37,11 @@ public class FindPage<T>
     public float[] SortVector { get; }
 }
 
-public abstract class FindCursor<T, TCursor> : AbstractCursor<T> where TCursor : FindCursor<T, TCursor>
+delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, bool runSynchronously);
+
+public abstract class FindCursor<T, TCursor> : AbstractCursor<T> 
+    where T : class
+    where TCursor : FindCursor<T, TCursor>
 {
     internal IFindManyOptions<T, SortBuilder<T>> FindOptions { get; }
     internal CommandOptions CommandOptions { get; }
@@ -71,7 +75,7 @@ public abstract class FindCursor<T, TCursor> : AbstractCursor<T> where TCursor :
         return (TCursor)UpdateOptions(options => options.Skip = skip);
     }
     
-    public TCursor Project(IProjectionBuilder projection) // TODO add a version with a NewT generic
+    public TCursor Project(IProjectionBuilder projection)
     {
         return (TCursor)UpdateOptions(options => options.Projection = projection);
     }
@@ -137,7 +141,7 @@ public abstract class FindCursor<T, TCursor> : AbstractCursor<T> where TCursor :
         return CloneWithOptions(newOptions);
     }
     
-    internal abstract FindCursor<T, TCursor> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options);
+    internal abstract TCursor CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options);
     
     protected abstract Task<FindPage<T>> FetchPageInternalAsync(bool runSynchronously);
 }
