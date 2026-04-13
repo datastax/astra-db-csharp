@@ -78,7 +78,7 @@ delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, bool run
 /// </summary>
 /// <typeparam name="T">The type representing the record or row being queried.</typeparam>
 /// <typeparam name="TResult">The type to deserialize the results to (e.g., when using projections).</typeparam>
-/// <typeparam name="TSort">The type of sort builder to use (e.g., <see cref="recordSortBuilder{T}"/> or <see cref="TableSortBuilder{T}"/>).</typeparam>
+/// <typeparam name="TSort">The type of sort builder to use (e.g., <see cref="DocumentSortBuilder{T}"/> or <see cref="TableSortBuilder{T}"/>).</typeparam>
 /// <typeparam name="TCursor">The concrete cursor type for fluent method chaining.</typeparam>
 public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TResult>
     where T : class

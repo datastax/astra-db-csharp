@@ -903,6 +903,13 @@ public class Table<T> where T : class
         return Find(filter, null);
     }
 
+    /// <inheritdoc cref="Find()" path="/summary"/>
+    /// <param name="commandOptions"></param>
+    public TableFindCursor<T> Find(CommandOptions commandOptions)
+    {
+        return Find(null, commandOptions);
+    }
+
     /// <inheritdoc cref="Find(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
@@ -911,13 +918,39 @@ public class Table<T> where T : class
         return new(new TableFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);
     }
 
-    /// <inheritdoc cref="Find(TableFilter{T},CommandOptions)"/>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
+    /// <inheritdoc cref="Find()" path="/summary"/>
     /// <remarks>
-    /// This overload of Find() allows you to specify a different result class type <typeparamref name="TResult"/>
-    /// which the resultant rows will be deserialized into. This is generally used along with .Project() to limit the fields returned
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
+    public TableFindCursor<T, TResult> Find<TResult>() where TResult : class
+    {
+        return Find<TResult>(null, null);
+    }
+
+    /// <inheritdoc cref="Find(TableFilter{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter) where TResult : class
+    {
+        return Find<TResult>(filter, null);
+    }
+
+    /// <inheritdoc cref="Find(CommandOptions)"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public TableFindCursor<T, TResult> Find<TResult>(CommandOptions commandOptions) where TResult : class
+    {
+        return Find<TResult>(null, commandOptions);
+    }
+
+    /// <inheritdoc cref="Find{TResult}(TableFilter{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="commandOptions"></param>
     public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
     {
         return new(new TableFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);

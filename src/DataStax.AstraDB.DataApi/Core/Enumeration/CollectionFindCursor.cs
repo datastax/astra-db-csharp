@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core.Query;
 
 namespace DataStax.AstraDB.DataApi.Core.Enumeration;
