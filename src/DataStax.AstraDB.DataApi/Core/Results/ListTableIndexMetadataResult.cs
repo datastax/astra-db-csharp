@@ -23,7 +23,7 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 /// <summary>
 /// The result of listing index metadata for a table.
 /// </summary>
-public class ListTableIndexMetadataResult
+internal class ListTableIndexMetadataResult
 {
     /// <summary>
     /// The index metadata entries for the table.
