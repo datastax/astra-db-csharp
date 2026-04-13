@@ -15,6 +15,7 @@
  */
 
 using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.Tables;
 
 namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 
