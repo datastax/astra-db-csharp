@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -60,7 +61,7 @@ public class IndexColumnConverter : JsonConverter<object>
             return;
         }
 
-        if (value is Dictionary<string, string> dictValue)
+        if (value is IDictionary dictValue)
         {
             JsonSerializer.Serialize(writer, dictValue, options);
             return;

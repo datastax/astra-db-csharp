@@ -54,7 +54,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// Synchronous version of <see cref="ListIndexesAsync()"/>
     /// </summary>
     /// <returns></returns>
-    public ListTableIndexMetadataResult ListIndexes()
+    public List<TableIndexMetadata> ListIndexes()
     {
         return ListIndexes(null);
     }
@@ -64,7 +64,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public ListTableIndexMetadataResult ListIndexes(CommandOptions commandOptions)
+    public List<TableIndexMetadata> ListIndexes(CommandOptions commandOptions)
     {
         return ListIndexesAsync(commandOptions, true).ResultSync();
     }
@@ -73,7 +73,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// Get a list of indexes for the table.
     /// </summary>
     /// <returns></returns>
-    public Task<ListTableIndexMetadataResult> ListIndexesAsync()
+    public Task<List<TableIndexMetadata>> ListIndexesAsync()
     {
         return ListIndexesAsync(null);
     }
@@ -83,12 +83,12 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// </summary>
     /// <param name="commandOptions"></param>
     /// <returns></returns>
-    public Task<ListTableIndexMetadataResult> ListIndexesAsync(CommandOptions commandOptions)
+    public Task<List<TableIndexMetadata>> ListIndexesAsync(CommandOptions commandOptions)
     {
         return ListIndexesAsync(commandOptions, false);
     }
 
-    private async Task<ListTableIndexMetadataResult> ListIndexesAsync(CommandOptions commandOptions, bool runSynchronously)
+    private async Task<List<TableIndexMetadata>> ListIndexesAsync(CommandOptions commandOptions, bool runSynchronously)
     {
         var payload = new
         {
@@ -99,7 +99,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         };
         var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<ListTableIndexMetadataResult>(runSynchronously).ConfigureAwait(false);
-        return response.Result;
+        return response.Result.Indexes;
     }
 
     /// <summary>
