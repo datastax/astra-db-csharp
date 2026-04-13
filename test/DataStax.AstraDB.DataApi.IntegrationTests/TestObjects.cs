@@ -184,6 +184,20 @@ public class RowBookVectorize
     public float Rating { get; set; }
 }
 
+[TableName("bookTestTableVectorizeHeaderBased")]
+public class RowBookVectorizeHeaderBased
+{
+    [ColumnPrimaryKey(1)]
+    public string Title { get; set; }
+    [ColumnVectorize("openai", "text-embedding-3-small", dimension: 1536)]
+    public object Author { get; set; }
+    [ColumnPrimaryKey(2)]
+    public int NumberOfPages { get; set; }
+    public DateTime? DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
 [TableName("bookTestTableVectorizeSharedSecret")]
 public class RowBookVectorizeSharedSecret
 {
