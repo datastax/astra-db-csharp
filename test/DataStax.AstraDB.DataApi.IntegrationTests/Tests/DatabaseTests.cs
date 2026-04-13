@@ -65,7 +65,11 @@ public class DatabaseTests
 
         try
         {
-            await admin.CreateKeyspaceAsync(keyspaceName, true, false);
+            var waitingOptions = new BlockingCommandOptions
+            {
+                waitForCompletion = false,
+            };
+            await admin.CreateKeyspaceAsync(keyspaceName, true, waitingOptions);
             var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.False(keyspaceExists, $"Keyspace '{keyspaceName}' should still be being created.");
 
@@ -81,13 +85,13 @@ public class DatabaseTests
 
             //Wait a minute before dropping to ensure db is in a stable state
             await Task.Delay(1 * 60 * 1000, TestContext.Current.CancellationToken);
-            await admin.DropKeyspaceAsync(keyspaceName, false);
+            await admin.DropKeyspaceAsync(keyspaceName, waitingOptions);
             keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should still be being dropped.");
         }
         catch (Exception)
         {
-            await admin.DropKeyspaceAsync(keyspaceName, true);
+            await admin.DropKeyspaceAsync(keyspaceName);
         }
     }
 
@@ -100,10 +104,14 @@ public class DatabaseTests
 
         try
         {
-            await admin.CreateKeyspaceAsync(keyspaceName, true, true);
+            var waitingOptions = new BlockingCommandOptions
+            {
+                waitForCompletion = true,
+            };
+            await admin.CreateKeyspaceAsync(keyspaceName, true, waitingOptions);
             var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist after creation.");
-            await admin.DropKeyspaceAsync(keyspaceName, true);
+            await admin.DropKeyspaceAsync(keyspaceName, waitingOptions);
             keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.False(keyspaceExists, $"Keyspace '{keyspaceName}' should not exist after drop.");
         }
@@ -111,7 +119,7 @@ public class DatabaseTests
         {
             try
             {
-                await admin.DropKeyspaceAsync(keyspaceName, true);
+                await admin.DropKeyspaceAsync(keyspaceName);
             }
             catch (Exception)
             {
