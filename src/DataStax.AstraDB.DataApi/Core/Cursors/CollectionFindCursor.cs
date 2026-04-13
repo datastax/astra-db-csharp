@@ -20,14 +20,16 @@ using System.Threading.Tasks;
 
 namespace DataStax.AstraDB.DataApi.Core.Cursors;
 
-public class CollectionFindCursor<T> : FindCursor<T, CollectionFindCursor<T>> where T : class
+public class CollectionFindCursor<T> : FindCursor<T, CollectionFindCursor<T>> 
+    where T : class
 {
-    private readonly Collection<T> _collection;
+    private readonly Collection<T, object> _collection;
 
     internal CollectionFindCursor(
-        Collection<T> collection,
-        IFindManyOptions<T, SortBuilder<T>> options,
-        CommandOptions commandOptions
+        // IFindManyOptions<T, SortBuilder<T>> options,
+        DocumentFindManyOptions<T> options,
+        CommandOptions commandOptions,
+        FetchPageFunc<T, CollectionFindCursor<T>> fetchPage
     ) : base(options, commandOptions)
     {
         _collection = collection;
@@ -38,7 +40,7 @@ public class CollectionFindCursor<T> : FindCursor<T, CollectionFindCursor<T>> wh
         return new CollectionFindCursor<T>(_collection, FindOptions.Clone(), CommandOptions);
     }
 
-    internal override FindCursor<T, CollectionFindCursor<T>> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options)
+    internal override CollectionFindCursor<T> CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options)
     {
         return new CollectionFindCursor<T>(_collection, options, CommandOptions);
     }

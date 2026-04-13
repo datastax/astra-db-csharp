@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Cursors;
 using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
@@ -846,18 +847,17 @@ public class Table<T> where T : class
     /// <summary>
     /// Find rows in the table.
     /// 
-    /// The Find() methods return a <see cref="FindEnumerator{T,TResult,TSort}"/> object that can be used to further structure the query
+    /// The Find() methods return a <see cref="Core.Cursors.TableFindCursor{T,TResult}"/> object that can be used to further structure the query
     /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
     /// 
-    /// The <see cref="FindEnumerator{T,TResult,TSort}"/> object can be directly enumerated both synchronously and asynchronously.
-    /// Secondarily, the results can be paged through manually by using the results of <see cref="FindEnumerator{T,TResult,TSort}.ToCursor()"/>.
+    /// The <see cref="Core.Cursors.TableFindCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
     /// </summary>
     /// <returns></returns>
     /// <example>
     /// Synchronous Enumeration:
     /// <code>
-    /// var FindEnumerator = table.Find();
-    /// foreach (var row in FindEnumerator)
+    /// var cursor = table.Find();
+    /// foreach (var row in cursor)
     /// {
     ///     // Process row
     /// }
@@ -879,7 +879,7 @@ public class Table<T> where T : class
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public FindEnumerator<T, T, TableSortBuilder<T>> Find()
+    public TableFindCursor<T> Find()
     {
         return Find(null, null);
     }
@@ -898,7 +898,7 @@ public class Table<T> where T : class
     /// }
     /// </code>
     /// </example>
-    public FindEnumerator<T, T, TableSortBuilder<T>> Find(TableFilter<T> filter)
+    public TableFindCursor<T> Find(TableFilter<T> filter)
     {
         return Find(filter, null);
     }
@@ -906,7 +906,7 @@ public class Table<T> where T : class
     /// <inheritdoc cref="Find(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
-    public FindEnumerator<T, T, TableSortBuilder<T>> Find(TableFilter<T> filter, CommandOptions commandOptions)
+    public TableFindCursor<T> Find(TableFilter<T> filter, CommandOptions commandOptions)
     {
         return Find<T>(filter, commandOptions);
     }
@@ -918,16 +918,16 @@ public class Table<T> where T : class
     /// This overload of Find() allows you to specify a different result class type <typeparamref name="TResult"/>
     /// which the resultant rows will be deserialized into. This is generally used along with .Project() to limit the fields returned
     /// </remarks>
-    public FindEnumerator<T, TResult, TableSortBuilder<T>> Find<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
+    public TableFindCursor<TResult> Find<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
     {
         var findOptions = new TableFindManyOptions<T>
         {
             Filter = filter
         };
-        return new FindEnumerator<T, TResult, TableSortBuilder<T>>(this, findOptions, commandOptions);
+        return new TableFindCursor<TResult>(this, findOptions, commandOptions);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, TableFindStatusResult>> RunFindManyAsync<TResult>( IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, TableFindStatusResult>> RunFindManyAsync<TResult>(IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
         where TResult : class 
     {
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);

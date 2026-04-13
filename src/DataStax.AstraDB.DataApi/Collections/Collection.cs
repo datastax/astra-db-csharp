@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Cursors;
 using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
@@ -616,18 +617,17 @@ public class Collection<T, TId> where T : class
     /// <summary>
     /// Find documents in the collection.
     /// 
-    /// The Find() methods return a <see cref="FindEnumerator{T,TResult,TSort}"/> object that can be used to further structure the query
+    /// The Find() methods return a <see cref="Core.Cursors.CollectionFindCursor{T,TResult}"/> object that can be used to further structure the query
     /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
     /// 
-    /// The <see cref="FindEnumerator{T,TResult,TSort}"/> object can be directly enumerated both synchronously and asynchronously.
-    /// Secondly, the results can be paged through more manually by using the <see cref="FindEnumerator{T,TResult,TSort}.ToCursor()"/> method.
+    /// The <see cref="Core.Cursors.CollectionFindCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
     /// </summary>
     /// <returns></returns>
     /// <example>
     /// Synchronous Enumeration:
     /// <code>
-    /// var FindEnumerator = collection.Find();
-    /// foreach (var document in FindEnumerator)
+    /// var cursor = collection.Find();
+    /// foreach (var document in cursor)
     /// {
     ///     // Process document
     /// }
@@ -649,7 +649,7 @@ public class Collection<T, TId> where T : class
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find()
+    public CollectionFindCursor<T> Find()
     {
         return Find(null, null);
     }
@@ -664,14 +664,14 @@ public class Collection<T, TId> where T : class
     /// var results = collection.Find(filter).Sort(sort);
     /// </code>
     /// </example>
-    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find(CollectionFilter<T> filter)
+    public CollectionFindCursor<T> Find(CollectionFilter<T> filter)
     {
         return Find(filter, null);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
     /// <param name="commandOptions"></param>
-    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find(CommandOptions commandOptions)
+    public CollectionFindCursor<T> Find(CommandOptions commandOptions)
     {
         return Find(null, commandOptions);
     }
@@ -679,7 +679,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="Find(CollectionFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
-    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find(CollectionFilter<T> filter, CommandOptions commandOptions)
+    public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CommandOptions commandOptions)
     {
         return Find<T>(filter, commandOptions);
     }
@@ -689,7 +689,7 @@ public class Collection<T, TId> where T : class
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>() where TResult : class
+    public CollectionFindCursor<TResult> Find<TResult>() where TResult : class
     {
         return Find<TResult>(null, null);
     }
@@ -699,7 +699,7 @@ public class Collection<T, TId> where T : class
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>(CollectionFilter<T> filter) where TResult : class
+    public CollectionFindCursor<TResult> Find<TResult>(CollectionFilter<T> filter) where TResult : class
     {
         return Find<TResult>(filter, null);
     }
@@ -709,7 +709,7 @@ public class Collection<T, TId> where T : class
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>(CommandOptions commandOptions) where TResult : class
+    public CollectionFindCursor<TResult> Find<TResult>(CommandOptions commandOptions) where TResult : class
     {
         return Find<TResult>(null, commandOptions);
     }
@@ -717,13 +717,28 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="Find{TResult}(CollectionFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
-    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions) where TResult : class
+    public CollectionFindCursor<TResult> Find<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions) where TResult : class
     {
         var findOptions = new DocumentFindManyOptions<T>()
         {
             Filter = filter
         };
-        return new FindEnumerator<T, TResult, CollectionSortBuilder<T>>(this, findOptions, commandOptions);
+        
+        
+        return new CollectionFindCursor<TResult>(findOptions, commandOptions, async (cursor, runSynchronously) =>
+        {
+            var response = await RunFindManyAsync<T>(
+                cursor.FindOptions,
+                cursor.CommandOptions,
+                runSynchronously
+            ).ConfigureAwait(false);
+
+            return new FindPage<T>(
+                response.Data.NextPageState,
+                response.Data.Items,
+                response.Status.SortVector
+            );
+        });
     }
 
     internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(IFindManyOptions<T, CollectionSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)

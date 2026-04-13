@@ -46,5 +46,4 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
         };
         return clone;
     }
-
 }
