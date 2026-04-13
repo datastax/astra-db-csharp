@@ -598,7 +598,11 @@ public class Collection<T, TId> where T : class
 
     private async Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, DocumentFindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        findOptions.Filter = filter;
+        findOptions = findOptions != null ? findOptions.Clone() : new DocumentFindOptions<T>();
+        if (findOptions.Filter == null && filter != null)
+        {
+            findOptions.Filter = filter;
+        }
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response.Data.Document;
@@ -720,7 +724,7 @@ public class Collection<T, TId> where T : class
         return new FindPage<TResult>(
             response.Data.NextPageState,
             response.Data.Items,
-            response.Status.SortVector
+            response.Status?.SortVector
         );
     }
 

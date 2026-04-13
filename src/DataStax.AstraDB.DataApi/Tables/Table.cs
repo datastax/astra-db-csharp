@@ -944,7 +944,7 @@ public class Table<T> where T : class
         return new FindPage<TResult>(
             response.Data.NextPageState,
             response.Data.Items,
-            response.Status.SortVector
+            response.Status?.SortVector
         );
     }
 
@@ -1123,8 +1123,7 @@ public class Table<T> where T : class
         return FindOneAsync<TResult>(filter, findOptions, commandOptions, false);
     }
 
-    internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
-        where TResult : class
+    internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously) where TResult : class
     {
         findOptions = findOptions != null ? findOptions.Clone() : new TableFindOptions<T>();
         if (findOptions.Filter == null && filter != null)
@@ -1136,7 +1135,7 @@ public class Table<T> where T : class
         var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
-            if (response != null && response.Data != null && response.Data.Document != null)
+            if (response is { Data.Document: not null })
             {
                 ProcessUntypedRow(response.Data.Document as Row, response.Status.ProjectionSchema);
             }

@@ -31,9 +31,9 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
 
     bool? IFindManyOptions<T, DocumentSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
-    IFindManyOptions<T, DocumentSortBuilder<T>> IFindManyOptions<T, DocumentSortBuilder<T>>.Clone()
+    internal override DocumentFindOptions<T> Clone()
     {
-        var clone = new DocumentFindManyOptions<T>
+        return new DocumentFindManyOptions<T>
         {
             Filter = Filter != null ? Filter.Clone() : null,
             PageState = PageState,
@@ -44,6 +44,10 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
             Projection = Projection != null ? Projection.Clone() : null,
             Sort = Sort != null ? Sort.Clone() : null
         };
-        return clone;
+    }
+
+    IFindManyOptions<T, DocumentSortBuilder<T>> IFindManyOptions<T, DocumentSortBuilder<T>>.Clone()
+    {
+        return (DocumentFindManyOptions<T>)Clone();
     }
 }

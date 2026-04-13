@@ -189,7 +189,7 @@ public class TableTests
         var sorter = Builders<RowBook>.TableSort;
         var sort = sorter.Ascending(b => b.Title);
         var projection = Builders<RowBook>.Projection.Exclude(b => b.DueDate);
-        var results = table.Find().Sort(sort).Project(projection).Skip(2).Limit(5);
+        var results = table.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
         Assert.Equal(5, results.Count());
         //TODO: not working on API side yet?
         //Assert.Equal("Title 2", results.First().Title);
