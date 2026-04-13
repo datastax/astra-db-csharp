@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataStax.AstraDB.DataApi.Core.Cursors;
+namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 
 public class FindPage<T>
 {
@@ -39,55 +39,59 @@ public class FindPage<T>
 
 delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, bool runSynchronously);
 
-public abstract class FindCursor<T, TCursor> : AbstractCursor<T> 
+public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TResult>
     where T : class
-    where TCursor : FindCursor<T, TCursor>
+    where TResult : class
+    where TSort : SortBuilder<T>
+    where TCursor : FindCursor<T, TResult, TSort, TCursor>
 {
-    internal IFindManyOptions<T, SortBuilder<T>> FindOptions { get; }
+    internal IFindManyOptions<T, TSort> FindOptions { get; }
     internal CommandOptions CommandOptions { get; }
+    internal readonly FetchPageFunc<TResult, TCursor> FetchPageFunc;
     
-    private FindPage<T> _currentPage;
-    protected override List<T> _buffer => _currentPage?.Result;
+    private FindPage<TResult> _currentPage;
+    protected override List<TResult> _buffer => _currentPage?.Result;
     
-    internal FindCursor(IFindManyOptions<T, SortBuilder<T>> options, CommandOptions commandOptions)
+    internal FindCursor(IFindManyOptions<T, TSort> options, CommandOptions commandOptions, FetchPageFunc<TResult, TCursor> fetchPage) 
     {
         FindOptions = options.Clone();
         CommandOptions = commandOptions;
+        FetchPageFunc = fetchPage;
     }
     
     public TCursor Filter(Filter<T> filter)
     {
-        return (TCursor)UpdateOptions(options => options.Filter = filter);
+        return UpdateOptions(options => options.Filter = filter);
     }
     
-    public TCursor Sort(SortBuilder<T> sort)
+    public TCursor Sort(TSort sort)
     {
-        return (TCursor)UpdateOptions(options => options.Sort = sort);
+        return UpdateOptions(options => options.Sort = sort);
     }
     
     public TCursor Limit(int limit)
     {
-        return (TCursor)UpdateOptions(options => options.Limit = limit);
+        return UpdateOptions(options => options.Limit = limit);
     }
     
     public TCursor Skip(int skip)
     {
-        return (TCursor)UpdateOptions(options => options.Skip = skip);
+        return UpdateOptions(options => options.Skip = skip);
     }
     
     public TCursor Project(IProjectionBuilder projection)
     {
-        return (TCursor)UpdateOptions(options => options.Projection = projection);
+        return UpdateOptions(options => options.Projection = projection);
     }
     
     public TCursor IncludeSimilarity(bool include = true)
     {
-        return (TCursor)UpdateOptions(options => options.IncludeSimilarity = include);
+        return UpdateOptions(options => options.IncludeSimilarity = include);
     }
     
     public TCursor IncludeSortVector(bool include = true)
     {
-        return (TCursor)UpdateOptions(options => options.IncludeSortVector = include);
+        return UpdateOptions(options => options.IncludeSortVector = include);
     }
     
     public float[] GetSortVector()
@@ -128,20 +132,18 @@ public abstract class FindCursor<T, TCursor> : AbstractCursor<T>
             CommandOptions.BulkOperationCancellationToken = cancellationToken;
         }
 
-        var page = await FetchPageInternalAsync(runSynchronously).ConfigureAwait(false);
+        var page = await FetchPageFunc((TCursor)this, runSynchronously).ConfigureAwait(false);
         FindOptions.PageState = page.NextPageState;
         _currentPage = page;
         return page.NextPageState != null;
     }
 
-    private FindCursor<T, TCursor> UpdateOptions(Action<IFindManyOptions<T, SortBuilder<T>>> optionsUpdater)
+    private TCursor UpdateOptions(Action<IFindManyOptions<T, TSort>> optionsUpdater)
     {
         var newOptions = FindOptions.Clone();
         optionsUpdater(newOptions);
         return CloneWithOptions(newOptions);
     }
     
-    internal abstract TCursor CloneWithOptions(IFindManyOptions<T, SortBuilder<T>> options);
-    
-    protected abstract Task<FindPage<T>> FetchPageInternalAsync(bool runSynchronously);
+    internal abstract TCursor CloneWithOptions(IFindManyOptions<T, TSort> options);
 }

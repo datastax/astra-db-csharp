@@ -16,7 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
-using DataStax.AstraDB.DataApi.Core.Cursors;
+using DataStax.AstraDB.DataApi.Core.Enumeration;
 using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
@@ -847,10 +847,10 @@ public class Table<T> where T : class
     /// <summary>
     /// Find rows in the table.
     /// 
-    /// The Find() methods return a <see cref="Core.Cursors.TableFindCursor{T,TResult}"/> object that can be used to further structure the query
+    /// The Find() methods return a <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object that can be used to further structure the query
     /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
     /// 
-    /// The <see cref="Core.Cursors.TableFindCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
+    /// The <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
     /// </summary>
     /// <returns></returns>
     /// <example>
@@ -908,7 +908,7 @@ public class Table<T> where T : class
     /// <param name="commandOptions"></param>
     public TableFindCursor<T> Find(TableFilter<T> filter, CommandOptions commandOptions)
     {
-        return Find<T>(filter, commandOptions);
+        return new(new TableFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);
     }
 
     /// <inheritdoc cref="Find(TableFilter{T},CommandOptions)"/>
@@ -918,25 +918,21 @@ public class Table<T> where T : class
     /// This overload of Find() allows you to specify a different result class type <typeparamref name="TResult"/>
     /// which the resultant rows will be deserialized into. This is generally used along with .Project() to limit the fields returned
     /// </remarks>
-    public TableFindCursor<TResult> Find<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
     {
-        var findOptions = new TableFindManyOptions<T>
-        {
-            Filter = filter
-        };
-        return new TableFindCursor<TResult>(this, findOptions, commandOptions);
+        return new(new TableFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, TableFindStatusResult>> RunFindManyAsync<TResult>(IFindManyOptions<T, SortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
-        where TResult : class 
+    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, bool runSynchronously) where TResult : class
     {
-        commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
-        var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
+        var command = CreateCommand("find").WithPayload(cursor.FindOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
+        
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
             var columnsInResult = response.Status.ProjectionSchema;
-            if (response != null && response.Data != null && response.Data.Items != null)
+            if (response.Data is { Items: not null })
             {
                 foreach (var row in response.Data.Items)
                 {
@@ -944,7 +940,12 @@ public class Table<T> where T : class
                 }
             }
         }
-        return response;
+        
+        return new FindPage<TResult>(
+            response.Data.NextPageState,
+            response.Data.Items,
+            response.Status.SortVector
+        );
     }
 
     /// <inheritdoc cref="FindOneAsync()"/>
