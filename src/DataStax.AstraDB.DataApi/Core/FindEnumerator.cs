@@ -228,5 +228,4 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
         optionsUpdater(_findOptions);
         return new FindEnumerator<T, TResult, TSort>(_queryRunner, _findOptions, _commandOptions);
     }
-
 }
