@@ -65,9 +65,9 @@ public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, 
     internal bool? IncludeSortVector { get => _includeSortVector; set => _includeSortVector = value; }
     bool? IFindManyOptions<T, TableSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
-    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
+    internal override TableFindOptions<T> Clone()
     {
-        var clone = new TableFindManyOptions<T>
+        return new TableFindManyOptions<T>
         {
             Filter = Filter != null ? Filter.Clone() : null,
             PageState = PageState,
@@ -77,7 +77,11 @@ public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, 
             Projection = Projection != null ? Projection.Clone() : null,
             Sort = Sort != null ? Sort.Clone() : null
         };
-        return clone;
+    }
+
+    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
+    {
+        return (TableFindManyOptions<T>)Clone();
     }
 
 }

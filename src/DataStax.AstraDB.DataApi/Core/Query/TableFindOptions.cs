@@ -30,7 +30,7 @@ public class TableFindOptions<T> : FindOptions<T, TableSortBuilder<T>>
     [JsonIgnore]
     public override TableSortBuilder<T> Sort { get; set; }
 
-    internal TableFindOptions<T> Clone()
+    internal virtual TableFindOptions<T> Clone()
     {
         return new TableFindOptions<T>
         {

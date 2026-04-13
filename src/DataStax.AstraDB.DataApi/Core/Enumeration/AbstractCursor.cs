@@ -43,7 +43,6 @@ public class CursorError : Exception
 
 public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnumerable<T>
 {
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
     protected abstract List<T> _buffer { get; }
     private bool _isNextPage = true;
     
@@ -55,25 +54,17 @@ public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnu
 
     public IReadOnlyList<T> ConsumeBuffer(int max = 0)
     {
-        _semaphore.Wait();
-        try
+        if (_buffer == null || _buffer.Count == 0)
         {
-            if (_buffer == null || _buffer.Count == 0)
-            {
-                return new List<T>();
-            }
-
-            var count = max > 0 ? Math.Min(max, _buffer.Count) : _buffer.Count;
-            var result = _buffer.Take(count).ToList();
-            _buffer.RemoveRange(0, count);
-            Consumed += count;
-
-            return result;
-        } 
-        finally
-        {
-            _semaphore.Release();
+            return new List<T>();
         }
+
+        var count = max > 0 ? Math.Min(max, _buffer.Count) : _buffer.Count;
+        var result = _buffer.Take(count).ToList();
+        _buffer.RemoveRange(0, count);
+        Consumed += count;
+
+        return result;
     }
     
     public bool HasNext()
@@ -136,7 +127,7 @@ public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnu
     {
         State = CursorState.Closed;
         _isNextPage = false;
-        _semaphore?.Dispose();
+        _buffer?.Clear();
     }
 
     public virtual void Rewind()
@@ -155,37 +146,23 @@ public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnu
             return default;
         }
 
-        await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
+        State = CursorState.Started;
+
+        while (_buffer == null || _buffer.Count == 0)
         {
-            State = CursorState.Started;
-
-            while (_buffer == null || _buffer.Count == 0)
+            if (!_isNextPage)
             {
-                if (!_isNextPage)
-                {
-                    Dispose();
-                    return default;
-                }
-
-                _isNextPage = await FetchNextPageAsync(cancellationToken, runSynchronously).ConfigureAwait(false);
+                return default;
             }
 
-            if (peek)
-            {
-                return _buffer.FirstOrDefault();
-            }
+            _isNextPage = await FetchNextPageAsync(cancellationToken, runSynchronously).ConfigureAwait(false);
+        }
 
-            return ConsumeBuffer(1).FirstOrDefault();
-        }
-        catch
+        if (peek)
         {
-            Dispose();
-            throw;
+            return _buffer.FirstOrDefault();
         }
-        finally
-        {
-            _semaphore.Release();
-        }
+
+        return ConsumeBuffer(1).FirstOrDefault();
     }
 }

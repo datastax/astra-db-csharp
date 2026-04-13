@@ -190,7 +190,7 @@ public class TableTests
         var sorter = Builders<RowBook>.TableSort;
         var sort = sorter.Ascending(b => b.Title);
         var projection = Builders<RowBook>.Projection.Exclude(b => b.DueDate);
-        var results = table.Find().Sort(sort).Project(projection).Skip(2).Limit(5);
+        var results = table.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
         Assert.Equal(5, results.Count());
         // due to 'Computed...' and 'Desert...', the third is 'Title 0' here
         Assert.Equal("Title 0", results.First().Title);

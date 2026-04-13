@@ -730,7 +730,7 @@ public class Collection<T, TId> where T : class
         return new FindPage<TResult>(
             response.Data.NextPageState,
             response.Data.Items,
-            response.Status.SortVector
+            response.Status?.SortVector
         );
     }
 

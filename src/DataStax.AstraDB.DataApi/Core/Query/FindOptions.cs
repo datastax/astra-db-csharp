@@ -103,5 +103,4 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
     IProjectionBuilder IFindOptions<T, TSort>.Projection { get => Projection; set => Projection = value; }
     [JsonIgnore]
     bool? IFindOptions<T, TSort>.IncludeSimilarity { get => IncludeSimilarity; set => IncludeSimilarity = value; }
-
 }
