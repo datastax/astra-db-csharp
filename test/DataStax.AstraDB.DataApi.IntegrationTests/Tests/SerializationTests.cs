@@ -248,6 +248,38 @@ public class SerializationTests
 	private const string _knownBinaryBase64 = "PczMzb5MzM0+mZma";
 
 	[Fact]
+	public void Test_PlainFloatArray_Serialization_ProducesJsonArray()
+	{
+		var obj = new PlainFloatArrayObject { _id = "test-pfa-1", Values = new[] { 1.0f, 2.0f, 3.0f } };
+		var collection = fixture.Database.GetCollection<PlainFloatArrayObject>("serializationTest3");
+		string serialized = collection.CheckSerialization(obj);
+		Assert.Contains("\"Values\": [", serialized);
+		Assert.DoesNotContain("$binary", serialized);
+	}
+
+	[Fact]
+	public void Test_DocumentMappingVector_Serialization_ProducesBinaryInsideDollarVector()
+	{
+		var obj = new BinaryVectorObject { _id = "test-dmv-1", TheVector = new[] { 0.1f, -0.2f, 0.3f } };
+		var collection = fixture.Database.GetCollection<BinaryVectorObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { InputConverter = new DocumentConverter<BinaryVectorObject>() };
+		string serialized = collection.CheckSerialization(obj, commandOptions);
+		Assert.Contains("\"$vector\":", serialized);
+		Assert.Contains("\"$binary\":", serialized);
+	}
+
+	[Fact]
+	public void Test_RowConverter_ColumnVector_Serialization_ProducesBinary()
+	{
+		var row = new RowTestObject { Name = "test-row-1", Vector = new[] { 0.1f, 0.2f, 0.3f, 0.4f } };
+		var commandOptions = new[] { new CommandOptions() { InputConverter = new RowConverter<RowTestObject>() } };
+		var command = new Command("serializationTest", new DataAPIClient(), commandOptions, null);
+		string serialized = command.Serialize(row);
+		Assert.Contains("\"$binary\":", serialized);
+		Assert.DoesNotContain("\"Vector\": [", serialized);
+	}
+
+	[Fact]
 	public void Test_FloatArrayWriter_Serialization_ProducesJsonArray()
 	{
 		var obj = new FloatArrayWriterObject { _id = "test-fa-1", Vector = new[] { 1.0f, 2.0f, 3.0f } };

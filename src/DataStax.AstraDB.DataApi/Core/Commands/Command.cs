@@ -179,7 +179,7 @@ internal class Command
         serializeOptions.Converters.Add(new ObjectIdConverter());
         serializeOptions.Converters.Add(new DurationConverter());
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
-        serializeOptions.Converters.Add(new FloatBinaryWriter());
+        serializeOptions.Converters.Add(new FloatArrayWriter());
         serializeOptions.Converters.Add(new TimeUuidJsonConverter());
 #if NET6_0_OR_GREATER
         serializeOptions.Converters.Add(new TimeOnlyConverter());

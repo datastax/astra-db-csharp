@@ -544,6 +544,13 @@ public class BinaryVectorObject
     public float[] TheVector { get; set; }
 }
 
+public class PlainFloatArrayObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    public float[] Values { get; set; }
+}
+
 public class FloatArrayWriterObject
 {
     [DocumentId]

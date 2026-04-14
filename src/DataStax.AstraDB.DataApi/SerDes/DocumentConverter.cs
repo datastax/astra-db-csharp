@@ -163,7 +163,16 @@ public class DocumentConverter<T> : JsonConverter<T>
 
                 writer.WritePropertyName(propertyName);
 
-                JsonSerializer.Serialize(writer, propValue, prop.PropertyType, options);
+                if (docMappingAttr?.Field == DocumentMappingField.Vector
+                    && prop.PropertyType == typeof(float[])
+                    && propValue is float[] floatVec)
+                {
+                    new FloatBinaryWriter().Write(writer, floatVec, options);
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, propValue, prop.PropertyType, options);
+                }
             }
         }
 
