@@ -312,7 +312,7 @@ public class TableIndexesTests
             // compare: {"createIndex":{"name":"map_k_idx","definition":{"column":{"StringMap":"$keys"},"options":{"caseSensitive":true,"normalize":true,"ascii":true}}}}
 
             var result = await table.ListIndexesAsync();
-            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            var foundIndex = result.Single(i => i.Name == indexName);
             Assert.NotNull(foundIndex);
             Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
             Assert.Equal(new Dictionary<string,string> { ["StringMap"] = "$keys" }, foundIndex.Definition.Column);
@@ -377,7 +377,7 @@ public class TableIndexesTests
             // compare: {"createIndex":{"name":"map_v_idx","definition":{"column":{"StringMap":"$values"},"options":{"caseSensitive":true,"normalize":true,"ascii":true}}}}
 
             var result = await table.ListIndexesAsync();
-            var foundIndex = result.Indexes.Single(i => i.Name == indexName);
+            var foundIndex = result.Single(i => i.Name == indexName);
             Assert.NotNull(foundIndex);
             Assert.IsType<TableIndexDefinition>(foundIndex.Definition);
             Assert.Equal(new Dictionary<string,string> { ["StringMap"] = "$values" }, foundIndex.Definition.Column);
@@ -732,8 +732,7 @@ public class TableIndexesTests
     }
 
     [SkipWhenAstra]
-    // [Fact(Skip="Run manually on HCD after some CQL setup!")]
-    [Fact]
+    [Fact(Skip="Run manually on HCD after some CQL setup!")]
     public async Task ListIndexesTests_UnknownUnsupportedCQLIndex()
     {
         var tableName = "table_with_unsupported_index";
