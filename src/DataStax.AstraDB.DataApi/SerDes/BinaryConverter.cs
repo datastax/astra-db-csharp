@@ -105,9 +105,25 @@ public class FloatArrayJsonConverterBase : JsonConverter<float[]>
         {
             if (reader.TokenType == JsonTokenType.EndArray)
                 break;
-            if (reader.TokenType != JsonTokenType.Number)
+            if (reader.TokenType == JsonTokenType.Number)
+            {
+                list.Add(reader.GetSingle());
+            }
+            else if (reader.TokenType == JsonTokenType.String)
+            {
+                // AllowNamedFloatingPointLiterals encodes NaN/Infinity/-Infinity as strings
+                list.Add(reader.GetString() switch
+                {
+                    "NaN" => float.NaN,
+                    "Infinity" => float.PositiveInfinity,
+                    "-Infinity" => float.NegativeInfinity,
+                    var s => throw new JsonException($"Unexpected string value '{s}' in float array.")
+                });
+            }
+            else
+            {
                 throw new JsonException($"Expected number in float array, but got {reader.TokenType}.");
-            list.Add(reader.GetSingle());
+            }
         }
         return list.ToArray();
     }
@@ -177,7 +193,16 @@ public class FloatArrayJsonConverterBase : JsonConverter<float[]>
     {
         writer.WriteStartArray();
         foreach (var f in value)
-            writer.WriteNumberValue(f);
+        {
+            if (float.IsNaN(f))
+                writer.WriteStringValue("NaN");
+            else if (float.IsPositiveInfinity(f))
+                writer.WriteStringValue("Infinity");
+            else if (float.IsNegativeInfinity(f))
+                writer.WriteStringValue("-Infinity");
+            else
+                writer.WriteNumberValue(f);
+        }
         writer.WriteEndArray();
     }
 }
