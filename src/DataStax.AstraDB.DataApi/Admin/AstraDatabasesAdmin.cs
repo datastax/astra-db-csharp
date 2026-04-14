@@ -414,7 +414,7 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropDatabaseAsync(string, CommandOptions)"/>.
+    /// Synchronous version of <see cref="DropDatabaseAsync(string, BlockingCommandOptions)"/>.
     /// </summary>
     public void DropDatabase(string dbGuid, BlockingCommandOptions commandOptions)
     {
@@ -439,9 +439,11 @@ public class AstraDatabasesAdmin
         return DropDatabaseAsync(dbGuid, null);
     }
 
-    /// <inheritdoc cref="DropDatabaseAsync(string)"/>
+    /// <summary>
+    /// Drops the database with the specified ID.
+    /// </summary>
     /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="options">The command options to use.</param>
+    /// <param name="commandOptions">The command options to use.</param>
     /// <example>
     /// <code>
     /// await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
