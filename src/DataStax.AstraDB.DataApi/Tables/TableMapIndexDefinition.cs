@@ -49,6 +49,12 @@ public class TableMapIndexDefinition : TableIndexDefinition
         IndexType = indexType;
     }
 
+    internal TableMapIndexDefinition(MapIndexType indexType, TableIndexOptions options)
+    {
+        IndexType = indexType;
+        Options = options;
+    }
+
     /// <summary>
     /// The column to index.
     /// </summary>
