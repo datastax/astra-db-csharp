@@ -71,7 +71,7 @@ delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, bool run
 /// <summary>
 /// A fluent API cursor for finding and enumerating records or rows with filtering, sorting, and projection capabilities.
 /// 
-/// This cursor extends <see cref="AbstractCursor{T}"/> to provide query-specific operations like filtering, sorting,
+/// This cursor extends <see cref="AbstractCursor{T, TCursor}"/> to provide query-specific operations like filtering, sorting,
 /// limiting, skipping, and projecting results. It supports both synchronous and asynchronous iteration patterns.
 /// 
 /// Use the fluent methods to refine your query, then iterate using foreach, LINQ, or manual cursor navigation.
@@ -80,7 +80,7 @@ delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, bool run
 /// <typeparam name="TResult">The type to deserialize the results to (e.g., when using projections).</typeparam>
 /// <typeparam name="TSort">The type of sort builder to use (e.g., <see cref="DocumentSortBuilder{T}"/> or <see cref="TableSortBuilder{T}"/>).</typeparam>
 /// <typeparam name="TCursor">The concrete cursor type for fluent method chaining.</typeparam>
-public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TResult>
+public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TResult, TCursor>
     where T : class
     where TResult : class
     where TSort : SortBuilder<T>

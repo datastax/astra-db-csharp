@@ -103,9 +103,9 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, DocumentS
     /// Creates a new cursor instance with the same configuration.
     /// </summary>
     /// <returns>A new cursor instance.</returns>
-    public override AbstractCursor<TResult> Clone()
+    public override CollectionFindCursor<T, TResult> Clone()
     {
-        return new CollectionFindCursor<T, TResult>(FindOptions.Clone(), CommandOptions, FetchPageFunc);
+        return new(FindOptions.Clone(), CommandOptions, FetchPageFunc);
     }
 
     /// <summary>
@@ -115,6 +115,6 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, DocumentS
     /// <returns>A new cursor instance with the updated options.</returns>
     internal override CollectionFindCursor<T, TResult> CloneWithOptions(IFindManyOptions<T, DocumentSortBuilder<T>> options)
     {
-        return new CollectionFindCursor<T, TResult>(options, CommandOptions, FetchPageFunc);
+        return new(options, CommandOptions, FetchPageFunc);
     }
 }
