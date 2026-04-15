@@ -60,7 +60,7 @@ public class PrimaryKeyFilterBuilder<T>
 
     /// <summary>
     /// Implicitly converts the builder to a <see cref="PrimaryKeyFilter"/> array,
-    /// allowing it to be passed directly to <c>CompositeKey</c> and <c>CompoundKey</c>.
+    /// allowing it to be passed directly to <c>CompoundKey</c>.
     /// </summary>
     public static implicit operator PrimaryKeyFilter[](PrimaryKeyFilterBuilder<T> builder)
         => builder.Build();

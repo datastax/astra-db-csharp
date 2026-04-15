@@ -95,17 +95,6 @@ public class TableFilterBuilder<T> : FilterBuilder<T, TableFilter<T>>
         => Make(expression.GetMemberNameTree(), Make(FilterOperator.Match, value));
 
     /// <summary>
-    /// Build a composite key filter using a dictionary of primary key names and the values to match.
-    /// </summary>
-    /// <param name="values">The primary key column name/value pairs.</param>
-    /// <returns>The filter</returns>
-    public TableFilter<T> CompositeKey(params PrimaryKeyFilter[] values)
-    {
-        var dictionary = values.ToDictionary(x => x.ColumnName, x => x.Value);
-        return Make(null, dictionary);
-    }
-
-    /// <summary>
     /// Build a compound key filter using partition key columns and range/equality filters on clustering columns.
     /// </summary>
     /// <param name="partitionColumns">Exact partition key values.</param>
