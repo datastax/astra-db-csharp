@@ -55,6 +55,11 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
         => Make(fieldName, Make(op, value));
 
     /// <summary>
+    /// Create an empty filter with no conditions (matching everything)
+    /// </summary>
+    public TFilter Empty() => Make(string.Empty, new Dictionary<string, object>());
+
+    /// <summary>
     /// Logical AND operator for combining multiple filters.
     /// </summary>
     /// <param name="filters">Array of filters to combine</param>

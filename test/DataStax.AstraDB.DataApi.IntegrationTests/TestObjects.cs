@@ -1,3 +1,4 @@
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
@@ -544,3 +545,11 @@ public class TripleMapObject
     public Dictionary<string, string> map_v { get; set; }
 }
 
+public class CursorTestDocument {
+    [DocumentId]
+    public string Id { get; set; }
+    public string PText { get; set; }
+    public int PInt { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] Vector { get; set; }
+}
