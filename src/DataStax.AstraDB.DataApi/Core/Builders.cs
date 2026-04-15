@@ -62,7 +62,7 @@ public class Builders<T>
     /// sort = sort.Ascending(x => x.Name);
     /// </code>
     /// </example>
-    public static DocumentSortBuilder<T> CollectionSort => new();
+    public static CollectionSortBuilder<T> CollectionSort => new();
     /// <summary>
     /// A builder for creating sort definitions for tables
     /// </summary>

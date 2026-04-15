@@ -22,12 +22,12 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// Options for finding a single document in a collection.
 /// </summary>
 /// <typeparam name="T">The type of the document.</typeparam>
-public class DocumentFindOptions<T> : FindOptions<T, DocumentSortBuilder<T>>
+public class DocumentFindOptions<T> : FindOptions<T, CollectionSortBuilder<T>>
 {
     /// <summary>
     /// The sort to apply when running the query.
     /// </summary>
     [JsonIgnore]
-    public override DocumentSortBuilder<T> Sort { get; set; }
+    public override CollectionSortBuilder<T> Sort { get; set; }
 
 }

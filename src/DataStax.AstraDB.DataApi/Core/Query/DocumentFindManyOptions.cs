@@ -18,7 +18,7 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
-internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOptions<T, DocumentSortBuilder<T>>
+internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOptions<T, CollectionSortBuilder<T>>
 {
     [JsonIgnore]
     public int? Skip { get => _skip; set => _skip = value; }
@@ -29,9 +29,9 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
     [JsonIgnore]
     internal bool? IncludeSortVector { get => _includeSortVector; set => _includeSortVector = value; }
 
-    bool? IFindManyOptions<T, DocumentSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
+    bool? IFindManyOptions<T, CollectionSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
-    IFindManyOptions<T, DocumentSortBuilder<T>> IFindManyOptions<T, DocumentSortBuilder<T>>.Clone()
+    IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.Clone()
     {
         var clone = new DocumentFindManyOptions<T>
         {
