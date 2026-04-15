@@ -737,18 +737,22 @@ public class AdminTests
 		Assert.Contains("Keyspace default_keyspace already exists", ex.Message);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_ExplicitUpdateParameter
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DatabaseAdminAstra_CreateKeyspaceAsync()
+	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_ExplicitUpdateParameter()
 	{
 		var keyspaceName = "drop_this_keyspace_x";
 		var adminOptions = new BlockingCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
+		var ckOptions = new CreateKeyspaceCommandOptions
+		{
+			updateDBKeyspace = true,
+		};
 		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
 
-		await daa.CreateKeyspaceAsync(keyspaceName, adminOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, ckOptions);
 		Console.WriteLine($"DatabaseAdminAstra_CreateKeyspaceAsync > adminOptions.Keyspace: {adminOptions.Keyspace}");
 		Assert.Null(adminOptions.Keyspace);
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -783,7 +787,7 @@ public class AdminTests
 		Assert.Equal("another_silly_puppet_keyspace", theDatabase.Keyspace);
 		var daa = new DatabaseAdminAstra(theDatabase, fixture.Client, adminOptions);
 
-		await daa.CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, new () {updateDBKeyspace = true});
 		Assert.Equal(keyspaceName, theDatabase.Keyspace);
 		// LCN myDB on keyspaceName
 		await theDatabase.ListCollectionNamesAsync();
@@ -826,6 +830,10 @@ public class AdminTests
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
+		var ckOptions = new CreateKeyspaceCommandOptions
+		{
+			updateDBKeyspace = true,
+		};
 		// LCN fixDB on 'default_keyspace'
 		await fixture.Database.ListCollectionNamesAsync();
 
@@ -836,7 +844,7 @@ public class AdminTests
 		Assert.Equal("another_silly_puppet_keyspace", theDatabase.Keyspace);
 		var daa = new DatabaseAdminDataAPI(theDatabase, fixture.Client, adminOptions);
 
-		await daa.CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, ckOptions);
 		Assert.Equal(keyspaceName, theDatabase.Keyspace);
 		// LCN myDB on keyspaceName
 		await theDatabase.ListCollectionNamesAsync();
@@ -863,7 +871,7 @@ public class AdminTests
 		var swiftDatabase = fixture.Client.GetDatabase(fixture.DatabaseUrl,
 			new DatabaseCommandOptions() { Keyspace = "some_throwaway_keyspace_name" });
 		Assert.NotEqual(keyspaceName, swiftDatabase.Keyspace);
-		await swiftDatabase.GetAdmin().CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		await swiftDatabase.GetAdmin().CreateKeyspaceAsync(keyspaceName, ckOptions);
 		Assert.Equal(keyspaceName, swiftDatabase.Keyspace);
 
 	}
@@ -878,10 +886,14 @@ public class AdminTests
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
+		var ckOptions = new CreateKeyspaceCommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
 		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client, adminOptions);
 
 		var replicationOptions = new Dictionary<string, object> { ["class"] = "SimpleStrategy", ["replication_factor"] = 1 };
-		await daa.CreateKeyspaceAsync(keyspaceName, false, adminOptions, replicationOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, ckOptions, replicationOptions);
 
 		Assert.Contains(keyspaceName, daa.ListKeyspaces());
 	}

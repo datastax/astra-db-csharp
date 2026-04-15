@@ -169,43 +169,25 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </remarks>
         public void CreateKeyspace(string keyspace)
         {
-            CreateKeyspace(keyspace, false, null, null);
+            CreateKeyspace(keyspace, null, null);
         }
 
         /// <summary>
-        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, BlockingCommandOptions)"/>.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions)"/>.
         /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync(string, BlockingCommandOptions)"/>
-        public void CreateKeyspace(string keyspace, BlockingCommandOptions options)
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions)"/>
+        public void CreateKeyspace(string keyspace, CreateKeyspaceCommandOptions options)
         {
-            CreateKeyspace(keyspace, false, options, null);
+            CreateKeyspace(keyspace, options, null);
         }
 
         /// <summary>
-        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, bool)"/>.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions, IDictionary{string,object})"/>.
         /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync(string, bool)"/>
-        public void CreateKeyspace(string keyspace, bool updateDBKeyspace)
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions, IDictionary{string,object})"/>
+        public void CreateKeyspace(string keyspace, CreateKeyspaceCommandOptions options, IDictionary<string,object> replicationOptions)
         {
-            CreateKeyspace(keyspace, updateDBKeyspace, null, null);
-        }
-
-        /// <summary>
-        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, bool, BlockingCommandOptions)"/>.
-        /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync(string, bool, BlockingCommandOptions)"/>
-        public void CreateKeyspace(string keyspace, bool updateDBKeyspace, BlockingCommandOptions options)
-        {
-            CreateKeyspace(keyspace, updateDBKeyspace, options, null);
-        }
-
-        /// <summary>
-        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, bool, BlockingCommandOptions, IDictionary{string,object})"/>.
-        /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync(string, bool, BlockingCommandOptions, IDictionary{string,object})"/>
-        public void CreateKeyspace(string keyspace, bool updateDBKeyspace, BlockingCommandOptions options, IDictionary<string,object> replicationOptions)
-        {
-            CreateKeyspaceAsync(keyspace, updateDBKeyspace, options, replicationOptions, true).ResultSync();
+            CreateKeyspaceAsync(keyspace, options, replicationOptions, true).ResultSync();
         }
 
         /// <summary>
@@ -223,7 +205,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// </remarks>
         public Task CreateKeyspaceAsync(string keyspace)
         {
-            return CreateKeyspaceAsync(keyspace, false, null, null);
+            return CreateKeyspaceAsync(keyspace, null, null);
         }
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
@@ -234,57 +216,29 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// await admin.CreateKeyspaceAsync("myKeyspace", options);
         /// </code>
         /// </example>
-        public Task CreateKeyspaceAsync(string keyspace, BlockingCommandOptions options)
+        public Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceCommandOptions options)
         {
-            return CreateKeyspaceAsync(keyspace, false, options, null);
+            return CreateKeyspaceAsync(keyspace, options, null);
         }
 
         /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
-        /// <example>
-        /// <code>
-        /// await admin.CreateKeyspaceAsync("myKeyspace", true);
-        /// </code>
-        /// </example>
-        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace)
-        {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, null, null);
-        }
-
-        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
-        /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <example>
-        /// <code>
-        /// await admin.CreateKeyspaceAsync("myKeyspace", true, options);
-        /// </code>
-        /// </example>
-        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, BlockingCommandOptions options)
-        {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, options, null);
-        }
-
-        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
-        /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="updateDBKeyspace">Whether to set this keyspace as the active keyspace for the associated Database.</param>
         /// <param name="options">Optional settings that influence request execution.</param>
         /// <param name="replicationOptions">Optional replication settings for the keyspace, e.g. {"class": "SimpleStrategy", "replication_factor": 3}.</param>
         /// <example>
         /// <code>
         /// var replicationSettings = new Dictionary&lt;string, object&gt; { ["class"] = "SimpleStrategy", ["replication_factor"] = 3 };
-        /// await admin.CreateKeyspaceAsync("myKeyspace", true, options, replicationSettings);
+        /// await admin.CreateKeyspaceAsync("myKeyspace", options, replicationSettings);
         /// </code>
         /// </example>
-        public Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, BlockingCommandOptions options, IDictionary<string,object> replicationOptions)
+        public Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceCommandOptions options, IDictionary<string,object> replicationOptions)
         {
-            return CreateKeyspaceAsync(keyspace, updateDBKeyspace, options, replicationOptions, false);
+            return CreateKeyspaceAsync(keyspace, options, replicationOptions, false);
         }
 
-        internal async Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, BlockingCommandOptions options, IDictionary<string,object> replicationOptions, bool runSynchronously)
+        internal async Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceCommandOptions options, IDictionary<string,object> replicationOptions, bool runSynchronously)
         {
-            options ??= new BlockingCommandOptions();
+            options ??= new CreateKeyspaceCommandOptions();
             options.IncludeKeyspaceInUrl = false;
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
 
@@ -312,7 +266,7 @@ namespace DataStax.AstraDB.DataApi.Admin
                 .RunAsyncReturnStatus<object>(runSynchronously)
                 .ConfigureAwait(false);
 
-            if (updateDBKeyspace)
+            if (options.updateDBKeyspace)
             {
                 _database.UseKeyspace(keyspace);
             }

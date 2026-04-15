@@ -69,7 +69,12 @@ public class DatabaseTests
             {
                 waitForCompletion = false,
             };
-            await admin.CreateKeyspaceAsync(keyspaceName, true, waitingOptions);
+            var ckWaitingOptions = new CreateKeyspaceCommandOptions
+            {
+                waitForCompletion = false,
+                updateDBKeyspace = true,
+            };
+            await admin.CreateKeyspaceAsync(keyspaceName, ckWaitingOptions);
             var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.False(keyspaceExists, $"Keyspace '{keyspaceName}' should still be being created.");
 
@@ -108,7 +113,12 @@ public class DatabaseTests
             {
                 waitForCompletion = true,
             };
-            await admin.CreateKeyspaceAsync(keyspaceName, true, waitingOptions);
+            var ckWaitingOptions = new CreateKeyspaceCommandOptions
+            {
+                waitForCompletion = true,
+                updateDBKeyspace = true,
+            };
+            await admin.CreateKeyspaceAsync(keyspaceName, ckWaitingOptions);
             var keyspaceExists = await admin.DoesKeyspaceExistAsync(keyspaceName);
             Assert.True(keyspaceExists, $"Keyspace '{keyspaceName}' should exist after creation.");
             await admin.DropKeyspaceAsync(keyspaceName, waitingOptions);

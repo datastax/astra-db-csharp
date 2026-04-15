@@ -56,19 +56,11 @@ public interface IDatabaseAdmin
     /// <summary>Creates a new keyspace with the specified name.</summary>
     void CreateKeyspace(string keyspace);
     /// <summary>Creates a new keyspace with the specified name and command options.</summary>
-    void CreateKeyspace(string keyspace, BlockingCommandOptions options);
-    /// <summary>Creates a new keyspace, optionally updating the database's default keyspace.</summary>
-    void CreateKeyspace(string keyspace, bool updateDBKeyspace);
-    /// <summary>Creates a new keyspace, optionally updating the database's default keyspace, with command options.</summary>
-    void CreateKeyspace(string keyspace, bool updateDBKeyspace, BlockingCommandOptions options);
+    void CreateKeyspace(string keyspace, CreateKeyspaceCommandOptions options);
     /// <summary>Asynchronously creates a new keyspace with the specified name.</summary>
     Task CreateKeyspaceAsync(string keyspace);
     /// <summary>Asynchronously creates a new keyspace with the specified name and command options.</summary>
-    Task CreateKeyspaceAsync(string keyspace, BlockingCommandOptions options);
-    /// <summary>Asynchronously creates a new keyspace, optionally updating the database's default keyspace.</summary>
-    Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace);
-    /// <summary>Asynchronously creates a new keyspace, optionally updating the database's default keyspace, with command options.</summary>
-    Task CreateKeyspaceAsync(string keyspace, bool updateDBKeyspace, BlockingCommandOptions options);
+    Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceCommandOptions options);
     /// <summary>Drops the keyspace with the specified name.</summary>
     void DropKeyspace(string keyspace);
     /// <summary>Drops the keyspace with the specified name and command options.</summary>
