@@ -2113,9 +2113,4 @@ public class Collection<T, TId> where T : class
         var optionsTree = GetOptionsTree().ToArray();
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _collectionName));
     }
-
-    // Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, DocumentSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
-    // {
-    //     return RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously);
-    // }
 }
