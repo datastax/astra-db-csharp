@@ -115,15 +115,7 @@ public class Builders<T>
     public static TableFilterBuilder<T> TableFilter => new();
     /// <summary>
     /// A fluent builder for constructing a set of primary key column filters,
-    /// for use with <c>CompositeKey</c> and <c>CompoundKey</c>.
+    /// for use with <c>CompoundKey</c>.
     /// </summary>
-    /// <example>
-    /// <code>
-    /// var pk = Builders&lt;MyRow&gt;.PrimaryKey
-    ///     .Add(x => x.PartitionId, 42)
-    ///     .Add(x => x.ClusterKey, "abc");
-    /// filter = Builders&lt;MyRow&gt;.TableFilter.CompositeKey(pk);
-    /// </code>
-    /// </example>
     public static PrimaryKeyFilterBuilder<T> PrimaryKeyFilter => new();
 }
