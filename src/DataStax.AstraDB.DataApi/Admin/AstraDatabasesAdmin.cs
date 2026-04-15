@@ -270,71 +270,27 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Creates a new database with the specified creation options.
+    /// Synchronous version of <see cref="CreateDatabaseAsync(DatabaseCreationOptions)"/>
     /// </summary>
-    /// <param name="options">The database creation options.</param>
-    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
-    /// </code>
-    /// </example>
-    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options)
+    /// <remarks>
+    /// This method, by default, will wait for the operation to complete on the server side.
+    /// Use the options' waitForCompletion attribute to control this behaviour.
+    /// </remarks>
+    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions creationOptions)
     {
-        return CreateDatabaseAsync(options, true, null, true).ResultSync();
+        return CreateDatabase(creationOptions, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateDatabaseAsync(DatabaseCreationOptions, BlockingCommandOptions)"/>
+    /// </summary>
+    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
+    {
+        return CreateDatabaseAsync(creationOptions, commandOptions, true).ResultSync();
     }
 
     /// <summary>
     /// Creates a new database with the specified creation options.
-    /// </summary>
-    /// <param name="options">The database creation options.</param>
-    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
-    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
-    /// </code>
-    /// </example>
-    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, bool waitForDb)
-    {
-        return CreateDatabaseAsync(options, waitForDb, null, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Creates a new database with the specified creation and command options.
-    /// </summary>
-    /// <param name="options">The database creation options.</param>
-    /// <param name="commandOptions">Additional command options.</param>
-    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
-    /// </code>
-    /// </example>
-    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, CommandOptions commandOptions)
-    {
-        return CreateDatabaseAsync(options, true, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Creates a new database with the specified creation and command options.
-    /// </summary>
-    /// <param name="options">The database creation options.</param>
-    /// <param name="commandOptions">Additional command options.</param>
-    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
-    /// <returns>An IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = admin.CreateDatabase(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
-    /// </code>
-    /// </example>
-    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions options, bool waitForDb, CommandOptions commandOptions)
-    {
-        return CreateDatabaseAsync(options, waitForDb, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Asynchronously creates a new database with the specified creation options.
     /// </summary>
     /// <param name="creationOptions">The database creation options.</param>
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
@@ -343,62 +299,34 @@ public class AstraDatabasesAdmin
     /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
     /// </code>
     /// </example>
+    /// <remarks>
+    /// This method, by default, will wait for the operation to complete on the server side.
+    /// Use the options' waitForCompletion attribute to control this behaviour.
+    /// </remarks>
     public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions)
     {
-        return CreateDatabaseAsync(creationOptions, true, null, false);
+        return CreateDatabaseAsync(creationOptions, null);
     }
 
     /// <summary>
-    /// Asynchronously creates a new database with the specified creation options.
+    /// Creates a new database with the specified creation and command options.
     /// </summary>
     /// <param name="creationOptions">The database creation options.</param>
-    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
-    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
-    /// </code>
-    /// </example>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb)
-    {
-        return CreateDatabaseAsync(creationOptions, waitForDb, null, false);
-    }
-
-    /// <summary>
-    /// Asynchronously creates a new database with the specified creation and command options.
-    /// </summary>
-    /// <param name="creationOptions">The database creation options.</param>
-    /// <param name="commandOptions">Additional command options.</param>
+    /// <param name="commandOptions">Optional settings that influence request execution.</param>
     /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
     /// <example>
     /// <code>
     /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
     /// </code>
     /// </example>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, CommandOptions commandOptions)
+    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
     {
-        return CreateDatabaseAsync(creationOptions, true, commandOptions, false);
+        return CreateDatabaseAsync(creationOptions, commandOptions, false);
     }
 
-    /// <summary>
-    /// Asynchronously creates a new database with the specified creation and command options.
-    /// </summary>
-    /// <param name="creationOptions">The database creation options.</param>
-    /// <param name="waitForDb">Whether to wait until the database becomes active.</param>
-    /// <param name="commandOptions">Additional command options.</param>
-    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
-    /// </code>
-    /// </example>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb, CommandOptions commandOptions)
+    internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions, bool runSynchronously)
     {
-        return CreateDatabaseAsync(creationOptions, waitForDb, commandOptions, false);
-    }
-
-    internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, bool waitForDb, CommandOptions commandOptions, bool runSynchronously)
-    {
+        commandOptions ??= new BlockingCommandOptions();
         Guard.NotNullOrEmpty(creationOptions.Name, nameof(creationOptions.Name));
         Guard.NotNull(creationOptions.CloudProvider, nameof(creationOptions.CloudProvider));
         Guard.NotNullOrEmpty(creationOptions.Region, nameof(creationOptions.Region));
@@ -419,7 +347,7 @@ public class AstraDatabasesAdmin
         };
         await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
 
-        if (waitForDb)
+        if (commandOptions.waitForCompletion)
         {
             if (runSynchronously)
             {
@@ -474,135 +402,61 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Drops the database with the specified ID.
+    /// Synchronous version of <see cref="DropDatabaseAsync(string)"/>.
     /// </summary>
-    /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = admin.DropDatabase("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    /// </code>
-    /// </example>
-    public bool DropDatabase(string dbGuid)
+    /// <remarks>
+    /// This method, by default, will wait for the operation to complete on the server side.
+    /// Use the options' waitForCompletion attribute to control this behaviour.
+    /// </remarks>
+    public void DropDatabase(string dbGuid)
     {
-        return DropDatabaseAsync(dbGuid, true, null, false).ResultSync();
+        DropDatabase(dbGuid, null);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DropDatabaseAsync(string, BlockingCommandOptions)"/>.
+    /// </summary>
+    public void DropDatabase(string dbGuid, BlockingCommandOptions commandOptions)
+    {
+        DropDatabaseAsync(dbGuid, commandOptions, true).ResultSync();
     }
 
     /// <summary>
     /// Drops the database with the specified ID.
     /// </summary>
     /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
-    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
     /// <example>
     /// <code>
-    /// bool dropped = admin.DropDatabase("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    /// await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
     /// </code>
     /// </example>
-    public bool DropDatabase(string dbGuid, bool waitForDb)
+    /// <remarks>
+    /// This method, by default, will wait for the operation to complete on the server side.
+    /// Use the options' waitForCompletion attribute to control this behaviour.
+    /// </remarks>
+    public Task DropDatabaseAsync(string dbGuid)
     {
-        return DropDatabaseAsync(dbGuid, waitForDb, null, false).ResultSync();
+        return DropDatabaseAsync(dbGuid, null);
     }
 
     /// <summary>
-    /// Drops the database with the specified ID using provided command options.
+    /// Drops the database with the specified ID.
     /// </summary>
     /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="options"></param>
-    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
+    /// <param name="commandOptions">The command options to use.</param>
     /// <example>
     /// <code>
-    /// bool dropped = admin.DropDatabase("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
+    /// await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
     /// </code>
     /// </example>
-    public bool DropDatabase(string dbGuid, CommandOptions options)
+    public Task DropDatabaseAsync(string dbGuid, BlockingCommandOptions commandOptions)
     {
-        return DropDatabaseAsync(dbGuid, true, options, false).ResultSync();
+        return DropDatabaseAsync(dbGuid, commandOptions, true);
     }
 
-    /// <summary>
-    /// Drops the database with the specified ID using provided command options.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
-    /// <param name="options"></param>
-    /// <returns>True if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = admin.DropDatabase("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
-    /// </code>
-    /// </example>
-    public bool DropDatabase(string dbGuid, bool waitForDb, CommandOptions options)
+    internal async Task DropDatabaseAsync(string dbGuid, BlockingCommandOptions options, bool runSynchronously)
     {
-        return DropDatabaseAsync(dbGuid, waitForDb, options, false).ResultSync();
-    }
-
-    /// <summary>
-    /// Asynchronously drops the database with the specified ID.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    /// </code>
-    /// </example>
-    public Task<bool> DropDatabaseAsync(string dbGuid)
-    {
-        return DropDatabaseAsync(dbGuid, true, null, true);
-    }
-
-    /// <summary>
-    /// Asynchronously drops the database with the specified ID.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
-    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    /// </code>
-    /// </example>
-    public Task<bool> DropDatabaseAsync(string dbGuid, bool waitForDb)
-    {
-        return DropDatabaseAsync(dbGuid, waitForDb, null, true);
-    }
-
-    /// <summary>
-    /// Asynchronously drops the database with the specified ID using provided command options.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
-    /// </code>
-    /// </example>
-    public Task<bool> DropDatabaseAsync(string dbGuid, CommandOptions options)
-    {
-        return DropDatabaseAsync(dbGuid, true, options, true);
-    }
-
-    /// <summary>
-    /// Asynchronously drops the database with the specified ID using provided command options.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="options">The command options to use.</param>
-    /// <param name="waitForDb">Whether to wait until the database is terminated.</param>
-    /// <returns>A task that resolves to true if the database was dropped successfully; otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// bool dropped = await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
-    /// </code>
-    /// </example>
-    public Task<bool> DropDatabaseAsync(string dbGuid, bool waitForDb, CommandOptions options)
-    {
-        return DropDatabaseAsync(dbGuid, waitForDb, options, true);
-    }
-
-    internal async Task<bool> DropDatabaseAsync(string dbGuid, bool waitForDb, CommandOptions options, bool runSynchronously)
-    {
+        options ??= new BlockingCommandOptions();
         Guard.NotNullOrEmpty(dbGuid, nameof(dbGuid));
         Command command = CreateCommand()
             .AddUrlPath("databases")
@@ -613,7 +467,7 @@ public class AstraDatabasesAdmin
 
         await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
 
-        if (waitForDb)
+        if (options.waitForCompletion)
         {
             if (runSynchronously)
             {
@@ -624,8 +478,6 @@ public class AstraDatabasesAdmin
                 await WaitForDatabaseAsync(dbGuid, _droppingDatabaseStatuses, AstraDatabaseStatus.TERMINATED).ConfigureAwait(false);
             }
         }
-
-        return true;
     }
 
     /// <summary>

@@ -555,8 +555,7 @@ public class AdminTests
 					Name = "theoretical_db_1",
 					CloudProvider = CloudProviderType.AWS,
 					Keyspace = "fedault_seykpace"
-				},
-				false
+				}
 			)
 		);
 		Assert.Contains("Value cannot be null or empty", ex1.Message);
@@ -567,8 +566,7 @@ public class AdminTests
 					CloudProvider = CloudProviderType.AWS,
 					Region = "the-region-",
 					Keyspace = "fedault_seykpace"
-				},
-				false
+				}
 			)
 		);
 		Assert.Contains("Value cannot be null or empty", ex2.Message);
@@ -579,8 +577,7 @@ public class AdminTests
 					Name = "theoretical_db_3",
 					Region = "the-region-",
 					Keyspace = "fedault_seykpace"
-				},
-				false
+				}
 			)
 		);
 		Assert.Contains("Value cannot be null", ex3.Message);
@@ -594,21 +591,29 @@ public class AdminTests
         1. Comment the attribute with the skip.
         2. Add a [Fact] attribute.
         3. Run the associated command from the terminal.
+
+		Also, make sure the DB creation/deletion parameters follow the env being tested:
+			DEV: GCP europe-west4
+			TEST: AWS us-east-1
+		For dropping, you will need to hardcode the proper database Guid in the test.
     */
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabase
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void CreateDatabase()
+	public void CreateDatabaseNonblocking()
 	{
 		var dbName = "test-db-create-x";
+		var creationOptions = new BlockingCommandOptions() {
+			waitForCompletion = false,
+		};
 		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
 			new (){
 				Name = dbName,
-				CloudProvider = CloudProviderType.AWS,
-				Region = "us-east-2",
+				CloudProvider = CloudProviderType.GCP,
+				Region = "europe-west4",
 				Keyspace = "fedault_seykpace"
 			},
-			false
+			creationOptions
 		);
 
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -616,15 +621,18 @@ public class AdminTests
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task CreateDatabaseAsync()
+	public async Task CreateDatabaseNonblockingAsync()
 	{
 		var dbName = "test-db-create-async-x";
 		var options = new DatabaseCreationOptions{
 			Name = dbName,
-			CloudProvider = CloudProviderType.AWS,
-			Region = "us-east-2"
+			CloudProvider = CloudProviderType.GCP,
+			Region = "europe-west4"
 		};
-		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, false);
+		var creationOptions = new BlockingCommandOptions() {
+			waitForCompletion = false,
+		};
+		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, creationOptions);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -636,11 +644,14 @@ public class AdminTests
 		var dbName = "test-db-create-blocking-x";
 		var options = new DatabaseCreationOptions{
 			Name = dbName,
-			CloudProvider = CloudProviderType.AWS,
-			Region = "us-east-2",
+			CloudProvider = CloudProviderType.GCP,
+			Region = "europe-west4",
 			Keyspace = "fedault_seykpace"
 		};
-		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, true);
+		var creationOptions = new BlockingCommandOptions() {
+			waitForCompletion = true,
+		};
+		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, creationOptions);
 
 		// todo: better test result here; for now we assume if no error, this was successful
 	}
@@ -650,13 +661,13 @@ public class AdminTests
 	public async Task CreateDatabaseBlockingAsync()
 	{
 		var dbName = "test-db-create-blocking-async-x";
+		// this one tests the "blocking by default" pattern:
 		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(
 			new (){
 				Name = dbName,
-				CloudProvider = CloudProviderType.AWS,
-				Region = "us-east-1" // for TEST: use "us-east-1"; for DEV: "europe-west4"
-			},
-			true
+				CloudProvider = CloudProviderType.GCP,
+				Region = "europe-west4"
+			}
 		);
 
 		// verify by creating a keyspace (devops), listing it (devops) and listing the DB tables (data api)
@@ -669,42 +680,48 @@ public class AdminTests
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabase
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void DropDatabase()
+	public void DropDatabaseNonblockingSync()
 	{
-		var dbGuid = "7683bb84-4604-49b4-b05f-69b695bba976"; // from a db created ad-hoc on astra's site
-		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, false);
-
-		Assert.True(dropped);
+		var waitingOptions = new BlockingCommandOptions
+		{
+			waitForCompletion = false,
+		};
+		var dbGuid = "06279ec0-c17c-498d-8bc4-b46cc04a2a71"; // tester must supply the Guid for a pre-created DB
+		fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, waitingOptions);
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DropDatabaseAsync()
+	public async Task DropDatabaseNonblockingAsync()
 	{
-		var dbGuid = "6a118896-bd69-4f24-90db-6229cd211c99"; // from a db created ad-hoc on astra's site
-		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, false);
-
-		Assert.True(dropped);
+		var waitingOptions = new BlockingCommandOptions
+		{
+			waitForCompletion = false,
+		};
+		var dbGuid = "6a118896-bd69-4f24-90db-6229cd211c99"; // tester must supply the Guid for a pre-created DB
+		await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, waitingOptions);
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlocking
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void DropDatabaseBlocking()
+	public void DropDatabaseBlockingSync()
 	{
-		var dbGuid = "949c493b-0d08-41ca-b2e1-5a636c05f3ed"; // from a db created ad-hoc on astra's site
-		var dropped = fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, true);
-
-		Assert.True(dropped);
+		// this one tests the 'blocking by default' pattern:
+		var dbGuid = "4542468f-fcc8-4830-a8e6-b2acb65694be"; // tester must supply the Guid for a pre-created DB
+		fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid);
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlockingAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DropDatabaseBlockingAsync()
 	{
-		var dbGuid = "2b8bc268-511b-4b35-adfd-ef4f3063351b"; // from a db created ad-hoc on astra's site
-		var dropped = await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, true);
-
-		Assert.True(dropped);
+		// this one explicitly requires the blocking call:
+		var waitingOptions = new BlockingCommandOptions
+		{
+			waitForCompletion = true,
+		};
+		var dbGuid = "37565911-f051-471a-9dc1-90a9eab76295"; // tester must supply the Guid for a pre-created DB
+		await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, waitingOptions);
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspace_ExpectedError
@@ -720,18 +737,22 @@ public class AdminTests
 		Assert.Contains("Keyspace default_keyspace already exists", ex.Message);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_ExplicitUpdateParameter
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DatabaseAdminAstra_CreateKeyspaceAsync()
+	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_ExplicitUpdateParameter()
 	{
 		var keyspaceName = "drop_this_keyspace_x";
-		var adminOptions = new CommandOptions
+		var adminOptions = new BlockingCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
+		var ckOptions = new CreateKeyspaceCommandOptions
+		{
+			updateDBKeyspace = true,
+		};
 		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
 
-		await daa.CreateKeyspaceAsync(keyspaceName, adminOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, ckOptions);
 		Console.WriteLine($"DatabaseAdminAstra_CreateKeyspaceAsync > adminOptions.Keyspace: {adminOptions.Keyspace}");
 		Assert.Null(adminOptions.Keyspace);
 		// todo: better test result here; for now we assume if no error, this was successful
@@ -752,7 +773,7 @@ public class AdminTests
 		//		default_keyspace
 		*/
 		var keyspaceName = "drop_this_keyspace_x";
-		var adminOptions = new CommandOptions
+		var adminOptions = new BlockingCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
@@ -766,7 +787,7 @@ public class AdminTests
 		Assert.Equal("another_silly_puppet_keyspace", theDatabase.Keyspace);
 		var daa = new DatabaseAdminAstra(theDatabase, fixture.Client, adminOptions);
 
-		await daa.CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, new () {updateDBKeyspace = true});
 		Assert.Equal(keyspaceName, theDatabase.Keyspace);
 		// LCN myDB on keyspaceName
 		await theDatabase.ListCollectionNamesAsync();
@@ -805,9 +826,13 @@ public class AdminTests
 		//		default_keyspace
 		*/
 		var keyspaceName = "drop_this_keyspace_x";
-		var adminOptions = new CommandOptions
+		var adminOptions = new BlockingCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
+		};
+		var ckOptions = new CreateKeyspaceCommandOptions
+		{
+			updateDBKeyspace = true,
 		};
 		// LCN fixDB on 'default_keyspace'
 		await fixture.Database.ListCollectionNamesAsync();
@@ -819,7 +844,7 @@ public class AdminTests
 		Assert.Equal("another_silly_puppet_keyspace", theDatabase.Keyspace);
 		var daa = new DatabaseAdminDataAPI(theDatabase, fixture.Client, adminOptions);
 
-		await daa.CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, ckOptions);
 		Assert.Equal(keyspaceName, theDatabase.Keyspace);
 		// LCN myDB on keyspaceName
 		await theDatabase.ListCollectionNamesAsync();
@@ -846,7 +871,7 @@ public class AdminTests
 		var swiftDatabase = fixture.Client.GetDatabase(fixture.DatabaseUrl,
 			new DatabaseCommandOptions() { Keyspace = "some_throwaway_keyspace_name" });
 		Assert.NotEqual(keyspaceName, swiftDatabase.Keyspace);
-		await swiftDatabase.GetAdmin().CreateKeyspaceAsync(keyspaceName, true, adminOptions);
+		await swiftDatabase.GetAdmin().CreateKeyspaceAsync(keyspaceName, ckOptions);
 		Assert.Equal(keyspaceName, swiftDatabase.Keyspace);
 
 	}
@@ -857,14 +882,18 @@ public class AdminTests
 	public async Task DatabaseAdminNonAstra_CreateKeyspaceAsync_WithOptions()
 	{
 		var keyspaceName = "throwaway_keyspace_with_options";
-		var adminOptions = new CommandOptions
+		var adminOptions = new BlockingCommandOptions
+		{
+			Token = fixture.Client.ClientOptions.Token,
+		};
+		var ckOptions = new CreateKeyspaceCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
 		var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client, adminOptions);
 
 		var replicationOptions = new Dictionary<string, object> { ["class"] = "SimpleStrategy", ["replication_factor"] = 1 };
-		await daa.CreateKeyspaceAsync(keyspaceName, false, true, replicationOptions, adminOptions);
+		await daa.CreateKeyspaceAsync(keyspaceName, ckOptions, replicationOptions);
 
 		Assert.Contains(keyspaceName, daa.ListKeyspaces());
 	}
@@ -875,7 +904,7 @@ public class AdminTests
 	public async Task DatabaseAdminAstra_DropKeyspaceAsync()
 	{
 		var keyspaceName = "drop_this_keyspace_x";
-		var adminOptions = new CommandOptions
+		var adminOptions = new BlockingCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
@@ -892,7 +921,7 @@ public class AdminTests
 	public async Task DatabaseAdminNonAstra_DropKeyspaceAsync()
 	{
 		var keyspaceName = "drop_this_keyspace_x";
-		var adminOptions = new CommandOptions
+		var adminOptions = new BlockingCommandOptions
 		{
 			Token = fixture.Client.ClientOptions.Token,
 		};
