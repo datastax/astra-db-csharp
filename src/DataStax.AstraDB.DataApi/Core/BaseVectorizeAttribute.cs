@@ -65,6 +65,13 @@ public class BaseVectorizeAttribute : Attribute
                 }
             }
         }
+        if (AuthenticationPairs != null && AuthenticationPairs.Length > 0)
+        {
+            if (AuthenticationPairs.Length % 2 != 0)
+            {
+                throw new InvalidOperationException($"AuthenticationPairs for {identifier} must contain an even number of elements (string/string pairs).");
+            }
+        }
     }
 
     internal Dictionary<string, string> GetAuthentication()
