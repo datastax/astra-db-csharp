@@ -535,6 +535,38 @@ public class CollectionDatetimeObject
     public DateTime dt_unspecified { get; set; }
 }
 
+public class BinaryVectorObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    [ColumnVector(3)]
+    public float[] TheVector { get; set; }
+}
+
+public class PlainFloatArrayObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    public float[] Values { get; set; }
+}
+
+public class FloatArrayWriterObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [JsonConverter(typeof(FloatArrayWriter))]
+    public float[] Vector { get; set; }
+}
+
+public class FloatBinaryWriterObject
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [JsonConverter(typeof(FloatBinaryWriter))]
+    public float[] Vector { get; set; }
+}
+
 public class TripleMapObject
 {
     [ColumnPrimaryKey]

@@ -229,6 +229,158 @@ public class SerializationTests
 		Assert.Equal(TimeOnly.Parse("22:30:03.2696015"), deserialized.Time);
 	}
 
+	[Fact]
+	public void Test_BinaryVector()
+	{
+		var serializationTestString = @"
+			{""_id"":""1f7478e1-fc54-4d76-b478-e1fc54dd767d"",""$vector"":{""$binary"":""PczMzb5MzM0+mZma""}}
+		";
+		var collection = fixture.Database.GetCollection<BinaryVectorObject>("serializationTest3");
+		var commandOptions = new CommandOptions()
+		{
+			OutputConverter = new DocumentConverter<BinaryVectorObject>()
+		};
+		var deserialized = collection.CheckDeserialization(serializationTestString, commandOptions);
+		Assert.NotNull(deserialized.TheVector);
+	}
+
+	private static readonly float[] _knownBinaryFloats = new[] { 0.1f, -0.2f, 0.3f };
+	private const string _knownBinaryBase64 = "PczMzb5MzM0+mZma";
+
+	[Fact]
+	public void Test_PlainFloatArray_Serialization_ProducesJsonArray()
+	{
+		var obj = new PlainFloatArrayObject { _id = "test-pfa-1", Values = new[] { 1.0f, 2.0f, 3.0f } };
+		var collection = fixture.Database.GetCollection<PlainFloatArrayObject>("serializationTest3");
+		string serialized = collection.CheckSerialization(obj);
+		Assert.Contains("\"Values\": [", serialized);
+		Assert.DoesNotContain("$binary", serialized);
+	}
+
+	[Fact]
+	public void Test_DocumentMappingVector_Serialization_ProducesBinaryInsideDollarVector()
+	{
+		var obj = new BinaryVectorObject { _id = "test-dmv-1", TheVector = new[] { 0.1f, -0.2f, 0.3f } };
+		var collection = fixture.Database.GetCollection<BinaryVectorObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { InputConverter = new DocumentConverter<BinaryVectorObject>() };
+		string serialized = collection.CheckSerialization(obj, commandOptions);
+		Assert.Contains("\"$vector\":", serialized);
+		Assert.Contains("\"$binary\":", serialized);
+	}
+
+	[Fact]
+	public void Test_RowConverter_ColumnVector_Serialization_ProducesBinary()
+	{
+		var row = new RowTestObject { Name = "test-row-1", Vector = new[] { 0.1f, 0.2f, 0.3f, 0.4f } };
+		var commandOptions = new[] { new CommandOptions() { InputConverter = new RowConverter<RowTestObject>() } };
+		var command = new Command("serializationTest", new DataAPIClient(), commandOptions, null);
+		string serialized = command.Serialize(row);
+		Assert.Contains("\"$binary\":", serialized);
+		Assert.DoesNotContain("\"Vector\": [", serialized);
+	}
+
+	[Fact]
+	public void Test_FloatArrayWriter_Serialization_ProducesJsonArray()
+	{
+		var obj = new FloatArrayWriterObject { _id = "test-fa-1", Vector = new[] { 1.0f, 2.0f, 3.0f } };
+		var collection = fixture.Database.GetCollection<FloatArrayWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatArrayWriterObject>() };
+		string serialized = collection.CheckSerialization(obj, commandOptions);
+		Assert.Contains("\"Vector\": [", serialized);
+		Assert.DoesNotContain("$binary", serialized);
+	}
+
+	[Fact]
+	public void Test_FloatBinaryWriter_Serialization_ProducesBinaryFormat()
+	{
+		var obj = new FloatBinaryWriterObject { _id = "test-fb-1", Vector = new[] { 1.0f, 2.0f, 3.0f } };
+		var collection = fixture.Database.GetCollection<FloatBinaryWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatBinaryWriterObject>() };
+		string serialized = collection.CheckSerialization(obj, commandOptions);
+		Assert.Contains("\"$binary\":", serialized);
+		Assert.DoesNotContain("[", serialized[serialized.IndexOf("Vector")..]);
+	}
+
+	[Fact]
+	public void Test_FloatArrayWriter_Deserialization_FromJsonArray()
+	{
+		var json = @"{""_id"":""test-fa-2"",""Vector"":[0.1,0.2,0.3]}";
+		var collection = fixture.Database.GetCollection<FloatArrayWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatArrayWriterObject>() };
+		var deserialized = collection.CheckDeserialization(json, commandOptions);
+		Assert.NotNull(deserialized.Vector);
+		Assert.Equal(3, deserialized.Vector.Length);
+		Assert.Equal(0.1f, deserialized.Vector[0]);
+		Assert.Equal(0.2f, deserialized.Vector[1]);
+		Assert.Equal(0.3f, deserialized.Vector[2]);
+	}
+
+	[Fact]
+	public void Test_FloatArrayWriter_Deserialization_FromBinaryFormat()
+	{
+		var json = $@"{{""_id"":""test-fa-3"",""Vector"":{{""$binary"":""{_knownBinaryBase64}""}}}}";
+		var collection = fixture.Database.GetCollection<FloatArrayWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatArrayWriterObject>() };
+		var deserialized = collection.CheckDeserialization(json, commandOptions);
+		Assert.NotNull(deserialized.Vector);
+		Assert.Equal(_knownBinaryFloats.Length, deserialized.Vector.Length);
+		Assert.Equal(_knownBinaryFloats[0], deserialized.Vector[0]);
+		Assert.Equal(_knownBinaryFloats[1], deserialized.Vector[1]);
+		Assert.Equal(_knownBinaryFloats[2], deserialized.Vector[2]);
+	}
+
+	[Fact]
+	public void Test_FloatBinaryWriter_Deserialization_FromBinaryFormat()
+	{
+		var json = $@"{{""_id"":""test-fb-2"",""Vector"":{{""$binary"":""{_knownBinaryBase64}""}}}}";
+		var collection = fixture.Database.GetCollection<FloatBinaryWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatBinaryWriterObject>() };
+		var deserialized = collection.CheckDeserialization(json, commandOptions);
+		Assert.NotNull(deserialized.Vector);
+		Assert.Equal(_knownBinaryFloats.Length, deserialized.Vector.Length);
+		Assert.Equal(_knownBinaryFloats[0], deserialized.Vector[0]);
+		Assert.Equal(_knownBinaryFloats[1], deserialized.Vector[1]);
+		Assert.Equal(_knownBinaryFloats[2], deserialized.Vector[2]);
+	}
+
+	[Fact]
+	public void Test_FloatBinaryWriter_Deserialization_FromJsonArray()
+	{
+		var json = @"{""_id"":""test-fb-3"",""Vector"":[0.1,0.2,0.3]}";
+		var collection = fixture.Database.GetCollection<FloatBinaryWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatBinaryWriterObject>() };
+		var deserialized = collection.CheckDeserialization(json, commandOptions);
+		Assert.NotNull(deserialized.Vector);
+		Assert.Equal(3, deserialized.Vector.Length);
+		Assert.Equal(0.1f, deserialized.Vector[0]);
+		Assert.Equal(0.2f, deserialized.Vector[1]);
+		Assert.Equal(0.3f, deserialized.Vector[2]);
+	}
+
+	[Fact]
+	public void Test_FloatArrayWriter_Roundtrip()
+	{
+		var original = new FloatArrayWriterObject { _id = "test-fa-rt", Vector = new[] { 1.5f, -2.5f, 3.5f } };
+		var collection = fixture.Database.GetCollection<FloatArrayWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatArrayWriterObject>() };
+		string serialized = collection.CheckSerialization(original, commandOptions);
+		var deserialized = collection.CheckDeserialization(serialized, commandOptions);
+		Assert.NotNull(deserialized.Vector);
+		Assert.Equal(original.Vector, deserialized.Vector);
+	}
+
+	[Fact]
+	public void Test_FloatBinaryWriter_Roundtrip()
+	{
+		var original = new FloatBinaryWriterObject { _id = "test-fb-rt", Vector = new[] { 1.5f, -2.5f, 3.5f } };
+		var collection = fixture.Database.GetCollection<FloatBinaryWriterObject>("serializationTest3");
+		var commandOptions = new CommandOptions() { OutputConverter = new DocumentConverter<FloatBinaryWriterObject>() };
+		string serialized = collection.CheckSerialization(original, commandOptions);
+		var deserialized = collection.CheckDeserialization(serialized, commandOptions);
+		Assert.NotNull(deserialized.Vector);
+		Assert.Equal(original.Vector, deserialized.Vector);
+	}
+
 
 }
 

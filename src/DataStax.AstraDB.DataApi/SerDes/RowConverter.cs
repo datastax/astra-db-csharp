@@ -206,6 +206,12 @@ public class RowConverter<T> : JsonConverter<T> where T : class
                         }
                     }
                 }
+                else if (property.GetCustomAttribute<ColumnVectorAttribute>() != null
+                    && type == typeof(float[])
+                    && propertyValue is float[] floatVec)
+                {
+                    new FloatBinaryWriter().Write(writer, floatVec, options);
+                }
                 else
                 {
                     JsonSerializer.Serialize(writer, propertyValue, type, options);

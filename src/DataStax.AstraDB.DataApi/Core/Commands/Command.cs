@@ -179,6 +179,7 @@ internal class Command
         serializeOptions.Converters.Add(new ObjectIdConverter());
         serializeOptions.Converters.Add(new DurationConverter());
         serializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
+        serializeOptions.Converters.Add(new FloatArrayWriter());
         serializeOptions.Converters.Add(new TimeUuidJsonConverter());
 #if NET6_0_OR_GREATER
         serializeOptions.Converters.Add(new TimeOnlyConverter());
@@ -231,6 +232,7 @@ internal class Command
         var deserializeOptions = new JsonSerializerOptions();
         deserializeOptions.Converters.Add(new DurationConverter());
         deserializeOptions.Converters.Add(new ByteArrayAsBinaryJsonConverter());
+        deserializeOptions.Converters.Add(new FloatArrayJsonConverterBase());
         deserializeOptions.Converters.Add(new TimeUuidJsonConverter());
 #if NET6_0_OR_GREATER
         deserializeOptions.Converters.Add(new TimeOnlyConverter());
