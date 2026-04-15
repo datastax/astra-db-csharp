@@ -32,7 +32,7 @@ public class SimpleObjectWithVectorize
     public string StringToVectorize => Name;
 }
 
-[VectorOptions(Provider = "nvidia", ModelName = "NV-Embed-QA", Metric = SimilarityMetric.Cosine)]
+[CollectionVectorize(Provider = "nvidia", ModelName = "NV-Embed-QA", Metric = SimilarityMetric.Cosine)]
 public class SimpleObjectWithVectorizeAttribute
 {
     [DocumentId]

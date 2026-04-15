@@ -20,21 +20,23 @@ using System.Collections.Generic;
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Specifies vectorize options for a collection.
+/// Base class for vectorization attributes, providing common properties.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-public class VectorizeOptionsAttribute : Attribute
+public class BaseVectorizeAttribute : Attribute
 {
-    /// <summary>The number of dimensions for the vector.</summary>
-    public int Dimension { get; set; } = -1;
+    /// <summary>
+    /// The number of dimensions for the generated vector. If not specified, the service default is used.
+    /// </summary>
+    public int? Dimension { get; set; } = null;
 
-    /// <summary>The similarity metric to use for vector comparisons.</summary>
-    public SimilarityMetric Metric { get; set; } = SimilarityMetric.Cosine;
-
-    /// <summary>The name of the embedding service provider.</summary>
+    /// <summary>
+    /// The name of the embedding service provider.
+    /// </summary>
     public string Provider { get; set; }
 
-    /// <summary>The model name to use for embedding generation.</summary>
+    /// <summary>
+    /// The model name to use for embedding generation.
+    /// </summary>
     public string ModelName { get; set; }
 
     /// <summary>
@@ -45,31 +47,48 @@ public class VectorizeOptionsAttribute : Attribute
     /// <summary>
     /// Additional key-value parameter pairs for the embedding service, supplied as alternating key and value strings.
     /// </summary>
-    public string[] ParameterPairs { get; set; }
+    public object[] ParameterPairs { get; set; }
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="VectorizeOptionsAttribute"/> with default settings.
-    /// </summary>
-    public VectorizeOptionsAttribute() { }
+    internal void Validate(string identifier)
+    {
+        if (ParameterPairs != null && ParameterPairs.Length > 0)
+        {
+            if (ParameterPairs.Length % 2 != 0)
+            {
+                throw new InvalidOperationException($"ParameterPairs for {identifier} must contain an even number of elements (string/object pairs).");
+            }
+            for (int i = 0; i < ParameterPairs.Length; i += 2)
+            {
+                if (ParameterPairs[i] is not string)
+                {
+                    throw new InvalidOperationException($"ParameterPairs for {identifier} must be pairs of string keys followed by object values. Index {i} is not a string).");
+                }
+            }
+        }
+    }
 
     internal Dictionary<string, string> GetAuthentication()
     {
         return PairsToDict(AuthenticationPairs);
     }
 
-    internal Dictionary<string, string> GetParameters()
+    internal Dictionary<string, object> GetParameters()
     {
         return PairsToDict(ParameterPairs);
     }
 
-    private static Dictionary<string, string> PairsToDict(string[] pairs)
+    private static Dictionary<string, T> PairsToDict<T>(T[] pairs)
     {
         if (pairs == null || pairs.Length == 0)
+        {
             return null;
+        }
 
-        var dict = new Dictionary<string, string>();
+        var dict = new Dictionary<string, T>();
         for (int i = 0; i + 1 < pairs.Length; i += 2)
-            dict[pairs[i]] = pairs[i + 1];
+        {
+            dict[pairs[i] as string] = pairs[i + 1];
+        }
         return dict.Count > 0 ? dict : null;
     }
 }

@@ -79,8 +79,8 @@ public class CollectionDefinition
         }
 
         var lexicalAttribute = type.GetCustomAttribute<LexicalOptionsAttribute>();
-        var vectorAttribute = type.GetCustomAttribute<VectorOptionsAttribute>();
-        var vectorizeAttribute = type.GetCustomAttribute<VectorizeOptionsAttribute>();
+        var vectorAttribute = type.GetCustomAttribute<CollectionVectorAttribute>();
+        var vectorizeAttribute = type.GetCustomAttribute<CollectionVectorizeAttribute>();
 
         if (definition.DefaultId == null && idProperty != null)
         {
@@ -126,6 +126,7 @@ public class CollectionDefinition
 
         if (vectorizeAttribute != null)
         {
+            vectorizeAttribute.Validate($"Collection {type.Name}");
             if (definition.Vector == null)
             {
                 definition.Vector = new VectorOptions();

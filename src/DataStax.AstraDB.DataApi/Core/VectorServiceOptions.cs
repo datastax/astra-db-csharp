@@ -45,6 +45,6 @@ public class VectorServiceOptions
     /// Additional parameters for the vectorization provider
     /// </summary>
     [JsonPropertyName("parameters")]
-    public Dictionary<string, string> Parameters { get; set; }
+    public Dictionary<string, object> Parameters { get; set; }
 }
 

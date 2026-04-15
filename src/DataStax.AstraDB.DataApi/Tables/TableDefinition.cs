@@ -101,12 +101,13 @@ public class TableDefinition
 
           case ColumnVectorizeAttribute vectorize:
             createColumn = false;
+            vectorize.Validate($"Column {columnName}");
             definition.AddColumn(columnName, new VectorizeDataApiType(vectorize.Dimension, new()
             {
-                Provider = vectorize.ServiceProvider,
-                ModelName = vectorize.ServiceModelName,
-                Authentication = vectorize.AuthenticationPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1]),
-                Parameters = vectorize.ParameterPairs?.ToDictionary(s => s.Split('=')[0], s => s.Split('=')[1])
+              Provider = vectorize.Provider,
+              ModelName = vectorize.ModelName,
+              Authentication = vectorize.GetAuthentication(),
+              Parameters = vectorize.GetParameters()
             }));
             break;
 
