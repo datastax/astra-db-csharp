@@ -44,16 +44,6 @@ public class Builders
 public class Builders<T>
 {
     /// <summary>
-    /// A builder for creating filter definitions for collections
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// var filter = Builders&lt;DocumentType&gt;.CollectionFilter;
-    /// filter = filter.Where(x => x.Name == "NameSearch");
-    /// </code>
-    /// </example>
-    public static CollectionFilterBuilder<T> CollectionFilter => new();
-    /// <summary>
     /// A builder for creating projection definitions
     /// </summary>
     /// <example>
@@ -64,7 +54,7 @@ public class Builders<T>
     /// </example>
     public static ProjectionBuilder<T> Projection => new();
     /// <summary>
-    /// A builder for creating sort definitions
+    /// A builder for creating sort definitions for collections
     /// </summary>
     /// <example>
     /// <code>
@@ -78,21 +68,31 @@ public class Builders<T>
     /// </summary>
     /// <example>
     /// <code>
-    /// var sort = Builders&lt;DocumentType&gt;.TableSort;
+    /// var sort = Builders&lt;RowType&gt;.TableSort;
     /// sort = sort.Ascending(x => x.Name);
     /// </code>
     /// </example>
     public static TableSortBuilder<T> TableSort => new();
     /// <summary>
-    /// A builder for creating update definitions
+    /// A builder for creating update definitions for collections
     /// </summary>
     /// <example>
     /// <code>
-    /// var update = Builders&lt;DocumentType&gt;.Update;
+    /// var update = Builders&lt;DocumentType&gt;.CollectionUpdate;
     /// update = update.Set(x => x.Name, "NewName");
     /// </code>
     /// </example>
-    public static UpdateBuilder<T> Update => new();
+    public static UpdateBuilder<T> CollectionUpdate => new();
+    /// <summary>
+    /// A builder for creating update definitions for tables
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var update = Builders&lt;RowType&gt;.TableUpdate;
+    /// update = update.Set(x => x.Name, "NewName");
+    /// </code>
+    /// </example>
+    public static UpdateBuilder<T> TableUpdate => new();
     /// <summary>
     /// A builder for creating table indexes
     /// <example>
@@ -104,11 +104,21 @@ public class Builders<T>
     /// </summary>
     public static TableIndexBuilder TableIndex => new();
     /// <summary>
+    /// A builder for creating filter definitions for collections
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var filter = Builders&lt;DocumentType&gt;.CollectionFilter;
+    /// filter = filter.Where(x => x.Name == "NameSearch");
+    /// </code>
+    /// </example>
+    public static CollectionFilterBuilder<T> CollectionFilter => new();
+    /// <summary>
     /// A builder for creating sort definitions for tables
     /// </summary>
     /// <example>
     /// <code>
-    /// var sort = Builders&lt;DocumentType&gt;.TableSort;
+    /// var sort = Builders&lt;RowType&gt;.TableSort;
     /// sort = sort.Ascending(x => x.Name);
     /// </code>
     /// </example>

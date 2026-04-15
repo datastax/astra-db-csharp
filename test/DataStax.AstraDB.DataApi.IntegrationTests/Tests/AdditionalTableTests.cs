@@ -253,7 +253,7 @@ public class AdditionalTableTests
             Assert.Null(findResult);
 
             var filter = Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 2);
-            var update = Builders<DictionaryTypeTest>.Update.PullAll(x => x.IntKey, new int[] { 12, 22 });
+            var update = Builders<DictionaryTypeTest>.TableUpdate.PullAll(x => x.IntKey, new int[] { 12, 22 });
             await table.UpdateOneAsync(filter, update);
             var updatedDocument = await table.FindOneAsync(filter);
             Assert.NotNull(updatedDocument);
@@ -366,7 +366,7 @@ public class AdditionalTableTests
 
             // push with a single-key dictionary / a tuple (typed):
             var pusherUpdate = Builders<DictionaryTypeTest>
-                .Update
+                .TableUpdate
                 .Push(r => r.DecimalKey, new Dictionary<decimal, string> { { 700.11m, "the 700th" } })
                 .Push(r => r.IntKey, (500, "the 500th"));
             await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherUpdate);
@@ -376,7 +376,7 @@ public class AdditionalTableTests
 
             // push with a single-key dictionary / a tuple (untyped):
             var pusherUpdateUntyped = Builders<Row>
-                .Update
+                .TableUpdate
                 .Push("DecimalKey", new Dictionary<decimal, string> { { 700.11m, "the 700th U" } })
                 .Push("IntKey", (500, "the 500th U"));
             await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherUpdateUntyped);
@@ -386,7 +386,7 @@ public class AdditionalTableTests
 
             // pushEach with single-key dictionaries / tuples (typed):
             var pusherEachUpdate = Builders<DictionaryTypeTest>
-                .Update
+                .TableUpdate
                 .PushEach(r => r.DecimalKey, new Dictionary<decimal, string> { { 701.11m, "the 701th" }, { 702.11m, "the 702th" } })
                 .PushEach(r => r.IntKey, new[] { (501, "the 501th"), (502, "the 502th") });
             await table.UpdateOneAsync(filterBuilder.Eq(r => r.Id, 0), pusherEachUpdate);
@@ -396,7 +396,7 @@ public class AdditionalTableTests
 
             // pushEach with single-key dictionaries / tuples (untyped):
             var pusherEachUpdateUntyped = Builders<Row>
-                .Update
+                .TableUpdate
                 .PushEach("DecimalKey", new Dictionary<decimal, string> { { 701.11m, "the 701thU " }, { 702.11m, "the 702th U" } })
                 .PushEach("IntKey", new[] { (501, "the 501th U"), (502, "the 502th U") });
             await tableUntyped.UpdateOneAsync(filterBuilderUntyped.Eq("Id", 0), pusherEachUpdateUntyped);
@@ -418,7 +418,7 @@ public class AdditionalTableTests
                 {"PQR", "LMN"}
             };
             var setterUpdate = Builders<DictionaryTypeTest>
-                .Update
+                .TableUpdate
                 .Set(r => r.IntKey, newIntKeyTuples)
                 .Set(r => r.DecimalKey, newDecimalKey)
                 .Set(r => r.StringDictionary, newStringKey);
@@ -443,7 +443,7 @@ public class AdditionalTableTests
                 {"PQR", "LMN U"}
             };
             var setterUpdateUntyped = Builders<Row>
-                .Update
+                .TableUpdate
                 .Set("IntKey", newIntKeyTuplesU)
                 .Set("DecimalKey", newDecimalKeyU)
                 .Set("StringDictionary", newStringKeyU);

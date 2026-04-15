@@ -760,7 +760,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <returns>Updated document or null</returns>
     /// <example>
     /// <code>
-    /// var updater = Builders&lt;SimpleObject&gt;.Update;
+    /// var updater = Builders&lt;SimpleObject&gt;.CollectionUpdate;
     /// var combinedUpdate = updater.Combine(
     ///     updater.Set(so => so.Properties.PropertyOne, "Updated"),
     ///     updater.Unset(so => so.Properties.PropertyTwo)
