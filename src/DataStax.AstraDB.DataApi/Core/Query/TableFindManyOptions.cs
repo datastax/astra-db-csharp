@@ -73,6 +73,7 @@ public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, 
             PageState = PageState,
             Skip = Skip,
             Limit = Limit,
+            IncludeSortVector = IncludeSortVector,
             IncludeSimilarity = IncludeSimilarity,
             Projection = Projection != null ? Projection.Clone() : null,
             Sort = Sort != null ? Sort.Clone() : null

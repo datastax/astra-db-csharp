@@ -46,14 +46,14 @@ public enum CursorState
 /// <summary>
 /// Exception thrown when a cursor operation is attempted in an invalid state.
 /// </summary>
-public class CursorError : Exception
+public class CursorException : Exception
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="CursorError"/> class.
+    /// Initializes a new instance of the <see cref="CursorException"/> class.
     /// </summary>
     /// <param name="message">The error message.</param>
     /// <param name="state">The cursor state when the error occurred.</param>
-    public CursorError(string message, CursorState state) : base(message)
+    public CursorException(string message, CursorState state) : base(message)
     {
         CursorState = state;
     }
@@ -71,7 +71,9 @@ public class CursorError : Exception
 /// capabilities. Results are fetched in batches from the underlying API and buffered for efficient iteration.
 /// </summary>
 /// <typeparam name="T">The type of the items or rows in the cursor.</typeparam>
-public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnumerable<T>
+/// <typeparam name="TCursor">The type of the cursor.</typeparam>
+public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, IAsyncEnumerable<T>
+    where TCursor : AbstractCursor<T, TCursor>
 {
     /// <summary>
     /// Gets the internal buffer containing fetched results.
@@ -164,12 +166,12 @@ public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnu
     /// </summary>
     /// <param name="cancellationToken">An optional cancellation token to cancel the operation.</param>
     /// <returns>An async enumerator for the cursor.</returns>
-    /// <exception cref="CursorError">Thrown when attempting to iterate over a closed cursor.</exception>
+    /// <exception cref="CursorException">Thrown when attempting to iterate over a closed cursor.</exception>
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         if (State == CursorState.Closed)
         {
-            throw new CursorError("Cannot iterate over a closed cursor", State);
+            throw new CursorException("Cannot iterate over a closed cursor", State);
         }
         
         T doc;
@@ -184,12 +186,12 @@ public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnu
     /// Returns an enumerator to iterate over all items in the cursor.
     /// </summary>
     /// <returns>An enumerator for the cursor.</returns>
-    /// <exception cref="CursorError">Thrown when attempting to iterate over a closed cursor.</exception>
+    /// <exception cref="CursorException">Thrown when attempting to iterate over a closed cursor.</exception>
     public IEnumerator<T> GetEnumerator()
     {
         if (State == CursorState.Closed)
         {
-            throw new CursorError("Cannot iterate over a closed cursor", State);
+            throw new CursorException("Cannot iterate over a closed cursor", State);
         }
         
         T doc;
@@ -212,7 +214,7 @@ public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnu
     /// Creates a new cursor instance with the same configuration.
     /// </summary>
     /// <returns>A new cursor instance.</returns>
-    public abstract AbstractCursor<T> Clone();
+    public abstract TCursor Clone();
 
     /// <summary>
     /// Releases all resources used by the cursor and sets its state to <see cref="CursorState.Closed"/>.
@@ -266,6 +268,7 @@ public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnu
         {
             if (!_isNextPage)
             {
+                State = CursorState.Closed;
                 return default;
             }
 

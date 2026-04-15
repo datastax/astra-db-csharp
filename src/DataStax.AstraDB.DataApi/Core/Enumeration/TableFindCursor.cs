@@ -105,9 +105,9 @@ public class TableFindCursor<T, TResult> : FindCursor<T, TResult, TableSortBuild
     /// Creates a new cursor instance with the same configuration.
     /// </summary>
     /// <returns>A new cursor instance.</returns>
-    public override AbstractCursor<TResult> Clone()
+    public override TableFindCursor<T, TResult> Clone()
     {
-        return new TableFindCursor<T, TResult>(FindOptions.Clone(), CommandOptions, FetchPageFunc);
+        return new(FindOptions.Clone(), CommandOptions, FetchPageFunc);
     }
 
     /// <summary>
@@ -117,6 +117,6 @@ public class TableFindCursor<T, TResult> : FindCursor<T, TResult, TableSortBuild
     /// <returns>A new cursor instance with the updated options.</returns>
     internal override TableFindCursor<T, TResult> CloneWithOptions(IFindManyOptions<T, TableSortBuilder<T>> options)
     {
-        return new TableFindCursor<T, TResult>(options, CommandOptions, FetchPageFunc);
+        return new(options, CommandOptions, FetchPageFunc);
     }
 }
