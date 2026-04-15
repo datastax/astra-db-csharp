@@ -68,11 +68,11 @@ public class Builders<T>
     /// </summary>
     /// <example>
     /// <code>
-    /// var sort = Builders&lt;DocumentType&gt;.Sort;
+    /// var sort = Builders&lt;DocumentType&gt;.CollectionSort;
     /// sort = sort.Ascending(x => x.Name);
     /// </code>
     /// </example>
-    public static DocumentSortBuilder<T> Sort => new();
+    public static DocumentSortBuilder<T> CollectionSort => new();
     /// <summary>
     /// A builder for creating sort definitions for tables
     /// </summary>

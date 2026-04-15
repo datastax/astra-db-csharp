@@ -365,7 +365,7 @@ public class UpdateTests
             };
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
-            var sort = Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector); ;
+            var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector); ;
             var update = Builders<SimpleObjectWithVector>.Update.Set(so => so.Name, "Updated Dog Name");
             var result = await collection.UpdateOneAsync(null, update, new UpdateOneOptions<SimpleObjectWithVector> { Sort = sort });
             Assert.Equal(1, result.ModifiedCount);
@@ -420,7 +420,7 @@ public class UpdateTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString); ;
+            var sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString); ;
             var update = Builders<SimpleObjectWithVectorize>.Update.Set(so => so.Name, "Updated Dog Name");
             var result = await collection.UpdateOneAsync(null, update, new UpdateOneOptions<SimpleObjectWithVectorize> { Sort = sort });
             Assert.Equal(1, result.ModifiedCount);

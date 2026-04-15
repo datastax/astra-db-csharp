@@ -137,7 +137,7 @@ public class FindAndUpdateTests
             };
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
-            var sort = Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector); ;
+            var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector); ;
             var update = Builders<SimpleObjectWithVector>.Update.Set(so => so.Name, "Updated Dog Name");
             var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVector> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("Updated Dog Name", result.Name);
@@ -189,7 +189,7 @@ public class FindAndUpdateTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString); ;
+            var sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString); ;
             var update = Builders<SimpleObjectWithVectorize>.Update.Set(so => so.Name, "Updated Dog Name");
             var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("Updated Dog Name", result.Name);

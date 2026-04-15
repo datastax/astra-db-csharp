@@ -78,7 +78,7 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
     /// <example>
     /// <code>
     /// var findAndReranker = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
-    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
+    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.CollectionSort.Vectorize(dogQueryVectorString))
     ///     .IncludeScores(true);
     /// var documentsWithScores = findAndReranker.WithScoresAsync();
     /// await foreach (var document in documentsWithScores)
@@ -103,7 +103,7 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
     /// To access the sort vectors, use <see cref="GetSortVectorAsync()"/>.
     /// <code>
     /// var reranker = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
-    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
+    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.CollectionSort.Vectorize(dogQueryVectorString))
     ///     .IncludeSortVector(true);
     /// var sortVector = await reranker.GetSortVectorAsync();
     /// </code>

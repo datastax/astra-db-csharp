@@ -52,7 +52,7 @@ public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, 
     /// 
     /// var finder = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;(
     ///     new FindOptions&lt;SimpleObjectWithVectorize&gt;() { 
-    ///         Sort = Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString), 
+    ///         CollectionSort = Builders&lt;SimpleObjectWithVectorize&gt;.CollectionSort.Vectorize(dogQueryVectorString), 
     ///         IncludeSortVector = true 
     ///     }, null);
     /// var cursor = finder.ToCursor();

@@ -92,7 +92,7 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
     /// <example>
     /// <code>
     /// // Sort by the nested Properties.PropertyOne field
-    /// var sortBuilder = Builders&lt;SimpleObject&gt;.Sort;
+    /// var sortBuilder = Builders&lt;SimpleObject&gt;.CollectionSort;
     /// var sort = sortBuilder.Ascending(p =&gt; p.Properties.PropertyOne);
     /// </code>
     /// </example>
@@ -116,7 +116,7 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
     /// }
     /// 
     /// var FindEnumerator = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
-    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
+    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.CollectionSort.Vectorize(dogQueryVectorString))
     ///     .IncludeSimilarity(true);
     /// var cursor = FindEnumerator.ToCursor();
     /// var list = cursor.ToList();
@@ -137,7 +137,7 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
     /// <example>
     /// <code>
     /// var finder = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;()
-    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.Sort.Vectorize(dogQueryVectorString))
+    ///     .Sort(Builders&lt;SimpleObjectWithVectorize&gt;.CollectionSort.Vectorize(dogQueryVectorString))
     ///     .IncludeSortVector(true);
     /// //enumerate the results
     /// var results = await finder.ToList();

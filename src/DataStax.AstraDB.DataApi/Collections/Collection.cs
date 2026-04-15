@@ -650,7 +650,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <code>
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.Gt(so => so.Properties.IntProperty, 20);
-    /// var sort = Builders&lt;SimpleObject&gt;.Sort.Ascending(o => o.Properties.IntProperty);
+    /// var sort = Builders&lt;SimpleObject&gt;.CollectionSort.Ascending(o => o.Properties.IntProperty);
     /// var results = collection.Find(filter).Sort(sort);
     /// </code>
     /// </example>
