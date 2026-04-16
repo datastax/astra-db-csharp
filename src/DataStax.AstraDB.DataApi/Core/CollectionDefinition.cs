@@ -67,7 +67,6 @@ public class CollectionDefinition
         Type type = typeof(T);
         PropertyInfo idProperty = null;
         DocumentIdAttribute idAttribute = null;
-        LexicalOptionsAttribute lexicalAttribute = null;
 
         foreach (var property in type.GetProperties())
         {
@@ -77,12 +76,11 @@ public class CollectionDefinition
                 idProperty = property;
                 idAttribute = attr;
             }
-            var checkLexicalAttribute = property.GetCustomAttribute<LexicalOptionsAttribute>();
-            if (checkLexicalAttribute != null)
-            {
-                lexicalAttribute = checkLexicalAttribute;
-            }
         }
+
+        var lexicalAttribute = type.GetCustomAttribute<LexicalOptionsAttribute>();
+        var vectorAttribute = type.GetCustomAttribute<CollectionVectorAttribute>();
+        var vectorizeAttribute = type.GetCustomAttribute<CollectionVectorizeAttribute>();
 
         if (definition.DefaultId == null && idProperty != null)
         {
@@ -107,6 +105,47 @@ public class CollectionDefinition
                     CharacterFilters = lexicalAttribute.CharacterFilters != null ? new List<string>(lexicalAttribute.CharacterFilters) : new List<string>()
                 }
             };
+        }
+
+        if (vectorAttribute != null)
+        {
+            if (definition.Vector == null)
+            {
+                definition.Vector = new VectorOptions();
+            }
+            if (vectorAttribute.Dimension != -1)
+            {
+                definition.Vector.Dimension = vectorAttribute.Dimension;
+            }
+            definition.Vector.Metric = vectorAttribute.Metric;
+            if (!string.IsNullOrEmpty(vectorAttribute.SourceModel))
+            {
+                definition.Vector.SourceModel = vectorAttribute.SourceModel;
+            }
+        }
+
+        if (vectorizeAttribute != null)
+        {
+            vectorizeAttribute.Validate($"Collection {type.Name}");
+            if (definition.Vector == null)
+            {
+                definition.Vector = new VectorOptions();
+            }
+            if (vectorizeAttribute.Dimension != -1)
+            {
+                definition.Vector.Dimension = vectorizeAttribute.Dimension;
+            }
+            definition.Vector.Metric = vectorizeAttribute.Metric;
+            if (!string.IsNullOrEmpty(vectorizeAttribute.Provider))
+            {
+                definition.Vector.Service = new VectorServiceOptions()
+                {
+                    Provider = vectorizeAttribute.Provider,
+                    ModelName = vectorizeAttribute.ModelName,
+                    Authentication = vectorizeAttribute.GetAuthentication(),
+                    Parameters = vectorizeAttribute.GetParameters()
+                };
+            }
         }
 
 

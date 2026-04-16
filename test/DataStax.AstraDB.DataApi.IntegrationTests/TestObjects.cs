@@ -32,6 +32,22 @@ public class SimpleObjectWithVectorize
     public string StringToVectorize => Name;
 }
 
+[CollectionVectorize(Provider = "nvidia", ModelName = "NV-Embed-QA", Metric = SimilarityMetric.Cosine)]
+public class SimpleObjectWithVectorizeAttribute
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
+
+
+[LexicalOptions(
+    TokenizerName = "standard",
+    Filters = new[] { "lowercase", "stop", "porterstem", "asciifolding" },
+    CharacterFilters = new string[] { }
+)]
 public class SimpleObjectWithLexical
 {
     [DocumentId]
@@ -39,11 +55,6 @@ public class SimpleObjectWithLexical
     public int? Id { get; set; }
     public string Name { get; set; }
     [DocumentMapping(DocumentMappingField.Lexical)]
-    [LexicalOptions(
-        TokenizerName = "standard",
-        Filters = new[] { "lowercase", "stop", "porterstem", "asciifolding" },
-        CharacterFilters = new string[] { }
-    )]
     public string LexicalValue => Name;
 }
 
