@@ -349,7 +349,106 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateCollection_WithVectorizeNone_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorize";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttribute>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorizeAttribute
+            {
+                Id = 123,
+                Name = "bla"
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateCollection_WithVectorizeSharedSecret_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorizeShSecret";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeShSecret>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeShSecret
+            {
+                Id = 123,
+                Name = "bla"
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    /*
+        BUG: currently results in:
+            "vector": {
+                "dimension": 1536,
+                "metric": "cosine",
+                "service": {
+                    "provider": "openai",
+                    "modelName": "text-embedding-3-small",
+                    "authentication": {
+                        "providerKey": "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI.providerKey"
+                    }
+                },
+                "sourceModel": "bert"
+            },
+        (i.e. no dimension and metric fetched from the `CollectionVector` attribute, sourceModel yes.)
+    */
+    public async Task CreateCollection_WithVectorizeSharedSecretDoubleAttribute_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorizeShSecret2A";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeShSecret2A>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeShSecret2A
+            {
+                Id = 123,
+                Name = "bla"
+            });
+
+        //await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    public async Task CreateGetCollection_WithVectorizeHeader_Typed()
+    {
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var collectionName = "coll_SimpleObjectWithVectorizeHeader";
+        // Signature of overloads mandate that we supply the collection name here. Eeh, I think we can live with that.
+        var createdCollection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
+        Assert.NotNull(createdCollection);
+        Assert.Equal(collectionName, createdCollection.CollectionName);
+        await createdCollection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeHeader
+            {
+                Id = 123,
+                Name = "bla one"
+            });
+
+        // Signature of overloads mandate that we supply the collection name here. Eeh, I think we can live with that.
+        var gottenCollection = fixture.Database.GetCollection<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
+        Assert.NotNull(gottenCollection);
+        Assert.Equal(collectionName, gottenCollection.CollectionName);
+        await gottenCollection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeHeader
+            {
+                Id = 321,
+                Name = "bla two"
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
     public async Task CreateCollection_WithVectorizeNone_Untyped()
     {
         var collectionName = "collectionVectorizeHeader";
@@ -563,7 +662,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
     public async Task CreateTable_WithVectorizeNone_Typed()
     {
         try
@@ -635,7 +734,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
     public async Task CreateTable_WithVectorizeNone_Untyped()
     {
         var tableName = "bookTestTableVectorizeNone_Untyped";
