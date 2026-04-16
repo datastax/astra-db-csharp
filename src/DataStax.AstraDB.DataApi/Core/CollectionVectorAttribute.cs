@@ -28,7 +28,7 @@ public class CollectionVectorAttribute : Attribute
     public int? Dimension { get; set; } = null;
 
     /// <summary>The similarity metric to use for vector comparisons.</summary>
-    public SimilarityMetric Metric { get; set; } = SimilarityMetric.Cosine;
+    public SimilarityMetric? Metric { get; set; }
 
     /// <summary>
     /// Configures the index with the fastest settings for a given source of embeddings vectors.
