@@ -580,7 +580,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted in RowBookVectorizeSharedSecretelow")]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted in RowBookVectorizeSharedSecret")]
     public async Task CreateTable_WithVectorizeSharedSecret_Typed()
     {
         try
@@ -593,6 +593,23 @@ public class DatabaseTests
         finally
         {
             await fixture.Database.DropTableAsync<RowBookVectorizeSharedSecret>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted in RowBookVectorizeSharedSecretWithParameters")]
+    public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Typed()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBookVectorizeSharedSecretWithParameters>();
+
+            await table.InsertOneAsync(new RowBookVectorizeSharedSecretWithParameters() {Title = "t", Author = "a", NumberOfPages = 123});
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorizeSharedSecretWithParameters>();
         }
     }
 
@@ -666,6 +683,47 @@ public class DatabaseTests
                     Authentication = new Dictionary<string, string>
                     {
                         { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI" }
+                    }
+                }))
+                .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+
+            await table.InsertOneAsync(new Row() {
+                {"Title", "t"},
+                {"Author", "a"},
+                {"NumberOfPages", 123}
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Untyped()
+    {
+        var tableName = "bookTestTableVeczeShdSecretWParams_Untyped";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddColumn("Title", DataApiType.Text())
+                .AddColumn("NumberOfPages", DataApiType.Int())
+                .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
+                {
+                    Provider = "voyageAI",
+                    ModelName = "voyage-2",
+                    Authentication = new Dictionary<string, string>
+                    {
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" }
+                    },
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "autoTruncate", false }
                     }
                 }))
                 .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
