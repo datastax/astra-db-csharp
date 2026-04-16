@@ -347,8 +347,8 @@ public class AdditionalCollectionTests
 
             var okUntypedDocs = new List<Document>
             {
-                new() { ["DoubleValue"] = "+Infinity", ["FloatValue"] = "+Infinity" },
-                new() { ["DoubleValue"] = "-Infinity", ["FloatValue"] = "-NegativeInfinity" },
+                new() { ["DoubleValue"] = "Infinity", ["FloatValue"] = "Infinity" },
+                new() { ["DoubleValue"] = "-Infinity", ["FloatValue"] = "-Infinity" },
                 new() { ["DoubleValue"] = "NaN", ["FloatValue"] = "NaN" },
             };
 
