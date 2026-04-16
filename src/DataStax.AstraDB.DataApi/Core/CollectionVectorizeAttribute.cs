@@ -26,7 +26,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class CollectionVectorizeAttribute : BaseVectorizeAttribute
 {
     /// <summary>The similarity metric to use for vector comparisons.</summary>
-    public SimilarityMetric Metric { get; set; } = SimilarityMetric.Cosine;
+    public SimilarityMetric? Metric { get; set; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="CollectionVectorizeAttribute"/> with default settings.
