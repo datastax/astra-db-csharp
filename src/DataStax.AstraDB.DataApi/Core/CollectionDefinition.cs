@@ -138,7 +138,7 @@ public class CollectionDefinition
             {
                 definition.Vector.Dimension = vectorizeAttribute.Dimension.Value;
             }
-            if (vectorAttribute.Metric.HasValue)
+            if (vectorizeAttribute.Metric.HasValue)
             {
                 definition.Vector.Metric = vectorizeAttribute.Metric.Value;
             }

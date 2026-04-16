@@ -386,22 +386,6 @@ public class DatabaseTests
 
     [SkipWhenNotAstra]
     [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
-    /*
-        BUG: currently results in:
-            "vector": {
-                "dimension": 1536,
-                "metric": "cosine",
-                "service": {
-                    "provider": "openai",
-                    "modelName": "text-embedding-3-small",
-                    "authentication": {
-                        "providerKey": "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI.providerKey"
-                    }
-                },
-                "sourceModel": "bert"
-            },
-        (i.e. no dimension and metric fetched from the `CollectionVector` attribute, sourceModel yes.)
-    */
     public async Task CreateCollection_WithVectorizeSharedSecretDoubleAttribute_Typed()
     {
         var collectionName = "coll_SimpleObjectWithVectorizeShSecret2A";
@@ -415,7 +399,7 @@ public class DatabaseTests
                 Name = "bla"
             });
 
-        //await fixture.Database.DropCollectionAsync(collectionName);
+        await fixture.Database.DropCollectionAsync(collectionName);
     }
 
     [Fact(Skip="Should be run after exporting the environment variable quoted below")]

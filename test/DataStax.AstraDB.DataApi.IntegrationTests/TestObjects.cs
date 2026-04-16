@@ -34,7 +34,11 @@ public class SimpleObjectWithVectorize
 }
 
 [CollectionName("coll_SimpleObjectWithVectorize")]
-[CollectionVectorize(Provider = "nvidia", ModelName = "nvidia/nv-embedqa-e5-v5", Metric = SimilarityMetric.Cosine)]
+[CollectionVectorize(
+    "nvidia",
+    "nvidia/nv-embedqa-e5-v5",
+    SimilarityMetric.Cosine
+)]
 public class SimpleObjectWithVectorizeAttribute
 {
     [DocumentId]
@@ -61,7 +65,7 @@ public class SimpleObjectWithVectorizeAttributeShSecret
 [CollectionName("coll_SimpleObjectWithVectorizeShSecret2A")]
 [CollectionVector(
     123,
-    Metric=SimilarityMetric.Euclidean,
+    SimilarityMetric.Euclidean,
     SourceModel="bert"
 )]
 [CollectionVectorize(
