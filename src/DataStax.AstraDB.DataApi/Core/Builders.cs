@@ -113,9 +113,4 @@ public class Builders<T>
     /// </code>
     /// </example>
     public static TableFilterBuilder<T> TableFilter => new();
-    /// <summary>
-    /// A fluent builder for constructing a set of primary key column filters,
-    /// for use with <c>CompoundKey</c>.
-    /// </summary>
-    public static PrimaryKeyFilterBuilder<T> PrimaryKeyFilter => new();
 }

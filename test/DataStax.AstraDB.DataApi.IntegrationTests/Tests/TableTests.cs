@@ -45,8 +45,10 @@ public class TableTests
             var rows = new List<RowBook> { row1, row2 };
             var result = await table.InsertManyAsync(rows);
             Assert.Equal(rows.Count, result.InsertedCount);
-            // Assert.Equal(rows[0].Title, result.PrimaryKeys[0].Title);
-            // Assert.Equal(rows[1].Title, result.PrimaryKeys[1].Title);
+            Assert.Equal(rows[0].Title, result.InsertedIdTuples[0][0]);
+            Assert.Equal(rows[0].NumberOfPages, result.InsertedIdTuples[0][1]);
+            Assert.Equal(rows[1].Title, result.InsertedIdTuples[1][0]);
+            Assert.Equal(rows[1].NumberOfPages, result.InsertedIdTuples[1][1]);
         }
         finally
         {
@@ -407,12 +409,10 @@ public class TableTests
             var table = await fixture.Database.CreateTableAsync<CompoundPrimaryKey>(tableName);
             await table.InsertManyAsync(rows);
             var filterBuilder = Builders<CompoundPrimaryKey>.TableFilter;
-            var filter = filterBuilder.CompoundKey(
+            var filter = filterBuilder.And(
                 new[] {
-                    new PrimaryKeyFilter<CompoundPrimaryKey, string>(x => x.KeyOne, "KeyOne3"),
-                    new PrimaryKeyFilter<CompoundPrimaryKey, string>(x => x.KeyTwo, "KeyTwo3")
-                },
-                new[] {
+                    filterBuilder.Eq(x => x.KeyOne,"KeyOne3"),
+                    filterBuilder.Eq(x => x.KeyTwo,"KeyTwo3"),
                     filterBuilder.Eq(x => x.SortOneAscending,"SortOneAscending3"),
                     filterBuilder.Eq(x => x.SortTwoDescending, "SortTwoDescending3")
                 });
@@ -589,12 +589,10 @@ public class TableTests
         updatedDocument = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());
 
-        filter = Builders<Row>.TableFilter.CompoundKey(
+        filter = Builders<Row>.TableFilter.And(
                 new[] {
-                    new PrimaryKeyFilter("Id", 3),
-                    new PrimaryKeyFilter("IdTwo", "IdTwo_3"),
-                },
-                new[] {
+                    Builders<Row>.TableFilter.Eq("Id", 3),
+                    Builders<Row>.TableFilter.Eq("IdTwo", "IdTwo_3"),
                     Builders<Row>.TableFilter.Eq("SortOneAscending", "SortOne_3"),
                     Builders<Row>.TableFilter.Eq("SortTwoDescending", "SortTwo_47")
                 });
