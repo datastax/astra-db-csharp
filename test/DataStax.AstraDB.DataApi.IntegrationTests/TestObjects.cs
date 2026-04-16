@@ -203,7 +203,28 @@ public class RowBookVectorizeSharedSecret
 {
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
-    [ColumnVectorize("openai", "text-embedding-3-small", dimension: 1536, authenticationPairs: new string[] {"providerKey=SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"})]
+    [ColumnVectorize(
+        "openai", "text-embedding-3-small", dimension: 1536,
+        authenticationPairs: new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+    )]
+    public object Author { get; set; }
+    [ColumnPrimaryKey(2)]
+    public int NumberOfPages { get; set; }
+    public DateTime? DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
+[TableName("bookTestTableVeczeShdSecretWithParams")]
+public class RowBookVectorizeSharedSecretWithParameters
+{
+    [ColumnPrimaryKey(1)]
+    public string Title { get; set; }
+    [ColumnVectorize(
+        "voyageAI", "voyage-2",
+        authenticationPairs: new string[] { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" },
+        parameterPairs: new object[] { "autoTruncate", false }
+    )]
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
     public int NumberOfPages { get; set; }
