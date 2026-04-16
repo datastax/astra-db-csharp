@@ -1,6 +1,7 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
+using DataStax.AstraDB.DataApi.Collections;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
@@ -32,7 +33,8 @@ public class SimpleObjectWithVectorize
     public string StringToVectorize => Name;
 }
 
-[CollectionVectorize(Provider = "nvidia", ModelName = "NV-Embed-QA", Metric = SimilarityMetric.Cosine)]
+[CollectionName("coll_SimpleObjectWithVectorize")]
+[CollectionVectorize(Provider = "nvidia", ModelName = "nvidia/nv-embedqa-e5-v5", Metric = SimilarityMetric.Cosine)]
 public class SimpleObjectWithVectorizeAttribute
 {
     [DocumentId]
@@ -42,6 +44,49 @@ public class SimpleObjectWithVectorizeAttribute
     public string StringToVectorize => Name;
 }
 
+[CollectionName("coll_SimpleObjectWithVectorizeShSecret")]
+[CollectionVectorize(
+    Provider = "openai", ModelName = "text-embedding-3-small",
+    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+)]
+public class SimpleObjectWithVectorizeAttributeShSecret
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
+
+[CollectionName("coll_SimpleObjectWithVectorizeShSecret2A")]
+[CollectionVector(
+    123,
+    Metric=SimilarityMetric.Euclidean,
+    SourceModel="bert"
+)]
+[CollectionVectorize(
+    Provider = "openai", ModelName = "text-embedding-3-small",
+    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+)]
+public class SimpleObjectWithVectorizeAttributeShSecret2A
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
+
+[CollectionName("coll_SimpleObjectWithVectorizeHeader")]
+[CollectionVectorize(Provider = "openai", ModelName = "text-embedding-3-small")]
+public class SimpleObjectWithVectorizeAttributeHeader
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
 
 [LexicalOptions(
     TokenizerName = "standard",

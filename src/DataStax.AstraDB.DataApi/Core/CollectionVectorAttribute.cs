@@ -41,4 +41,36 @@ public class CollectionVectorAttribute : Attribute
     /// </summary>
     public CollectionVectorAttribute() { }
 
+    /// <summary>
+    /// Initializes a new instance with the specified dimension.
+    /// </summary>
+    /// <param name="dimension">The number of dimensions for the vector.</param>
+    public CollectionVectorAttribute(int dimension)
+    {
+        Dimension = dimension;
+    }
+
+    /// <summary>
+    /// Initializes a new instance with the specified dimension and metric.
+    /// </summary>
+    /// <param name="dimension">The number of dimensions for the vector.</param>
+    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
+    public CollectionVectorAttribute(int dimension, SimilarityMetric metric)
+    {
+        Dimension = dimension;
+        Metric = metric;
+    }
+
+    /// <summary>
+    /// Initializes a new instance with the specified dimension, metric, and source model.
+    /// </summary>
+    /// <param name="dimension">The number of dimensions for the vector.</param>
+    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
+    /// <param name="sourceModel">The source model for embeddings optimization.</param>
+    public CollectionVectorAttribute(int dimension, SimilarityMetric metric, string sourceModel)
+    {
+        Dimension = dimension;
+        Metric = metric;
+        SourceModel = sourceModel;
+    }
 }
