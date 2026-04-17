@@ -283,46 +283,4 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
         return ConsumeBuffer(1).FirstOrDefault();
     }
 
-    /// <summary>
-    /// Asynchronously collects all remaining items from the cursor into a list.
-    /// </summary>
-    /// <param name="cancellationToken">An optional cancellation token to cancel the operation.</param>
-    /// <returns>A list containing all items not yet consumed from the cursor.</returns>
-    /// <exception cref="CursorException">Thrown when attempting to collect items from a closed cursor.</exception>
-    /// <remarks>
-    /// This method will iterate through all remaining items in the cursor and collect them into a list.
-    /// If the cursor has already been partially consumed, only the remaining items will be included.
-    /// The cursor will be in a closed state after this operation completes.
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// var results = await cursor.ToListAsync();
-    /// </code>
-    /// </example>
-    public async Task<List<T>> ToListAsync(CancellationToken cancellationToken = default)
-    {
-        if (State == CursorState.Closed)
-        {
-            throw new CursorException("Cannot collect items from a closed cursor", State);
-        }
-        
-        var results = new List<T>();
-        await foreach (var item in this.WithCancellation(cancellationToken))
-        {
-            results.Add(item);
-        }
-        
-        return results;
-    }
-
-    /// <summary>
-    /// Synchronously collects all remaining items from the cursor into a list.
-    /// </summary>
-    /// <returns>A list containing all items not yet consumed from the cursor.</returns>
-    /// <exception cref="CursorException">Thrown when attempting to collect items from a closed cursor.</exception>
-    public List<T> ToList()
-    {
-    return ToListAsync(CancellationToken.None).ResultSync();
-    }
-
 }

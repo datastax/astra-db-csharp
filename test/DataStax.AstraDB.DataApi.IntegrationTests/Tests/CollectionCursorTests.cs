@@ -5,6 +5,7 @@ using DataStax.AstraDB.DataApi.Core.Enumeration;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.SerDes;
+using System.Linq;
 using MongoDB.Bson;
 using System.Text;
 using UUIDNext;
