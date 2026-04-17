@@ -25,7 +25,7 @@ public class CollectionCursorTests
     }
 
     [Fact]
-    public void Test_CollectionCursor_IdleProperties()
+    public async Task Test_CollectionCursor_IdleProperties()
     {
         var filledCollection = _fixture.FilledCollection;
 
@@ -37,23 +37,27 @@ public class CollectionCursorTests
         Assert.Equal(0, cur.Buffered());
         Assert.Equal(0, cur.Consumed);
 
-        /* This part cannot be completed because there is no `.Close()` cursor method (I think should be added)
         var toClose = cur.Clone();
-        toClose.Close();
-        toClose.Close();
-        Assert.Equal(CursorState.Closed, cur.State);
+        toClose.Dispose();
+        toClose.Dispose();
+        Assert.Equal(CursorState.Closed, toClose.State);
+        Assert.Equal(CursorState.Idle, cur.State);
 
-        // TODO depythonize this part (ahem)
-        with pytest.raises(CursorException):
-            async for row in toclose:
-                pass
-        with pytest.raises(StopAsyncIteration):
-            await toclose.__anext__()
-        with pytest.raises(CursorException):
-            await toclose.for_each(lambda row: None)
-        with pytest.raises(CursorException):
-            await toclose.to_list()
-        */
+        await Assert.ThrowsAsync<CursorException>( async () =>
+        {
+            await foreach (var item in toClose) { /* moot */ }
+        });
+        Assert.Throws<CursorException>(() =>
+        {
+            foreach (var item in toClose) { /* moot */ }
+        });
+        await Assert.ThrowsAsync<CursorException>( async () => 
+            await toClose.ToListAsync()
+        );
+        Assert.Throws<CursorException>( () => 
+            toClose.ToList()
+        );
+        // TODO: c# does not error on "MoveNextAsync" for closed cursor (python does). Do we care?
 
         // rewinding
         cur.Rewind();
