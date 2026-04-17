@@ -98,25 +98,27 @@ public class CollectionCursorTests
         Assert.Equal(0, cloned.Buffered());
         Assert.Equal(CursorState.Idle, cloned.State);
 
-        // TODO does not throw (but should: cur1 is closed!)
+        // Closed cursors can't receive fluent-API edits:
+
+        // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.Filter(
         //     Builders<CursorTestDocument>.CollectionFilter.Empty()
         // ); });
-        // TODO does not throw (but should: cur1 is closed!)
+        // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.Project(
         //     Builders<CursorTestDocument>.Projection.Include(d => d.PText)
         // ); });
-        // TODO does not throw (but should: cur1 is closed!)
+        // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.Sort(
         //     Builders<CursorTestDocument>.Sort.Ascending(d => d.PText)
         // ); });
-        // TODO does not throw (but should: cur1 is closed!)
+        // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.Limit(1); });
-        // TODO does not throw (but should: cur1 is closed!)
+        // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.Skip(1); });
-        // TODO does not throw (but should: cur1 is closed!)
+        // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.IncludeSimilarity(true); });
-        // TODO does not throw (but should: cur1 is closed!)
+        // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.IncludeSortVector(true); });
 
         // (note the full prefix required otherwise ambiguous a/sync unresolved)
@@ -126,5 +128,60 @@ public class CollectionCursorTests
 
     }
 
+    [Fact]
+    public async Task Test_CollectionCursor_StartedProperties()
+    {
+        var filledCollection = _fixture.FilledCollection;
+
+        var cur = filledCollection.Find();
+        await cur.MoveNextAsync();
+        // now: 19 in buffer, one consumed:
+        Assert.Equal(1, cur.Consumed);
+        Assert.Equal(19, cur.Buffered());
+        Assert.Equal(3, cur.ConsumeBuffer(3).Count);
+        // 16 in buffer, 4 consumed:
+        Assert.Equal(4, cur.Consumed);
+        Assert.Equal(16, cur.Buffered());
+        // from time to time the buffer is empty:
+        for(int i=0; i<16; i++){
+            await cur.MoveNextAsync();
+        }
+        Assert.Equal(0, cur.Buffered());
+        Assert.Equal(0, cur.ConsumeBuffer(3).Count);
+        Assert.Equal(20, cur.Consumed);
+        Assert.Equal(0, cur.Buffered());
+
+        // Started cursors can't receive fluent-API edits:
+
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.Filter(
+        //     Builders<CursorTestDocument>.CollectionFilter.Empty()
+        // ); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.Project(
+        //     Builders<CursorTestDocument>.Projection.Include(d => d.PText)
+        // ); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.Sort(
+        //     Builders<CursorTestDocument>.Sort.Ascending(d => d.PText)
+        // ); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.Limit(1); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.Skip(1); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.IncludeSimilarity(true); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.IncludeSortVector(true); });
+
+        // TODO: this one *does not throw* (other clients don't admit setting mapping *after* started)
+        //       But in this case "we're in LINQ's hands" and can't really do much about it. Are we ok?
+        //
+        // (note the full prefix required otherwise ambiguous a/sync unresolved)
+        //await Assert.ThrowsAsync<CursorException>(async () => { 
+            await System.Linq.AsyncEnumerable.Select(cur, doc => doc.PText).ToListAsync();
+        // });
+
+    }
 
 }
