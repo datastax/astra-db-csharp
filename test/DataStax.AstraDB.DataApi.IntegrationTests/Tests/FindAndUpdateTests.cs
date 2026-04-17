@@ -1,4 +1,3 @@
-using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
@@ -229,8 +228,8 @@ public class FindAndUpdateTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttribute>(collectionName);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var sort = Builders<SimpleObjectWithVectorizeAttribute>.Sort.Vectorize(dogQueryVectorString);
-            var update = Builders<SimpleObjectWithVectorizeAttribute>.Update.Set(so => so.Name, "Updated Dog Name");
+            var sort = Builders<SimpleObjectWithVectorizeAttribute>.CollectionSort.Vectorize(dogQueryVectorString);
+            var update = Builders<SimpleObjectWithVectorizeAttribute>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
             var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVectorizeAttribute> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("Updated Dog Name", result.Name);
         }
