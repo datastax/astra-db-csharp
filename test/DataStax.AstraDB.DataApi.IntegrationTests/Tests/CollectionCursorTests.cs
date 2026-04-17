@@ -76,4 +76,55 @@ public class CollectionCursorTests
         cur.Skip(1);
     }
 
+    [Fact]
+    public async Task Test_CollectionCursor_ClosedProperties()
+    {
+        var filledCollection = _fixture.FilledCollection;
+
+        var cur0 = filledCollection.Find();
+        cur0.Dispose();
+        cur0.Rewind();
+        Assert.Equal(CursorState.Idle, cur0.State);
+
+        var cur1 = filledCollection.Find();
+        Assert.Equal(0, cur1.Consumed);
+        await foreach (var item in cur1) { /* moot */ }
+        Assert.Equal(CursorState.Closed, cur1.State);
+        Assert.Empty(cur1.ConsumeBuffer(2));
+        Assert.Equal(_fixture.FilledCollectionCount, cur1.Consumed);
+        Assert.Equal(0, cur1.Buffered());
+        var cloned = cur1.Clone();
+        Assert.Equal(0, cloned.Consumed);
+        Assert.Equal(0, cloned.Buffered());
+        Assert.Equal(CursorState.Idle, cloned.State);
+
+        // TODO does not throw (but should: cur1 is closed!)
+        // Assert.Throws<CursorException>(() => { cur1.Filter(
+        //     Builders<CursorTestDocument>.CollectionFilter.Empty()
+        // ); });
+        // TODO does not throw (but should: cur1 is closed!)
+        // Assert.Throws<CursorException>(() => { cur1.Project(
+        //     Builders<CursorTestDocument>.Projection.Include(d => d.PText)
+        // ); });
+        // TODO does not throw (but should: cur1 is closed!)
+        // Assert.Throws<CursorException>(() => { cur1.Sort(
+        //     Builders<CursorTestDocument>.Sort.Ascending(d => d.PText)
+        // ); });
+        // TODO does not throw (but should: cur1 is closed!)
+        // Assert.Throws<CursorException>(() => { cur1.Limit(1); });
+        // TODO does not throw (but should: cur1 is closed!)
+        // Assert.Throws<CursorException>(() => { cur1.Skip(1); });
+        // TODO does not throw (but should: cur1 is closed!)
+        // Assert.Throws<CursorException>(() => { cur1.IncludeSimilarity(true); });
+        // TODO does not throw (but should: cur1 is closed!)
+        // Assert.Throws<CursorException>(() => { cur1.IncludeSortVector(true); });
+
+        // (note the full prefix required otherwise ambiguous a/sync unresolved)
+        await Assert.ThrowsAsync<CursorException>(async () => { 
+            await System.Linq.AsyncEnumerable.Select(cur1, doc => doc.PText).ToListAsync();
+         });
+
+    }
+
+
 }
