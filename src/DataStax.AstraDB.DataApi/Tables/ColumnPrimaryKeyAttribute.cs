@@ -49,11 +49,6 @@ public class ColumnPrimaryKeyAttribute : Attribute
     }
 }
 
-// [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-// public class ColumnSinglePrimaryKeyAttribute : ColumnCompoundPrimaryKeyAttribute
-// {
-//     public ColumnSinglePrimaryKeyAttribute() : base(0) { }
-// }
 
 /// <summary>
 /// Marks a property or field as a clustering key in the table's primary key, with a specified sort order.
