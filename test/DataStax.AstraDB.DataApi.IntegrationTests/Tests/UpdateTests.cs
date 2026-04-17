@@ -21,7 +21,7 @@ public class UpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Cat");
-        var updater = Builders<SimpleObject>.Update;
+        var updater = Builders<SimpleObject>.CollectionUpdate;
         var update = updater.Set(so => so.Properties.PropertyTwo, "CatUpdated")
             .Unset("Properties.PropertyOne");
         var result = await collection.UpdateOneAsync(filter, update);
@@ -37,7 +37,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq("_id", 1);
-        var update = Builders<SimpleObject>.Update.Set(so => so.Properties.PropertyTwo, "DogUpdated");
+        var update = Builders<SimpleObject>.CollectionUpdate.Set(so => so.Properties.PropertyTwo, "DogUpdated");
         var result = collection.UpdateOne(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -49,7 +49,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 5);
-        var update = Builders<SimpleObject>.Update.CurrentDate(so => so.Properties.DateTimeProperty);
+        var update = Builders<SimpleObject>.CollectionUpdate.CurrentDate(so => so.Properties.DateTimeProperty);
         var result = collection.UpdateOne(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -61,7 +61,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 6);
-        var update = Builders<SimpleObject>.Update.Increment(so => so.Properties.IntProperty, 100);
+        var update = Builders<SimpleObject>.CollectionUpdate.Increment(so => so.Properties.IntProperty, 100);
         var result = collection.UpdateOne(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -73,12 +73,12 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 7);
-        var update = Builders<SimpleObject>.Update.Min(so => so.Properties.IntProperty, 8);
+        var update = Builders<SimpleObject>.CollectionUpdate.Min(so => so.Properties.IntProperty, 8);
         var result = collection.UpdateOne(filter, update);
         Assert.Equal(0, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
         Assert.Equal(8, updatedDocument.Properties.IntProperty);
-        update = Builders<SimpleObject>.Update.Min(so => so.Properties.IntProperty, 4);
+        update = Builders<SimpleObject>.CollectionUpdate.Min(so => so.Properties.IntProperty, 4);
         result = collection.UpdateOne(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         updatedDocument = await collection.FindOneAsync(filter);
@@ -90,12 +90,12 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 8);
-        var update = Builders<SimpleObject>.Update.Max(so => so.Properties.IntProperty, 1);
+        var update = Builders<SimpleObject>.CollectionUpdate.Max(so => so.Properties.IntProperty, 1);
         var result = collection.UpdateOne(filter, update);
         Assert.Equal(0, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
         Assert.Equal(9, updatedDocument.Properties.IntProperty);
-        update = Builders<SimpleObject>.Update.Max(so => so.Properties.IntProperty, 123);
+        update = Builders<SimpleObject>.CollectionUpdate.Max(so => so.Properties.IntProperty, 123);
         result = collection.UpdateOne(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         updatedDocument = await collection.FindOneAsync(filter);
@@ -107,7 +107,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 9);
-        var update = Builders<SimpleObject>.Update.Multiply(so => so.Properties.IntProperty, 10);
+        var update = Builders<SimpleObject>.CollectionUpdate.Multiply(so => so.Properties.IntProperty, 10);
         var result = collection.UpdateOne(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -122,7 +122,7 @@ public class UpdateTests
         {
             var collection = await CreateTestUpdateCollection(collectionName);
             var filter = Builders<Document>.CollectionFilter.Eq("_id", 1);
-            var update = Builders<Document>.Update.Rename("Name", "Animal");
+            var update = Builders<Document>.CollectionUpdate.Rename("Name", "Animal");
             var result = await collection.UpdateOneAsync(filter, update);
             Assert.Equal(1, result.ModifiedCount);
             var item = await collection.FindOneAsync(filter);
@@ -141,7 +141,7 @@ public class UpdateTests
         try
         {
             var collection = await CreateTestUpdateCollection(collectionName);
-            var update = Builders<Document>.Update.Rename("Name", "Animal");
+            var update = Builders<Document>.CollectionUpdate.Rename("Name", "Animal");
             var result = await collection.UpdateManyAsync(null, update);
             Assert.Equal(5, result.ModifiedCount);
             var items = collection.Find().ToList();
@@ -158,7 +158,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 10);
-        var update = Builders<SimpleObject>.Update.Set(so => so.Properties.PropertyTwo, "ThisPropertyWasSet");
+        var update = Builders<SimpleObject>.CollectionUpdate.Set(so => so.Properties.PropertyTwo, "ThisPropertyWasSet");
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -170,7 +170,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 111);
-        var update = Builders<SimpleObject>.Update.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
+        var update = Builders<SimpleObject>.CollectionUpdate.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
         var result = await collection.UpdateOneAsync(filter, update, new UpdateOneOptions<SimpleObject> { IsUpsert = true });
         Assert.Equal(0, result.ModifiedCount);
         Assert.NotNull(result.UpsertedId);
@@ -185,7 +185,7 @@ public class UpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 12);
         var originalDocument = await collection.FindOneAsync(filter);
-        var update = Builders<SimpleObject>.Update.AddToSet(so => so.Properties.StringArrayProperty, "NewAnimal");
+        var update = Builders<SimpleObject>.CollectionUpdate.AddToSet(so => so.Properties.StringArrayProperty, "NewAnimal");
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -199,7 +199,7 @@ public class UpdateTests
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 13);
         var originalDocument = await collection.FindOneAsync(filter);
         //animal13 already exists, so only NewAnimal and NewAnimal2 should be added
-        var update = Builders<SimpleObject>.Update.AddToSetEach(so => so.Properties.StringArrayProperty, new[] { "animal13", "NewAnimal", "NewAnimal2" });
+        var update = Builders<SimpleObject>.CollectionUpdate.AddToSetEach(so => so.Properties.StringArrayProperty, new[] { "animal13", "NewAnimal", "NewAnimal2" });
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -214,7 +214,7 @@ public class UpdateTests
         {
             var collection = await CreateTestUpdateCollection(collectionName);
             var filter = Builders<Document>.CollectionFilter.Eq("_id", 1);
-            var update = Builders<Document>.Update.AddToSetEach("StringArrayProperty", new[] { "cat3", "cat4" });
+            var update = Builders<Document>.CollectionUpdate.AddToSetEach("StringArrayProperty", new[] { "cat3", "cat4" });
             var result = await collection.UpdateOneAsync(filter, update);
             Assert.Equal(1, result.ModifiedCount);
             var updatedDocument = await collection.FindOneAsync(filter);
@@ -232,7 +232,7 @@ public class UpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 14);
         var originalDocument = await collection.FindOneAsync(filter);
-        var update = Builders<SimpleObject>.Update.PopFirst(so => so.Properties.StringArrayProperty);
+        var update = Builders<SimpleObject>.CollectionUpdate.PopFirst(so => so.Properties.StringArrayProperty);
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -246,7 +246,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 15);
-        var update = Builders<SimpleObject>.Update.Push(so => so.Properties.StringArrayProperty, "NewAnimal");
+        var update = Builders<SimpleObject>.CollectionUpdate.Push(so => so.Properties.StringArrayProperty, "NewAnimal");
         var originalDocument = await collection.FindOneAsync(filter);
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
@@ -260,7 +260,7 @@ public class UpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 16);
         var originalDocument = await collection.FindOneAsync(filter);
-        var update = Builders<SimpleObject>.Update.PushEach(so => so.Properties.StringArrayProperty, new[] { "animal16", "NewAnimal", "NewAnimal2" });
+        var update = Builders<SimpleObject>.CollectionUpdate.PushEach(so => so.Properties.StringArrayProperty, new[] { "animal16", "NewAnimal", "NewAnimal2" });
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -277,7 +277,7 @@ public class UpdateTests
         {
             var collection = await CreateTestUpdateCollection(collectionName);
             var filter = Builders<Document>.CollectionFilter.Eq("_id", 1);
-            var update = Builders<Document>.Update.PushEach("StringArrayProperty", new[] { "cat4" });
+            var update = Builders<Document>.CollectionUpdate.PushEach("StringArrayProperty", new[] { "cat4" });
             var result = await collection.UpdateOneAsync(filter, update);
             Assert.Equal(1, result.ModifiedCount);
             var updatedDocument = await collection.FindOneAsync(filter);
@@ -294,7 +294,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 17);
-        var update = Builders<SimpleObject>.Update.PushEach(so => so.Properties.StringArrayProperty, new[] { "NewAnimal1", "NewAnimal2" }, 1);
+        var update = Builders<SimpleObject>.CollectionUpdate.PushEach(so => so.Properties.StringArrayProperty, new[] { "NewAnimal1", "NewAnimal2" }, 1);
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -306,7 +306,7 @@ public class UpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 18);
-        var update = Builders<SimpleObject>.Update.Push(so => so.Properties.StringArrayProperty, "NewAnimal", 1);
+        var update = Builders<SimpleObject>.CollectionUpdate.Push(so => so.Properties.StringArrayProperty, "NewAnimal", 1);
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -319,7 +319,7 @@ public class UpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 19);
         var originalDocument = await collection.FindOneAsync(filter);
-        var update = Builders<SimpleObject>.Update.PopLast(so => so.Properties.StringArrayProperty);
+        var update = Builders<SimpleObject>.CollectionUpdate.PopLast(so => so.Properties.StringArrayProperty);
         var result = await collection.UpdateOneAsync(filter, update);
         Assert.Equal(1, result.ModifiedCount);
         var updatedDocument = await collection.FindOneAsync(filter);
@@ -365,8 +365,8 @@ public class UpdateTests
             };
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
-            var sort = Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector); ;
-            var update = Builders<SimpleObjectWithVector>.Update.Set(so => so.Name, "Updated Dog Name");
+            var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector); ;
+            var update = Builders<SimpleObjectWithVector>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
             var result = await collection.UpdateOneAsync(null, update, new UpdateOneOptions<SimpleObjectWithVector> { Sort = sort });
             Assert.Equal(1, result.ModifiedCount);
             var filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(so => so.Id, 1);
@@ -420,8 +420,8 @@ public class UpdateTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString); ;
-            var update = Builders<SimpleObjectWithVectorize>.Update.Set(so => so.Name, "Updated Dog Name");
+            var sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString); ;
+            var update = Builders<SimpleObjectWithVectorize>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
             var result = await collection.UpdateOneAsync(null, update, new UpdateOneOptions<SimpleObjectWithVectorize> { Sort = sort });
             Assert.Equal(1, result.ModifiedCount);
             var filter = Builders<SimpleObjectWithVectorize>.CollectionFilter.Eq(so => so.Id, 1);
@@ -441,7 +441,7 @@ public class UpdateTests
         try
         {
             var collection = await fixture.CreateUpdatesCollection(collectionName);
-            var update = Builders<SimpleObject>.Update.Unset(so => so.Properties.PropertyOne).Set(so => so.Properties.PropertyTwo, "PropTwoUpdated");
+            var update = Builders<SimpleObject>.CollectionUpdate.Unset(so => so.Properties.PropertyOne).Set(so => so.Properties.PropertyTwo, "PropTwoUpdated");
             var filter = Builders<SimpleObject>.CollectionFilter.Lt(so => so._id, 5);
             var result = await collection.UpdateManyAsync(filter, update);
             Assert.Equal(5, result.ModifiedCount);
@@ -462,7 +462,7 @@ public class UpdateTests
         try
         {
             var collection = await fixture.CreateUpdatesCollection(collectionName);
-            var update = Builders<SimpleObject>.Update.Set(so => so.Properties.PropertyTwo, "PropTwoUpdated");
+            var update = Builders<SimpleObject>.CollectionUpdate.Set(so => so.Properties.PropertyTwo, "PropTwoUpdated");
             var result = await collection.UpdateManyAsync(null, update);
             Assert.Equal(31, result.ModifiedCount);
             var items = collection.Find().ToList();

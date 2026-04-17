@@ -209,7 +209,7 @@ public class TableTests
                 Builders<RowBook>.TableFilter.Eq(x => x.NumberOfPages, 430)
             });
 
-        var update = Builders<RowBook>.Update.Set(x => x.Rating, 3.07)
+        var update = Builders<RowBook>.TableUpdate.Set(x => x.Rating, 3.07)
             .Set(x => x.Genres, new HashSet<string> { "SetItem1", "SetItem2" })
             .Unset(x => x.DueDate);
         await table.UpdateOneAsync(filter, update);
@@ -228,7 +228,7 @@ public class TableTests
                 Builders<RowBook>.TableFilter.Eq(x => x.Title, "Title 30"),
                 Builders<RowBook>.TableFilter.Eq(x => x.NumberOfPages, 430)
             });
-        var update = Builders<RowBook>.Update.Set(x => x.Rating, 3.07)
+        var update = Builders<RowBook>.TableUpdate.Set(x => x.Rating, 3.07)
             .Set(x => x.Genres, new HashSet<string> { "SetItem1", "SetItem2" })
             .Unset(x => x.DueDate);
         await table.UpdateOneAsync(filter, update);
@@ -574,7 +574,7 @@ public class TableTests
     public async Task Update_Test_Untyped()
     {
         var filter = Builders<Row>.TableFilter.Eq("Id", 3);
-        var update = Builders<Row>.Update.Set("Name", "Name_3_Updated");
+        var update = Builders<Row>.TableUpdate.Set("Name", "Name_3_Updated");
         await fixture.UntypedTableSinglePrimaryKey.UpdateOneAsync(filter, update);
         var updatedDocument = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(filter);
         Assert.Equal("Name_3_Updated", updatedDocument["Name"].ToString());

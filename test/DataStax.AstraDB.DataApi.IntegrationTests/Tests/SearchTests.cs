@@ -204,7 +204,7 @@ public class SearchTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var findOptions = new DocumentFindOptions<SimpleObjectWithVectorize>()
             {
-                Sort = Builders<SimpleObjectWithVectorize>.Sort.Vectorize("dog"),
+                Sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize("dog"),
                 IncludeSimilarity = true
             };
 
@@ -364,7 +364,7 @@ public class SearchTests
     {
         var collection = fixture.SearchCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Ascending(o => o.Properties.PropertyTwo);
         var results = collection.Find(filter).Sort(sort).ToList();
         var expectedArray = new[] { "alligator", "cow", "horse" };
         var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
@@ -376,7 +376,7 @@ public class SearchTests
     {
         var collection = fixture.SearchCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Descending(o => o.Properties.PropertyTwo);
         var results = collection.Find(filter).Sort(sort).ToList();
         var expectedArray = new[] { "horse", "cow", "alligator" };
         var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
@@ -388,7 +388,7 @@ public class SearchTests
     {
         var collection = fixture.SearchCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Descending(o => o.Properties.PropertyTwo);
         var results = collection.Find(filter).Sort(sort).Skip(1).ToList();
         var expectedArray = new[] { "cow", "alligator" };
         var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
@@ -400,7 +400,7 @@ public class SearchTests
     {
         var collection = fixture.SearchCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Descending(o => o.Properties.PropertyTwo);
         var results = collection.Find(filter).Sort(sort).Skip(2).Limit(1).ToList();
         var expectedArray = new[] { "alligator" };
         var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
@@ -412,7 +412,7 @@ public class SearchTests
     {
         var collection = fixture.SearchCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so.Properties.PropertyOne, "grouptwo");
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Descending(o => o.Properties.PropertyTwo);
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
         var results = collection.Find(filter)
@@ -460,7 +460,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Eq(so => so.Properties.PropertyTwo, "alligator") | builder.Eq(so => so.Properties.PropertyTwo, "cow");
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Ascending(o => o.Properties.PropertyTwo);
         var results = collection.Find(filter).Sort(sort).ToList();
         var expectedArray = new[] { "alligator", "alligator", "cow", "cow" };
         var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
@@ -473,7 +473,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Or(builder.Eq(so => so.Properties.PropertyOne, "groupone"), builder.Eq(so => so.Properties.PropertyOne, "grouptwo"));
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Ascending(o => o.Properties.PropertyTwo);
         var results = collection.Find(filter).Sort(sort).ToList();
         var expectedArray = new[] { "alligator", "cat", "cow", "dog", "horse" };
         var actualArray = results.Select(o => o.Properties.PropertyTwo).ToArray();
@@ -486,7 +486,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Or(builder.Eq(so => so.Properties.PropertyOne, "groupone"), builder.Eq(so => so.Properties.PropertyOne, "grouptwo"));
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.PropertyTwo);
+        var sort = Builders<SimpleObject>.CollectionSort.Ascending(o => o.Properties.PropertyTwo);
         var results = collection.Find(filter).Sort(sort);
         var expectedArray = new[] { "alligator", "cat", "cow", "dog", "horse" };
         var resultPropertyTwos = new List<string>();
@@ -536,7 +536,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Gt(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.IntProperty);
+        var sort = Builders<SimpleObject>.CollectionSort.Ascending(o => o.Properties.IntProperty);
         var results = collection.Find(filter).Sort(sort).ToList();
         Assert.Equal(13, results.Count);
         Assert.Equal(21, results.First().Properties.IntProperty);
@@ -548,7 +548,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Gt(so => so.Properties.DateTimeProperty, new DateTime(2020, 1, 1, 1, 14, 0));
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.DateTimeProperty);
+        var sort = Builders<SimpleObject>.CollectionSort.Ascending(o => o.Properties.DateTimeProperty);
         var results = collection.Find(filter).Sort(sort).ToList();
         Assert.Equal(19, results.Count);
         Assert.Equal(new DateTime(2020, 1, 1, 1, 15, 0, DateTimeKind.Utc).ToString("MMddyyhhmmss"), results.First().Properties.DateTimeProperty.ToUniversalTime().ToString("MMddyyhhmmss"));
@@ -560,7 +560,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Gte(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Ascending(o => o.Properties.IntProperty);
+        var sort = Builders<SimpleObject>.CollectionSort.Ascending(o => o.Properties.IntProperty);
         var results = collection.Find(filter).Sort(sort).ToList();
         Assert.Equal(14, results.Count);
         Assert.Equal(20, results.First().Properties.IntProperty);
@@ -572,7 +572,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Lt(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.IntProperty);
+        var sort = Builders<SimpleObject>.CollectionSort.Descending(o => o.Properties.IntProperty);
         var results = collection.Find(filter).Sort(sort).ToList();
         Assert.Equal(19, results.Count);
         Assert.Equal(19, results.First().Properties.IntProperty);
@@ -584,7 +584,7 @@ public class SearchTests
         var collection = fixture.SearchCollection;
         var builder = Builders<SimpleObject>.CollectionFilter;
         var filter = builder.Lte(so => so.Properties.IntProperty, 20);
-        var sort = Builders<SimpleObject>.Sort.Descending(o => o.Properties.IntProperty);
+        var sort = Builders<SimpleObject>.CollectionSort.Descending(o => o.Properties.IntProperty);
         var results = collection.Find(filter).Sort(sort).ToList();
         Assert.Equal(20, results.Count);
         Assert.Equal(20, results.First().Properties.IntProperty);
@@ -760,7 +760,7 @@ public class SearchTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var result = collection.Find().Sort(Builders<SimpleObjectWithVector>.Sort.Vector(dogQueryVector));
+            var result = collection.Find().Sort(Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector));
             Assert.Equal("This is about a dog.", result.First().Name);
         }
         finally
@@ -819,7 +819,7 @@ public class SearchTests
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var finder = collection.Find<SimpleObjectWithVectorizeResult>()
-                .Sort(Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString))
+                .Sort(Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString))
                 .IncludeSimilarity(true)
                 .IncludeSortVector(true);
             var list = finder.ToList();
@@ -878,7 +878,7 @@ public class SearchTests
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var finder = collection.Find<SimpleObjectWithVectorizeResult>().Sort(
-                Builders<SimpleObjectWithVectorize>.Sort.Vectorize(dogQueryVectorString)).IncludeSimilarity(true).IncludeSortVector(true);
+                Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString)).IncludeSimilarity(true).IncludeSortVector(true);
             var result = finder.First();
             Assert.Equal("This is about a dog.", result.Name);
             Assert.NotNull(result.Similarity);
@@ -947,7 +947,7 @@ public class SearchTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var findOptions = new DocumentFindOptions<SimpleObjectWithLexical>()
             {
-                Sort = Builders<SimpleObjectWithLexical>.Sort.Lexical("dog"),
+                Sort = Builders<SimpleObjectWithLexical>.CollectionSort.Lexical("dog"),
                 Filter = Builders<SimpleObjectWithLexical>.CollectionFilter.LexicalMatch("dog"),
             };
 

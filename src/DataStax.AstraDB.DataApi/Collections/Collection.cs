@@ -63,7 +63,7 @@ public class Collection<T> : Collection<T, object> where T : class
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <typeparam name="TId">The type of the id field for documents in the collection.</typeparam>
-public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where T : class
+public class Collection<T, TId> : IQueryRunner<T, CollectionSortBuilder<T>> where T : class
 {
     private readonly string _collectionName;
     private readonly Database _database;
@@ -639,7 +639,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public FindEnumerator<T, T, DocumentSortBuilder<T>> Find()
+    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find()
     {
         return Find(null, null);
     }
@@ -650,18 +650,18 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <code>
     /// var builder = Builders&lt;SimpleObject&gt;.Filter;
     /// var filter = builder.Gt(so => so.Properties.IntProperty, 20);
-    /// var sort = Builders&lt;SimpleObject&gt;.Sort.Ascending(o => o.Properties.IntProperty);
+    /// var sort = Builders&lt;SimpleObject&gt;.CollectionSort.Ascending(o => o.Properties.IntProperty);
     /// var results = collection.Find(filter).Sort(sort);
     /// </code>
     /// </example>
-    public FindEnumerator<T, T, DocumentSortBuilder<T>> Find(CollectionFilter<T> filter)
+    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find(CollectionFilter<T> filter)
     {
         return Find(filter, null);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
     /// <param name="commandOptions"></param>
-    public FindEnumerator<T, T, DocumentSortBuilder<T>> Find(CommandOptions commandOptions)
+    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find(CommandOptions commandOptions)
     {
         return Find(null, commandOptions);
     }
@@ -669,7 +669,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <inheritdoc cref="Find(CollectionFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
-    public FindEnumerator<T, T, DocumentSortBuilder<T>> Find(CollectionFilter<T> filter, CommandOptions commandOptions)
+    public FindEnumerator<T, T, CollectionSortBuilder<T>> Find(CollectionFilter<T> filter, CommandOptions commandOptions)
     {
         return Find<T>(filter, commandOptions);
     }
@@ -679,7 +679,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public FindEnumerator<T, TResult, DocumentSortBuilder<T>> Find<TResult>() where TResult : class
+    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>() where TResult : class
     {
         return Find<TResult>(null, null);
     }
@@ -689,7 +689,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public FindEnumerator<T, TResult, DocumentSortBuilder<T>> Find<TResult>(CollectionFilter<T> filter) where TResult : class
+    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>(CollectionFilter<T> filter) where TResult : class
     {
         return Find<TResult>(filter, null);
     }
@@ -699,7 +699,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public FindEnumerator<T, TResult, DocumentSortBuilder<T>> Find<TResult>(CommandOptions commandOptions) where TResult : class
+    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>(CommandOptions commandOptions) where TResult : class
     {
         return Find<TResult>(null, commandOptions);
     }
@@ -707,16 +707,16 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <inheritdoc cref="Find{TResult}(CollectionFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
-    public FindEnumerator<T, TResult, DocumentSortBuilder<T>> Find<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions) where TResult : class
+    public FindEnumerator<T, TResult, CollectionSortBuilder<T>> Find<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions) where TResult : class
     {
         var findOptions = new DocumentFindManyOptions<T>()
         {
             Filter = filter
         };
-        return new FindEnumerator<T, TResult, DocumentSortBuilder<T>>(this, findOptions, commandOptions);
+        return new FindEnumerator<T, TResult, CollectionSortBuilder<T>>(this, findOptions, commandOptions);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult>> RunFindManyAsync<TResult>(Filter<T> filter, IFindManyOptions<T, CollectionSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         findOptions.Filter = filter;
         var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
@@ -760,7 +760,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
     /// <returns>Updated document or null</returns>
     /// <example>
     /// <code>
-    /// var updater = Builders&lt;SimpleObject&gt;.Update;
+    /// var updater = Builders&lt;SimpleObject&gt;.CollectionUpdate;
     /// var combinedUpdate = updater.Combine(
     ///     updater.Set(so => so.Properties.PropertyOne, "Updated"),
     ///     updater.Unset(so => so.Properties.PropertyTwo)
@@ -2110,7 +2110,7 @@ public class Collection<T, TId> : IQueryRunner<T, DocumentSortBuilder<T>> where 
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _collectionName));
     }
 
-    Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, DocumentSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, DocumentSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, CollectionSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, CollectionSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         return RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously);
     }

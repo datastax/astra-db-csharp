@@ -23,14 +23,14 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// A sort builder specifically for document operations.
 /// </summary>
 /// <typeparam name="T">The type of the document</typeparam>
-public class DocumentSortBuilder<T> : SortBuilder<T>
+public class CollectionSortBuilder<T> : SortBuilder<T>
 {
     /// <summary>
     /// Adds a vector sort.
     /// </summary>
     /// <param name="vector">The vector to sort by.</param>
     /// <returns>The document sort builder.</returns>
-    public DocumentSortBuilder<T> Vector(float[] vector)
+    public CollectionSortBuilder<T> Vector(float[] vector)
     {
         Sorts.Add(Sort.Vector(vector));
         return this;
@@ -41,55 +41,54 @@ public class DocumentSortBuilder<T> : SortBuilder<T>
     /// </summary>
     /// <param name="valueToVectorize">The string value to be vectorized.</param>
     /// <returns>The document sort builder.</returns>
-    public DocumentSortBuilder<T> Vectorize(string valueToVectorize)
+    public CollectionSortBuilder<T> Vectorize(string valueToVectorize)
     {
         Sorts.Add(Sort.Vectorize(valueToVectorize));
         return this;
     }
 
     /// <inheritdoc />
-    public new DocumentSortBuilder<T> Ascending(string fieldName)
+    public new CollectionSortBuilder<T> Ascending(string fieldName)
     {
         base.Ascending(fieldName);
         return this;
     }
 
     /// <inheritdoc />
-    public new DocumentSortBuilder<T> Ascending<TField>(Expression<Func<T, TField>> expression)
+    public new CollectionSortBuilder<T> Ascending<TField>(Expression<Func<T, TField>> expression)
     {
         base.Ascending(expression);
         return this;
     }
 
     /// <inheritdoc />
-    public new DocumentSortBuilder<T> Descending(string fieldName)
+    public new CollectionSortBuilder<T> Descending(string fieldName)
     {
         base.Descending(fieldName);
         return this;
     }
 
     /// <inheritdoc />
-    public new DocumentSortBuilder<T> Descending<TField>(Expression<Func<T, TField>> expression)
+    public new CollectionSortBuilder<T> Descending<TField>(Expression<Func<T, TField>> expression)
     {
         base.Descending(expression);
         return this;
     }
-
 
     /// <summary>
     /// Adds a sort by lexical relevance score using the specified search string.
     /// </summary>
     /// <param name="value">The search string for lexical (BM25) scoring.</param>
     /// <returns>The sort builder.</returns>
-    public DocumentSortBuilder<T> Lexical(string value)
+    public CollectionSortBuilder<T> Lexical(string value)
     {
         Sorts.Add(Sort.Lexical(value));
         return this;
     }
 
-    internal new DocumentSortBuilder<T> Clone()
+    internal new CollectionSortBuilder<T> Clone()
     {
-        var clone = new DocumentSortBuilder<T>();
+        var clone = new CollectionSortBuilder<T>();
         foreach (var sort in this.Sorts)
         {
             clone.Sorts.Add(sort.Clone());
