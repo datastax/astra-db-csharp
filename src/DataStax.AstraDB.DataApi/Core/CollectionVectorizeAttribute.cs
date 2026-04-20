@@ -38,9 +38,9 @@ public class CollectionVectorizeAttribute : BaseVectorizeAttribute
     /// </summary>
     /// <param name="provider">The name of the embedding service provider.</param>
     /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="dimension">The number of dimensions for the generated vector.</param>
-    /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
-    /// <param name="parameterPairs">Additional key-value parameter pairs for the embedding service.</param>
+    /// <param name="dimension">Optional: The number of dimensions for the generated vector.</param>
+    /// <param name="authenticationPairs">Optional: Key-value pairs for authenticating with the embedding service.</param>
+    /// <param name="parameterPairs">Optional: Additional key-value parameter pairs for the embedding service.</param>
     public CollectionVectorizeAttribute(
         string provider,
         string modelName,
@@ -60,10 +60,10 @@ public class CollectionVectorizeAttribute : BaseVectorizeAttribute
     /// </summary>
     /// <param name="provider">The name of the embedding service provider.</param>
     /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="dimension">The number of dimensions for the generated vector.</param>
     /// <param name="metric">The similarity metric to use for vector comparisons.</param>
-    /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
-    /// <param name="parameterPairs">Additional key-value parameter pairs for the embedding service.</param>
+    /// <param name="dimension">Optional: The number of dimensions for the generated vector.</param>
+    /// <param name="authenticationPairs">Optional: Key-value pairs for authenticating with the embedding service.</param>
+    /// <param name="parameterPairs">Optional: Additional key-value parameter pairs for the embedding service.</param>
     public CollectionVectorizeAttribute(
         string provider,
         string modelName,

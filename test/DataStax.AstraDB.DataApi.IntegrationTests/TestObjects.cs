@@ -24,6 +24,31 @@ public class SimpleObjectWithVectorSearchResult : SimpleObjectWithVector
     public double? Similarity { get; set; }
 }
 
+[CollectionName("coll_SimpleObjectWithVectorAttributeSD")]
+[CollectionVector(
+    SimilarityMetric.Euclidean,
+    3
+)]
+public class SimpleObjectWithVectorAttributeSD
+{
+    [DocumentId]
+    public string Id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] VectorEmbeddings { get; set; }
+}
+
+[CollectionName("coll_SimpleObjectWithVectorAttributeD")]
+[CollectionVector(
+    3
+)]
+public class SimpleObjectWithVectorAttributeD
+{
+    [DocumentId]
+    public string Id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] VectorEmbeddings { get; set; }
+}
+
 public class SimpleObjectWithVectorize
 {
     [DocumentId]
@@ -64,8 +89,8 @@ public class SimpleObjectWithVectorizeAttributeShSecret
 
 [CollectionName("coll_SimpleObjectWithVectorizeShSecret2A")]
 [CollectionVector(
-    123,
     SimilarityMetric.Euclidean,
+    123,
     SourceModel="bert"
 )]
 [CollectionVectorize(

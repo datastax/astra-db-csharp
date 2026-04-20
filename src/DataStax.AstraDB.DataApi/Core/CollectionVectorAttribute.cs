@@ -42,35 +42,32 @@ public class CollectionVectorAttribute : Attribute
     public CollectionVectorAttribute() { }
 
     /// <summary>
-    /// Initializes a new instance with the specified dimension.
+    /// Initializes a new instance, optionally specifying various settings.
     /// </summary>
-    /// <param name="dimension">The number of dimensions for the vector.</param>
-    public CollectionVectorAttribute(int dimension)
+    /// <param name="dimension">Optional. The number of dimensions for the vector.</param>
+    /// <param name="sourceModel">Optional. The source model for embeddings optimization.</param>
+    public CollectionVectorAttribute(
+        int dimension = -1,
+        string sourceModel = null)
     {
-        Dimension = dimension;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified dimension and metric.
-    /// </summary>
-    /// <param name="dimension">The number of dimensions for the vector.</param>
-    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
-    public CollectionVectorAttribute(int dimension, SimilarityMetric metric)
-    {
-        Dimension = dimension;
-        Metric = metric;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified dimension, metric, and source model.
-    /// </summary>
-    /// <param name="dimension">The number of dimensions for the vector.</param>
-    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
-    /// <param name="sourceModel">The source model for embeddings optimization.</param>
-    public CollectionVectorAttribute(int dimension, SimilarityMetric metric, string sourceModel)
-    {
-        Dimension = dimension;
-        Metric = metric;
+        Dimension = dimension == -1 ? null : dimension;
         SourceModel = sourceModel;
     }
+
+    /// <summary>
+    /// Initializes a new instance with the specified metric and optionally other settings.
+    /// </summary>
+    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
+    /// <param name="dimension">Optional. The number of dimensions for the vector.</param>
+    /// <param name="sourceModel">Optional. The source model for embeddings optimization.</param>
+    public CollectionVectorAttribute(
+        SimilarityMetric metric,
+        int dimension = -1,
+        string sourceModel = null)
+    {
+        Metric = metric;
+        Dimension = dimension == -1 ? null : dimension;
+        SourceModel = sourceModel;
+    }
+
 }

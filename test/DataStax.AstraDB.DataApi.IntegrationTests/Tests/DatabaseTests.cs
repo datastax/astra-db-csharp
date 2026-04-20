@@ -348,6 +348,40 @@ public class DatabaseTests
         await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateCollection_WithVectorSD_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorAttributeSD";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorAttributeSD>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorAttributeSD
+            {
+                Id = "the id",
+                VectorEmbeddings = new float[] { 0.1f, -0.2f, 0.3f }
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateCollection_WithVectorD_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorAttributeD";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorAttributeD>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorAttributeD
+            {
+                Id = "the id",
+                VectorEmbeddings = new float[] { 0.1f, -0.2f, 0.3f }
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
     [SkipWhenNotAstra]
     [Fact(Skip="Generally skipped, this is to demonstrate creation")]
     public async Task CreateCollection_WithVectorizeNone_Typed()
