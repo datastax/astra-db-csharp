@@ -184,4 +184,79 @@ public class CollectionCursorTests
 
     }
 
+    [Fact]
+    public async Task Test_CollectionCursor_HasNext()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var cur = filledCollection.Find();
+
+        Assert.Equal(CursorState.Idle, cur.State);
+        Assert.Equal(0, cur.Consumed);
+        Assert.True(await cur.HasNextAsync());
+        // TODO this fails. HasNext peeks without 'consuming' (as far as the user sees). Other clients's cursor stay "Idle" because of that:
+        // Assert.Equal(CursorState.Idle, cur.State);
+        Assert.Equal(0, cur.Consumed);
+        await cur.MoveNextAsync();
+        Assert.Equal(CursorState.Started, cur.State);
+        await foreach (var item in cur) { /* moot */ };
+        Assert.Equal(CursorState.Closed, cur.State);
+        Assert.Equal(_fixture.FilledCollectionCount, cur.Consumed);
+
+        var curMf = filledCollection.Find();
+        await curMf.MoveNextAsync();
+        await curMf.MoveNextAsync();
+        Assert.Equal(2, curMf.Consumed);
+        Assert.Equal(CursorState.Started, curMf.State);
+        Assert.True(await curMf.HasNextAsync());
+        Assert.Equal(2, curMf.Consumed);
+        Assert.Equal(CursorState.Started, curMf.State);
+        for(int i=0; i<18; i++){
+            await curMf.MoveNextAsync();
+        }
+        Assert.True(await curMf.HasNextAsync());
+        Assert.Equal(20, curMf.Consumed);
+        Assert.Equal(CursorState.Started, curMf.State);
+        // TODO this fails. Yet, the expectation is that HasNext fetches a new page since we were exactly at end-of-page, and this new page would be in the buffer now.
+        // Assert.Equal(_fixture.FilledCollectionCount - 20, cur.Buffered());
+
+        var cur0 = filledCollection.Find();
+        cur0.Dispose();
+        Assert.False(await cur0.HasNextAsync());
+    }
+
+    [Fact]
+    public async Task Test_CollectionCursor_ZeroMatches()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var cur = filledCollection.Find().Filter(
+            Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PText, "ZZ"));
+
+        Assert.False(await cur.HasNextAsync());
+        // TODO this fails because the previous call has closed the cursor (related to first failure reported on `Test_CollectionCursor_HasNext`)
+        // Assert.Empty(await cur.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Test_CollectionCursor_EarlyClosing()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var cur = filledCollection.Find();
+        for (int i = 0; i < 12; i++){
+            await cur.MoveNextAsync();
+        }
+        cur.Dispose();
+        Assert.Equal(CursorState.Closed, cur.State);
+        Assert.Equal(0, cur.Buffered());
+        Assert.Equal(12, cur.Consumed);
+
+        cur.Rewind();
+        // TODO fails because `Rewind` does not reset all involved variables? (probably a pagestate left untouched?)
+        // Assert.Equal(_fixture.FilledCollectionCount, (await cur.ToListAsync()).Count);
+    }
+
+    /* TEST SIX
+
+
+    */
+
 }

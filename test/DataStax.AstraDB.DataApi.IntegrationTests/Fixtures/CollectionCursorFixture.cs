@@ -31,7 +31,7 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
     }
 
     private const string _collectionName = "collectionTestCursorFilled";
-    private const int NUM_DOCS = 25;
+    private const int NUM_DOCS = 25;  // keep this between 21 and 39 (must be 1 full + 1 partial page in size)
 
     private async Task CreateFilledCollection()
     {
