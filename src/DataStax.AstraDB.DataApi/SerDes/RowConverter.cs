@@ -42,7 +42,7 @@ public class RowConverter<T> : JsonConverter<T> where T : class
         var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanWrite && 
                 (!p.GetCustomAttributes<ColumnIgnoreAttribute>().Any() ||
-                p.GetCustomAttribute<DocumentMappingAttribute>()?.Field == DocumentMappingField.Similarity))
+                p.GetCustomAttribute<ColumnMappingAttribute>()?.Field == ColumnMappingField.Similarity))
             .ToDictionary(p => GetPropertyName(p, true), p => p);
 
         while (reader.Read())
@@ -230,10 +230,10 @@ public class RowConverter<T> : JsonConverter<T> where T : class
 
     private static string GetPropertyName(PropertyInfo property, bool forDeserialization)
     {
-        var documentMappingAttribute = property.GetCustomAttribute<DocumentMappingAttribute>();
-        if (documentMappingAttribute != null && forDeserialization)
+        var columnMappingAttribute = property.GetCustomAttribute<ColumnMappingAttribute>();
+        if (columnMappingAttribute != null && forDeserialization)
         {
-            if (documentMappingAttribute.Field == DocumentMappingField.Similarity)
+            if (columnMappingAttribute.Field == ColumnMappingField.Similarity)
             {
                 return "$similarity";
             }

@@ -19,21 +19,21 @@ namespace DataStax.AstraDB.DataApi.SerDes;
 using System;
 
 /// <summary>
-/// Marks a property on a collection document as a special field for the database's use.
+/// Marks a property on a table row as a special field for the database's use.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-public class DocumentMappingAttribute : Attribute
+public class ColumnMappingAttribute : Attribute
 {
     /// <summary>
     /// The type of special field this property is mapped to
     /// </summary>
-    public DocumentMappingField Field { get; }
+    public ColumnMappingField Field { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentMappingAttribute"/> class.
+    /// Initializes a new instance of the <see cref="ColumnMappingAttribute"/> class.
     /// </summary>
     /// <param name="field">The type of special field this property is mapped to</param>
-    public DocumentMappingAttribute(DocumentMappingField field)
+    public ColumnMappingAttribute(ColumnMappingField field)
     {
         Field = field;
     }

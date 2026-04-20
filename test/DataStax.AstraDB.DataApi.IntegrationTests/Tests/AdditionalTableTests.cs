@@ -553,7 +553,8 @@ public class AdditionalTableTests
             var result = await table.FindOneAsync<SimpleObjectWithVectorSearchResult>(null,
                 new TableFindOptions<SimpleObjectWithVector>() { Sort = sort, IncludeSimilarity = true });
 
-            Assert.NotEqual(0, result.Similarity);
+            Assert.NotNull(result.Similarity);
+            Assert.True(result.Similarity > 0);
         }
         finally
         {
