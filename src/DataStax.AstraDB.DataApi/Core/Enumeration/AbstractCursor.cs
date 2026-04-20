@@ -282,4 +282,5 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
 
         return ConsumeBuffer(1).FirstOrDefault();
     }
+
 }

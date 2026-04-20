@@ -17,6 +17,7 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
     }
 
     public Collection<CursorTestDocument> FilledCollection { get; private set; }
+    public int FilledCollectionCount { get; private set; }
 
     public async ValueTask InitializeAsync()
     {
@@ -60,5 +61,6 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         await collection.InsertManyAsync(testDocuments);
         */
         FilledCollection = collection;
+        FilledCollectionCount = NUM_DOCS;
     }
 }
