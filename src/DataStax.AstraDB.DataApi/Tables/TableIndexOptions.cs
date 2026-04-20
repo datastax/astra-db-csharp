@@ -31,21 +31,21 @@ public class TableIndexOptions
     /// Should the index be case sensitive?
     /// </summary>
     [JsonPropertyName("caseSensitive")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public bool CaseSensitive { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? CaseSensitive { get; set; } = null;
 
     /// <summary>
     /// Should the index normalize the text?
     /// </summary>
     [JsonPropertyName("normalize")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public bool Normalize { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Normalize { get; set; } = null;
 
     /// <summary>
     /// Should the index use ASCII conversion?
     /// </summary>
     [JsonPropertyName("ascii")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public bool Ascii { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Ascii { get; set; } = null;
 
 }
