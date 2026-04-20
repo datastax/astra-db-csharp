@@ -34,63 +34,29 @@ public class CollectionVectorizeAttribute : BaseVectorizeAttribute
     public CollectionVectorizeAttribute() { }
 
     /// <summary>
-    /// Initializes a new instance with the specified provider and model name.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName)
-    {
-        Provider = provider;
-        ModelName = modelName;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, and dimension.
+    /// Initializes a new instance with the specified provider and model name and optionally other settings.
     /// </summary>
     /// <param name="provider">The name of the embedding service provider.</param>
     /// <param name="modelName">The model name to use for embedding generation.</param>
     /// <param name="dimension">The number of dimensions for the generated vector.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, int dimension)
-    {
-        Provider = provider;
-        ModelName = modelName;
-        Dimension = dimension;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, dimension, and metric.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="dimension">The number of dimensions for the generated vector.</param>
-    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, int dimension, SimilarityMetric metric)
-    {
-        Provider = provider;
-        ModelName = modelName;
-        Dimension = dimension;
-        Metric = metric;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, dimension, metric, and authentication.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="dimension">The number of dimensions for the generated vector.</param>
-    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
     /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, int dimension, SimilarityMetric metric, string[] authenticationPairs)
+    /// <param name="parameterPairs">Additional key-value parameter pairs for the embedding service.</param>
+    public CollectionVectorizeAttribute(
+        string provider,
+        string modelName,
+        int dimension = -1,
+        string[] authenticationPairs = null,
+        object[] parameterPairs = null)
     {
         Provider = provider;
         ModelName = modelName;
-        Dimension = dimension;
-        Metric = metric;
-        AuthenticationPairs = authenticationPairs;
+        Dimension = dimension == -1 ? null : dimension;
+        AuthenticationPairs = authenticationPairs ?? Array.Empty<string>();
+        ParameterPairs = parameterPairs ?? Array.Empty<object>();
     }
 
     /// <summary>
-    /// Initializes a new instance with the specified provider, model name, dimension, metric, authentication, and parameters.
+    /// Initializes a new instance with the specified provider and model name and optionally other settings.
     /// </summary>
     /// <param name="provider">The name of the embedding service provider.</param>
     /// <param name="modelName">The model name to use for embedding generation.</param>
@@ -98,91 +64,20 @@ public class CollectionVectorizeAttribute : BaseVectorizeAttribute
     /// <param name="metric">The similarity metric to use for vector comparisons.</param>
     /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
     /// <param name="parameterPairs">Additional key-value parameter pairs for the embedding service.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, int dimension, SimilarityMetric metric, string[] authenticationPairs, object[] parameterPairs)
-    {
-        Provider = provider;
-        ModelName = modelName;
-        Dimension = dimension;
-        Metric = metric;
-        AuthenticationPairs = authenticationPairs;
-        ParameterPairs = parameterPairs;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, dimension, and authentication.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="dimension">The number of dimensions for the generated vector.</param>
-    /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, int dimension, string[] authenticationPairs)
-    {
-        Provider = provider;
-        ModelName = modelName;
-        Dimension = dimension;
-        AuthenticationPairs = authenticationPairs;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, dimension, authentication, and parameters.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="dimension">The number of dimensions for the generated vector.</param>
-    /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
-    /// <param name="parameterPairs">Additional key-value parameter pairs for the embedding service.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, int dimension, string[] authenticationPairs, object[] parameterPairs)
-    {
-        Provider = provider;
-        ModelName = modelName;
-        Dimension = dimension;
-        AuthenticationPairs = authenticationPairs;
-        ParameterPairs = parameterPairs;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, and metric.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, SimilarityMetric metric)
+    public CollectionVectorizeAttribute(
+        string provider,
+        string modelName,
+        SimilarityMetric metric,
+        int dimension = -1,
+        string[] authenticationPairs = null,
+        object[] parameterPairs = null)
     {
         Provider = provider;
         ModelName = modelName;
         Metric = metric;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, metric, and authentication.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
-    /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, SimilarityMetric metric, string[] authenticationPairs)
-    {
-        Provider = provider;
-        ModelName = modelName;
-        Metric = metric;
-        AuthenticationPairs = authenticationPairs;
-    }
-
-    /// <summary>
-    /// Initializes a new instance with the specified provider, model name, metric, authentication, and parameters.
-    /// </summary>
-    /// <param name="provider">The name of the embedding service provider.</param>
-    /// <param name="modelName">The model name to use for embedding generation.</param>
-    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
-    /// <param name="authenticationPairs">Key-value pairs for authenticating with the embedding service.</param>
-    /// <param name="parameterPairs">Additional key-value parameter pairs for the embedding service.</param>
-    public CollectionVectorizeAttribute(string provider, string modelName, SimilarityMetric metric, string[] authenticationPairs, object[] parameterPairs)
-    {
-        Provider = provider;
-        ModelName = modelName;
-        Metric = metric;
-        AuthenticationPairs = authenticationPairs;
-        ParameterPairs = parameterPairs;
+        Dimension = dimension == -1 ? null : dimension;
+        AuthenticationPairs = authenticationPairs ?? Array.Empty<string>();
+        ParameterPairs = parameterPairs ?? Array.Empty<object>();
     }
 
 }

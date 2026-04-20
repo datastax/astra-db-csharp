@@ -408,7 +408,7 @@ public class DatabaseTests
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
         var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
         var collectionName = "coll_SimpleObjectWithVectorizeHeader";
-        // Signature of overloads mandate that we supply the collection name here. Eeh, I think we can live with that.
+        // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
         var createdCollection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
         Assert.NotNull(createdCollection);
         Assert.Equal(collectionName, createdCollection.CollectionName);
@@ -418,7 +418,7 @@ public class DatabaseTests
                 Name = "bla one"
             });
 
-        // Signature of overloads mandate that we supply the collection name here. Eeh, I think we can live with that.
+        // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
         var gottenCollection = fixture.Database.GetCollection<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
         Assert.NotNull(gottenCollection);
         Assert.Equal(collectionName, gottenCollection.CollectionName);
