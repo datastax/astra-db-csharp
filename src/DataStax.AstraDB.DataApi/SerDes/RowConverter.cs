@@ -40,7 +40,9 @@ public class RowConverter<T> : JsonConverter<T> where T : class
 
         T instance = Activator.CreateInstance<T>();
         var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanWrite && !p.GetCustomAttributes<ColumnIgnoreAttribute>().Any())
+            .Where(p => p.CanWrite && 
+                (!p.GetCustomAttributes<ColumnIgnoreAttribute>().Any() ||
+                p.GetCustomAttribute<DocumentMappingAttribute>()?.Field == DocumentMappingField.Similarity))
             .ToDictionary(p => GetPropertyName(p, true), p => p);
 
         while (reader.Read())
