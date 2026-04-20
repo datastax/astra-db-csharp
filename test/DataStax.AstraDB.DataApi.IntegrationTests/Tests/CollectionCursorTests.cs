@@ -254,7 +254,67 @@ public class CollectionCursorTests
         // Assert.Equal(_fixture.FilledCollectionCount, (await cur.ToListAsync()).Count);
     }
 
-    /* TEST SIX
+    [Fact]
+    public async Task Test_CollectionCursor_CollectiveMethods()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var baseRows = await filledCollection.Find().ToListAsync();
+
+        // full ToList (list equalities projected on scalar lists for conciseness)
+        var tlCur = filledCollection.Find();
+        Assert.Equal(baseRows.Select(d => d.Id), (await tlCur.ToListAsync()).Select(d => d.Id));
+        Assert.Equal(CursorState.Closed, tlCur.State);
+
+        // partially-consumed ToList
+        var ptlCur = filledCollection.Find();
+        for (int i = 0; i < 15; i++){
+            await ptlCur.MoveNextAsync();
+        }
+        Assert.Equal(baseRows.Skip(15).Select(d => d.Id), (await ptlCur.ToListAsync()).Select(d => d.Id));
+        Assert.Equal(CursorState.Closed, ptlCur.State);
+
+        // mapped ToList
+        /* 
+            TODO this whole section does not seem to apply. These are not real 'cursors' (LINQ has taken over).
+            Can/should anything be done about this? (maybe not...)
+    
+        var mintMapper = new Func<CursorTestDocument, int>(d => d.PInt);
+        var mtlCur = System.Linq.AsyncEnumerable.Select(filledCollection.Find(), mintMapper);
+        for (int i = 0; i < 13; i++){
+            await mtlCur.MoveNextAsync();
+        }
+        Assert.Equal(baseRows.Skip(13).Select(d => d.PInt), await mtlCur.ToListAsync());
+        // TODO following line does not compile. I think we should just accept that 'mapped cursors', since they've gone to LINQ-land, are not 'cursors' anymore.
+        Assert.Equal(CursorState.Closed, mtlCur.State);
+        */
+
+        // Full ForEach
+        /* TODO (this section):
+            c# differs greatly from other clients. There's no ForEach on cursors (and arguably there shouldn't be).
+            As is now, this part passes but adds little. Even the client pattern of a "ForEach(callback)", with the
+            callback returning whether to stop or not, probably is not needed here, nor is it idiomatic.
+            I think we should be ok with there not being any ForEach fancy thing other than the LINQ stuff (so dropping this part of test?)
+        */
+        var accum0 = new List<CursorTestDocument>();
+        var feCur = filledCollection.Find();
+        await foreach (var row in feCur)
+        {
+            accum0.Add(row);
+        }
+        Assert.Equal(baseRows.Select(d => d.Id), accum0.Select(d => d.Id));
+        Assert.Equal(CursorState.Closed, feCur.State);
+
+        /* TODO in the same spirit, porting from Python I am skipping:
+            1. same as above with a coroutine callback (does not apply here)
+            2. foreach on a partially-consumed cursor (trivial once exited cursor to LINQ-land)
+            3. 1+2
+            4. mapped ForEach (we're not testing LINQ after all)
+            5. mapped ForEach with coroutine
+            6. early-break ForEach & coroutine forms, various return types thereof (don't apply)
+        */
+    }
+
+    /* TEST TEN
 
 
     */
