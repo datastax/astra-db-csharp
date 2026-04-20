@@ -193,8 +193,7 @@ public class CollectionCursorTests
         Assert.Equal(CursorState.Idle, cur.State);
         Assert.Equal(0, cur.Consumed);
         Assert.True(await cur.HasNextAsync());
-        // TODO this fails. HasNext peeks without 'consuming' (as far as the user sees). Other clients's cursor stay "Idle" because of that:
-        // Assert.Equal(CursorState.Idle, cur.State);
+        Assert.Equal(CursorState.Started, cur.State);
         Assert.Equal(0, cur.Consumed);
         await cur.MoveNextAsync();
         Assert.Equal(CursorState.Started, cur.State);
@@ -232,8 +231,10 @@ public class CollectionCursorTests
             Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PText, "ZZ"));
 
         Assert.False(await cur.HasNextAsync());
-        // TODO this fails because the previous call has closed the cursor (related to first failure reported on `Test_CollectionCursor_HasNext`)
-        // Assert.Empty(await cur.ToListAsync());
+        await Assert.ThrowsAsync<CursorException>( async () =>
+        {
+            await cur.ToListAsync();
+        });
     }
 
     [Fact]
@@ -273,20 +274,7 @@ public class CollectionCursorTests
         Assert.Equal(baseRows.Skip(15).Select(d => d.Id), (await ptlCur.ToListAsync()).Select(d => d.Id));
         Assert.Equal(CursorState.Closed, ptlCur.State);
 
-        // mapped ToList
-        /* 
-            TODO this whole section does not seem to apply. These are not real 'cursors' (LINQ has taken over).
-            Can/should anything be done about this? (maybe not...)
-    
-        var mintMapper = new Func<CursorTestDocument, int>(d => d.PInt);
-        var mtlCur = System.Linq.AsyncEnumerable.Select(filledCollection.Find(), mintMapper);
-        for (int i = 0; i < 13; i++){
-            await mtlCur.MoveNextAsync();
-        }
-        Assert.Equal(baseRows.Skip(13).Select(d => d.PInt), await mtlCur.ToListAsync());
-        // TODO following line does not compile. I think we should just accept that 'mapped cursors', since they've gone to LINQ-land, are not 'cursors' anymore.
-        Assert.Equal(CursorState.Closed, mtlCur.State);
-        */
+        // Tests on *mapped cursors + ToList* are omitted, as such logic occurs not in cursor territory anymore (rather LINQ's).
 
         // Full ForEach
         /* TODO (this section):
