@@ -51,7 +51,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </example>
 public class CollectionFindCursor<T> : CollectionFindCursor<T, T> where T : class
 {
-    internal CollectionFindCursor(IFindManyOptions<T, DocumentSortBuilder<T>> options, CommandOptions commandOptions, FetchPageFunc<T, CollectionFindCursor<T, T>> fetchPage) 
+    internal CollectionFindCursor(IFindManyOptions<T, CollectionSortBuilder<T>> options, CommandOptions commandOptions, FetchPageFunc<T, CollectionFindCursor<T, T>> fetchPage) 
         : base(options, commandOptions, fetchPage) { }
 }
 
@@ -83,7 +83,7 @@ public class CollectionFindCursor<T> : CollectionFindCursor<T, T> where T : clas
 /// var results = await cursor.ToListAsync();
 /// </code>
 /// </example>
-public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, DocumentSortBuilder<T>, CollectionFindCursor<T, TResult>>
+public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, CollectionSortBuilder<T>, CollectionFindCursor<T, TResult>>
     where T : class
     where TResult : class
 {
@@ -94,7 +94,7 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, DocumentS
     /// <param name="commandOptions">The command options to use.</param>
     /// <param name="fetchPage">The function to fetch pages of results.</param>
     internal CollectionFindCursor(
-        IFindManyOptions<T, DocumentSortBuilder<T>> options,
+        IFindManyOptions<T, CollectionSortBuilder<T>> options,
         CommandOptions commandOptions,
         FetchPageFunc<TResult, CollectionFindCursor<T, TResult>> fetchPage
     ) : base(options, commandOptions, fetchPage) { }
@@ -113,7 +113,7 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, DocumentS
     /// </summary>
     /// <param name="options">The updated find options.</param>
     /// <returns>A new cursor instance with the updated options.</returns>
-    internal override CollectionFindCursor<T, TResult> CloneWithOptions(IFindManyOptions<T, DocumentSortBuilder<T>> options)
+    internal override CollectionFindCursor<T, TResult> CloneWithOptions(IFindManyOptions<T, CollectionSortBuilder<T>> options)
     {
         return new(options, CommandOptions, FetchPageFunc);
     }

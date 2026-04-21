@@ -69,7 +69,7 @@ public class CollectionCursorTests
         // various fluent-api methods
         cur.Filter(Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PInt, 789));
         cur.Project(Builders<CursorTestDocument>.Projection.Include(d => d.PInt));
-        cur.Sort(Builders<CursorTestDocument>.Sort.Ascending(d => d.PInt));
+        cur.Sort(Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PInt));
         cur.Limit(1);
         cur.IncludeSimilarity(false);
         cur.IncludeSortVector(true);
