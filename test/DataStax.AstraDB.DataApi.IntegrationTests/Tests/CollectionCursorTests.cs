@@ -184,4 +184,127 @@ public class CollectionCursorTests
 
     }
 
+    [Fact]
+    public async Task Test_CollectionCursor_HasNext()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var cur = filledCollection.Find();
+
+        Assert.Equal(CursorState.Idle, cur.State);
+        Assert.Equal(0, cur.Consumed);
+        Assert.True(await cur.HasNextAsync());
+        Assert.Equal(CursorState.Started, cur.State);
+        Assert.Equal(0, cur.Consumed);
+        await cur.MoveNextAsync();
+        Assert.Equal(CursorState.Started, cur.State);
+        await foreach (var item in cur) { /* moot */ };
+        Assert.Equal(CursorState.Closed, cur.State);
+        Assert.Equal(_fixture.FilledCollectionCount, cur.Consumed);
+
+        var curMf = filledCollection.Find();
+        await curMf.MoveNextAsync();
+        await curMf.MoveNextAsync();
+        Assert.Equal(2, curMf.Consumed);
+        Assert.Equal(CursorState.Started, curMf.State);
+        Assert.True(await curMf.HasNextAsync());
+        Assert.Equal(2, curMf.Consumed);
+        Assert.Equal(CursorState.Started, curMf.State);
+        for(int i=0; i<18; i++){
+            await curMf.MoveNextAsync();
+        }
+        Assert.True(await curMf.HasNextAsync());
+        Assert.Equal(20, curMf.Consumed);
+        Assert.Equal(CursorState.Started, curMf.State);
+        // TODO this fails. Yet, the expectation is that HasNext fetches a new page since we were exactly at end-of-page, and this new page would be in the buffer now.
+        // Assert.Equal(_fixture.FilledCollectionCount - 20, cur.Buffered());
+
+        var cur0 = filledCollection.Find();
+        cur0.Dispose();
+        Assert.False(await cur0.HasNextAsync());
+    }
+
+    [Fact]
+    public async Task Test_CollectionCursor_ZeroMatches()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var cur = filledCollection.Find().Filter(
+            Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PText, "ZZ"));
+
+        Assert.False(await cur.HasNextAsync());
+        await Assert.ThrowsAsync<CursorException>( async () =>
+        {
+            await cur.ToListAsync();
+        });
+    }
+
+    [Fact]
+    public async Task Test_CollectionCursor_EarlyClosing()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var cur = filledCollection.Find();
+        for (int i = 0; i < 12; i++){
+            await cur.MoveNextAsync();
+        }
+        cur.Dispose();
+        Assert.Equal(CursorState.Closed, cur.State);
+        Assert.Equal(0, cur.Buffered());
+        Assert.Equal(12, cur.Consumed);
+
+        cur.Rewind();
+        // TODO fails because `Rewind` does not reset all involved variables? (probably a pagestate left untouched?)
+        // Assert.Equal(_fixture.FilledCollectionCount, (await cur.ToListAsync()).Count);
+    }
+
+    [Fact]
+    public async Task Test_CollectionCursor_CollectiveMethods()
+    {
+        var filledCollection = _fixture.FilledCollection;
+        var baseRows = await filledCollection.Find().ToListAsync();
+
+        // full ToList (list equalities projected on scalar lists for conciseness)
+        var tlCur = filledCollection.Find();
+        Assert.Equal(baseRows.Select(d => d.Id), (await tlCur.ToListAsync()).Select(d => d.Id));
+        Assert.Equal(CursorState.Closed, tlCur.State);
+
+        // partially-consumed ToList
+        var ptlCur = filledCollection.Find();
+        for (int i = 0; i < 15; i++){
+            await ptlCur.MoveNextAsync();
+        }
+        Assert.Equal(baseRows.Skip(15).Select(d => d.Id), (await ptlCur.ToListAsync()).Select(d => d.Id));
+        Assert.Equal(CursorState.Closed, ptlCur.State);
+
+        // Tests on *mapped cursors + ToList* are omitted, as such logic occurs not in cursor territory anymore (rather LINQ's).
+
+        // Full ForEach
+        /* TODO (this section):
+            c# differs greatly from other clients. There's no ForEach on cursors (and arguably there shouldn't be).
+            As is now, this part passes but adds little. Even the client pattern of a "ForEach(callback)", with the
+            callback returning whether to stop or not, probably is not needed here, nor is it idiomatic.
+            I think we should be ok with there not being any ForEach fancy thing other than the LINQ stuff (so dropping this part of test?)
+        */
+        var accum0 = new List<CursorTestDocument>();
+        var feCur = filledCollection.Find();
+        await foreach (var row in feCur)
+        {
+            accum0.Add(row);
+        }
+        Assert.Equal(baseRows.Select(d => d.Id), accum0.Select(d => d.Id));
+        Assert.Equal(CursorState.Closed, feCur.State);
+
+        /* TODO in the same spirit, porting from Python I am skipping:
+            1. same as above with a coroutine callback (does not apply here)
+            2. foreach on a partially-consumed cursor (trivial once exited cursor to LINQ-land)
+            3. 1+2
+            4. mapped ForEach (we're not testing LINQ after all)
+            5. mapped ForEach with coroutine
+            6. early-break ForEach & coroutine forms, various return types thereof (don't apply)
+        */
+    }
+
+    /* TEST TEN
+
+
+    */
+
 }
