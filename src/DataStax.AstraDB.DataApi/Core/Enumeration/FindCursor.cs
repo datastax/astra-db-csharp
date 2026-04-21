@@ -246,6 +246,68 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     }
     
     /// <summary>
+    /// Sets the initial page state used to resume pagination from a previous find operation.
+    /// </summary>
+    /// <param name="initialPageState">The page state to resume from, or null to start from the beginning.</param>
+    /// <returns>A new cursor instance with the updated initial page state.</returns>
+    public TCursor InitialPageState(string initialPageState)
+    {
+        return UpdateOptions(options => options.InitialPageState = initialPageState);
+    }
+    
+    /// <summary>
+    /// Synchronously fetches the next complete page of results from the server.
+    /// </summary>
+    /// <returns>The next page of results.</returns>
+    /// <exception cref="CursorException">Thrown when the cursor is closed or the current buffer is not empty.</exception>
+    public FindPage<TResult> FetchNextPage()
+    {
+        return FetchNextPageAsync(CancellationToken.None, true).ResultSync();
+    }
+    
+    /// <summary>
+    /// Asynchronously fetches the next complete page of results from the server.
+    /// </summary>
+    /// <param name="cancellationToken">An optional cancellation token to cancel the operation.</param>
+    /// <returns>The next page of results.</returns>
+    /// <exception cref="CursorException">Thrown when the cursor is closed or the current buffer is not empty.</exception>
+    public async Task<FindPage<TResult>> FetchNextPageAsync(CancellationToken cancellationToken = default)
+    {
+        return await FetchNextPageAsync(cancellationToken, false).ConfigureAwait(false);
+    }
+    
+    private async Task<FindPage<TResult>> FetchNextPageAsync(CancellationToken cancellationToken, bool runSynchronously)
+    {
+        if ((_buffer?.Count ?? 0) > 0)
+        {
+            throw new CursorException("Cannot fetch next page when the current page (the buffer) is not empty", State);
+        }
+        
+        if (State == CursorState.Closed)
+        {
+            throw new CursorException("Cannot fetch next page on a closed cursor", State);
+        }
+
+        if (cancellationToken != CancellationToken.None)
+        {
+            CommandOptions.BulkOperationCancellationToken = cancellationToken;
+        }
+
+        State = CursorState.Started;
+
+        var page = await FetchPageFunc((TCursor)this, runSynchronously).ConfigureAwait(false);
+        FindOptions.InitialPageState = page.NextPageState;
+        _currentPage = page;
+
+        if (page.NextPageState == null)
+        {
+            State = CursorState.Closed;
+        }
+
+        return page;
+    }
+    
+    /// <summary>
     /// Synchronously retrieves the sort vector used for the query.
     /// </summary>
     /// <returns>The sort vector, or null if not available.</returns>
@@ -305,7 +367,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <param name="runSynchronously">Whether to run the operation synchronously.</param>
     /// <returns>True if more pages are available, false otherwise.</returns>
-    protected override async Task<bool> FetchNextPageAsync(CancellationToken cancellationToken, bool runSynchronously)
+    protected override async Task<bool> FetchMoreAsync(CancellationToken cancellationToken, bool runSynchronously)
     {
         if (cancellationToken != CancellationToken.None)
         {
@@ -313,7 +375,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
         }
 
         var page = await FetchPageFunc((TCursor)this, runSynchronously).ConfigureAwait(false);
-        FindOptions.PageState = page.NextPageState;
+        FindOptions.InitialPageState = page.NextPageState;
         _currentPage = page;
         return page.NextPageState != null;
     }

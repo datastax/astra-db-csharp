@@ -24,6 +24,11 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// <typeparam name="T"></typeparam>
 public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, TableSortBuilder<T>>
 {
+    /// <summary>
+    /// The initial page state used to resume pagination from a previous find-many operation.
+    /// </summary>
+    [JsonIgnore]
+    public string InitialPageState { get => base.InitialPageState; set => base.InitialPageState = value; }
 
     /// <summary>
     /// The number of documents to skip before starting to return documents.
@@ -70,7 +75,7 @@ public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, 
         return new TableFindManyOptions<T>
         {
             Filter = Filter != null ? Filter.Clone() : null,
-            PageState = PageState,
+            InitialPageState = InitialPageState,
             Skip = Skip,
             Limit = Limit,
             IncludeSortVector = IncludeSortVector,

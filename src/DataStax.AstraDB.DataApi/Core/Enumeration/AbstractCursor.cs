@@ -246,7 +246,7 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <param name="runSynchronously">Whether to run the operation synchronously.</param>
     /// <returns>True if more pages are available, false otherwise.</returns>
-    protected abstract Task<bool> FetchNextPageAsync(CancellationToken cancellationToken, bool runSynchronously);
+    protected abstract Task<bool> FetchMoreAsync(CancellationToken cancellationToken, bool runSynchronously);
     
     /// <summary>
     /// Internal method to move to the next item, with options to peek or consume.
@@ -272,7 +272,7 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
                 return default;
             }
 
-            _isNextPage = await FetchNextPageAsync(cancellationToken, runSynchronously).ConfigureAwait(false);
+            _isNextPage = await FetchMoreAsync(cancellationToken, runSynchronously).ConfigureAwait(false);
         }
 
         if (peek)

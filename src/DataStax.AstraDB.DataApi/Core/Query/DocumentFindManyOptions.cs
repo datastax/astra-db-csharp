@@ -20,6 +20,12 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOptions<T, CollectionSortBuilder<T>>
 {
+    /// <summary>
+    /// The initial page state used to resume pagination from a previous find-many operation.
+    /// </summary>
+    [JsonIgnore]
+    public string InitialPageState { get => base.InitialPageState; set => base.InitialPageState = value; }
+
     [JsonIgnore]
     public int? Skip { get => _skip; set => _skip = value; }
 
@@ -36,7 +42,7 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
         return new DocumentFindManyOptions<T>
         {
             Filter = Filter != null ? Filter.Clone() : null,
-            PageState = PageState,
+            InitialPageState = InitialPageState,
             Skip = Skip,
             Limit = Limit,
             IncludeSortVector = IncludeSortVector,
