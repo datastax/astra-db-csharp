@@ -492,6 +492,56 @@ public class AdditionalCollectionTests
         }
     }
 
+    [Fact]
+    public async Task Test_CollectionFindFilterTrick()
+    {
+        var collectionName = "coll_findfiltertrick";
+        try
+        {
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName);
+            await collection.InsertManyAsync(new List<SimpleObjectWithVector> {
+                new SimpleObjectWithVector() { Id = 1, Name = "one" },
+                new SimpleObjectWithVector() { Id = 2, Name = "two" }
+            });
+
+            // find through filter
+            
+            // find payload: {"findOne":{"filter":{"_id":{"$eq":1}}}}
+            var find_f_id1 = await collection.FindOneAsync(Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 1));
+            
+            // find payload: {"findOne":{"filter":{"_id":{"$eq":2}}}}
+            var find_f_id2 = await collection.FindOneAsync(Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 2));
+            
+            Assert.Equal("one", find_f_id1.Name);
+            Assert.Equal("two", find_f_id2.Name);
+
+            // find through findOptions
+            var findOpt_id1 = new DocumentFindOptions<SimpleObjectWithVector>()
+            {
+                Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 1)
+            };
+            var findOpt_id2 = new DocumentFindOptions<SimpleObjectWithVector>()
+            {
+                Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 2)
+            };
+            
+            // find payload: {"findOne":{}}
+            var find_o_id1 = await collection.FindOneAsync(findOpt_id1);
+            
+            // find payload: {"findOne":{}}
+            var find_o_id2 = await collection.FindOneAsync(findOpt_id2);
+            
+            // One of these two will fail! (because the payload silently drops the filter...)
+            Assert.Equal("one", find_o_id1.Name);
+            Assert.Equal("two", find_o_id2.Name);
+
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
 }
 
 [CollectionName("testCollectionNameViaAttribute")]
