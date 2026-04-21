@@ -28,7 +28,7 @@ public class TableFindManyOptions<T> : TableFindOptions<T>, IFindManyOptions<T, 
     /// The initial page state used to resume pagination from a previous find-many operation.
     /// </summary>
     [JsonIgnore]
-    public string InitialPageState { get => base.InitialPageState; set => base.InitialPageState = value; }
+    public string InitialPageState { get => PageState; set => PageState = value; }
 
     /// <summary>
     /// The number of documents to skip before starting to return documents.

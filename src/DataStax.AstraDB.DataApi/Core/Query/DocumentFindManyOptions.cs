@@ -24,7 +24,7 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
     /// The initial page state used to resume pagination from a previous find-many operation.
     /// </summary>
     [JsonIgnore]
-    public string InitialPageState { get => base.InitialPageState; set => base.InitialPageState = value; }
+    public string InitialPageState { get => PageState; set => PageState = value; }
 
     [JsonIgnore]
     public int? Skip { get => _skip; set => _skip = value; }

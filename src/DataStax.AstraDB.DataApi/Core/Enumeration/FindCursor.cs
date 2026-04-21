@@ -35,7 +35,7 @@ public class FindPage<T>
     /// <param name="nextPageState">The page state token for fetching the next page, or null if this is the last page.</param>
     /// <param name="result">The records in this page.</param>
     /// <param name="sortVector">The sort vector used for vector similarity searches, if applicable.</param>
-    public FindPage(string nextPageState, IReadOnlyList<T> result, float[] sortVector)
+    public FindPage(string nextPageState, List<T> result, float[] sortVector)
     {
         NextPageState = nextPageState;
         Result = new List<T>(result);
@@ -50,7 +50,7 @@ public class FindPage<T>
     /// <summary>
     /// Gets the list of records in this page.
     /// </summary>
-    public List<T> Result { get; }
+    public List<T> Result { get; internal set; }
     
     /// <summary>
     /// Gets the sort vector used for vector similarity searches, if applicable.
@@ -289,7 +289,11 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
         }
 
         await MoveNextAsync(cancellationToken, peek: true, runSynchronously).ConfigureAwait(false);
-        return _currentPage;
+
+        var buffer = _currentPage.Result;
+        _currentPage.Result = new List<TResult>();
+        
+        return new FindPage<TResult>(_currentPage.NextPageState, buffer, _currentPage.SortVector);
     }
     
     /// <summary>

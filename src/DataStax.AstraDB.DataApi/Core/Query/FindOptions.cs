@@ -53,8 +53,8 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
     public abstract TSort Sort { get; set; }
 
     [JsonIgnore]
-    internal string InitialPageState { get; set; }
-    string IFindOptions<T, TSort>.PageState { get => InitialPageState; set => InitialPageState = value; }
+    internal string PageState { get; set; }
+    string IFindOptions<T, TSort>.PageState { get => PageState; set => PageState = value; }
 
     [JsonInclude]
     [JsonPropertyName("filter")]
@@ -84,9 +84,9 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
             {
                 { "includeSimilarity", IncludeSimilarity },
                 { "includeSortVector", _includeSortVector },
-                { "pageState", InitialPageState },
+                { "pageState", PageState },
                 { "skip", _skip },
-                { "limit", _limit }
+                { "limit", _limit },
             };
             options = options.Where(pair => pair.Value != null).ToDictionary(pair => pair.Key, pair => pair.Value);
             if (options.Count == 0)
