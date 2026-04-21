@@ -1,3 +1,4 @@
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
@@ -710,3 +711,26 @@ public class TripleMapObject
     public Dictionary<string, string> map_v { get; set; }
 }
 
+[CollectionName("testColl_vecEncoding")]
+// TODO: employ `CollectionVector` class-level attribute once PR 136 is merged and create through object in test
+public class VectorObjectAsLst
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [JsonConverter(typeof(FloatArrayWriter))]
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] TheVector { get; set; }
+    public byte[] TheBlob { get; set; }
+}
+
+[CollectionName("testColl_vecEncoding")]
+// TODO: employ `CollectionVector` class-level attribute once PR 136 is merged and create through object in test
+public class VectorObjectAsBin
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    [JsonConverter(typeof(FloatBinaryWriter))]
+    public float[] TheVector { get; set; }
+    public byte[] TheBlob { get; set; }
+}
