@@ -734,3 +734,19 @@ public class VectorObjectAsBin
     public float[] TheVector { get; set; }
     public byte[] TheBlob { get; set; }
 }
+
+[TableName("testTable_vecEncoding_t")]
+public class VectorEncodingTestRow
+{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    [ColumnVector(3)]
+    [JsonConverter(typeof(FloatArrayWriter))]
+    public float[] TheLstVec { get; set; }
+    [ColumnVector(3)]
+    [JsonConverter(typeof(FloatBinaryWriter))]
+    public float[] TheBinVec { get; set; }
+
+    public float[] JustAList { get; set; }
+    public byte[] TheBlob { get; set; }
+}
