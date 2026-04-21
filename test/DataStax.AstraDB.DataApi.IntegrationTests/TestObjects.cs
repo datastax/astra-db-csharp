@@ -711,8 +711,8 @@ public class TripleMapObject
     public Dictionary<string, string> map_v { get; set; }
 }
 
-[CollectionName("testColl_vecEncoding")]
-// TODO: employ `CollectionVector` class-level attribute once PR 136 is merged and create through object in test
+[CollectionName("testColl_vecEncoding_Typed")]
+[CollectionVector(3)]
 public class VectorObjectAsLst
 {
     [DocumentId]
@@ -723,8 +723,8 @@ public class VectorObjectAsLst
     public byte[] TheBlob { get; set; }
 }
 
-[CollectionName("testColl_vecEncoding")]
-// TODO: employ `CollectionVector` class-level attribute once PR 136 is merged and create through object in test
+[CollectionName("testColl_vecEncoding_Typed")]
+[CollectionVector(3)]
 public class VectorObjectAsBin
 {
     [DocumentId]

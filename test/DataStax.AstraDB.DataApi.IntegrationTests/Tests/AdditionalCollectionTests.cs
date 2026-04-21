@@ -378,13 +378,7 @@ public class AdditionalCollectionTests
         var collectionName = "testColl_vecEncoding_Typed";
         try
         {
-            /* TODO replace this creation with something like this (both!) once PR 136 gets in and we get fully typed (vector-)collection creation
-                var vecLstEncColl = await fixture.Database.CreateCollectionAsync<VectorObjectAsLst>();
-                var vecBinEncColl = await fixture.Database.CreateCollectionAsync<VectorObjectAsBin>();
-            */
-            var collDefinition = new CollectionDefinition { Vector = new VectorOptions { Dimension = 3 } };
-            var createdCollection = await fixture.Database.CreateCollectionAsync(collectionName, collDefinition);
-            var vecLstEncColl = fixture.Database.GetCollection<VectorObjectAsLst>(collectionName);
+            var vecLstEncColl = fixture.Database.CreateCollection<VectorObjectAsLst>();
             var vecBinEncColl = fixture.Database.GetCollection<VectorObjectAsBin>(collectionName);
 
             var lstDocument = new VectorObjectAsLst
@@ -459,23 +453,31 @@ public class AdditionalCollectionTests
             // Reads:
             var findOptionsLst = new DocumentFindOptions<Document>()
             {
-                Filter = Builders<Document>.CollectionFilter.Eq("_id", "as_lst"),
-                Projection = Builders<Document>.Projection.Include("$vector")
-            };
+                Projection = Builders<Document>.Projection.Include("$vector") };
             var findOptionsBin = new DocumentFindOptions<Document>()
             {
-                Filter = Builders<Document>.CollectionFilter.Eq("_id", "as_bin"),
-                Projection = Builders<Document>.Projection.Include("$vector")
-            };
-            var lstRead = await createdCollection.FindOneAsync(findOptionsLst);
-            var binRead = await createdCollection.FindOneAsync(findOptionsBin);
+                Projection = Builders<Document>.Projection.Include("$vector") };
+            var lstRead = await createdCollection.FindOneAsync(
+                Builders<Document>.CollectionFilter.Eq("_id", "as_lst"),
+                findOptionsLst);
+            var binRead = await createdCollection.FindOneAsync(
+                Builders<Document>.CollectionFilter.Eq("_id", "as_bin"),
+                findOptionsBin);
 
-            // same values should be found:
-            // TODO these 2 fail. Deserializaion *should* figure out this is a $vector
-            //      and decode accordingly to a `float[]`, even if untyped.
+            // same values should be found for the vector (modulo some machine-precision epsilon)
+
+            // ok for the LST reading (though these come out as doubles):
+            // Assert.IsType<float>( ((object[])lstRead["$vector"]) [0]);
+            var readVector = (Object[])lstRead["$vector"];
+            Assert.Equal(3, readVector.Length);
+            Assert.True( Math.Abs( 0.3 - (double)(readVector[0])) < 1.0e-5);
+            Assert.True( Math.Abs(-0.2 - (double)(readVector[1])) < 1.0e-5);
+            Assert.True( Math.Abs( 0.1 - (double)(readVector[2])) < 1.0e-5);
+
+            // TODO the BIN read fails. Deserialization *should* figure out this is a $vector
+            //      and decode, accordingly, into a `float[]`, even if untyped.
             //      Currently this comes back as [["$binary"] = PpmZmr5MzM09zMzN]
-            // Assert.Equal(new float[] { 0.3f, -0.2f, 0.1f }, lstRead["$vector"]);
-            // Assert.Equal(lstRead["$vector"], binRead["$vector"]);
+            // Assert.Equal(lstRead["$vector"], binRead["$vector"]); // check would still need an epsilon treatment maybe?
 
             // two different blobs must be read consistently
             // TODO these two fail. This is returned to the user as a `[["$binary"] = YSBkb2Mgd2l0aCBhIEJJTiB2ZWN0b3I=]` dict.
@@ -486,7 +488,7 @@ public class AdditionalCollectionTests
         }
         finally
         {
-            await fixture.Database.DropCollectionAsync(collectionName);
+            //await fixture.Database.DropCollectionAsync(collectionName);
         }
     }
 

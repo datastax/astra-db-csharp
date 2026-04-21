@@ -1064,7 +1064,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            //await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName);
         }
     }
 
@@ -1139,7 +1139,7 @@ public class AdditionalTableTests
         }
         finally
         {
-            //await fixture.Database.DropTableAsync(tableName);
+            await fixture.Database.DropTableAsync(tableName);
         }
     }
 
