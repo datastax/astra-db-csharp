@@ -120,6 +120,8 @@ public class CollectionCursorTests
         // Assert.Throws<CursorException>(() => { cur1.IncludeSimilarity(true); });
         // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.IncludeSortVector(true); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur1.InitialPageState("blaaaa"); });
 
         // (note the full prefix required otherwise ambiguous a/sync unresolved)
         await Assert.ThrowsAsync<CursorException>(async () => { 
@@ -173,6 +175,8 @@ public class CollectionCursorTests
         // Assert.Throws<CursorException>(() => { cur.IncludeSimilarity(true); });
         // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur.IncludeSortVector(true); });
+        // TODO does not throw (and should)
+        // Assert.Throws<CursorException>(() => { cur.InitialPageState("blaaaa"); });
 
         // TODO: this one *does not throw* (other clients don't admit setting mapping *after* started)
         //       But in this case "we're in LINQ's hands" and can't really do much about it. Are we ok?
@@ -300,9 +304,103 @@ public class CollectionCursorTests
         */
     }
 
-    /* TEST TEN
+    [Fact]
+    public async Task Test_CollectionCursor_InitialPageState()
+    {
+        const int PAGE_SIZE = 20;
 
+        var filledPagCollection = _fixture.FilledPaginationCollection;
+        var cur = filledPagCollection.Find(
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
 
-    */
+        // TODO This test is made of two parts (in its Python inspiration)
+        // Part 1: accesses the cursor private page state and puts it to test in a few ways.
+        //      This cannot be done here. The rest is just this (which could be moved to next test):
+
+        // Part 2: tests  an overload `Rewind(initialPageState)` which is not available.
+        //      TODO should it be added? (Python has it)
+    }
+
+    [Fact]
+    public async Task Test_CollectionCursor_FetchNextPage()
+    {
+        var filledPagCollection = _fixture.FilledPaginationCollection;
+
+        var cur0 = filledPagCollection.Find(
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
+        var page0 = await cur0.FetchNextPageAsync();
+        // TODO this should be `Results` (see yellow doc for 'specs') and not `Result`
+        var ids0 = page0.Result.Select(d => d.id).ToList();
+        var nps0 = page0.NextPageState;
+        Assert.IsType<string>(nps0);
+
+        // TODO: are we ok that there is no 'options' to Find, alternative to fluent way to set initialPS?
+        var cur1 = filledPagCollection.Find(
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
+        ).InitialPageState(nps0);
+        var page1 = await cur1.FetchNextPageAsync();
+        var ids1 = page1.Result.Select(d => d.id).ToList();
+        var nps1 = page1.NextPageState;
+        Assert.IsType<string>(nps1);
+
+        var cur2 = filledPagCollection.Find(
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
+        ).InitialPageState(nps1);
+        var page2 = await cur2.FetchNextPageAsync();
+        var ids2 = page2.Result.Select(d => d.id).ToList();
+        // TODO: log inspection shows that the initial page state is not being sent in the request.
+        //       Hence, the following fails (being a string and not a null)
+        //       Also (right below), all 'pages' above are actually the same 20 docs
+        // Assert.Null(page2.NextPageState);
+
+        var expectedIds = new List<int>();
+        for (int id = 0; id < _fixture.FilledPaginationCollectionCount; id+=2){ expectedIds.Add(id); }
+        var retrievedIds = ids0.Concat(ids1).Concat(ids2).ToList();
+        // TODO this fails because of the above pagestate not making it to the requests:
+        // Assert.Equal(retrievedIds.Count, retrievedIds.Distinct().Count());
+        // TODO this fails likewise because of the above pagestate not making it to the requests:
+        // Assert.Equal(expectedIds, retrievedIds.OrderBy(x => x).ToList());
+
+        // Fetching consecutive pages on a given cursor
+        var cur0x = filledPagCollection.Find(
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
+        await cur0x.FetchNextPageAsync();
+        // TODO this fails with "Cannot fetch next page when the current page (the buffer) is not empty"
+        //      But a cursor should be usable to fetch page after page (as long as it doesn't mix pagination and item-by-item uncleanly), no?
+        //          (maybe what is missing here is that once the pageful is returned to the caller the buffer should be emptied)
+        //      So currently the following line errors and the three assertions fail:
+        /*
+        var page1x = await cur0x.FetchNextPageAsync();
+        Assert.Equal(page1x.NextPageState, page1.NextPageState);
+        Assert.Equal(page1x.Result, page1.Result);
+        Assert.Equal(page1x.SortVector, page1.SortVector);
+        */
+
+        // Forbidden: mixing pagination and ordinary usage
+        var cur0y = filledPagCollection.Find(
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
+        await cur0y.MoveNextAsync();
+        await Assert.ThrowsAsync<CursorException>( async () =>
+        {
+            // errors because we're in mid-page
+            await cur0y.FetchNextPageAsync();
+        });
+        await cur0y.ToListAsync();
+        await Assert.ThrowsAsync<CursorException>( async () =>
+        {
+            // errors because closed already (by ToList)
+            await cur0y.FetchNextPageAsync();
+        });            
+
+        // Include-sort-vector:
+        var vcur0 = filledPagCollection.Find()
+            .IncludeSortVector(true)
+            .Limit(15)
+            .Sort(Builders<CursorPaginationTestDocument>.CollectionSort.Vector(new float[] { 1.0f, 1.0f }));
+        var vpage0 = await vcur0.FetchNextPageAsync();
+        Assert.Null(vpage0.NextPageState);
+        Assert.Equal(15, vpage0.Result.Count);
+        Assert.IsType<float[]>(vpage0.SortVector);
+    }
 
 }

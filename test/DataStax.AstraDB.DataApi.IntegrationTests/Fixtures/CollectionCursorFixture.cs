@@ -29,9 +29,8 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        // TODO uncomment me
-        //await Database.DropCollectionAsync(_collectionName);
-        //await Database.DropCollectionAsync(_paginationCollectionName);
+        await Database.DropCollectionAsync(_collectionName);
+        await Database.DropCollectionAsync(_paginationCollectionName);
     }
 
     private const string _collectionName = "collectionTestCursorFilled";
@@ -49,7 +48,6 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         };
         var collection = await Database.CreateCollectionAsync<CursorTestDocument>(_collectionName, collectionDefinition);
 
-        /* TODO uncomment this (now it's fast and ugly)
         await collection.DeleteManyAsync(Builders<CursorTestDocument>.CollectionFilter.Empty());
 
         var testDocuments = new List<CursorTestDocument>();
@@ -65,7 +63,6 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         }
         
         await collection.InsertManyAsync(testDocuments);
-        */
 
         FilledCollection = collection;
         FilledCollectionCount = NUM_DOCS;
@@ -81,7 +78,6 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         };
         var collection = await Database.CreateCollectionAsync<CursorPaginationTestDocument>(_paginationCollectionName, collectionDefinition);
 
-        /* TODO uncomment this (now it's fast and ugly)
         await collection.DeleteManyAsync(Builders<CursorPaginationTestDocument>.CollectionFilter.Empty());
 
         var testDocuments = new List<CursorPaginationTestDocument>();
@@ -97,7 +93,6 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         }
         
         await collection.InsertManyAsync(testDocuments);
-        */
 
         FilledPaginationCollection = collection;
         FilledPaginationCollectionCount = NUM_DOCS_PAGINATION;
