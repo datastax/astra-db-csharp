@@ -329,8 +329,8 @@ public class CollectionCursorTests
         var cur0 = filledPagCollection.Find(
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
         var page0 = await cur0.FetchNextPageAsync();
-        // TODO this should be `Results` (see yellow doc for 'specs') and not `Result`
-        var ids0 = page0.Result.Select(d => d.id).ToList();
+        // TODO this should be `Results` (see yellow doc for 'specs') and not `Results`
+        var ids0 = page0.Results.Select(d => d.id).ToList();
         var nps0 = page0.NextPageState;
         Assert.IsType<string>(nps0);
 
@@ -339,7 +339,7 @@ public class CollectionCursorTests
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
         ).InitialPageState(nps0);
         var page1 = await cur1.FetchNextPageAsync();
-        var ids1 = page1.Result.Select(d => d.id).ToList();
+        var ids1 = page1.Results.Select(d => d.id).ToList();
         var nps1 = page1.NextPageState;
         Assert.IsType<string>(nps1);
 
@@ -347,7 +347,7 @@ public class CollectionCursorTests
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
         ).InitialPageState(nps1);
         var page2 = await cur2.FetchNextPageAsync();
-        var ids2 = page2.Result.Select(d => d.id).ToList();
+        var ids2 = page2.Results.Select(d => d.id).ToList();
         Assert.Null(page2.NextPageState);
 
         var expectedIds = new List<int>();
@@ -361,7 +361,7 @@ public class CollectionCursorTests
         await cur0x.FetchNextPageAsync();
         var page1x = await cur0x.FetchNextPageAsync();
         Assert.Equal(page1x.NextPageState, page1.NextPageState);
-        Assert.Equivalent(page1x.Result, page1.Result);
+        Assert.Equivalent(page1x.Results, page1.Results);
         Assert.Equal(page1x.SortVector, page1.SortVector);
 
         // Forbidden: mixing pagination and ordinary usage
@@ -387,7 +387,7 @@ public class CollectionCursorTests
             .Sort(Builders<CursorPaginationTestDocument>.CollectionSort.Vector(new float[] { 1.0f, 1.0f }));
         var vpage0 = await vcur0.FetchNextPageAsync();
         Assert.Null(vpage0.NextPageState);
-        Assert.Equal(15, vpage0.Result.Count);
+        Assert.Equal(15, vpage0.Results.Count);
         Assert.IsType<float[]>(vpage0.SortVector);
     }
 

@@ -374,7 +374,7 @@ internal class Command
 #else
                 var requestTask = Task.Run(() => httpClient.SendAsync(request, linkedCts.Token));
                 requestTask.Wait();
-                response = requestTask.Result;
+                response = requestTask.Results;
                 var contentTask = Task.Run(() => response.Content.ReadAsStringAsync());
                 contentTask.Wait();
 #endif

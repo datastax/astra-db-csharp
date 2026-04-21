@@ -38,7 +38,7 @@ public class FindPage<T>
     public FindPage(string nextPageState, List<T> result, float[] sortVector)
     {
         NextPageState = nextPageState;
-        Result = new List<T>(result);
+        Results = new List<T>(result);
         SortVector = sortVector;
     }
     
@@ -50,7 +50,7 @@ public class FindPage<T>
     /// <summary>
     /// Gets the list of records in this page.
     /// </summary>
-    public List<T> Result { get; internal set; }
+    public List<T> Results { get; internal set; }
     
     /// <summary>
     /// Gets the sort vector used for vector similarity searches, if applicable.
@@ -106,7 +106,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <summary>
     /// Gets the internal buffer containing the current page of results.
     /// </summary>
-    protected override List<TResult> _buffer => _currentPage?.Result;
+    protected override List<TResult> _buffer => _currentPage?.Results;
     
     /// <summary>
     /// Initializes a new instance of the <see cref="FindCursor{T, TResult, TSort, TCursor}"/> class.
@@ -295,8 +295,8 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
 
         await MoveNextAsync(cancellationToken, peek: true, runSynchronously).ConfigureAwait(false);
 
-        var buffer = _currentPage.Result;
-        _currentPage.Result = new List<TResult>();
+        var buffer = _currentPage.Results;
+        _currentPage.Results = new List<TResult>();
         
         return new FindPage<TResult>(_currentPage.NextPageState, buffer, _currentPage.SortVector);
     }
