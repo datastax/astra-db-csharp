@@ -722,9 +722,12 @@ public class Collection<T, TId> where T : class
         return new(new DocumentFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);
     }
 
-    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(CollectionFindCursor<T, TResult> cursor, bool runSynchronously) where TResult : class
+    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(CollectionFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
-        var command = CreateCommand("find").WithPayload(cursor.FindOptions).AddCommandOptions(cursor.CommandOptions);
+        var options = cursor.FindOptions.Clone();
+        options.PageState = nextPageState;
+        
+        var command = CreateCommand("find").WithPayload(options).AddCommandOptions(cursor.CommandOptions);
         var response = await command.RunAsyncReturnDocumentData<ApiFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         
         return new FindPage<TResult>(

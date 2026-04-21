@@ -43,7 +43,7 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         };
         var collection = await Database.CreateCollectionAsync<CursorTestDocument>(_collectionName, collectionDefinition);
 
-        /* TODO uncomment this (now I'm iterating and go for a fast testing cycle with the data already there)
+        // TODO uncomment this (now I'm iterating and go for a fast testing cycle with the data already there)
         await collection.DeleteManyAsync(Builders<CursorTestDocument>.CollectionFilter.Empty());
 
         var testDocuments = new List<CursorTestDocument>();
@@ -59,7 +59,7 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         }
         
         await collection.InsertManyAsync(testDocuments);
-        */
+        
         FilledCollection = collection;
         FilledCollectionCount = NUM_DOCS;
     }

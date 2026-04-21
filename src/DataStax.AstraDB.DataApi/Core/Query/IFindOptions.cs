@@ -25,7 +25,7 @@ internal interface IFindOptions<T, TSort> where TSort : SortBuilder<T>
 {
     internal Filter<T> Filter { get; set; }
 
-    internal string InitialPageState { get; set; }
+    internal string PageState { get; set; }
 
     internal TSort Sort { get; set; }
 

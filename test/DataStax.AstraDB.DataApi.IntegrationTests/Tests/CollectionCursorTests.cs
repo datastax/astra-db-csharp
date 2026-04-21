@@ -215,8 +215,7 @@ public class CollectionCursorTests
         Assert.True(await curMf.HasNextAsync());
         Assert.Equal(20, curMf.Consumed);
         Assert.Equal(CursorState.Started, curMf.State);
-        // TODO this fails. Yet, the expectation is that HasNext fetches a new page since we were exactly at end-of-page, and this new page would be in the buffer now.
-        // Assert.Equal(_fixture.FilledCollectionCount - 20, cur.Buffered());
+        Assert.Equal(_fixture.FilledCollectionCount - 20, curMf.Buffered());
 
         var cur0 = filledCollection.Find();
         cur0.Dispose();
@@ -251,8 +250,7 @@ public class CollectionCursorTests
         Assert.Equal(12, cur.Consumed);
 
         cur.Rewind();
-        // TODO fails because `Rewind` does not reset all involved variables? (probably a pagestate left untouched?)
-        // Assert.Equal(_fixture.FilledCollectionCount, (await cur.ToListAsync()).Count);
+        Assert.Equal(_fixture.FilledCollectionCount, cur.ToList().Count);
     }
 
     [Fact]

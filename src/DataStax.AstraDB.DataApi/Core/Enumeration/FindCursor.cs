@@ -66,7 +66,7 @@ public class FindPage<T>
 /// <param name="cursor">The cursor instance.</param>
 /// <param name="runSynchronously">Whether to run the operation synchronously.</param>
 /// <returns>A task that returns the fetched page.</returns>
-delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, bool runSynchronously);
+delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, string nextPageState, bool runSynchronously);
 
 /// <summary>
 /// A fluent API cursor for finding and enumerating records or rows with filtering, sorting, and projection capabilities.
@@ -252,7 +252,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <returns>A new cursor instance with the updated initial page state.</returns>
     public TCursor InitialPageState(string initialPageState)
     {
-        return UpdateOptions(options => options.InitialPageState = initialPageState);
+        return UpdateOptions(options => options.PageState = initialPageState);
     }
     
     /// <summary>
@@ -288,23 +288,8 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
             throw new CursorException("Cannot fetch next page on a closed cursor", State);
         }
 
-        if (cancellationToken != CancellationToken.None)
-        {
-            CommandOptions.BulkOperationCancellationToken = cancellationToken;
-        }
-
-        State = CursorState.Started;
-
-        var page = await FetchPageFunc((TCursor)this, runSynchronously).ConfigureAwait(false);
-        FindOptions.InitialPageState = page.NextPageState;
-        _currentPage = page;
-
-        if (page.NextPageState == null)
-        {
-            State = CursorState.Closed;
-        }
-
-        return page;
+        await MoveNextAsync(cancellationToken, peek: true, runSynchronously).ConfigureAwait(false);
+        return _currentPage;
     }
     
     /// <summary>
@@ -374,10 +359,9 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
             CommandOptions.BulkOperationCancellationToken = cancellationToken;
         }
 
-        var page = await FetchPageFunc((TCursor)this, runSynchronously).ConfigureAwait(false);
-        FindOptions.InitialPageState = page.NextPageState;
-        _currentPage = page;
-        return page.NextPageState != null;
+        _currentPage = await FetchPageFunc((TCursor)this, _currentPage?.NextPageState, runSynchronously).ConfigureAwait(false);
+        
+        return _currentPage.NextPageState != null;
     }
 
     private TCursor UpdateOptions(Action<IFindManyOptions<T, TSort>> optionsUpdater)

@@ -956,10 +956,13 @@ public class Table<T> where T : class
         return new(new TableFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);
     }
 
-    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, bool runSynchronously) where TResult : class
+    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
+        var options = cursor.FindOptions.Clone();
+        options.PageState = nextPageState;
+        
         var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
-        var command = CreateCommand("find").WithPayload(cursor.FindOptions).AddCommandOptions(commandOptions);
+        var command = CreateCommand("find").WithPayload(options).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))

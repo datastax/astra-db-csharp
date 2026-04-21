@@ -54,7 +54,7 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
 
     [JsonIgnore]
     internal string InitialPageState { get; set; }
-    string IFindOptions<T, TSort>.InitialPageState { get => InitialPageState; set => InitialPageState = value; }
+    string IFindOptions<T, TSort>.PageState { get => InitialPageState; set => InitialPageState = value; }
 
     [JsonInclude]
     [JsonPropertyName("filter")]
