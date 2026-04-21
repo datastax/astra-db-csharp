@@ -18,32 +18,38 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
 
     public Collection<CursorTestDocument> FilledCollection { get; private set; }
     public int FilledCollectionCount { get; private set; }
+    public Collection<CursorPaginationTestDocument> FilledPaginationCollection { get; private set; }
+    public int FilledPaginationCollectionCount { get; private set; }
 
     public async ValueTask InitializeAsync()
     {
         await CreateFilledCollection();
+        await CreateFilledPaginationCollection();
     }
 
     public async ValueTask DisposeAsync()
     {
         // TODO uncomment me
         //await Database.DropCollectionAsync(_collectionName);
+        //await Database.DropCollectionAsync(_paginationCollectionName);
     }
 
     private const string _collectionName = "collectionTestCursorFilled";
+    private const string _paginationCollectionName = "collectionPaginationTestCursorFilled";
     private const int NUM_DOCS = 25;  // keep this between 21 and 39 (must be 1 full + 1 partial page in size)
+    private const int NUM_DOCS_PAGINATION = 90;  // keep this above 2 * (2 * 20) and below 2 * (3 * 20)
 
     private async Task CreateFilledCollection()
     {
 
-        // TODO replace with from-object creation when PR 125 gets merged and makes it into this branch
+        // TODO replace with from-object creation when PR 136 gets merged and makes it into this branch
         var collectionDefinition = new CollectionDefinition
         {
             Vector = new VectorOptions { Dimension = 2 }
         };
         var collection = await Database.CreateCollectionAsync<CursorTestDocument>(_collectionName, collectionDefinition);
 
-        // TODO uncomment this (now I'm iterating and go for a fast testing cycle with the data already there)
+        /* TODO uncomment this (now it's fast and ugly)
         await collection.DeleteManyAsync(Builders<CursorTestDocument>.CollectionFilter.Empty());
 
         var testDocuments = new List<CursorTestDocument>();
@@ -59,8 +65,42 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         }
         
         await collection.InsertManyAsync(testDocuments);
-        
+        */
+
         FilledCollection = collection;
         FilledCollectionCount = NUM_DOCS;
     }
+
+    private async Task CreateFilledPaginationCollection()
+    {
+
+        // TODO replace with from-object creation when PR 136 gets merged and makes it into this branch
+        var collectionDefinition = new CollectionDefinition
+        {
+            Vector = new VectorOptions { Dimension = 2 }
+        };
+        var collection = await Database.CreateCollectionAsync<CursorPaginationTestDocument>(_paginationCollectionName, collectionDefinition);
+
+        /* TODO uncomment this (now it's fast and ugly)
+        await collection.DeleteManyAsync(Builders<CursorPaginationTestDocument>.CollectionFilter.Empty());
+
+        var testDocuments = new List<CursorPaginationTestDocument>();
+        for (int i = 0; i < NUM_DOCS_PAGINATION; i++)
+        {
+            testDocuments.Add(new CursorPaginationTestDocument
+            {
+                id = i,
+                text = $"doc number {i}",
+                even = i % 2 == 0,
+                vector = new float[] { i, 1.0f }
+            });
+        }
+        
+        await collection.InsertManyAsync(testDocuments);
+        */
+
+        FilledPaginationCollection = collection;
+        FilledPaginationCollectionCount = NUM_DOCS_PAGINATION;
+    }
+
 }

@@ -775,3 +775,12 @@ public class SimpleTwoColumnRow
     public int Id { get; set; }
     public string Name { get; set; }
 }
+
+public class CursorPaginationTestDocument {
+    [DocumentId]
+    public int id { get; set; }
+    public string text { get; set; }
+    public bool even { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] vector { get; set; }
+}
