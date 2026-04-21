@@ -20,7 +20,7 @@ public class SimpleObjectWithVector
 
 public class SimpleObjectWithVectorSearchResult : SimpleObjectWithVector
 {
-    [DocumentMapping(DocumentMappingField.Similarity)]
+    [ColumnMapping(ColumnMappingField.Similarity)]
     public double? Similarity { get; set; }
 }
 
@@ -348,7 +348,7 @@ public class RowEventByDay
 
 public class RowBookWithSimilarity : RowBook
 {
-    [DocumentMapping(DocumentMappingField.Similarity)]
+    [ColumnMapping(ColumnMappingField.Similarity)]
     public double Similarity { get; set; }
 }
 

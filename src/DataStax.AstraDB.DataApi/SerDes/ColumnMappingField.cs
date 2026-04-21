@@ -17,18 +17,10 @@
 namespace DataStax.AstraDB.DataApi.SerDes;
 
 /// <summary>
-/// Special field types for collection documents.
+/// Special field types for table rows.
 /// </summary>
-public enum DocumentMappingField
+public enum ColumnMappingField
 {
-    /// <summary>Serializes as "$vectorize" for a string to vectorize</summary>
-    Vectorize,
-    /// <summary>Serializes as "$vector" for vector data.</summary>
-    Vector,
     /// <summary>On read operations only, deserializes the similarity result for vector comparisons</summary>
     Similarity,
-    /// <summary>Serializes as "$lexical" for lexical data.</summary>
-    Lexical,
-    /// <summary>Serializes as "$hybrid" for hybrid data.</summary>
-    Hybrid
 }

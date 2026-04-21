@@ -124,6 +124,10 @@ public class FindEnumerator<T, TResult, TSort> : IAsyncEnumerable<TResult>, IEnu
     /// var similarity = result.Similarity;
     /// </code>
     /// </example>
+    /// <remarks>
+    /// When searching on Tables, the field in the row class should be given the
+    /// attribute <see cref="SerDes.ColumnMappingAttribute"/> instead.
+    /// </remarks>
     public FindEnumerator<T, TResult, TSort> IncludeSimilarity(bool includeSimilarity)
     {
         return UpdateOptions(options => options.IncludeSimilarity = includeSimilarity);
