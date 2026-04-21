@@ -348,33 +348,21 @@ public class CollectionCursorTests
         ).InitialPageState(nps1);
         var page2 = await cur2.FetchNextPageAsync();
         var ids2 = page2.Result.Select(d => d.id).ToList();
-        // TODO: log inspection shows that the initial page state is not being sent in the request.
-        //       Hence, the following fails (being a string and not a null)
-        //       Also (right below), all 'pages' above are actually the same 20 docs
-        // Assert.Null(page2.NextPageState);
+        Assert.Null(page2.NextPageState);
 
         var expectedIds = new List<int>();
         for (int id = 0; id < _fixture.FilledPaginationCollectionCount; id+=2){ expectedIds.Add(id); }
         var retrievedIds = ids0.Concat(ids1).Concat(ids2).ToList();
-        // TODO this fails because of the above pagestate not making it to the requests:
-        // Assert.Equal(retrievedIds.Count, retrievedIds.Distinct().Count());
-        // TODO this fails likewise because of the above pagestate not making it to the requests:
-        // Assert.Equal(expectedIds, retrievedIds.OrderBy(x => x).ToList());
+        Assert.Equal(expectedIds, retrievedIds.OrderBy(x => x).ToList());
 
         // Fetching consecutive pages on a given cursor
         var cur0x = filledPagCollection.Find(
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
         await cur0x.FetchNextPageAsync();
-        // TODO this fails with "Cannot fetch next page when the current page (the buffer) is not empty"
-        //      But a cursor should be usable to fetch page after page (as long as it doesn't mix pagination and item-by-item uncleanly), no?
-        //          (maybe what is missing here is that once the pageful is returned to the caller the buffer should be emptied)
-        //      So currently the following line errors and the three assertions fail:
-        /*
         var page1x = await cur0x.FetchNextPageAsync();
         Assert.Equal(page1x.NextPageState, page1.NextPageState);
-        Assert.Equal(page1x.Result, page1.Result);
+        Assert.Equivalent(page1x.Result, page1.Result);
         Assert.Equal(page1x.SortVector, page1.SortVector);
-        */
 
         // Forbidden: mixing pagination and ordinary usage
         var cur0y = filledPagCollection.Find(

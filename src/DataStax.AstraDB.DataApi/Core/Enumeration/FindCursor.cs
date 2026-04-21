@@ -119,6 +119,11 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
         FindOptions = options.Clone();
         CommandOptions = commandOptions;
         FetchPageFunc = fetchPage;
+
+        if (options.PageState != null)
+        {
+            _currentPage = new FindPage<TResult>(options.PageState, new List<TResult>(), null);
+        }
     }
     
     /// <summary>
