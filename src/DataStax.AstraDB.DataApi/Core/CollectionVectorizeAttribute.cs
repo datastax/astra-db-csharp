@@ -26,11 +26,58 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class CollectionVectorizeAttribute : BaseVectorizeAttribute
 {
     /// <summary>The similarity metric to use for vector comparisons.</summary>
-    public SimilarityMetric Metric { get; set; } = SimilarityMetric.Cosine;
+    public SimilarityMetric? Metric { get; set; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="CollectionVectorizeAttribute"/> with default settings.
     /// </summary>
     public CollectionVectorizeAttribute() { }
+
+    /// <summary>
+    /// Initializes a new instance with the specified provider and model name and optionally other settings.
+    /// </summary>
+    /// <param name="provider">The name of the embedding service provider.</param>
+    /// <param name="modelName">The model name to use for embedding generation.</param>
+    /// <param name="dimension">Optional: The number of dimensions for the generated vector.</param>
+    /// <param name="authenticationPairs">Optional: Key-value pairs for authenticating with the embedding service.</param>
+    /// <param name="parameterPairs">Optional: Additional key-value parameter pairs for the embedding service.</param>
+    public CollectionVectorizeAttribute(
+        string provider,
+        string modelName,
+        int dimension = -1,
+        string[] authenticationPairs = null,
+        object[] parameterPairs = null)
+    {
+        Provider = provider;
+        ModelName = modelName;
+        Dimension = dimension == -1 ? null : dimension;
+        AuthenticationPairs = authenticationPairs ?? Array.Empty<string>();
+        ParameterPairs = parameterPairs ?? Array.Empty<object>();
+    }
+
+    /// <summary>
+    /// Initializes a new instance with the specified provider and model name and optionally other settings.
+    /// </summary>
+    /// <param name="provider">The name of the embedding service provider.</param>
+    /// <param name="modelName">The model name to use for embedding generation.</param>
+    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
+    /// <param name="dimension">Optional: The number of dimensions for the generated vector.</param>
+    /// <param name="authenticationPairs">Optional: Key-value pairs for authenticating with the embedding service.</param>
+    /// <param name="parameterPairs">Optional: Additional key-value parameter pairs for the embedding service.</param>
+    public CollectionVectorizeAttribute(
+        string provider,
+        string modelName,
+        SimilarityMetric metric,
+        int dimension = -1,
+        string[] authenticationPairs = null,
+        object[] parameterPairs = null)
+    {
+        Provider = provider;
+        ModelName = modelName;
+        Metric = metric;
+        Dimension = dimension == -1 ? null : dimension;
+        AuthenticationPairs = authenticationPairs ?? Array.Empty<string>();
+        ParameterPairs = parameterPairs ?? Array.Empty<object>();
+    }
 
 }

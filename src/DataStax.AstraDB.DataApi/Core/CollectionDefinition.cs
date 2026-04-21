@@ -113,11 +113,14 @@ public class CollectionDefinition
             {
                 definition.Vector = new VectorOptions();
             }
-            if (vectorAttribute.Dimension != -1)
+            if (vectorAttribute.Dimension.HasValue && vectorAttribute.Dimension.Value != -1)
             {
-                definition.Vector.Dimension = vectorAttribute.Dimension;
+                definition.Vector.Dimension = vectorAttribute.Dimension.Value;
             }
-            definition.Vector.Metric = vectorAttribute.Metric;
+            if (vectorAttribute.Metric.HasValue)
+            {
+                definition.Vector.Metric = vectorAttribute.Metric.Value;
+            }
             if (!string.IsNullOrEmpty(vectorAttribute.SourceModel))
             {
                 definition.Vector.SourceModel = vectorAttribute.SourceModel;
@@ -131,11 +134,14 @@ public class CollectionDefinition
             {
                 definition.Vector = new VectorOptions();
             }
-            if (vectorizeAttribute.Dimension != -1)
+            if (vectorizeAttribute.Dimension.HasValue && vectorizeAttribute.Dimension.Value != -1)
             {
-                definition.Vector.Dimension = vectorizeAttribute.Dimension;
+                definition.Vector.Dimension = vectorizeAttribute.Dimension.Value;
             }
-            definition.Vector.Metric = vectorizeAttribute.Metric;
+            if (vectorizeAttribute.Metric.HasValue)
+            {
+                definition.Vector.Metric = vectorizeAttribute.Metric.Value;
+            }
             if (!string.IsNullOrEmpty(vectorizeAttribute.Provider))
             {
                 definition.Vector.Service = new VectorServiceOptions()

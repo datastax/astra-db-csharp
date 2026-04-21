@@ -28,7 +28,7 @@ public class CollectionVectorAttribute : Attribute
     public int? Dimension { get; set; } = null;
 
     /// <summary>The similarity metric to use for vector comparisons.</summary>
-    public SimilarityMetric Metric { get; set; } = SimilarityMetric.Cosine;
+    public SimilarityMetric? Metric { get; set; }
 
     /// <summary>
     /// Configures the index with the fastest settings for a given source of embeddings vectors.
@@ -40,5 +40,34 @@ public class CollectionVectorAttribute : Attribute
     /// Initializes a new instance of <see cref="CollectionVectorAttribute"/> with default settings.
     /// </summary>
     public CollectionVectorAttribute() { }
+
+    /// <summary>
+    /// Initializes a new instance, optionally specifying various settings.
+    /// </summary>
+    /// <param name="dimension">Optional. The number of dimensions for the vector.</param>
+    /// <param name="sourceModel">Optional. The source model for embeddings optimization.</param>
+    public CollectionVectorAttribute(
+        int dimension = -1,
+        string sourceModel = null)
+    {
+        Dimension = dimension == -1 ? null : dimension;
+        SourceModel = sourceModel;
+    }
+
+    /// <summary>
+    /// Initializes a new instance with the specified metric and optionally other settings.
+    /// </summary>
+    /// <param name="metric">The similarity metric to use for vector comparisons.</param>
+    /// <param name="dimension">Optional. The number of dimensions for the vector.</param>
+    /// <param name="sourceModel">Optional. The source model for embeddings optimization.</param>
+    public CollectionVectorAttribute(
+        SimilarityMetric metric,
+        int dimension = -1,
+        string sourceModel = null)
+    {
+        Metric = metric;
+        Dimension = dimension == -1 ? null : dimension;
+        SourceModel = sourceModel;
+    }
 
 }

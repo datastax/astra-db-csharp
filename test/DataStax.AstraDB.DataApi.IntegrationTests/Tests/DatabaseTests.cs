@@ -348,8 +348,126 @@ public class DatabaseTests
         await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
     }
 
-    [Fact]
-    public async Task CreateCollection_WithVectorizeHeader()
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateCollection_WithVectorSD_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorAttributeSD";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorAttributeSD>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorAttributeSD
+            {
+                Id = "the id",
+                VectorEmbeddings = new float[] { 0.1f, -0.2f, 0.3f }
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateCollection_WithVectorD_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorAttributeD";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorAttributeD>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorAttributeD
+            {
+                Id = "the id",
+                VectorEmbeddings = new float[] { 0.1f, -0.2f, 0.3f }
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateCollection_WithVectorizeNone_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorize";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttribute>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorizeAttribute
+            {
+                Id = 123,
+                Name = "bla"
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateCollection_WithVectorizeSharedSecret_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorizeShSecret";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeShSecret>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeShSecret
+            {
+                Id = 123,
+                Name = "bla"
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateCollection_WithVectorizeSharedSecretDoubleAttribute_Typed()
+    {
+        var collectionName = "coll_SimpleObjectWithVectorizeShSecret2A";
+        var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeShSecret2A>();
+        Assert.NotNull(collection);
+        Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeShSecret2A
+            {
+                Id = 123,
+                Name = "bla"
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    public async Task CreateGetCollection_WithVectorizeHeader_Typed()
+    {
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var collectionName = "coll_SimpleObjectWithVectorizeHeader";
+        // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
+        var createdCollection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
+        Assert.NotNull(createdCollection);
+        Assert.Equal(collectionName, createdCollection.CollectionName);
+        await createdCollection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeHeader
+            {
+                Id = 123,
+                Name = "bla one"
+            });
+
+        // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
+        var gottenCollection = fixture.Database.GetCollection<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
+        Assert.NotNull(gottenCollection);
+        Assert.Equal(collectionName, gottenCollection.CollectionName);
+        await gottenCollection.InsertOneAsync(new SimpleObjectWithVectorizeAttributeHeader
+            {
+                Id = 321,
+                Name = "bla two"
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateCollection_WithVectorizeNone_Untyped()
     {
         var collectionName = "collectionVectorizeHeader";
         var options = new CollectionDefinition
@@ -368,29 +486,84 @@ public class DatabaseTests
         var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
         Assert.NotNull(collection);
         Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new Document
+            {
+                { "$vectorize", "bla" }
+            });
+
         await fixture.Database.DropCollectionAsync(collectionName);
     }
 
-    [Fact]
-    public async Task CreateCollection_WithVectorizeSharedKey()
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateCollection_WithVectorizeSharedSecret_Untyped()
     {
-        var collectionName = "collectionVectorizeSharedKey";
+        var collectionName = "collectionVectorizesharedSecret_Untyped";
         var options = new CollectionDefinition
         {
             Vector = new VectorOptions
             {
-                Dimension = 1024,
+                Dimension = 1536,
                 Metric = SimilarityMetric.DotProduct,
                 Service = new VectorServiceOptions()
                 {
-                    Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    Provider = "openai",
+                    ModelName = "text-embedding-3-small",
+                    Authentication = new Dictionary<string, string>
+                    {
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI" }
+                    }
                 }
             }
         };
         var collection = await fixture.Database.CreateCollectionAsync(collectionName, options);
         Assert.NotNull(collection);
         Assert.Equal(collectionName, collection.CollectionName);
+
+        await collection.InsertOneAsync(new Document
+            {
+                { "$vectorize", "bla" }
+            });
+
+        await fixture.Database.DropCollectionAsync(collectionName);
+    }
+
+    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    public async Task CreateGetCollection_WithVectorizeHeader_Untyped()
+    {
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var collectionName = "collection_WithVectorizeHeader_Untyped";
+        var options = new CollectionDefinition
+        {
+            Vector = new VectorOptions
+            {
+                Dimension = 1536,
+                Metric = SimilarityMetric.DotProduct,
+                Service = new VectorServiceOptions()
+                {
+                    Provider = "openai",
+                    ModelName = "text-embedding-3-small",
+                }
+            }
+        };
+        var createdCollection = await fixture.Database.CreateCollectionAsync(collectionName, options, headerOptions);
+        Assert.NotNull(createdCollection);
+        Assert.Equal(collectionName, createdCollection.CollectionName);
+        await createdCollection.InsertOneAsync(new Document
+            {
+                { "$vectorize", "bla one" }
+            });
+
+        var gottenCollection = fixture.Database.GetCollection(collectionName, headerOptions);
+        Assert.NotNull(gottenCollection);
+        Assert.Equal(collectionName, gottenCollection.CollectionName);
+        await gottenCollection.InsertOneAsync(new Document
+            {
+                { "$vectorize", "bla two" }
+            });
+
         await fixture.Database.DropCollectionAsync(collectionName);
     }
 
@@ -503,6 +676,227 @@ public class DatabaseTests
         finally
         {
             await fixture.Database.DropTableAsync<SimpleRowObject>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateTable_WithVectorizeNone_Typed()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBookVectorize>();
+
+            await table.InsertOneAsync(new RowBookVectorize() {Title = "t", Author = "a", NumberOfPages = 123});
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorize>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted in RowBookVectorizeSharedSecret")]
+    public async Task CreateTable_WithVectorizeSharedSecret_Typed()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBookVectorizeSharedSecret>();
+
+            await table.InsertOneAsync(new RowBookVectorizeSharedSecret() {Title = "t", Author = "a", NumberOfPages = 123});
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorizeSharedSecret>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted in RowBookVectorizeSharedSecretWithParameters")]
+    public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Typed()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBookVectorizeSharedSecretWithParameters>();
+
+            await table.InsertOneAsync(new RowBookVectorizeSharedSecretWithParameters() {Title = "t", Author = "a", NumberOfPages = 123});
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorizeSharedSecretWithParameters>();
+        }
+    }
+
+    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    public async Task CreateGetTable_WithVectorizeHeader_Typed()
+    {
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        try
+        {
+            var createdTable = await fixture.Database.CreateTableAsync<RowBookVectorizeHeaderBased>(ctHeaderOptions);
+            await createdTable.InsertOneAsync(new RowBookVectorizeHeaderBased() {Title = "t one", Author = "a one", NumberOfPages = 123});
+
+            var gottenTable = fixture.Database.GetTable<RowBookVectorizeHeaderBased>(gtHeaderOptions);
+            await gottenTable.InsertOneAsync(new RowBookVectorizeHeaderBased() {Title = "t two", Author = "a two", NumberOfPages = 456});
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorizeHeaderBased>();
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Generally skipped, this is to demonstrate creation")]
+    public async Task CreateTable_WithVectorizeNone_Untyped()
+    {
+        var tableName = "bookTestTableVectorizeNone_Untyped";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddColumn("Title", DataApiType.Text())
+                .AddColumn("NumberOfPages", DataApiType.Int())
+                .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
+                {
+                    Provider = "nvidia",
+                    ModelName = "NV-Embed-QA"
+                }))
+                .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+
+            await table.InsertOneAsync(new Row() {
+                {"Title", "t"},
+                {"Author", "a"},
+                {"NumberOfPages", 123}
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateTable_WithVectorizeSharedSecret_Untyped()
+    {
+        var tableName = "bookTestTableVectorizeSharedSecret_Untyped";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddColumn("Title", DataApiType.Text())
+                .AddColumn("NumberOfPages", DataApiType.Int())
+                .AddColumn("Author", DataApiType.Vectorize(1536, new VectorServiceOptions
+                {
+                    Provider = "openai",
+                    ModelName = "text-embedding-3-small",
+                    Authentication = new Dictionary<string, string>
+                    {
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI" }
+                    }
+                }))
+                .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+
+            await table.InsertOneAsync(new Row() {
+                {"Title", "t"},
+                {"Author", "a"},
+                {"NumberOfPages", 123}
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Untyped()
+    {
+        var tableName = "bookTestTableVeczeShdSecretWParams_Untyped";
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddColumn("Title", DataApiType.Text())
+                .AddColumn("NumberOfPages", DataApiType.Int())
+                .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
+                {
+                    Provider = "voyageAI",
+                    ModelName = "voyage-2",
+                    Authentication = new Dictionary<string, string>
+                    {
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" }
+                    },
+                    Parameters = new Dictionary<string, object>
+                    {
+                        { "autoTruncate", false }
+                    }
+                }))
+                .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
+
+            var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
+
+            await table.InsertOneAsync(new Row() {
+                {"Title", "t"},
+                {"Author", "a"},
+                {"NumberOfPages", 123}
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    public async Task CreateGetTable_WithVectorizeHeader_Untyped()
+    {
+        var tableName = "bookTestTableVectorizeHeader_Untyped";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        try
+        {
+            var createDefinition = new TableDefinition()
+                .AddColumn("Title", DataApiType.Text())
+                .AddColumn("NumberOfPages", DataApiType.Int())
+                .AddColumn("Author", DataApiType.Vectorize(1536, new VectorServiceOptions
+                {
+                    Provider = "openai",
+                    ModelName = "text-embedding-3-small",
+                }))
+                .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
+
+            var createdTable = await fixture.Database.CreateTableAsync(tableName, createDefinition, ctHeaderOptions);
+            await createdTable.InsertOneAsync(new Row() {
+                {"Title", "t one"},
+                {"Author", "a one"},
+                {"NumberOfPages", 123}
+            });
+
+            var gottenTable = fixture.Database.GetTable(tableName, gtHeaderOptions);
+            await gottenTable.InsertOneAsync(new Row() {
+                {"Title", "t two"},
+                {"Author", "a two"},
+                {"NumberOfPages", 456}
+            });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowBookVectorizeHeaderBased>();
         }
     }
 

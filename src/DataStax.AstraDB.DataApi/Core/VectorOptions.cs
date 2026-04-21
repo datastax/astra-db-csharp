@@ -33,7 +33,7 @@ public class VectorOptions
     /// The similarity metric to use
     /// </summary>
     [JsonPropertyName("metric")]
-    public SimilarityMetric Metric { get; set; }
+    public SimilarityMetric Metric { get; set; } = SimilarityMetric.Cosine;
 
     /// <summary>
     /// Options for the service providing the vectorization

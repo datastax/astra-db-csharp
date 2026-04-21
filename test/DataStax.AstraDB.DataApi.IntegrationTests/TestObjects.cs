@@ -1,6 +1,7 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
+using DataStax.AstraDB.DataApi.Collections;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
@@ -23,6 +24,31 @@ public class SimpleObjectWithVectorSearchResult : SimpleObjectWithVector
     public double? Similarity { get; set; }
 }
 
+[CollectionName("coll_SimpleObjectWithVectorAttributeSD")]
+[CollectionVector(
+    SimilarityMetric.Euclidean,
+    3
+)]
+public class SimpleObjectWithVectorAttributeSD
+{
+    [DocumentId]
+    public string Id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] VectorEmbeddings { get; set; }
+}
+
+[CollectionName("coll_SimpleObjectWithVectorAttributeD")]
+[CollectionVector(
+    3
+)]
+public class SimpleObjectWithVectorAttributeD
+{
+    [DocumentId]
+    public string Id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] VectorEmbeddings { get; set; }
+}
+
 public class SimpleObjectWithVectorize
 {
     [DocumentId]
@@ -32,7 +58,12 @@ public class SimpleObjectWithVectorize
     public string StringToVectorize => Name;
 }
 
-[CollectionVectorize(Provider = "nvidia", ModelName = "NV-Embed-QA", Metric = SimilarityMetric.Cosine)]
+[CollectionName("coll_SimpleObjectWithVectorize")]
+[CollectionVectorize(
+    "nvidia",
+    "nvidia/nv-embedqa-e5-v5",
+    SimilarityMetric.Cosine
+)]
 public class SimpleObjectWithVectorizeAttribute
 {
     [DocumentId]
@@ -42,6 +73,49 @@ public class SimpleObjectWithVectorizeAttribute
     public string StringToVectorize => Name;
 }
 
+[CollectionName("coll_SimpleObjectWithVectorizeShSecret")]
+[CollectionVectorize(
+    Provider = "openai", ModelName = "text-embedding-3-small",
+    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+)]
+public class SimpleObjectWithVectorizeAttributeShSecret
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
+
+[CollectionName("coll_SimpleObjectWithVectorizeShSecret2A")]
+[CollectionVector(
+    SimilarityMetric.Euclidean,
+    123,
+    SourceModel="bert"
+)]
+[CollectionVectorize(
+    Provider = "openai", ModelName = "text-embedding-3-small",
+    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+)]
+public class SimpleObjectWithVectorizeAttributeShSecret2A
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
+
+[CollectionName("coll_SimpleObjectWithVectorizeHeader")]
+[CollectionVectorize(Provider = "openai", ModelName = "text-embedding-3-small")]
+public class SimpleObjectWithVectorizeAttributeHeader
+{
+    [DocumentId]
+    public int? Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
 
 [LexicalOptions(
     TokenizerName = "standard",
@@ -176,6 +250,55 @@ public class RowBookVectorize
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
     [ColumnVectorize("nvidia", "NV-Embed-QA", dimension: 1024)]
+    public object Author { get; set; }
+    [ColumnPrimaryKey(2)]
+    public int NumberOfPages { get; set; }
+    public DateTime? DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
+[TableName("bookTestTableVectorizeHeaderBased")]
+public class RowBookVectorizeHeaderBased
+{
+    [ColumnPrimaryKey(1)]
+    public string Title { get; set; }
+    [ColumnVectorize("openai", "text-embedding-3-small", dimension: 1536)]
+    public object Author { get; set; }
+    [ColumnPrimaryKey(2)]
+    public int NumberOfPages { get; set; }
+    public DateTime? DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
+[TableName("bookTestTableVectorizeSharedSecret")]
+public class RowBookVectorizeSharedSecret
+{
+    [ColumnPrimaryKey(1)]
+    public string Title { get; set; }
+    [ColumnVectorize(
+        "openai", "text-embedding-3-small", dimension: 1536,
+        authenticationPairs: new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+    )]
+    public object Author { get; set; }
+    [ColumnPrimaryKey(2)]
+    public int NumberOfPages { get; set; }
+    public DateTime? DueDate { get; set; }
+    public HashSet<string> Genres { get; set; }
+    public float Rating { get; set; }
+}
+
+[TableName("bookTestTableVeczeShdSecretWithParams")]
+public class RowBookVectorizeSharedSecretWithParameters
+{
+    [ColumnPrimaryKey(1)]
+    public string Title { get; set; }
+    [ColumnVectorize(
+        "voyageAI", "voyage-2",
+        authenticationPairs: new string[] { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" },
+        parameterPairs: new object[] { "autoTruncate", false }
+    )]
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
     public int NumberOfPages { get; set; }
