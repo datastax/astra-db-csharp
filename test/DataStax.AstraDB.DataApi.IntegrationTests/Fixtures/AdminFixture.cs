@@ -6,32 +6,32 @@ namespace DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 
 public class AdminFixture : BaseFixture
 {
-	public string DatabaseName { get; set; }
-	public Guid DatabaseId { get; set; }
+    public string DatabaseName { get; set; }
+    public Guid DatabaseId { get; set; }
 
-	public AdminFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "admin")
-	{
-		DatabaseName = assemblyFixture.DatabaseName;
-		var dbId = GetDatabaseIdFromUrl(assemblyFixture.DatabaseUrl);
-		if (dbId != null)
+    public AdminFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "admin")
+    {
+        DatabaseName = assemblyFixture.DatabaseName;
+        var dbId = GetDatabaseIdFromUrl(assemblyFixture.DatabaseUrl);
+        if (dbId != null)
         {
             DatabaseId = dbId.Value;
         }
-	}
+    }
 
-	public IDatabaseAdmin CreateAdmin(Database database = null)
-	{
-		return (database ?? Database).GetAdmin();
-	}
+    public IDatabaseAdmin CreateAdmin(Database database = null)
+    {
+        return (database ?? Database).GetAdmin();
+    }
 
-	public static Guid? GetDatabaseIdFromUrl(string url)
-	{
-		if (string.IsNullOrWhiteSpace(url))
-			return null;
+    public static Guid? GetDatabaseIdFromUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return null;
 
-		// Match the first UUID in the URL
-		var match = Regex.Match(url, @"([0-9a-fA-F-]{36})");
-		return match.Success ? Guid.Parse(match.Value) : null;
-	}
+        // Match the first UUID in the URL
+        var match = Regex.Match(url, @"([0-9a-fA-F-]{36})");
+        return match.Success ? Guid.Parse(match.Value) : null;
+    }
 
 }
