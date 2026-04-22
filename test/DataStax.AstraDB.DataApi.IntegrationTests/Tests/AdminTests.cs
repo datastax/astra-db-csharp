@@ -582,8 +582,9 @@ public class AdminTests
 		For dropping, you will need to hardcode the proper database Guid in the test.
     */
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabase
-	[Fact(Skip = AdminCollection.SkipMessage)]
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNonblocking
+	// [Fact(Skip = AdminCollection.SkipMessage)]
+	[Fact]
 	public void CreateDatabaseNonblocking()
 	{
 		var dbName = "test-db-create-x";
@@ -601,9 +602,13 @@ public class AdminTests
 		);
 
 		// todo: better test result here; for now we assume if no error, this was successful
+		var dbStatus = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(admin.Id);
+		Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
+			|| dbStatus == AstraDatabaseStatus.INITIALIZING
+			|| dbStatus == AstraDatabaseStatus.PENDING);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNonblockingAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task CreateDatabaseNonblockingAsync()
 	{
@@ -662,7 +667,7 @@ public class AdminTests
 		Assert.NotNull(tableNames);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabase
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseNonblockingSync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void DropDatabaseNonblockingSync()
 	{
@@ -674,7 +679,7 @@ public class AdminTests
 		fixture.Client.GetAstraDatabasesAdmin().DropDatabase(dbGuid, waitingOptions);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseNonblockingAsync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DropDatabaseNonblockingAsync()
 	{
@@ -686,7 +691,7 @@ public class AdminTests
 		await fixture.Client.GetAstraDatabasesAdmin().DropDatabaseAsync(dbGuid, waitingOptions);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlocking
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseBlockingSync
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public void DropDatabaseBlockingSync()
 	{

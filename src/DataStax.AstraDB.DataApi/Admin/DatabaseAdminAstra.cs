@@ -58,6 +58,11 @@ namespace DataStax.AstraDB.DataApi.Admin
         }
 
         /// <summary>
+        /// The database Guid (as a string).
+        /// </summary>
+        public string Id => _id.ToString();
+
+        /// <summary>
         /// Gets the <see cref="Database"/> instance associated with this admin context.
         /// </summary>
         /// <returns>

@@ -87,6 +87,11 @@ public class Database
     /// </summary>
     public string Keyspace => CommandOptions.Merge(OptionsTree).Keyspace;
 
+    /// <summary>
+    /// The database Guid (as a string). If no Guid is known, an empty string is returned.
+    /// </summary>
+    public string Id => _id == null? "" : _id.ToString();
+
     internal string ApiEndpoint => _apiEndpoint;
     internal DataAPIClient Client => _client;
     internal Guid? DatabaseId => _id;
