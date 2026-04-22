@@ -34,7 +34,4 @@ public class RerankOptions
     /// </summary>
     [JsonPropertyName("service")]
     public RerankServiceOptions Service { get; set; }
-
-    //TODO: When implementing fluent option, have default for currently available service:
-    // public RerankOptions() { Service = new RerankServiceOptions() { ModelName = "nvidia/llama-3.2-nv-rerankqa-1b-v2", Provider = "nvidia" }; }
 }

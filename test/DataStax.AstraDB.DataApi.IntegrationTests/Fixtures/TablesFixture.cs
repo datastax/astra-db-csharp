@@ -257,46 +257,4 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
         await UntypedTableCompoundPrimaryKey.InsertManyAsync(rows);
     }
 
-    // private async Task CreateDeleteTable()
-    // {
-    //     var rows = new List<RowBook>();
-    //     for (var i = 0; i < 10; i++)
-    //     {
-    //         var row = new RowBook()
-    //         {
-    //             Title = "Title " + i,
-    //             Author = "Author Number" + i,
-    //             NumberOfPages = 400 + i,
-    //             DueDate = DateTime.Now - TimeSpan.FromDays(1),
-    //             Genres = (i % 2 == 0)
-    //                 ? new HashSet<string> { "History", "Biography" }
-    //                 : new HashSet<string> { "Fiction", "History" },
-    //             Rating = (float)new Random().NextDouble()
-    //         };
-    //         rows.Add(row);
-    //     }
-    //     for (var i = 10; i < 20; i++)
-    //     {
-    //         var row = new RowBook()
-    //         {
-    //             Title = "Title " + i,
-    //             Author = "AuthorDeleteMe",
-    //             NumberOfPages = 22,
-    //             DueDate = DateTime.Now - TimeSpan.FromDays(1),
-    //             Genres = (i % 2 == 0)
-    //                 ? new HashSet<string> { "History", "Biography" }
-    //                 : new HashSet<string> { "Fiction", "History" },
-    //             Rating = (float)new Random().NextDouble()
-    //         };
-    //         rows.Add(row);
-    //     }
-    //     var table = await Database.CreateTableAsync<RowBook>(_deleteTableName);
-    //     await table.CreateIndexAsync("delete_table_number_of_pages_index", "NumberOfPages");
-    //     await table.CreateVectorIndexAsync("delete_table_author_vector_index", (b) => b.Author, Builders.TableIndex.Vector());
-    //     await table.CreateIndexAsync("delete_table_due_date_index", (b) => b.DueDate);
-
-    //     await table.InsertManyAsync(rows);
-    //     DeleteTable = table;
-    // }
-
 }

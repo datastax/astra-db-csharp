@@ -8,10 +8,6 @@ using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
 
-// TODO: this whole file needs a stronger verification,
-// i.e. reading index metadata in each test and checking details match expectation.
-// For now, part of the testing is manual payload inspection in the logs.
-
 [Collection("TableIndexes")]
 public class TableIndexesTests
 {
