@@ -62,7 +62,8 @@ public class SimpleObjectWithVectorize
 [CollectionName("coll_SimpleObjectWithVectorize")]
 [CollectionVectorize(
     "nvidia",
-    "nvidia/nv-embedqa-e5-v5",
+    "NV-Embed-QA",
+    // "nvidia/nv-embedqa-e5-v5", // TODO restore the newer model
     SimilarityMetric.Cosine
 )]
 public class SimpleObjectWithVectorizeAttribute

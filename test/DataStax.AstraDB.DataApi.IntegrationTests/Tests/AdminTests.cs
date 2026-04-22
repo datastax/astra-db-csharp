@@ -382,8 +382,8 @@ public class AdminTests
 
 	}
 
-	// [SkipWhenAstra]
-	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
+	[SkipWhenAstra]
+	[Fact]
 	public async Task DatabaseAdminDataAPI_FindEmbeddingProvidersAsync()
 	{
 
@@ -416,8 +416,8 @@ public class AdminTests
 
 	}
 
-	// [SkipWhenAstra]
-	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
+	[SkipWhenAstra]
+	[Fact]
 	public void DatabaseAdminDataAPI_FindEmbeddingProvidersSync()
 	{
 
@@ -450,8 +450,8 @@ public class AdminTests
 
 	}
 
-	// [SkipWhenAstra]
-	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
+	[SkipWhenAstra]
+	[Fact]
 	public async Task DatabaseAdminDataAPI_FindRerankingProvidersAsync()
 	{
 
@@ -484,8 +484,8 @@ public class AdminTests
 
 	}
 
-	// [SkipWhenAstra]
-	[Fact(Skip = "Re-enable with the SkipWhenAstra once PR 115 brings that in")]
+	[SkipWhenAstra]
+	[Fact]
 	public void DatabaseAdminDataAPI_FindRerankingProvidersSync()
 	{
 
@@ -528,22 +528,6 @@ public class AdminTests
 		Assert.NotNull(regions);
 		Assert.NotEmpty(regions);
 	}
-
-	// [SkipWhenNotAstra] TODO uncomment when FARR is added back
-	// [Fact]
-	// public async Task DatabaseAdminAstra_GetRerankingProvidersAsync()
-	// {
-	// 	var adminOptions = new CommandOptions
-	// 	{
-	// 		Token = fixture.Client.ClientOptions.Token,
-	// 	};
-	// 	var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
-	//
-	// 	var result = await daa.FindRerankingProvidersAsync();
-	// 	Assert.NotNull(result);
-	// 	Assert.NotEmpty(result.RerankingProviders);
-	//
-	// }
 
 	[SkipWhenNotAstra]
 	[Fact()]
@@ -811,10 +795,10 @@ public class AdminTests
 		Assert.Contains(keyspaceName, daa.ListKeyspaces());
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminNonAstra_CreateKeyspaceAsync_Update
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminDataAPI_CreateKeyspaceAsync_Update
 	[SkipWhenAstra]
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DatabaseAdminNonAstra_CreateKeyspaceAsync_Update()
+	public async Task DatabaseAdminDataAPI_CreateKeyspaceAsync_Update()
 	{
 		/* Complete verification involves manual inspection of the logs
 		// to ensure the Url sequence for the various findCollections is as follows:
@@ -876,10 +860,10 @@ public class AdminTests
 
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminNonAstra_CreateKeyspaceAsync_WithOptions
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminDataAPI_CreateKeyspaceAsync_WithOptions
 	[SkipWhenAstra]
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DatabaseAdminNonAstra_CreateKeyspaceAsync_WithOptions()
+	public async Task DatabaseAdminDataAPI_CreateKeyspaceAsync_WithOptions()
 	{
 		var keyspaceName = "throwaway_keyspace_with_options";
 		var adminOptions = new BlockingCommandOptions
@@ -898,7 +882,7 @@ public class AdminTests
 		Assert.Contains(keyspaceName, daa.ListKeyspaces());
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync
+	// dotnet test --filter FullyQualifiedName=DatSaStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_DropKeyspaceAsync
 	[SkipWhenNotAstra]
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_DropKeyspaceAsync()
@@ -915,10 +899,10 @@ public class AdminTests
 		Assert.False(daa.DoesKeyspaceExist(keyspaceName));
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminNonAstra_DropKeyspaceAsync
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminDataAPI_DropKeyspaceAsync
 	[SkipWhenAstra]
 	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DatabaseAdminNonAstra_DropKeyspaceAsync()
+	public async Task DatabaseAdminDataAPI_DropKeyspaceAsync()
 	{
 		var keyspaceName = "drop_this_keyspace_x";
 		var adminOptions = new BlockingCommandOptions

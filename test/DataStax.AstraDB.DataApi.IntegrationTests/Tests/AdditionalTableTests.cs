@@ -651,8 +651,10 @@ public class AdditionalTableTests
             Assert.Contains("rating", findUntyped);
             Assert.Null(findUntyped["rating"]);
             Assert.Contains("genres", findUntyped);
+
             Assert.NotNull(findUntyped["genres"]);
-            Assert.Empty(findUntyped["genres"] as List<object>);
+            Assert.IsType<HashSet<object>>(findUntyped["genres"]);
+            Assert.Empty(findUntyped["genres"] as HashSet<object>);
 
             var findManyUntypedResult = tableNotTyped.Find().ToList();
             foreach (var item in findManyUntypedResult)
@@ -662,7 +664,8 @@ public class AdditionalTableTests
                 Assert.Null(item["rating"]);
                 Assert.Contains("genres", item);
                 Assert.NotNull(item["genres"]);
-                Assert.Empty(item["genres"] as List<object>);
+                Assert.IsType<HashSet<object>>(item["genres"]);
+                Assert.Empty(item["genres"] as HashSet<object>);
             }
         }
         catch (Exception ex)
