@@ -110,12 +110,9 @@ public class UserDefinedTypesTests
             var table = await fixture.Database.CreateTableAsync<UdtTestMinimal>(tableName);
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
-            var filter = Builders<UdtTestMinimal>.TableFilter.Eq(b => b.Udt.Name, "Test 3");
 
-            //TODO: Can you filter on UDT fields?
-            // var result = await table.FindOneAsync(filter);
-            // Assert.NotNull(result);
-            // Assert.Equal(2, result.Id);
+            // No filtering on UDT scalar column is allowed.
+            // TODO test filtering on e.g. a List<UDT> column (passing the full UDT in a $in or $nin)
         }
         catch (Exception ex)
         {
