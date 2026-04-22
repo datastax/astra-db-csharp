@@ -206,6 +206,32 @@ public class TableIndexesTests
 
             var insertResult = await TableIndexesFixture.AddTableRows(table);
             Assert.Equal(3, insertResult.InsertedCount);
+
+            // a few failing creations to test payload construction (logs must be manually inspected for this)
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{},"column":"category"}}}
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { CaseSensitive = false }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":false},"column":"category"}}}
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { CaseSensitive = false, Ascii = false }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":false,"ascii":false},"column":"category"}}}
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { CaseSensitive = false, Ascii = false, Normalize = false }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":false,"normalize":false,"ascii":false},"column":"category"}}}
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { CaseSensitive = true }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":true},"column":"category"}}}
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { CaseSensitive = true, Ascii = true, Normalize = true }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":true,"normalize":true,"ascii":true},"column":"category"}}}
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { CaseSensitive = false, Ascii = true }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":false,"ascii":true},"column":"category"}}}
+            await Assert.ThrowsAsync<CommandException>(() =>
+                table.CreateIndexAsync(indexName, "category", Builders.TableIndex.Index(new TableIndexOptions() { CaseSensitive = false, Ascii = false, Normalize = true }) ));
+                // results in : {"createIndex":{"name":"category_idx","definition":{"options":{"caseSensitive":false,"normalize":true,"ascii":false},"column":"category"}}}
         }
         finally
         {
