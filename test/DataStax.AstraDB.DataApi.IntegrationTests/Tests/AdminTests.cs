@@ -628,8 +628,7 @@ public class AdminTests
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingSync
-    // [Fact(Skip = AdminCollection.SkipMessage)]
-    [Fact]
+    [Fact(Skip = AdminCollection.SkipMessage)]
     public void CreateDatabaseBlockingSync()
     {
         var dbName = "test-db-create-blocking-x";
