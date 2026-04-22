@@ -209,7 +209,7 @@ public class ReplaceAndDeleteTests
                     Service = new VectorServiceOptions
                     {
                         Provider = "nvidia",
-                        ModelName = "NV-Embed-QA"
+                        ModelName = "nvidia/nv-embedqa-e5-v5"
                     }
                 }
             };
@@ -380,7 +380,7 @@ public class ReplaceAndDeleteTests
                     Service = new VectorServiceOptions
                     {
                         Provider = "nvidia",
-                        ModelName = "NV-Embed-QA"
+                        ModelName = "nvidia/nv-embedqa-e5-v5"
                     }
                 }
             };
@@ -521,7 +521,7 @@ public class ReplaceAndDeleteTests
                     Service = new VectorServiceOptions
                     {
                         Provider = "nvidia",
-                        ModelName = "NV-Embed-QA"
+                        ModelName = "nvidia/nv-embedqa-e5-v5"
                     }
                 }
             };

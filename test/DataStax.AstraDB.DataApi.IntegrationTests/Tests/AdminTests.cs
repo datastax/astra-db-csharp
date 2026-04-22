@@ -582,10 +582,9 @@ public class AdminTests
 		For dropping, you will need to hardcode the proper database Guid in the test.
     */
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNonblocking
-	// [Fact(Skip = AdminCollection.SkipMessage)]
-	[Fact]
-	public void CreateDatabaseNonblocking()
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNonblockingSync
+	[Fact(Skip = AdminCollection.SkipMessage)]
+	public async Task CreateDatabaseNonblockingSync()
 	{
 		var dbName = "test-db-create-x";
 		var creationOptions = new BlockingCommandOptions() {
@@ -601,8 +600,7 @@ public class AdminTests
 			creationOptions
 		);
 
-		// todo: better test result here; for now we assume if no error, this was successful
-		var dbStatus = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(admin.Id);
+		var dbStatus = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(admin.Id);
 		Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
 			|| dbStatus == AstraDatabaseStatus.INITIALIZING
 			|| dbStatus == AstraDatabaseStatus.PENDING);
@@ -623,12 +621,16 @@ public class AdminTests
 		};
 		var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, creationOptions);
 
-		// todo: better test result here; for now we assume if no error, this was successful
+		var dbStatus = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(admin.Id);
+		Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
+			|| dbStatus == AstraDatabaseStatus.INITIALIZING
+			|| dbStatus == AstraDatabaseStatus.PENDING);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlocking
-	[Fact(Skip = AdminCollection.SkipMessage)]
-	public void CreateDatabaseBlocking()
+	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingSync
+	// [Fact(Skip = AdminCollection.SkipMessage)]
+	[Fact]
+	public void CreateDatabaseBlockingSync()
 	{
 		var dbName = "test-db-create-blocking-x";
 		var options = new DatabaseCreationOptions{
@@ -642,7 +644,8 @@ public class AdminTests
 		};
 		var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, creationOptions);
 
-		// todo: better test result here; for now we assume if no error, this was successful
+		var dbStatus = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(admin.Id);
+		Assert.True(dbStatus == AstraDatabaseStatus.ACTIVE);
 	}
 
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingAsync
@@ -726,41 +729,11 @@ public class AdminTests
 		Assert.Contains("Keyspace default_keyspace already exists", ex.Message);
 	}
 
-	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_ExplicitUpdateParameter
-	[Fact(Skip = AdminCollection.SkipMessage)]
-	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_ExplicitUpdateParameter()
-	{
-		var keyspaceName = "drop_this_keyspace_x";
-		var adminOptions = new BlockingCommandOptions
-		{
-			Token = fixture.Client.ClientOptions.Token,
-		};
-		var ckOptions = new CreateKeyspaceCommandOptions
-		{
-			updateDBKeyspace = true,
-		};
-		var daa = new DatabaseAdminAstra(fixture.Database, fixture.Client, adminOptions);
-
-		await daa.CreateKeyspaceAsync(keyspaceName, ckOptions);
-		Console.WriteLine($"DatabaseAdminAstra_CreateKeyspaceAsync > adminOptions.Keyspace: {adminOptions.Keyspace}");
-		Assert.Null(adminOptions.Keyspace);
-		// todo: better test result here; for now we assume if no error, this was successful
-	}
-
 	// dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DatabaseAdminAstra_CreateKeyspaceAsync_Update
 	[SkipWhenNotAstra]
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminAstra_CreateKeyspaceAsync_Update()
 	{
-		/* Complete verification involves manual inspection of the logs
-		// to ensure the Url sequence for the various findCollections is as follows:
-		//		default_keyspace
-		//		drop_this_keyspace_x
-		//		default_keyspace
-		//		drop_this_keyspace_x
-		//		drop_this_keyspace_x
-		//		default_keyspace
-		*/
 		var keyspaceName = "drop_this_keyspace_x";
 		var adminOptions = new BlockingCommandOptions
 		{
@@ -782,18 +755,22 @@ public class AdminTests
 		await theDatabase.ListCollectionNamesAsync();
 
 		theDatabase.UseKeyspace(Database.DefaultKeyspace);
+		Assert.Equal(Database.DefaultKeyspace, theDatabase.Keyspace);
 		// LCN myDB on 'default_keyspace'
 		await theDatabase.ListCollectionNamesAsync();
 
 		theDatabase.UseKeyspace(keyspaceName);
+		Assert.Equal(keyspaceName, theDatabase.Keyspace);
 		// LCN myDB on keyspaceName
 		await theDatabase.ListCollectionNamesAsync();
 
 		fixture.Database.UseKeyspace(keyspaceName);
+		Assert.Equal(keyspaceName, fixture.Database.Keyspace);
 		// LCN fixDB on keyspaceName
 		await fixture.Database.ListCollectionNamesAsync();
 
 		fixture.Database.UseKeyspace(Database.DefaultKeyspace);
+		Assert.Equal(Database.DefaultKeyspace, fixture.Database.Keyspace);
 		// LCN fixDB on 'default_keyspace'
 		await fixture.Database.ListCollectionNamesAsync();
 
@@ -805,15 +782,6 @@ public class AdminTests
 	[Fact(Skip = AdminCollection.SkipMessage)]
 	public async Task DatabaseAdminDataAPI_CreateKeyspaceAsync_Update()
 	{
-		/* Complete verification involves manual inspection of the logs
-		// to ensure the Url sequence for the various findCollections is as follows:
-		//		default_keyspace
-		//		drop_this_keyspace_x
-		//		default_keyspace
-		//		drop_this_keyspace_x
-		//		drop_this_keyspace_x
-		//		default_keyspace
-		*/
 		var keyspaceName = "drop_this_keyspace_x";
 		var adminOptions = new BlockingCommandOptions
 		{
@@ -839,18 +807,22 @@ public class AdminTests
 		await theDatabase.ListCollectionNamesAsync();
 
 		theDatabase.UseKeyspace(Database.DefaultKeyspace);
+		Assert.Equal(Database.DefaultKeyspace, theDatabase.Keyspace);
 		// LCN myDB on 'default_keyspace'
 		await theDatabase.ListCollectionNamesAsync();
 
 		theDatabase.UseKeyspace(keyspaceName);
+		Assert.Equal(keyspaceName, theDatabase.Keyspace);
 		// LCN myDB on keyspaceName
 		await theDatabase.ListCollectionNamesAsync();
 
 		fixture.Database.UseKeyspace(keyspaceName);
+		Assert.Equal(keyspaceName, fixture.Database.Keyspace);
 		// LCN fixDB on keyspaceName
 		await fixture.Database.ListCollectionNamesAsync();
 
 		fixture.Database.UseKeyspace(Database.DefaultKeyspace);
+		Assert.Equal(Database.DefaultKeyspace, fixture.Database.Keyspace);
 		// LCN fixDB on 'default_keyspace'
 		await fixture.Database.ListCollectionNamesAsync();
 

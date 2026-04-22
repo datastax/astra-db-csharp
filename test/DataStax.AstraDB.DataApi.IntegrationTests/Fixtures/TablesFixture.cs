@@ -175,7 +175,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddSinglePrimaryKey("Id");
@@ -197,7 +197,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddCompositePrimaryKey(new[] { "Id", "IdTwo" });
@@ -218,7 +218,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddCompoundPrimaryKey(new[] { "Id", "IdTwo" }, new[]

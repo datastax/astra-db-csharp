@@ -94,7 +94,7 @@ public class TableAlterTests
                     Service = new VectorServiceOptions
                     {
                         Provider = "nvidia",
-                        ModelName = "NV-Embed-QA"
+                        ModelName = "nvidia/nv-embedqa-e5-v5"
                     }
                 }
             }));
@@ -196,7 +196,7 @@ public class TableAlterTests
                 ["plot_synopsis_vectorize"] = new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
 
             }));
@@ -228,7 +228,7 @@ public class TableAlterTests
                 ["plot_synopsis_vector_drop"] = new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
             }));
 

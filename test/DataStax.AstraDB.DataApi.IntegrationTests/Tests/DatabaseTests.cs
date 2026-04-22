@@ -479,7 +479,7 @@ public class DatabaseTests
                 Service = new VectorServiceOptions()
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
             }
         };
@@ -581,7 +581,7 @@ public class DatabaseTests
                 Service = new VectorServiceOptions()
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
             },
             Lexical = new LexicalOptions
@@ -764,7 +764,7 @@ public class DatabaseTests
                 .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }))
                 .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
 
@@ -1024,7 +1024,7 @@ public class DatabaseTests
                 .AddColumn("StringToVectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }))
                 .AddColumn("Text", DataApiType.Text())
                 .AddSinglePrimaryKey("Name");
