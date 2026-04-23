@@ -199,6 +199,27 @@ public class TableTests
     }
 
     [Fact]
+    public void FindOne_Find_SortByVector()
+    {
+        var table = fixture.SearchTableWithVector4;
+        var sorter = Builders<RowWithVector4>.TableSort;
+        var sort = sorter.Vector(r => r.Vector, new float[] {0.0f, 0.0f, 0.01f, 0.99f});
+        var projection = Builders<RowWithVector4>.Projection.Exclude(r => r.Vector);
+
+        var findResults = table.Find().Sort(sort).Project(projection).Limit(1);
+        Assert.Equal(1, findResults.Count());
+        Assert.Equal("last_component", findResults.First().Id);
+
+        var findOneResult = table.FindOne(
+            null,
+            new TableFindOptions<RowWithVector4>() {
+                Sort = sort, Projection = projection
+            }
+        );
+        Assert.Equal("last_component", findOneResult.Id);
+    }
+
+    [Fact]
     public async Task Update_Test()
     {
         var table = fixture.SearchTable;

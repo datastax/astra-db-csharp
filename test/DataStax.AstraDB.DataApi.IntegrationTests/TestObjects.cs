@@ -750,3 +750,13 @@ public class VectorEncodingTestRow
     public float[] JustAList { get; set; }
     public byte[] TheBlob { get; set; }
 }
+
+[TableName("tableWithVector4")]
+public class RowWithVector4
+{
+    [ColumnPrimaryKey]
+    [ColumnName("id")]
+    public string Id { get; set; }
+    [ColumnVector(4)]
+    public float[] Vector { get; set; }
+}

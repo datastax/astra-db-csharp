@@ -1012,6 +1012,7 @@ public class DatabaseTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task CreateTable_DataTypesTest_FromDefinition()
     {

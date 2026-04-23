@@ -76,7 +76,7 @@ public class TableAlterTests
         }
     }
 
-    // Requires a pre-configured embedding provider on the Astra backend.
+    [SkipWhenNotAstra]
     [Fact]
     public async Task AlterTableAddVectorColumnsWithEmbedding()
     {
@@ -89,7 +89,6 @@ public class TableAlterTests
             {
                 ["plot_synopsis"] = new AlterTableVectorColumnDefinition
                 {
-                    //VectorDimension = 1536,
                     VectorDimension = null,
                     Service = new VectorServiceOptions
                     {
@@ -175,6 +174,7 @@ public class TableAlterTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task AlterTableAddVectorize()
     {
@@ -207,6 +207,7 @@ public class TableAlterTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task AlterTableOperationDropVectorize()
     {
