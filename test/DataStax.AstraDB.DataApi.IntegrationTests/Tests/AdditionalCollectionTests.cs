@@ -1,7 +1,9 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
+using System.Text;
 using System.Text.Json;
 using Xunit;
 
@@ -368,6 +370,128 @@ public class AdditionalCollectionTests
             await fixture.Database.DropCollectionAsync(collectionName);
         }
     }
+
+    [Fact]
+    public async Task Test_VectorEncodingCollection_Typed()
+    {
+        // Note: full check of this test involves manual log inspection for the payloads.
+        var collectionName = "testColl_vecEncoding_Typed";
+        try
+        {
+            var vecLstEncColl = fixture.Database.CreateCollection<VectorObjectAsLst>();
+            var vecBinEncColl = fixture.Database.GetCollection<VectorObjectAsBin>(collectionName);
+
+            var lstDocument = new VectorObjectAsLst
+            {
+                _id = "as_lst",
+                TheVector = new float[] { 0.3f, -0.2f, 0.1f },
+                TheBlob = Encoding.ASCII.GetBytes("a doc with a LST vector")
+            };
+            var binDocument = new VectorObjectAsBin
+            {
+                _id = "as_bin",
+                TheVector = new float[] { 0.3f, -0.2f, 0.1f },
+                TheBlob = Encoding.ASCII.GetBytes("a doc with a BIN vector")
+            };
+
+            // TODO: logs show that this payload looks like: `{"_id":"as_lst","$vector":{"$binary":"PpmZmr5MzM09zMzN"},"TheBlob":{"$binary":"YSBkb2Mgd2l0aCBhIExTVCB2ZWN0b3I="}}`
+            //  Expectation: `{..., "$vector": [0.3, -0.2, 0.1], ...}
+            await vecLstEncColl.InsertOneAsync(lstDocument);
+            // all good with the payload for this write.
+            await vecBinEncColl.InsertOneAsync(binDocument);
+
+            // TODO the following will need to be re-run once the above is understood and the payloads are $binary vs [floats].
+            // Reads:
+            var lstReadAsLst = await vecLstEncColl.FindOneAsync(
+                Builders<VectorObjectAsLst>.CollectionFilter.Eq(d => d._id, "as_lst"));
+            var lstReadAsBin = await vecBinEncColl.FindOneAsync(
+                Builders<VectorObjectAsBin>.CollectionFilter.Eq(d => d._id, "as_lst"));
+            var binReadAsLst = await vecLstEncColl.FindOneAsync(
+                Builders<VectorObjectAsLst>.CollectionFilter.Eq(d => d._id, "as_bin"));
+            var binReadAsBin = await vecBinEncColl.FindOneAsync(
+                Builders<VectorObjectAsBin>.CollectionFilter.Eq(d => d._id, "as_bin"));
+
+            // all 'four' (two) vectors are the same values:
+            Assert.Equal(lstReadAsLst.TheVector, lstReadAsBin.TheVector);
+            Assert.Equal(lstReadAsLst.TheVector, binReadAsLst.TheVector);
+            Assert.Equal(lstReadAsLst.TheVector, binReadAsBin.TheVector);
+
+            // two different blobs must be read consistently
+            Assert.Equal(lstReadAsLst.TheBlob, lstReadAsBin.TheBlob);
+            Assert.Equal(binReadAsLst.TheBlob, binReadAsBin.TheBlob);
+
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
+    [Fact]
+    public async Task Test_VectorEncodingCollection_Untyped()
+    {
+        // Note: full check of this test involves manual log inspection for the payloads.
+        var collectionName = "testColl_vecEncoding_Untyped";
+        try
+        {
+            var collDefinition = new CollectionDefinition { Vector = new VectorOptions { Dimension = 3 } };
+            var createdCollection = await fixture.Database.CreateCollectionAsync(collectionName, collDefinition);
+
+            await createdCollection.InsertOneAsync(new Document
+                {
+                    { "_id", "as_lst" },
+                    { "$vector", new float[] { 0.3f, -0.2f, 0.1f } },
+                    { "TheBlob", Encoding.ASCII.GetBytes("a doc with a LST vector") },
+                });
+            await createdCollection.InsertOneAsync(new Document
+                {
+                    { "_id", "as_bin" },
+                    { "$vector", new Dictionary<string,string> { ["$binary"] = "PpmZmr5MzM09zMzN" } },
+                    { "TheBlob", Encoding.ASCII.GetBytes("a doc with a BIN vector") },
+                });
+
+            // Reads:
+            var findOptionsLst = new DocumentFindOptions<Document>()
+            {
+                Projection = Builders<Document>.Projection.Include("$vector") };
+            var findOptionsBin = new DocumentFindOptions<Document>()
+            {
+                Projection = Builders<Document>.Projection.Include("$vector") };
+            var lstRead = await createdCollection.FindOneAsync(
+                Builders<Document>.CollectionFilter.Eq("_id", "as_lst"),
+                findOptionsLst);
+            var binRead = await createdCollection.FindOneAsync(
+                Builders<Document>.CollectionFilter.Eq("_id", "as_bin"),
+                findOptionsBin);
+
+            // same values should be found for the vector (modulo some machine-precision epsilon)
+
+            // ok for the LST reading (though these come out as doubles):
+            // Assert.IsType<float>( ((object[])lstRead["$vector"]) [0]);
+            var readVector = (Object[])lstRead["$vector"];
+            Assert.Equal(3, readVector.Length);
+            Assert.True( Math.Abs( 0.3 - (double)(readVector[0])) < 1.0e-5);
+            Assert.True( Math.Abs(-0.2 - (double)(readVector[1])) < 1.0e-5);
+            Assert.True( Math.Abs( 0.1 - (double)(readVector[2])) < 1.0e-5);
+
+            // TODO the BIN read fails. Deserialization *should* figure out this is a $vector
+            //      and decode, accordingly, into a `float[]`, even if untyped.
+            //      Currently this comes back as [["$binary"] = PpmZmr5MzM09zMzN]
+            // Assert.Equal(lstRead["$vector"], binRead["$vector"]); // check would still need an epsilon treatment maybe?
+
+            // two different blobs must be read consistently
+            // TODO these two fail. This is returned to the user as a `[["$binary"] = YSBkb2Mgd2l0aCBhIEJJTiB2ZWN0b3I=]` dict.
+            //      Deserialization should figure out this is to become a `byte[]` and decode.
+            // Assert.Equal(Encoding.ASCII.GetBytes("a doc with a LST vector"), lstRead["TheBlob"]);
+            // Assert.Equal(Encoding.ASCII.GetBytes("a doc with a BIN vector"), binRead["TheBlob"]);
+
+        }
+        finally
+        {
+            //await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
 }
 
 [CollectionName("testCollectionNameViaAttribute")]

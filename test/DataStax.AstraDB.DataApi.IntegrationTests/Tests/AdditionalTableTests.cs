@@ -6,6 +6,7 @@ using DataStax.AstraDB.DataApi.Tables;
 using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.VisualBasic;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using Xunit;
 
@@ -1019,6 +1020,121 @@ public class AdditionalTableTests
                 projectingOptions
             );
             Assert.Null(row_full_eC);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task Test_VectorEncodingTable_Typed()
+    {
+        // Note: full check of this test involves manual log inspection for the payloads.
+        var tableName = "testTable_vecEncoding_t";
+        try
+        {
+            var createdTable = await fixture.Database.CreateTableAsync<VectorEncodingTestRow>();
+
+            var theRow = new VectorEncodingTestRow
+            {
+                id = "the_t_row",
+                TheLstVec = new float[] { 0.3f, -0.2f, 0.1f },
+                TheBinVec = new float[] { 0.3f, -0.2f, 0.1f },
+                JustAList = new float[] { 0.3f, -0.2f, 0.1f },
+                TheBlob = Encoding.ASCII.GetBytes("a nice typed row")
+            };
+
+            // TODO manual inspection shows that both vector columns serialize as binary-encoded.
+            //      That is, column `TheLstVec` appears as `"TheLstVec":{"$binary":"PpmZmr5MzM09zMzN"}` in the payload,
+            //      despite being annotated as `FloatArrayWriter`.
+            await createdTable.InsertOneAsync(theRow);
+
+            // Reads:
+            var readRow = await createdTable.FindOneAsync(
+                Builders<VectorEncodingTestRow>.TableFilter.Eq(d => d.id, "the_t_row"));
+
+            // all lists/vectors are the same:
+            Assert.Equal(readRow.TheLstVec, readRow.TheBinVec);
+            Assert.Equal(readRow.TheLstVec, readRow.JustAList);
+            // blob i/o consistent:
+            Assert.Equal(Encoding.ASCII.GetBytes("a nice typed row"), readRow.TheBlob);
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [Fact]
+    public async Task Test_VectorEncodingTable_Untyped()
+    {
+        // Note: full check of this test involves manual log inspection for the payloads.
+        var tableName = "testTable_vecEncoding_u";
+        try
+        {
+            var tableDefinition = new TableDefinition()
+                .AddColumn("id", DataApiType.Text())
+                .AddColumn("TheLstVec", DataApiType.Vector(3))
+                .AddColumn("TheBinVec", DataApiType.Vector(3))
+                .AddColumn("JustAList", DataApiType.List(DataApiType.Float()))
+                .AddColumn("TheBlob", DataApiType.Blob())
+                .AddSinglePrimaryKey("id");
+            var createdTable = await fixture.Database.CreateTableAsync(tableName, tableDefinition);
+
+            var theRow = new Row
+            {
+                {"id" , "the_u_row"},
+                {"TheLstVec" , new float[] { 0.3f, -0.2f, 0.1f }},
+                {"TheBinVec" , new float[] { 0.3f, -0.2f, 0.1f }},
+                {"JustAList" , new float[] { 0.3f, -0.2f, 0.1f }},
+                {"TheBlob" , Encoding.ASCII.GetBytes("a nice untyped row")}
+            };
+
+            // All vectors and lists serialize as JSON lists in this untyped scenario.
+            // TODO confirm there's no other choice available
+            await createdTable.InsertOneAsync(theRow);
+
+            // Reads:
+            var readRow = await createdTable.FindOneAsync(
+                Builders<Row>.TableFilter.Eq("id", "the_u_row"));
+
+            // all lists/vectors are the same (save for machine-precision epsilons):
+            var lstElement = (JsonElement)readRow["TheLstVec"];
+            var binElement = (JsonElement)readRow["TheBinVec"];
+            var arrElement = (JsonElement)readRow["JustAList"];
+
+            Assert.Equal(JsonValueKind.Array, lstElement.ValueKind);
+            Assert.Equal(JsonValueKind.Array, binElement.ValueKind);
+            Assert.Equal(JsonValueKind.Array, arrElement.ValueKind);
+
+            var lstArray = lstElement
+                .EnumerateArray()
+                .Select(x => x.GetSingle())
+                .ToArray();
+            var binArray = binElement
+                .EnumerateArray()
+                .Select(x => x.GetSingle())
+                .ToArray();
+            var arrArray = arrElement
+                .EnumerateArray()
+                .Select(x => x.GetSingle())
+                .ToArray();
+            Assert.Equal(lstArray.Length, binArray.Length);
+            Assert.Equal(lstArray.Length, arrArray.Length);
+            var l1DistanceLB = lstArray
+                .Zip(binArray, (e, a) => Math.Abs(e - a))
+                .Sum();
+            var l1DistanceLA = lstArray
+                .Zip(arrArray, (e, a) => Math.Abs(e - a))
+                .Sum();
+            Assert.True(l1DistanceLB < 1e-5f, $"L1 distance was {l1DistanceLB}");
+            Assert.True(l1DistanceLA < 1e-5f, $"L1 distance was {l1DistanceLA}");
+
+            // blob i/o consistent:
+            Assert.Equal(Encoding.ASCII.GetBytes("a nice untyped row"), readRow["TheBlob"]);
 
         }
         finally

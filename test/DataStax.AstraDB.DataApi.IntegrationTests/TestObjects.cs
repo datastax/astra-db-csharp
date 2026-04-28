@@ -1,3 +1,4 @@
+using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
@@ -710,3 +711,42 @@ public class TripleMapObject
     public Dictionary<string, string> map_v { get; set; }
 }
 
+[CollectionName("testColl_vecEncoding_Typed")]
+[CollectionVector(3)]
+public class VectorObjectAsLst
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [JsonConverter(typeof(FloatArrayWriter))]
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] TheVector { get; set; }
+    public byte[] TheBlob { get; set; }
+}
+
+[CollectionName("testColl_vecEncoding_Typed")]
+[CollectionVector(3)]
+public class VectorObjectAsBin
+{
+    [DocumentId]
+    public string _id { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    [JsonConverter(typeof(FloatBinaryWriter))]
+    public float[] TheVector { get; set; }
+    public byte[] TheBlob { get; set; }
+}
+
+[TableName("testTable_vecEncoding_t")]
+public class VectorEncodingTestRow
+{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    [ColumnVector(3)]
+    [JsonConverter(typeof(FloatArrayWriter))]
+    public float[] TheLstVec { get; set; }
+    [ColumnVector(3)]
+    [JsonConverter(typeof(FloatBinaryWriter))]
+    public float[] TheBinVec { get; set; }
+
+    public float[] JustAList { get; set; }
+    public byte[] TheBlob { get; set; }
+}
