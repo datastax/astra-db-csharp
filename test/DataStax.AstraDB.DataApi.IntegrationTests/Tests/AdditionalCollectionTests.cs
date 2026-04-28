@@ -499,7 +499,7 @@ public class AdditionalCollectionTests
     public async Task Test_CollectionFindFilterSemantics()
 >>>>>>> e9a447e (better findOptions testing and added guard to method)
     {
-        var collectionName = "coll_findfiltertrick";
+        var collectionName = "coll_findfiltersemantics";
         try
         {
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName);
@@ -509,12 +509,13 @@ public class AdditionalCollectionTests
             });
 
             // 'naked' findOne:
+            // exp. payload: {"findOne":{}}
             var found_doc = await collection.FindOneAsync();
             Assert.NotNull(found_doc);
 
             // findOne through FILTER ONLY:
             //
-            // exp. ayload: {"findOne":{"filter":{"_id":{"$eq":1}}}}
+            // exp. payload: {"findOne":{"filter":{"_id":{"$eq":1}}}}
             var find_f_id1 = await collection.FindOneAsync(Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 1));
             // exp. payload: {"findOne":{"filter":{"_id":{"$eq":2}}}}
             var find_f_id2 = await collection.FindOneAsync(Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 2));
