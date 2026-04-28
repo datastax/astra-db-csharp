@@ -1133,9 +1133,15 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         where TResult : class
     {
         findOptions = findOptions != null ? findOptions.Clone() : new TableFindOptions<T>();
-        if (findOptions.Filter == null && filter != null)
+        if (filter != null)
         {
-            findOptions.Filter = filter;
+            if (findOptions.Filter == null)
+            {
+                findOptions.Filter = filter;
+            } else
+            {
+                throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+            }
         }
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
