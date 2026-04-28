@@ -76,7 +76,7 @@ public class TableAlterTests
         }
     }
 
-    // Requires a pre-configured embedding provider on the Astra backend.
+    [SkipWhenNotAstra]
     [Fact]
     public async Task AlterTableAddVectorColumnsWithEmbedding()
     {
@@ -89,12 +89,11 @@ public class TableAlterTests
             {
                 ["plot_synopsis"] = new AlterTableVectorColumnDefinition
                 {
-                    //VectorDimension = 1536,
                     VectorDimension = null,
                     Service = new VectorServiceOptions
                     {
                         Provider = "nvidia",
-                        ModelName = "NV-Embed-QA"
+                        ModelName = "nvidia/nv-embedqa-e5-v5"
                     }
                 }
             }));
@@ -175,6 +174,7 @@ public class TableAlterTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task AlterTableAddVectorize()
     {
@@ -196,7 +196,7 @@ public class TableAlterTests
                 ["plot_synopsis_vectorize"] = new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
 
             }));
@@ -207,6 +207,7 @@ public class TableAlterTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task AlterTableOperationDropVectorize()
     {
@@ -228,7 +229,7 @@ public class TableAlterTests
                 ["plot_synopsis_vector_drop"] = new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
             }));
 

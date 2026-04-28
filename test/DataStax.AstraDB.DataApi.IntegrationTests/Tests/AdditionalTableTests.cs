@@ -651,8 +651,10 @@ public class AdditionalTableTests
             Assert.Contains("rating", findUntyped);
             Assert.Null(findUntyped["rating"]);
             Assert.Contains("genres", findUntyped);
+
             Assert.NotNull(findUntyped["genres"]);
-            Assert.Empty(findUntyped["genres"] as List<object>);
+            Assert.IsType<HashSet<object>>(findUntyped["genres"]);
+            Assert.Empty(findUntyped["genres"] as HashSet<object>);
 
             var findManyUntypedResult = tableNotTyped.Find().ToList();
             foreach (var item in findManyUntypedResult)
@@ -662,7 +664,8 @@ public class AdditionalTableTests
                 Assert.Null(item["rating"]);
                 Assert.Contains("genres", item);
                 Assert.NotNull(item["genres"]);
-                Assert.Empty(item["genres"] as List<object>);
+                Assert.IsType<HashSet<object>>(item["genres"]);
+                Assert.Empty(item["genres"] as HashSet<object>);
             }
         }
         catch (Exception ex)
@@ -944,14 +947,6 @@ public class AdditionalTableTests
             {
                 IfNotExists = true
             });
-            await table.CreateIndexAsync("tmp_map_k_idx", (b) => b.map_k, Builders.TableIndex.Map(MapIndexType.Keys), new CreateIndexCommandOptions()
-            {
-                IfNotExists = true
-            });
-            await table.CreateIndexAsync("tmp_map_v_idx", (b) => b.map_v, Builders.TableIndex.Map(MapIndexType.Values), new CreateIndexCommandOptions()
-            {
-                IfNotExists = true
-            });
 
             await table.InsertOneAsync(new TripleMapObject()
             {
@@ -980,7 +975,6 @@ public class AdditionalTableTests
 
             // searches with ENTRIES
 
-            // MARK A
             var row_full_eA = await table.FindOneAsync(
                 Builders<TripleMapObject>.TableFilter.In(
                     r => r.map_e,
@@ -1007,7 +1001,6 @@ public class AdditionalTableTests
             );
             Assert.NotNull(row_full_eB);
             Assert.Equal("base", row_full_eB.id);
-            // MARK B
 
             var row_full_eC = await table.FindOneAsync(
                 Builders<TripleMapObject>.TableFilter.In(

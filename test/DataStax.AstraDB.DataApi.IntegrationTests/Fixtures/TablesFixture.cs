@@ -28,6 +28,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
     private bool IsAstra { get; set; }
 
     public Table<RowBook> SearchTable { get; private set; }
+    public Table<RowWithVector4> SearchTableWithVector4  { get; private set; }
 
     public Table<RowBookVectorize> SearchTableVectorize { get; private set; }
     public Table<Row> UntypedTableSinglePrimaryKey { get; private set; }
@@ -37,6 +38,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         await CreateSearchTable();
+        await CreateSearchTableWithVector4();
         await CreateSearchTableVectorize();
         await CreateTestTablesNotTyped();
     }
@@ -45,6 +47,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
     {
         var dropOptions = new DropTableCommandOptions { IfExists = true };
         await Database.DropTableAsync(_queryTableName, dropOptions);
+        await Database.DropTableAsync(_queryTableNameWithVector4, dropOptions);
         await Database.DropTableAsync(_queryTableNameVectorize, dropOptions);
         await Database.DropTableAsync(_deleteTableName, dropOptions);
         await Database.DropTableAsync(_untypedSinglePkTableName, dropOptions);
@@ -53,6 +56,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
     }
 
     private const string _queryTableName = "tableQueryTests";
+    private const string _queryTableNameWithVector4 = "tableQueryTestsWithVector4";
     private const string _queryTableNameVectorize = "tableQueryTests_Vectorize";
     private const string _untypedSinglePkTableName = "tableNotTyped_SinglePrimaryKey";
     private const string _untypedCompoundPkTableName = "tableNotTyped_CompoundPrimaryKey";
@@ -64,25 +68,25 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
         try
         {
             var rows = new List<RowBook>() {
-            new RowBook()
-            {
-                Title = "Computed Wilderness",
-                Author = "Ryan Eau",
-                NumberOfPages = 22,
-                DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
-                Genres = new HashSet<string>() { "History", "Biography" },
-                Rating = 1.5f
-            },
-            new RowBook()
-            {
-                Title = "Desert Peace",
-                Author = "Walter Dray",
-                NumberOfPages = 33,
-                DueDate = DateTime.UtcNow - TimeSpan.FromDays(2),
-                Genres = new HashSet<string>() { "Fiction" },
-                Rating = 2.50123f
-            }
-        };
+                new RowBook()
+                {
+                    Title = "Computed Wilderness",
+                    Author = "Ryan Eau",
+                    NumberOfPages = 22,
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
+                    Genres = new HashSet<string>() { "History", "Biography" },
+                    Rating = 1.5f
+                },
+                new RowBook()
+                {
+                    Title = "Desert Peace",
+                    Author = "Walter Dray",
+                    NumberOfPages = 33,
+                    DueDate = DateTime.UtcNow - TimeSpan.FromDays(2),
+                    Genres = new HashSet<string>() { "Fiction" },
+                    Rating = 2.50123f
+                }
+            };
             for (var i = 0; i < 100; i++)
             {
                 var row = new RowBook()
@@ -103,6 +107,33 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
             await table.CreateIndexAsync("DueDate_idx", (b) => b.DueDate);
             await table.InsertManyAsync(rows);
             SearchTable = table;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task CreateSearchTableWithVector4()
+    {
+        try
+        {
+            var rows = new List<RowWithVector4>() {
+                new RowWithVector4()
+                {
+                    Id = "first_component",
+                    Vector = new float[] {1.0f, 0.0f, 0.0f, 0.0f}
+                },
+                new RowWithVector4()
+                {
+                    Id = "last_component",
+                    Vector = new float[] {0.0f, 0.0f, 0.0f, 1.0f}
+                }
+            };
+            var table = await Database.CreateTableAsync<RowWithVector4>(_queryTableNameWithVector4);
+            await table.CreateVectorIndexAsync("Vector4_idx", (b) => b.Vector);
+            await table.InsertManyAsync(rows);
+            SearchTableWithVector4 = table;
         }
         catch (Exception ex)
         {
@@ -175,7 +206,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddSinglePrimaryKey("Id");
@@ -197,7 +228,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddCompositePrimaryKey(new[] { "Id", "IdTwo" });
@@ -218,7 +249,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
                 .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
                 .AddColumn("Vector", DataApiType.Vector(384))
                 .AddCompoundPrimaryKey(new[] { "Id", "IdTwo" }, new[]
@@ -256,47 +287,5 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
         await UntypedTableCompositePrimaryKey.InsertManyAsync(rows);
         await UntypedTableCompoundPrimaryKey.InsertManyAsync(rows);
     }
-
-    // private async Task CreateDeleteTable()
-    // {
-    //     var rows = new List<RowBook>();
-    //     for (var i = 0; i < 10; i++)
-    //     {
-    //         var row = new RowBook()
-    //         {
-    //             Title = "Title " + i,
-    //             Author = "Author Number" + i,
-    //             NumberOfPages = 400 + i,
-    //             DueDate = DateTime.Now - TimeSpan.FromDays(1),
-    //             Genres = (i % 2 == 0)
-    //                 ? new HashSet<string> { "History", "Biography" }
-    //                 : new HashSet<string> { "Fiction", "History" },
-    //             Rating = (float)new Random().NextDouble()
-    //         };
-    //         rows.Add(row);
-    //     }
-    //     for (var i = 10; i < 20; i++)
-    //     {
-    //         var row = new RowBook()
-    //         {
-    //             Title = "Title " + i,
-    //             Author = "AuthorDeleteMe",
-    //             NumberOfPages = 22,
-    //             DueDate = DateTime.Now - TimeSpan.FromDays(1),
-    //             Genres = (i % 2 == 0)
-    //                 ? new HashSet<string> { "History", "Biography" }
-    //                 : new HashSet<string> { "Fiction", "History" },
-    //             Rating = (float)new Random().NextDouble()
-    //         };
-    //         rows.Add(row);
-    //     }
-    //     var table = await Database.CreateTableAsync<RowBook>(_deleteTableName);
-    //     await table.CreateIndexAsync("delete_table_number_of_pages_index", "NumberOfPages");
-    //     await table.CreateVectorIndexAsync("delete_table_author_vector_index", (b) => b.Author, Builders.TableIndex.Vector());
-    //     await table.CreateIndexAsync("delete_table_due_date_index", (b) => b.DueDate);
-
-    //     await table.InsertManyAsync(rows);
-    //     DeleteTable = table;
-    // }
 
 }

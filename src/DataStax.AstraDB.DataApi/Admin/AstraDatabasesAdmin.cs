@@ -276,7 +276,7 @@ public class AstraDatabasesAdmin
     /// This method, by default, will wait for the operation to complete on the server side.
     /// Use the options' waitForCompletion attribute to control this behaviour.
     /// </remarks>
-    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions creationOptions)
+    public DatabaseAdminAstra CreateDatabase(DatabaseCreationOptions creationOptions)
     {
         return CreateDatabase(creationOptions, null);
     }
@@ -284,7 +284,7 @@ public class AstraDatabasesAdmin
     /// <summary>
     /// Synchronous version of <see cref="CreateDatabaseAsync(DatabaseCreationOptions, BlockingCommandOptions)"/>
     /// </summary>
-    public IDatabaseAdmin CreateDatabase(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
+    public DatabaseAdminAstra CreateDatabase(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
     {
         return CreateDatabaseAsync(creationOptions, commandOptions, true).ResultSync();
     }
@@ -293,7 +293,7 @@ public class AstraDatabasesAdmin
     /// Creates a new database with the specified creation options.
     /// </summary>
     /// <param name="creationOptions">The database creation options.</param>
-    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
+    /// <returns>A task that resolves to a DatabaseAdminAstra instance for the created database.</returns>
     /// <example>
     /// <code>
     /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
@@ -303,7 +303,7 @@ public class AstraDatabasesAdmin
     /// This method, by default, will wait for the operation to complete on the server side.
     /// Use the options' waitForCompletion attribute to control this behaviour.
     /// </remarks>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions)
+    public Task<DatabaseAdminAstra> CreateDatabaseAsync(DatabaseCreationOptions creationOptions)
     {
         return CreateDatabaseAsync(creationOptions, null);
     }
@@ -313,18 +313,18 @@ public class AstraDatabasesAdmin
     /// </summary>
     /// <param name="creationOptions">The database creation options.</param>
     /// <param name="commandOptions">Optional settings that influence request execution.</param>
-    /// <returns>A task that resolves to an IDatabaseAdmin instance for the created database.</returns>
+    /// <returns>A task that resolves to a DatabaseAdminAstra instance for the created database.</returns>
     /// <example>
     /// <code>
     /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
     /// </code>
     /// </example>
-    public Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
+    public Task<DatabaseAdminAstra> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
     {
         return CreateDatabaseAsync(creationOptions, commandOptions, false);
     }
 
-    internal async Task<IDatabaseAdmin> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions, bool runSynchronously)
+    internal async Task<DatabaseAdminAstra> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions, bool runSynchronously)
     {
         commandOptions ??= new BlockingCommandOptions();
         Guard.NotNullOrEmpty(creationOptions.Name, nameof(creationOptions.Name));
@@ -393,7 +393,22 @@ public class AstraDatabasesAdmin
         throw new Exception($"Database {dbGuid} did not reach target status {targetStatus} within {MAX_WAIT_IN_SECONDS} seconds.");
     }
 
-    internal async Task<AstraDatabaseStatus> GetDatabaseStatusAsync(string dbGuid)
+    /// <summary>
+    /// Synchronous version of <see cref="GetDatabaseStatusAsync(string)"/>.
+    /// </summary>
+    /// <param name="dbGuid">The ID of the target database.</param>
+    /// <returns>A <see cref="AstraDatabaseStatus"/> value.</returns>
+    public AstraDatabaseStatus GetDatabaseStatus(string dbGuid)
+    {
+        return GetDatabaseStatusAsync(dbGuid).ResultSync();
+    }
+
+    /// <summary>
+    /// Query the Data API for the status of a database.
+    /// </summary>
+    /// <param name="dbGuid">The ID of the target database.</param>
+    /// <returns>A task that resolves to a <see cref="AstraDatabaseStatus"/>.</returns>
+    public async Task<AstraDatabaseStatus> GetDatabaseStatusAsync(string dbGuid)
     {
         Guard.NotNullOrEmpty(dbGuid, nameof(dbGuid));
 
@@ -451,7 +466,7 @@ public class AstraDatabasesAdmin
     /// </example>
     public Task DropDatabaseAsync(string dbGuid, BlockingCommandOptions commandOptions)
     {
-        return DropDatabaseAsync(dbGuid, commandOptions, true);
+        return DropDatabaseAsync(dbGuid, commandOptions, false);
     }
 
     internal async Task DropDatabaseAsync(string dbGuid, BlockingCommandOptions options, bool runSynchronously)
@@ -481,11 +496,11 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Returns an IDatabaseAdmin instance for the database at the specified URL.
+    /// Returns a DatabaseAdminAstra instance for the database at the specified URL.
     /// </summary>
     /// <param name="dbUrl"></param>
     /// <returns></returns>
-    public IDatabaseAdmin GetDatabaseAdmin(string dbUrl)
+    public DatabaseAdminAstra GetDatabaseAdmin(string dbUrl)
     {
         var database = _client.GetDatabase(dbUrl);
         return new DatabaseAdminAstra(database, _client, _adminOptions);

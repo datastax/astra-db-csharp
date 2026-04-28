@@ -135,8 +135,7 @@ public class TableTests
     {
         var table = fixture.SearchTable;
         var builder = Builders<RowBook>.TableFilter;
-        //TODO: AND not working yet via API
-        var filter = builder.Gt(so => so.NumberOfPages, 430); // & builder.Gt(so => so.DueDate, DateTime.Now - TimeSpan.FromDays(20));
+        var filter = builder.Gt(so => so.NumberOfPages, 430) & builder.Gt(so => so.DueDate, DateTime.UtcNow - TimeSpan.FromDays(20));
         var results = table.Find(filter).ToList();
         Assert.Equal(69, results.Count);
     }
@@ -146,9 +145,9 @@ public class TableTests
     {
         var table = fixture.SearchTable;
         var builder = Builders<RowBook>.TableFilter;
-        //TODO: AND not working yet via API
-        //var filter = builder.And(builder.Gt(so => so.NumberOfPages, 430), builder.Eq(so => so.DueDate, DateTime.Now - TimeSpan.FromDays(20)));
-        var filter = builder.Gt(so => so.NumberOfPages, 430);
+        var filter = builder.And(
+            builder.Gt(so => so.NumberOfPages, 430),
+            builder.Gt(so => so.DueDate, DateTime.UtcNow - TimeSpan.FromDays(20)));
         var results = table.Find(filter).ToList();
         Assert.Equal(69, results.Count);
     }
@@ -193,10 +192,31 @@ public class TableTests
         var projection = Builders<RowBook>.Projection.Exclude(b => b.DueDate);
         var results = table.Find().Sort(sort).Project(projection).Skip(2).Limit(5);
         Assert.Equal(5, results.Count());
-        //TODO: not working on API side yet?
-        //Assert.Equal("Title 2", results.First().Title);
+        // due to 'Computed...' and 'Desert...', the third is 'Title 0' here
+        Assert.Equal("Title 0", results.First().Title);
         Assert.Null(results.First().DueDate);
         Assert.NotEqual(default(int), results.First().NumberOfPages);
+    }
+
+    [Fact]
+    public void FindOne_Find_SortByVector()
+    {
+        var table = fixture.SearchTableWithVector4;
+        var sorter = Builders<RowWithVector4>.TableSort;
+        var sort = sorter.Vector(r => r.Vector, new float[] {0.0f, 0.0f, 0.01f, 0.99f});
+        var projection = Builders<RowWithVector4>.Projection.Exclude(r => r.Vector);
+
+        var findResults = table.Find().Sort(sort).Project(projection).Limit(1);
+        Assert.Equal(1, findResults.Count());
+        Assert.Equal("last_component", findResults.First().Id);
+
+        var findOneResult = table.FindOne(
+            null,
+            new TableFindOptions<RowWithVector4>() {
+                Sort = sort, Projection = projection
+            }
+        );
+        Assert.Equal("last_component", findOneResult.Id);
     }
 
     [Fact]
@@ -465,16 +485,14 @@ public class TableTests
     public void LogicalAnd_MongoStyle_Untyped()
     {
         var builder = Builders<Row>.TableFilter;
-        var filter = builder.Gte("Id", 10);
-        //TODO: AND not working yet via API
-        //var filter = builder.Gte("Id", 10) & builder.Gt("IdTwo", "IdTwo_20");
+        var filter = builder.Gte("Id", 10) & builder.Eq("IdTwo", "IdTwo_20");
 
         var results = fixture.UntypedTableSinglePrimaryKey.Find(filter).ToList();
-        Assert.Equal(40, results.Count);
+        Assert.Equal(1, results.Count);
         results = fixture.UntypedTableCompositePrimaryKey.Find(filter).ToList();
-        Assert.Equal(40, results.Count);
+        Assert.Equal(1, results.Count);
         results = fixture.UntypedTableCompoundPrimaryKey.Find(filter).ToList();
-        Assert.Equal(40, results.Count);
+        Assert.Equal(1, results.Count);
 
     }
 
@@ -482,16 +500,14 @@ public class TableTests
     public void LogicalAnd_AstraStyle_Untyped()
     {
         var builder = Builders<Row>.TableFilter;
-        //TODO: AND not working yet via API
-        //var filter = builder.And(builder.Gt("Id", 10), builder.Eq("IdTwo", "IdTwo_20"));
-        var filter = builder.Gt("Id", 20);
+        var filter = builder.And(builder.Gt("Id", 10), builder.Eq("IdTwo", "IdTwo_20"));
 
         var results = fixture.UntypedTableSinglePrimaryKey.Find(filter).ToList();
-        Assert.Equal(29, results.Count);
+        Assert.Equal(1, results.Count);
         results = fixture.UntypedTableCompositePrimaryKey.Find(filter).ToList();
-        Assert.Equal(29, results.Count);
+        Assert.Equal(1, results.Count);
         results = fixture.UntypedTableCompoundPrimaryKey.Find(filter).ToList();
-        Assert.Equal(29, results.Count);
+        Assert.Equal(1, results.Count);
     }
 
     [Fact]

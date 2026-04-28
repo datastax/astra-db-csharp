@@ -479,7 +479,7 @@ public class DatabaseTests
                 Service = new VectorServiceOptions()
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
             }
         };
@@ -581,7 +581,7 @@ public class DatabaseTests
                 Service = new VectorServiceOptions()
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }
             },
             Lexical = new LexicalOptions
@@ -764,7 +764,7 @@ public class DatabaseTests
                 .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }))
                 .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
 
@@ -900,7 +900,6 @@ public class DatabaseTests
         }
     }
 
-    //TODO re-enable this test once the api issue is fixed (https://github.com/stargate/data-api/issues/2141)
     [Fact]
     public async Task CreateTable_DataTypesTest_FromObject()
     {
@@ -988,17 +987,17 @@ public class DatabaseTests
             Assert.IsType<byte[]>(untypedRow["Blob"]);
             Assert.IsType<Duration>(untypedRow["Duration"]);
 
-            //CURRENTLY NOT WORKING
-            //Assert.IsType<List<object>>(untypedRow["Vector"]);
-            //Assert.Equal(JsonSerializer.Serialize(row.ObjectList), JsonSerializer.Serialize(resultRow.ObjectList));
-            //Assert.IsType<Dictionary<string, object>>(untypedRow["IntDictionary"]);
-            //Assert.IsType<Dictionary<string, object>>(untypedRow["DecimalDictionary"]);
-            //Assert.IsType<List<object>>(untypedRow["StringSet"]);
-            //Assert.IsType<List<object>>(untypedRow["IntSet"]);
-            //Assert.IsType<List<object>>(untypedRow["StringList"]);
+            /* TODO: revisit and uncomment once tables untyped support is refined:
+            Assert.IsType<List<object>>(untypedRow["Vector"]);
+            Assert.Equal(JsonSerializer.Serialize(row.ObjectList), JsonSerializer.Serialize(resultRow.ObjectList));
+            Assert.IsType<Dictionary<string, object>>(untypedRow["IntDictionary"]);
+            Assert.IsType<Dictionary<string, object>>(untypedRow["DecimalDictionary"]);
+            Assert.IsType<List<object>>(untypedRow["StringSet"]);
+            Assert.IsType<List<object>>(untypedRow["IntSet"]);
+            Assert.IsType<List<object>>(untypedRow["StringList"]);
+            */
 
-            //ANY WAY TO AUTO TEST?
-            // This should work, but since you can't create a timeuuid row via the API, not sure how to auto test
+            // TODO: move timeuuid testing to a separate (manual, CQL-initiated) test (You can't create a timeuuid via API)
             //Assert.IsType<TimeUuid>(untypedRow["TimeUuid"]);
 
         }
@@ -1013,6 +1012,7 @@ public class DatabaseTests
         }
     }
 
+    [SkipWhenNotAstra]
     [Fact]
     public async Task CreateTable_DataTypesTest_FromDefinition()
     {
@@ -1025,7 +1025,7 @@ public class DatabaseTests
                 .AddColumn("StringToVectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
-                    ModelName = "NV-Embed-QA"
+                    ModelName = "nvidia/nv-embedqa-e5-v5"
                 }))
                 .AddColumn("Text", DataApiType.Text())
                 .AddSinglePrimaryKey("Name");
