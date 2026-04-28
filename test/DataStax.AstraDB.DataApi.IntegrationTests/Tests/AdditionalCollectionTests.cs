@@ -488,7 +488,7 @@ public class AdditionalCollectionTests
         }
         finally
         {
-            //await fixture.Database.DropCollectionAsync(collectionName);
+            await fixture.Database.DropCollectionAsync(collectionName);
         }
     }
 
