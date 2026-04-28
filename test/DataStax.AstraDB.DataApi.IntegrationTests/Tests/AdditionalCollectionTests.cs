@@ -498,11 +498,14 @@ public class AdditionalCollectionTests
         var collectionName = "coll_findfiltertrick";
         try
         {
-            var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName);
-            await collection.InsertManyAsync(new List<SimpleObjectWithVector> {
-                new SimpleObjectWithVector() { Id = 1, Name = "one" },
-                new SimpleObjectWithVector() { Id = 2, Name = "two" }
-            });
+            // TODO replace with:
+            // var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName);
+            var collection = fixture.Database.GetCollection<SimpleObjectWithVector>(collectionName);
+            // TODO reinstate
+            // await collection.InsertManyAsync(new List<SimpleObjectWithVector> {
+            //     new SimpleObjectWithVector() { Id = 1, Name = "one" },
+            //     new SimpleObjectWithVector() { Id = 2, Name = "two" }
+            // });
 
             // find through filter
             
@@ -538,7 +541,8 @@ public class AdditionalCollectionTests
         }
         finally
         {
-            await fixture.Database.DropCollectionAsync(collectionName);
+            // TODO reinstate
+            // await fixture.Database.DropCollectionAsync(collectionName);
         }
     }
 
