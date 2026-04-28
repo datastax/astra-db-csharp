@@ -372,7 +372,6 @@ public class AdditionalCollectionTests
     }
 
     [Fact]
-<<<<<<< HEAD
     public async Task Test_VectorEncodingCollection_Typed()
     {
         // Note: full check of this test involves manual log inspection for the payloads.
@@ -494,10 +493,7 @@ public class AdditionalCollectionTests
     }
 
     [Fact]
-    public async Task Test_CollectionFindFilterTrick()
-=======
     public async Task Test_CollectionFindFilterSemantics()
->>>>>>> e9a447e (better findOptions testing and added guard to method)
     {
         var collectionName = "coll_findfiltersemantics";
         try
