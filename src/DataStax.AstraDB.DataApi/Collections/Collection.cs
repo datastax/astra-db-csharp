@@ -597,7 +597,17 @@ public class Collection<T, TId> : IQueryRunner<T, CollectionSortBuilder<T>> wher
 
     private async Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, DocumentFindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        findOptions.Filter = filter;
+        findOptions = findOptions != null ? findOptions.Clone() : new DocumentFindOptions<T>();
+        if (filter != null)
+        {
+            if (findOptions.Filter == null)
+            {
+                findOptions.Filter = filter;
+            } else
+            {
+                throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+            }
+        }
         var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response.Data.Document;

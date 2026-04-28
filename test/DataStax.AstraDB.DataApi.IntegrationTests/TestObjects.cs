@@ -760,3 +760,10 @@ public class RowWithVector4
     [ColumnVector(4)]
     public float[] Vector { get; set; }
 }
+
+public class SimpleTwoColumnRow
+{
+    [ColumnPrimaryKey]
+    public int Id { get; set; }
+    public string Name { get; set; }
+}

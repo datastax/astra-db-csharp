@@ -1136,4 +1136,77 @@ public class AdditionalTableTests
         }
     }
 
+    [Fact]
+    public async Task Test_TableFindFilterSemantics()
+    {
+        var tableName = "table_findfiltersemantics";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<SimpleTwoColumnRow>(tableName);
+            await table.InsertManyAsync(new List<SimpleTwoColumnRow> {
+                new SimpleTwoColumnRow() { Id = 1, Name = "one" },
+                new SimpleTwoColumnRow() { Id = 2, Name = "two" }
+            });
+
+            // 'naked' findOne:
+            // exp. payload: {"findOne":{}}
+            var found_row = await table.FindOneAsync();
+            Assert.NotNull(found_row);
+
+            // findOne through FILTER ONLY:
+            //
+            // exp. payload: {"findOne":{"filter":{"Id":{"$eq":1}}}}
+            var find_f_id1 = await table.FindOneAsync(Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 1));
+            // exp. payload: {"findOne":{"filter":{"Id":{"$eq":2}}}}
+            var find_f_id2 = await table.FindOneAsync(Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 2));
+            Assert.Equal("one", find_f_id1.Name);
+            Assert.Equal("two", find_f_id2.Name);
+
+            // findOne through FINDOPTIONS ONLY:
+            //
+            var findOpt_id1 = new TableFindOptions<SimpleTwoColumnRow>()
+            {
+                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 1)
+            };
+            var findOpt_id2 = new TableFindOptions<SimpleTwoColumnRow>()
+            {
+                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 2)
+            };
+            // exp. payload: {"findOne":{"filter":{"Id":{"$eq":1}}}}
+            var find_o_id1 = await table.FindOneAsync(findOpt_id1);
+            // exp. payload: {"findOne":{"filter":{"Id":{"$eq":2}}}}
+            var find_o_id2 = await table.FindOneAsync(findOpt_id2);
+            Assert.Equal("one", find_o_id1.Name);
+            Assert.Equal("two", find_o_id2.Name);
+
+            // findOne through BOTH FILTER AND FINDOPTIONS (should throw):
+            var findOpt_id991 = new TableFindOptions<SimpleTwoColumnRow>()
+            {
+                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 991)
+            };
+            var findOpt_id992 = new TableFindOptions<SimpleTwoColumnRow>()
+            {
+                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 992)
+            };
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await table.FindOneAsync(
+                    Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 1),
+                    findOpt_id991
+                );
+            });
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await table.FindOneAsync(
+                    Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 2),
+                    findOpt_id992
+                );
+            });
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
 }

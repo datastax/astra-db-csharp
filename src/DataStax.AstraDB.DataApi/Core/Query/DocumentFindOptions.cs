@@ -30,4 +30,14 @@ public class DocumentFindOptions<T> : FindOptions<T, CollectionSortBuilder<T>>
     [JsonIgnore]
     public override CollectionSortBuilder<T> Sort { get; set; }
 
+    internal DocumentFindOptions<T> Clone()
+    {
+        return new DocumentFindOptions<T>
+        {
+            Filter = Filter != null ? Filter.Clone() : null,
+            IncludeSimilarity = IncludeSimilarity,
+            Projection = Projection != null ? Projection.Clone() : null,
+            Sort = Sort != null ? Sort.Clone() : null
+        };
+    }
 }
