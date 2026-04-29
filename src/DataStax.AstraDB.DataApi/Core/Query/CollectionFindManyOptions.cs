@@ -22,10 +22,10 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 /// <summary>
-/// A set of options to be used when finding rows in a table.
+/// Options for finding multiple documents in a collection.
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
+/// <typeparam name="T">The type of the document.</typeparam>
+public class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSortBuilder<T>>
 {
     /// <summary>The projection to apply to the results.</summary>
     [JsonIgnore]
@@ -37,11 +37,9 @@ public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
     [JsonIgnore]
     public bool? IncludeSimilarity { get; set; }
 
-    /// <summary>
-    /// The builder used to define the sort to apply when running the query.
-    /// </summary>
+    /// <summary>The sort to apply when running the query.</summary>
     [JsonIgnore]
-    public TableSortBuilder<T> Sort { get; set; }
+    public CollectionSortBuilder<T> Sort { get; set; }
 
     /// <summary>
     /// The initial page state used to resume pagination from a previous find-many operation.
@@ -49,66 +47,36 @@ public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
     [JsonIgnore]
     public string InitialPageState { get => PageState; set => PageState = value; }
 
-    /// <summary>
-    /// The number of documents to skip before starting to return documents.
-    /// Use in conjuction with <see cref="Sort"/> to determine the order to apply before skipping. 
-    /// </summary>
     [JsonIgnore]
     public int? Skip { get; set; }
 
-    /// <summary>
-    /// The number of documents to return.
-    /// </summary>
     [JsonIgnore]
     public int? Limit { get; set; }
 
-    /// <summary>
-    /// Whether to include the sort vector in the result or not
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// You can use the attribute <see cref="SerDes.DocumentMappingAttribute"/> to map the sort vector to the result class.
-    /// public class SimpleObjectWithVectorizeResult : SimpleObjectWithVectorize
-    /// {
-    ///     [DocumentMapping(DocumentMappingField.SortVector)]
-    ///     public double? SortVector { get; set; }
-    /// }
-    /// 
-    /// var finder = collection.Find&lt;SimpleObjectWithVectorizeResult&gt;(
-    ///     new FindOptions&lt;SimpleObjectWithVectorize&gt;() { 
-    ///         CollectionSort = Builders&lt;SimpleObjectWithVectorize&gt;.CollectionSort.Vectorize(dogQueryVectorString), 
-    ///         IncludeSortVector = true 
-    ///     }, null);
-    /// var cursor = finder.ToCursor();
-    /// var list = cursor.ToList();
-    /// var result = list.First();
-    /// var sortVector = result.SortVector;
-    /// </code>
-    /// </example>
     [JsonIgnore]
     internal bool? IncludeSortVector { get; set; }
 
-    bool? IFindManyOptions<T, TableSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
+    bool? IFindManyOptions<T, CollectionSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
     internal Filter<T> Filter { get; set; }
 
     [JsonIgnore]
     internal string PageState { get; set; }
 
-    string IFindOptions<T, TableSortBuilder<T>>.PageState { get => PageState; set => PageState = value; }
+    string IFindOptions<T, CollectionSortBuilder<T>>.PageState { get => PageState; set => PageState = value; }
 
-    Filter<T> IFindOptions<T, TableSortBuilder<T>>.Filter { get => Filter; set => Filter = value; }
+    Filter<T> IFindOptions<T, CollectionSortBuilder<T>>.Filter { get => Filter; set => Filter = value; }
 
     [JsonInclude]
     [JsonPropertyName("filter")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     internal Dictionary<string, object> FilterMap => Filter == null ? null : Filter.Serialize();
 
-    TableSortBuilder<T> IFindOptions<T, TableSortBuilder<T>>.Sort { get => Sort; set => Sort = value; }
+    CollectionSortBuilder<T> IFindOptions<T, CollectionSortBuilder<T>>.Sort { get => Sort; set => Sort = value; }
 
-    IProjectionBuilder IFindOptions<T, TableSortBuilder<T>>.Projection { get => Projection; set => Projection = value; }
+    IProjectionBuilder IFindOptions<T, CollectionSortBuilder<T>>.Projection { get => Projection; set => Projection = value; }
 
-    bool? IFindOptions<T, TableSortBuilder<T>>.IncludeSimilarity { get => IncludeSimilarity; set => IncludeSimilarity = value; }
+    bool? IFindOptions<T, CollectionSortBuilder<T>>.IncludeSimilarity { get => IncludeSimilarity; set => IncludeSimilarity = value; }
 
     [JsonInclude]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -144,9 +112,9 @@ public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
         }
     }
 
-    internal TableFindManyOptions<T> Clone()
+    internal CollectionFindManyOptions<T> Clone()
     {
-        return new TableFindManyOptions<T>
+        return new CollectionFindManyOptions<T>
         {
             Filter = Filter != null ? Filter.Clone() : null,
             InitialPageState = InitialPageState,
@@ -159,46 +127,25 @@ public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
         };
     }
 
-        IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
-
-        {
-
-            return Clone();
-
-        }
-
-    
-
-        internal TableFindManyOptions<T> WithFilterParam(TableFilter<T> filter)
-
-        {
-
-            if (filter == null)
-
-            {
-
-                return this;
-
-            }
-
-            
-
-            if (Filter != null)
-
-            {
-
-                throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
-
-            }
-
-            
-
-            var cloned = Clone();
-
-            cloned.Filter = filter;
-
-            return cloned;
-
-        }
-
+    IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.Clone()
+    {
+        return Clone();
     }
+
+    internal CollectionFindManyOptions<T> WithFilterParam(CollectionFilter<T> filter)
+    {
+        if (filter == null)
+        {
+            return this;
+        }
+        
+        if (Filter != null)
+        {
+            throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+        }
+        
+        var cloned = Clone();
+        cloned.Filter = filter;
+        return cloned;
+    }
+}

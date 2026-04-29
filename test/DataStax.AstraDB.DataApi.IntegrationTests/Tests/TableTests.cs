@@ -178,7 +178,7 @@ public class TableTests
         var sorter = Builders<RowBook>.TableSort;
         var sort = sorter.Descending(b => b.Title);
         var projection = Builders<RowBook>.Projection.Include(b => b.Title);
-        var result = await table.FindOneAsync(null, new TableFindOptions<RowBook>() { Sort = sort, Projection = projection });
+        var result = await table.FindOneAsync(null, new TableFindOneOptions<RowBook>() { Sort = sort, Projection = projection });
         Assert.Equal("Title 99", result.Title);
         Assert.Null(result.Author);
     }
@@ -190,7 +190,7 @@ public class TableTests
         var sorter = Builders<RowBook>.TableSort;
         var sort = sorter.Ascending(b => b.Title);
         var projection = Builders<RowBook>.Projection.Exclude(b => b.DueDate);
-        var results = table.Find().Sort(sort).Project(projection).Skip(2).Limit(5);
+        var results = table.Find().Sort(sort).Project(projection).Skip(2).Limit(5).ToList();
         Assert.Equal(5, results.Count());
         // due to 'Computed...' and 'Desert...', the third is 'Title 0' here
         Assert.Equal("Title 0", results.First().Title);
@@ -208,11 +208,12 @@ public class TableTests
 
         var findResults = table.Find().Sort(sort).Project(projection).Limit(1);
         Assert.Equal(1, findResults.Count());
+        findResults.Rewind();
         Assert.Equal("last_component", findResults.First().Id);
-
+        
         var findOneResult = table.FindOne(
             null,
-            new TableFindOptions<RowWithVector4>() {
+            new TableFindOneOptions<RowWithVector4>() {
                 Sort = sort, Projection = projection
             }
         );
@@ -545,13 +546,13 @@ public class TableTests
         var sorter = Builders<Row>.TableSort;
         var sort = sorter.Vectorize("Vectorize", "String To Vectorize 22");
         var results = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(null,
-            new TableFindOptions<Row>() { Sort = sort, IncludeSimilarity = true });
+            new TableFindOneOptions<Row>() { Sort = sort, IncludeSimilarity = true });
         Assert.Equal("Name_22", results["Name"].ToString());
         results = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(null,
-            new TableFindOptions<Row>() { Sort = sort, IncludeSimilarity = true });
+            new TableFindOneOptions<Row>() { Sort = sort, IncludeSimilarity = true });
         Assert.Equal("Name_22", results["Name"].ToString());
         results = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(null,
-            new TableFindOptions<Row>() { Sort = sort, IncludeSimilarity = true });
+            new TableFindOneOptions<Row>() { Sort = sort, IncludeSimilarity = true });
         Assert.Equal("Name_22", results["Name"].ToString());
     }
 
@@ -561,11 +562,11 @@ public class TableTests
         var sorter = Builders<Row>.TableSort;
         var sort = sorter.Descending("Name");
         var projection = Builders<Row>.Projection.Include("Name");
-        var result = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
+        var result = await fixture.UntypedTableSinglePrimaryKey.FindOneAsync(null, new TableFindOneOptions<Row>() { Sort = sort, Projection = projection });
         Assert.Equal("Name_9", result["Name"].ToString());
-        result = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
+        result = await fixture.UntypedTableCompositePrimaryKey.FindOneAsync(null, new TableFindOneOptions<Row>() { Sort = sort, Projection = projection });
         Assert.Equal("Name_9", result["Name"].ToString());
-        result = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(null, new TableFindOptions<Row>() { Sort = sort, Projection = projection });
+        result = await fixture.UntypedTableCompoundPrimaryKey.FindOneAsync(null, new TableFindOneOptions<Row>() { Sort = sort, Projection = projection });
         Assert.Equal("Name_9", result["Name"].ToString());
     }
 
@@ -646,7 +647,7 @@ public class TableTests
             await table.CreateTextIndexAsync("b_idx", (b) => b.LexicalValue, Builders.TableIndex.Text());
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
-            var findOptions = new TableFindOptions<SimpleObjectWithLexical>()
+            var findOptions = new TableFindOneOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
                 Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch((b) => b.LexicalValue, "dog"),

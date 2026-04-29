@@ -2,7 +2,6 @@ using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.SerDes;
 using DataStax.AstraDB.DataApi.Tables;
-using DataStax.AstraDB.DataApi.Collections;
 using MongoDB.Bson;
 using System.Text.Json.Serialization;
 
@@ -711,6 +710,15 @@ public class TripleMapObject
     public Dictionary<string, string> map_v { get; set; }
 }
 
+public class CursorTestDocument {
+    [DocumentId]
+    public string Id { get; set; }
+    public string PText { get; set; }
+    public int PInt { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] Vector { get; set; }
+}
+
 [CollectionName("testColl_vecEncoding_Typed")]
 [CollectionVector(3)]
 public class VectorObjectAsLst
@@ -766,4 +774,13 @@ public class SimpleTwoColumnRow
     [ColumnPrimaryKey]
     public int Id { get; set; }
     public string Name { get; set; }
+}
+
+public class CursorPaginationTestDocument {
+    [DocumentId]
+    public int id { get; set; }
+    public string text { get; set; }
+    public bool even { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] vector { get; set; }
 }

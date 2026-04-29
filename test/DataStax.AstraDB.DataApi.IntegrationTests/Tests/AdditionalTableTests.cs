@@ -50,7 +50,7 @@ public class AdditionalTableTests
             await table.CreateIndexAsync("StringArray_idx", (b) => b.StringArray);
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
-            var findOptions = new TableFindOptions<ArrayTestRow>()
+            var findOptions = new TableFindOneOptions<ArrayTestRow>()
             {
                 Filter = Builders<ArrayTestRow>.TableFilter.In(x => x.StringArray, new string[] { "five" }),
             };
@@ -235,7 +235,7 @@ public class AdditionalTableTests
             Assert.Equal(5, result.InsertedCount);
 
             // Query the data
-            var findOptions = new TableFindOptions<DictionaryTypeTest>()
+            var findOptions = new TableFindOneOptions<DictionaryTypeTest>()
             {
                 Filter = Builders<DictionaryTypeTest>.TableFilter.ValuesIn((t) => t.IntKey, new string[] { "IntValue 1A" }),
             };
@@ -245,7 +245,7 @@ public class AdditionalTableTests
             Assert.Equal(1, findResult.Id);
             Assert.Equal("DecimalValue 1A", findResult.DecimalKey[2.1m]);
 
-            findOptions = new TableFindOptions<DictionaryTypeTest>()
+            findOptions = new TableFindOneOptions<DictionaryTypeTest>()
             {
                 Filter = Builders<DictionaryTypeTest>.TableFilter.ValuesIn((t) => t.IntKey, new string[] { "IntValue 1ABC" }),
             };
@@ -552,7 +552,7 @@ public class AdditionalTableTests
             var sortBuilder = Builders<SimpleObjectWithVector>.TableSort;
             var sort = sortBuilder.Vector(b => b.VectorEmbeddings, dogQueryVector);
             var result = await table.FindOneAsync<SimpleObjectWithVectorSearchResult>(null,
-                new TableFindOptions<SimpleObjectWithVector>() { Sort = sort, IncludeSimilarity = true });
+                new TableFindOneOptions<SimpleObjectWithVector>() { Sort = sort, IncludeSimilarity = true });
 
             Assert.NotNull(result.Similarity);
             Assert.True(result.Similarity > 0);
@@ -597,7 +597,7 @@ public class AdditionalTableTests
 
             var tableUntyped = fixture.Database.GetTable(tableName);
 
-            var findOptions = new TableFindOptions<Row>()
+            var findOptions = new TableFindOneOptions<Row>()
             {
                 Sort = Builders<Row>.TableSort.Vector("VectorEmbeddings", dogQueryVector),
                 IncludeSimilarity = true,
@@ -968,7 +968,7 @@ public class AdditionalTableTests
                 },
             });
 
-            var projectingOptions = new TableFindOptions<TripleMapObject>()
+            var projectingOptions = new TableFindOneOptions<TripleMapObject>()
             {
                 Projection = Builders<TripleMapObject>.Projection.Include(r => r.id)
             };
@@ -1164,11 +1164,11 @@ public class AdditionalTableTests
 
             // findOne through FINDOPTIONS ONLY:
             //
-            var findOpt_id1 = new TableFindOptions<SimpleTwoColumnRow>()
+            var findOpt_id1 = new TableFindOneOptions<SimpleTwoColumnRow>()
             {
                 Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 1)
             };
-            var findOpt_id2 = new TableFindOptions<SimpleTwoColumnRow>()
+            var findOpt_id2 = new TableFindOneOptions<SimpleTwoColumnRow>()
             {
                 Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 2)
             };
@@ -1180,11 +1180,11 @@ public class AdditionalTableTests
             Assert.Equal("two", find_o_id2.Name);
 
             // findOne through BOTH FILTER AND FINDOPTIONS (should throw):
-            var findOpt_id991 = new TableFindOptions<SimpleTwoColumnRow>()
+            var findOpt_id991 = new TableFindOneOptions<SimpleTwoColumnRow>()
             {
                 Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 991)
             };
-            var findOpt_id992 = new TableFindOptions<SimpleTwoColumnRow>()
+            var findOpt_id992 = new TableFindOneOptions<SimpleTwoColumnRow>()
             {
                 Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 992)
             };

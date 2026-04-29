@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -21,11 +22,10 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 /// <summary>
-/// Base class for find operation options, providing projection and sort configuration.
+/// A set of options to be used when finding a row in a table.
 /// </summary>
-/// <typeparam name="T">The type of the document or row.</typeparam>
-/// <typeparam name="TSort">The type of the sort builder.</typeparam>
-public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort : SortBuilder<T>
+/// <typeparam name="T">The type of the row in the table.</typeparam>
+public class TableFindOneOptions<T>
 {
     /// <summary>The projection to apply to the results.</summary>
     [JsonIgnore]
@@ -37,31 +37,18 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
     [JsonIgnore]
     public bool? IncludeSimilarity { get; set; }
 
-    /// <summary>When <see langword="true"/>, the sort vector is included in the response.</summary>
-    protected bool? _includeSortVector;
-
-    /// <summary>Number of results to skip before returning documents.</summary>
-    protected int? _skip;
-
-    /// <summary>Maximum number of documents to return.</summary>
-    protected int? _limit;
+    /// <summary>
+    /// The builder used to define the sort to apply when running the query.
+    /// </summary>
+    [JsonIgnore]
+    public TableSortBuilder<T> Sort { get; set; }
 
     internal Filter<T> Filter { get; set; }
-
-    /// <summary>The sort to apply to the results.</summary>
-    [JsonIgnore]
-    public abstract TSort Sort { get; set; }
-
-    [JsonIgnore]
-    internal string PageState { get; set; }
-    string IFindOptions<T, TSort>.PageState { get => PageState; set => PageState = value; }
 
     [JsonInclude]
     [JsonPropertyName("filter")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     internal Dictionary<string, object> FilterMap => Filter == null ? null : Filter.Serialize();
-
-    Filter<T> IFindOptions<T, TSort>.Filter { get => Filter; set => Filter = value; }
 
     [JsonInclude]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -82,11 +69,7 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
         {
             var options = new Dictionary<string, object>()
             {
-                { "includeSimilarity", IncludeSimilarity },
-                { "includeSortVector", _includeSortVector },
-                { "pageState", PageState },
-                { "skip", _skip },
-                { "limit", _limit },
+                { "includeSimilarity", IncludeSimilarity }
             };
             options = options.Where(pair => pair.Value != null).ToDictionary(pair => pair.Key, pair => pair.Value);
             if (options.Count == 0)
@@ -97,10 +80,31 @@ public abstract class FindOptions<T, TSort> : IFindOptions<T, TSort> where TSort
         }
     }
 
-    [JsonIgnore]
-    TSort IFindOptions<T, TSort>.Sort { get => Sort; set => Sort = value; }
-    [JsonIgnore]
-    IProjectionBuilder IFindOptions<T, TSort>.Projection { get => Projection; set => Projection = value; }
-    [JsonIgnore]
-    bool? IFindOptions<T, TSort>.IncludeSimilarity { get => IncludeSimilarity; set => IncludeSimilarity = value; }
+    internal TableFindOneOptions<T> Clone()
+    {
+        return new TableFindOneOptions<T>
+        {
+            Filter = Filter != null ? Filter.Clone() : null,
+            IncludeSimilarity = IncludeSimilarity,
+            Projection = Projection != null ? Projection.Clone() : null,
+            Sort = Sort != null ? Sort.Clone() : null
+        };
+    }
+
+    internal TableFindOneOptions<T> WithFilterParam(TableFilter<T> filter)
+    {
+        if (filter == null)
+        {
+            return this;
+        }
+        
+        if (Filter != null)
+        {
+            throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+        }
+        
+        var cloned = Clone();
+        cloned.Filter = filter;
+        return cloned;
+    }
 }

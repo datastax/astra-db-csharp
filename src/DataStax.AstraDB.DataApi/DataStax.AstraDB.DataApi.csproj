@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
     <PackageReference Include="MongoDB.Bson" Version="2.13.3" />
     <PackageReference Include="System.Text.Json" Version="9.0.1" />
+    <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>

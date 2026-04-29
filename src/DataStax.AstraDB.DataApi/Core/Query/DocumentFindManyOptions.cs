@@ -20,6 +20,12 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 
 internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOptions<T, CollectionSortBuilder<T>>
 {
+    /// <summary>
+    /// The initial page state used to resume pagination from a previous find-many operation.
+    /// </summary>
+    [JsonIgnore]
+    public string InitialPageState { get => PageState; set => PageState = value; }
+
     [JsonIgnore]
     public int? Skip { get => _skip; set => _skip = value; }
 
@@ -31,12 +37,12 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
 
     bool? IFindManyOptions<T, CollectionSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
-    IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.Clone()
+    internal virtual DocumentFindOptions<T> Clone()
     {
-        var clone = new DocumentFindManyOptions<T>
+        return new DocumentFindManyOptions<T>
         {
             Filter = Filter != null ? Filter.Clone() : null,
-            PageState = PageState,
+            InitialPageState = InitialPageState,
             Skip = Skip,
             Limit = Limit,
             IncludeSortVector = IncludeSortVector,
@@ -44,7 +50,10 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
             Projection = Projection != null ? Projection.Clone() : null,
             Sort = Sort != null ? Sort.Clone() : null
         };
-        return clone;
     }
 
+    IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.Clone()
+    {
+        return (DocumentFindManyOptions<T>)Clone();
+    }
 }

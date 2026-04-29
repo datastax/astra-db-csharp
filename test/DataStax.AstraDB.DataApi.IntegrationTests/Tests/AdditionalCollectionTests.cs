@@ -451,10 +451,10 @@ public class AdditionalCollectionTests
                 });
 
             // Reads:
-            var findOptionsLst = new DocumentFindOptions<Document>()
+            var findOptionsLst = new CollectionFindOneOptions<Document>()
             {
                 Projection = Builders<Document>.Projection.Include("$vector") };
-            var findOptionsBin = new DocumentFindOptions<Document>()
+            var findOptionsBin = new CollectionFindOneOptions<Document>()
             {
                 Projection = Builders<Document>.Projection.Include("$vector") };
             var lstRead = await createdCollection.FindOneAsync(
@@ -520,11 +520,11 @@ public class AdditionalCollectionTests
 
             // findOne through FINDOPTIONS ONLY:
             //
-            var findOpt_id1 = new DocumentFindOptions<SimpleObjectWithVector>()
+            var findOpt_id1 = new CollectionFindOneOptions<SimpleObjectWithVector>()
             {
                 Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 1)
             };
-            var findOpt_id2 = new DocumentFindOptions<SimpleObjectWithVector>()
+            var findOpt_id2 = new CollectionFindOneOptions<SimpleObjectWithVector>()
             {
                 Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 2)
             };
@@ -536,11 +536,11 @@ public class AdditionalCollectionTests
             Assert.Equal("two", find_o_id2.Name);
 
             // findOne through BOTH FILTER AND FINDOPTIONS (should throw):
-            var findOpt_id991 = new DocumentFindOptions<SimpleObjectWithVector>()
+            var findOpt_id991 = new CollectionFindOneOptions<SimpleObjectWithVector>()
             {
                 Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 991)
             };
-            var findOpt_id992 = new DocumentFindOptions<SimpleObjectWithVector>()
+            var findOpt_id992 = new CollectionFindOneOptions<SimpleObjectWithVector>()
             {
                 Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 992)
             };

@@ -16,6 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Enumeration;
 using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.SerDes;
@@ -37,7 +38,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// This is the main entry point for interacting with a table in the Astra DB Data API.
 /// </summary>
 /// <typeparam name="T">The type to use for rows in the table (when not specified, defaults to <see cref="Row"/> </typeparam>
-public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
+public class Table<T> where T : class
 {
     private readonly string _tableName;
     private readonly Database _database;
@@ -846,18 +847,17 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <summary>
     /// Find rows in the table.
     /// 
-    /// The Find() methods return a <see cref="FindEnumerator{T,TResult,TSort}"/> object that can be used to further structure the query
+    /// The Find() methods return a <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object that can be used to further structure the query
     /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
     /// 
-    /// The <see cref="FindEnumerator{T,TResult,TSort}"/> object can be directly enumerated both synchronously and asynchronously.
-    /// Secondarily, the results can be paged through manually by using the results of <see cref="FindEnumerator{T,TResult,TSort}.ToCursor()"/>.
+    /// The <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
     /// </summary>
     /// <returns></returns>
     /// <example>
     /// Synchronous Enumeration:
     /// <code>
-    /// var FindEnumerator = table.Find();
-    /// foreach (var row in FindEnumerator)
+    /// var cursor = table.Find();
+    /// foreach (var row in cursor)
     /// {
     ///     // Process row
     /// }
@@ -879,7 +879,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public FindEnumerator<T, T, TableSortBuilder<T>> Find()
+    public TableFindCursor<T> Find()
     {
         return Find(null, null);
     }
@@ -898,52 +898,79 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// }
     /// </code>
     /// </example>
-    public FindEnumerator<T, T, TableSortBuilder<T>> Find(TableFilter<T> filter)
+    public TableFindCursor<T> Find(TableFilter<T> filter)
     {
         return Find(filter, null);
     }
 
+    /// <inheritdoc cref="Find()" path="/summary"/>
+    /// <param name="findOptions"></param>
+    public TableFindCursor<T> Find(TableFindManyOptions<T> findOptions)
+    {
+        return Find(null, findOptions);
+    }
+
     /// <inheritdoc cref="Find(TableFilter{T})"/>
     /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public FindEnumerator<T, T, TableSortBuilder<T>> Find(TableFilter<T> filter, CommandOptions commandOptions)
+    /// <param name="findOptions"></param>
+    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
     {
-        return Find<T>(filter, commandOptions);
+        findOptions ??= new TableFindManyOptions<T>();
+        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
     }
 
-    /// <inheritdoc cref="Find(TableFilter{T},CommandOptions)"/>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
+    /// <inheritdoc cref="Find()" path="/summary"/>
     /// <remarks>
-    /// This overload of Find() allows you to specify a different result class type <typeparamref name="TResult"/>
-    /// which the resultant rows will be deserialized into. This is generally used along with .Project() to limit the fields returned
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public FindEnumerator<T, TResult, TableSortBuilder<T>> Find<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>() where TResult : class
     {
-        var findOptions = new TableFindManyOptions<T>
-        {
-            Filter = filter
-        };
-        return new FindEnumerator<T, TResult, TableSortBuilder<T>>(this, findOptions, commandOptions);
+        return Find<TResult>(null, null);
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, TableFindStatusResult>> RunFindManyAsync<TResult>(
-            Filter<T> filter,
-            IFindManyOptions<T,
-            TableSortBuilder<T>> findOptions,
-            CommandOptions commandOptions,
-            bool runSynchronously
-    )
-        where TResult : class
+    /// <inheritdoc cref="Find(TableFilter{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter) where TResult : class
     {
-        findOptions.Filter = filter;
-        commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
-        var command = CreateCommand("find").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        return Find<TResult>(filter, null);
+    }
+
+    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> findOptions) where TResult : class
+    {
+        return Find<TResult>(null, findOptions);
+    }
+
+    /// <inheritdoc cref="Find{TResult}(TableFilter{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
+    {
+        findOptions ??= new TableFindManyOptions<T>();
+        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
+    }
+
+    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
+    {
+        var options = cursor.FindOptions.Clone();
+        options.PageState = nextPageState;
+        
+        var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
+        var command = CreateCommand("find").WithPayload(options).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
+        
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
             var columnsInResult = response.Status.ProjectionSchema;
-            if (response != null && response.Data != null && response.Data.Items != null)
+            if (response.Data is { Items: not null })
             {
                 foreach (var row in response.Data.Items)
                 {
@@ -951,7 +978,12 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
                 }
             }
         }
-        return response;
+        
+        return new FindPage<TResult>(
+            response.Data.NextPageState,
+            response.Data.Items,
+            response.Status?.SortVector
+        );
     }
 
     /// <inheritdoc cref="FindOneAsync()"/>
@@ -975,23 +1007,23 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOne(filter, null, commandOptions);
     }
 
-    /// <inheritdoc cref="FindOneAsync(TableFindOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFindOptions{T})"/>
-    public T FindOne(TableFindOptions<T> findOptions)
+    /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFindOneOptions{T})"/>
+    public T FindOne(TableFindOneOptions<T> findOptions)
     {
         return FindOne<T>(null, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOptions{T})"/>
-    public T FindOne(TableFilter<T> filter, TableFindOptions<T> findOptions)
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
+    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> findOptions)
     {
         return FindOne<T>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/> 
-    public T FindOne(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions)
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/> 
+    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions)
     {
         return FindOne<T>(filter, findOptions, commandOptions);
     }
@@ -1017,16 +1049,16 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         return FindOne<TResult>(filter, null, commandOptions);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T})"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions) where TResult : class
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
+    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions) where TResult : class
     {
         return FindOne<TResult>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
+    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
     {
         return FindOneAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
     }
@@ -1063,7 +1095,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// </summary>
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
     /// <returns></returns>
-    public Task<T> FindOneAsync(TableFindOptions<T> findOptions)
+    public Task<T> FindOneAsync(TableFindOneOptions<T> findOptions)
     {
         return FindOneAsync<T>(null, findOptions, null);
     }
@@ -1071,16 +1103,16 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
-    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOptions<T> findOptions)
+    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOneOptions<T> findOptions)
     {
         return FindOneAsync<T>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOptions{T})"/>
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions)
+    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions)
     {
         return FindOneAsync<T>(filter, findOptions, commandOptions);
     }
@@ -1115,24 +1147,23 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions) where TResult : class
+    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions) where TResult : class
     {
         return FindOneAsync<TResult>(filter, findOptions, null);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOptions{T})"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
+    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
     {
         return FindOneAsync<TResult>(filter, findOptions, commandOptions, false);
     }
 
-    internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
-        where TResult : class
+    internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously) where TResult : class
     {
-        findOptions = findOptions != null ? findOptions.Clone() : new TableFindOptions<T>();
+        findOptions = findOptions != null ? findOptions.Clone() : new TableFindOneOptions<T>();
         if (filter != null)
         {
             if (findOptions.Filter == null)
@@ -1148,7 +1179,7 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
         var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
-            if (response != null && response.Data != null && response.Data.Document != null)
+            if (response is { Data.Document: not null })
             {
                 ProcessUntypedRow(response.Data.Document as Row, response.Status.ProjectionSchema);
             }
@@ -1655,17 +1686,5 @@ public class Table<T> : IQueryRunner<T, TableSortBuilder<T>> where T : class
     {
         var optionsTree = GetOptionsTree().ToArray();
         return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _tableName));
-    }
-
-    async Task<ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>> IQueryRunner<T, TableSortBuilder<T>>.RunFindManyAsync<TProjected>(Filter<T> filter, IFindManyOptions<T, TableSortBuilder<T>> findOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        var result = await RunFindManyAsync<TProjected>(filter, findOptions, commandOptions, runSynchronously).ConfigureAwait(false);
-        return new ApiResponseWithData<ApiFindResult<TProjected>, FindStatusResult>
-        {
-            Data = result.Data,
-            Status = result.Status,
-            Errors = result.Errors,
-            Warnings = result.Warnings
-        };
     }
 }
