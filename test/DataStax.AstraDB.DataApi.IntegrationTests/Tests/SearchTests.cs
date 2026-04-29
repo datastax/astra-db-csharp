@@ -202,7 +202,7 @@ public class SearchTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorize>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var findOptions = new DocumentFindOptions<SimpleObjectWithVectorize>()
+            var findOptions = new CollectionFindOneOptions<SimpleObjectWithVectorize>()
             {
                 Sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize("dog"),
                 IncludeSimilarity = true
@@ -945,7 +945,7 @@ public class SearchTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithLexical>(collectionName);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
-            var findOptions = new DocumentFindOptions<SimpleObjectWithLexical>()
+            var findOptions = new CollectionFindOneOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.CollectionSort.Lexical("dog"),
                 Filter = Builders<SimpleObjectWithLexical>.CollectionFilter.LexicalMatch("dog"),
