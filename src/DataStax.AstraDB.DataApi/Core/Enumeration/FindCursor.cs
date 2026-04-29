@@ -64,6 +64,7 @@ public class FindPage<T>
 /// <typeparam name="T">The type of records in the page.</typeparam>
 /// <typeparam name="TCursor">The type of the cursor.</typeparam>
 /// <param name="cursor">The cursor instance.</param>
+/// <param name="nextPageState">A pagination token (string) for the page to fetch. When provided it usually comes from the previous page response.</param>
 /// <param name="runSynchronously">Whether to run the operation synchronously.</param>
 /// <returns>A task that returns the fetched page.</returns>
 delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, string nextPageState, bool runSynchronously);
@@ -78,7 +79,7 @@ delegate Task<FindPage<T>> FetchPageFunc<T, in TCursor>(TCursor cursor, string n
 /// </summary>
 /// <typeparam name="T">The type representing the record or row being queried.</typeparam>
 /// <typeparam name="TResult">The type to deserialize the results to (e.g., when using projections).</typeparam>
-/// <typeparam name="TSort">The type of sort builder to use (e.g., <see cref="DocumentSortBuilder{T}"/> or <see cref="TableSortBuilder{T}"/>).</typeparam>
+/// <typeparam name="TSort">The type of sort builder to use (e.g., <see cref="CollectionSortBuilder{T}"/> or <see cref="TableSortBuilder{T}"/>).</typeparam>
 /// <typeparam name="TCursor">The concrete cursor type for fluent method chaining.</typeparam>
 public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TResult, TCursor>
     where T : class
@@ -228,7 +229,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <param name="include">Whether to include the sort vector. Defaults to true.</param>
     /// <returns>A new cursor instance with the updated setting.</returns>
     /// <remarks>
-    /// When enabled, you can retrieve the sort vector using <see cref="GetSortVector"/> or <see cref="GetSortVectorAsync"/>.
+    /// When enabled, you can retrieve the sort vector using <see cref="GetSortVector()"/> or <see cref="GetSortVectorAsync(CancellationToken)"/>.
     /// This is useful for vector similarity searches where you want to access the vector used for sorting.
     /// </remarks>
     /// <example>
