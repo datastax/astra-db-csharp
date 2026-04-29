@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Collections.Collection{T, Tid}.Find()"/> and provides a fluent API
+/// This cursor is returned by <see cref="Collection{T, Tid}.Find()"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting documents. It supports both synchronous
 /// and asynchronous iteration patterns.
 /// </remarks>
