@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.Core.Enumeration;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
 using Microsoft.VisualBasic;
@@ -206,11 +207,16 @@ public class TableTests
         var sort = sorter.Vector(r => r.Vector, new float[] {0.0f, 0.0f, 0.01f, 0.99f});
         var projection = Builders<RowWithVector4>.Projection.Exclude(r => r.Vector);
 
-        var findResults = table.Find().Sort(sort).Project(projection).Limit(1);
+        var findCursor = table.Find().Sort(sort).Project(projection).Limit(1);
+        var findResults = findCursor.ToList();
         Assert.Equal(1, findResults.Count());
         Assert.Equal("last_component", findResults.First().Id);
         
-        findResults.Rewind();
+        Assert.Throws<CursorException>(() =>
+            findCursor.Limit(123)
+        );
+        findCursor.Rewind();
+        findCursor.Limit(123);
         
         var findOneResult = table.FindOne(
             null,
