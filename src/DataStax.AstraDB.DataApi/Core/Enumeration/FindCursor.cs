@@ -375,6 +375,10 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
 
     private TCursor UpdateOptions(Action<IFindManyOptions<T, TSort>> optionsUpdater)
     {
+        if (State != CursorState.Idle)
+        {
+            throw new CursorException("Cursors must be idle when building their options", State);
+        }
         var newOptions = FindOptions.Clone();
         optionsUpdater(newOptions);
         return CloneWithOptions(newOptions);

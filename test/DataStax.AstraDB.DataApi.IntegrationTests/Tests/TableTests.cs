@@ -209,7 +209,9 @@ public class TableTests
         var findResults = table.Find().Sort(sort).Project(projection).Limit(1);
         Assert.Equal(1, findResults.Count());
         Assert.Equal("last_component", findResults.First().Id);
-
+        
+        findResults.Rewind();
+        
         var findOneResult = table.FindOne(
             null,
             new TableFindOptions<RowWithVector4>() {
