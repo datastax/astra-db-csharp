@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -86,5 +87,22 @@ public class CollectionFindOneOptions<T>
             Projection = Projection != null ? Projection.Clone() : null,
             Sort = Sort != null ? Sort.Clone() : null
         };
+    }
+
+    internal CollectionFindOneOptions<T> WithFilterParam(CollectionFilter<T> filter)
+    {
+        if (filter == null)
+        {
+            return this;
+        }
+        
+        if (Filter != null)
+        {
+            throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+        }
+        
+        var cloned = Clone();
+        cloned.Filter = filter;
+        return cloned;
     }
 }

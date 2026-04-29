@@ -904,18 +904,19 @@ public class Table<T> where T : class
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <param name="commandOptions"></param>
-    public TableFindCursor<T> Find(CommandOptions commandOptions)
+    /// <param name="findOptions"></param>
+    public TableFindCursor<T> Find(TableFindManyOptions<T> findOptions)
     {
-        return Find(null, commandOptions);
+        return Find(null, findOptions);
     }
 
     /// <inheritdoc cref="Find(TableFilter{T})"/>
     /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public TableFindCursor<T> Find(TableFilter<T> filter, CommandOptions commandOptions)
+    /// <param name="findOptions"></param>
+    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
     {
-        return new(new TableFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);
+        findOptions ??= new TableFindManyOptions<T>();
+        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
@@ -938,22 +939,23 @@ public class Table<T> where T : class
         return Find<TResult>(filter, null);
     }
 
-    /// <inheritdoc cref="Find(CommandOptions)"/>
+    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(CommandOptions commandOptions) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> findOptions) where TResult : class
     {
-        return Find<TResult>(null, commandOptions);
+        return Find<TResult>(null, findOptions);
     }
 
     /// <inheritdoc cref="Find{TResult}(TableFilter{T})"/>
     /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
+    /// <param name="findOptions"></param>
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
     {
-        return new(new TableFindManyOptions<T> { Filter = filter }, commandOptions, RunFindManyAsync);
+        findOptions ??= new TableFindManyOptions<T>();
+        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
     }
 
     internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class

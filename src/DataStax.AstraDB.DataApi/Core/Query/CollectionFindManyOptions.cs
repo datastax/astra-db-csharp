@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -24,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// Options for finding multiple documents in a collection.
 /// </summary>
 /// <typeparam name="T">The type of the document.</typeparam>
-internal class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSortBuilder<T>>
+public class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSortBuilder<T>>
 {
     /// <summary>The projection to apply to the results.</summary>
     [JsonIgnore]
@@ -129,5 +130,22 @@ internal class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSort
     IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.Clone()
     {
         return Clone();
+    }
+
+    internal CollectionFindManyOptions<T> WithFilterParam(CollectionFilter<T> filter)
+    {
+        if (filter == null)
+        {
+            return this;
+        }
+        
+        if (Filter != null)
+        {
+            throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+        }
+        
+        var cloned = Clone();
+        cloned.Filter = filter;
+        return cloned;
     }
 }

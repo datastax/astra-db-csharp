@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -24,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// A set of options to be used when finding rows in a table.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
+public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
 {
     /// <summary>The projection to apply to the results.</summary>
     [JsonIgnore]
@@ -158,8 +159,46 @@ internal class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>
         };
     }
 
-    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
-    {
-        return Clone();
+        IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
+
+        {
+
+            return Clone();
+
+        }
+
+    
+
+        internal TableFindManyOptions<T> WithFilterParam(TableFilter<T> filter)
+
+        {
+
+            if (filter == null)
+
+            {
+
+                return this;
+
+            }
+
+            
+
+            if (Filter != null)
+
+            {
+
+                throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+
+            }
+
+            
+
+            var cloned = Clone();
+
+            cloned.Filter = filter;
+
+            return cloned;
+
+        }
+
     }
-}
