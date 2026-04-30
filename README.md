@@ -16,56 +16,41 @@ For Hyper-Converged Database (HCD):
 - [Quickstart for tables](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/quickstart-tables.html)
 - [Get started with the Data API](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/dataapiclient.html)
 
-## Quickstart
-
-Install the client with:
-
-```
-dotnet add package DataStax.AstraDB.DataApi
-```
-
-Get the **API Endpoint** and the **Application Token** for your Astra DB instance at [astra.datastax.com](https://astra.datastax.com/).
-
-Try the following code after replacing the connection parameters:
+## At a glance
 
 ```csharp
 using DataStax.AstraDB.DataApi;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Query;
 
-namespace Quickstart
-{
-  public class QuickstartConnect
-  {
-    public static Database ConnectToDatabase()
+// ...
+// ...
+
+var client = new DataAPIClient();
+var database = client.GetDatabase(
+    "<Astra DB API Endpoint>",
+    new DatabaseCommandOptions() { Token = "<Astra DB Application Token>" }
+);
+
+// ...
+
+var collection = await database.CreateCollectionAsync<MyDocumentClass>("ExampleCollection");
+await collection.InsertManyAsync(new List<MyDocumentClass>()
     {
-      string? endpoint = Environment.GetEnvironmentVariable(
-        "API_ENDPOINT"
-      ); 
-      string? token = Environment.GetEnvironmentVariable(
-        "APPLICATION_TOKEN"
-      );
-
-      if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(token))
-      {
-        throw new InvalidOperationException(
-          "Environment variables API_ENDPOINT and APPLICATION_TOKEN must be defined"
-        );
-      }
-
-      // Create an instance of the `DataAPIClient` class
-      var client = new DataAPIClient();
-
-      // Get the database specified by your endpoint and provide the token
-      var database = client.GetDatabase(
-        endpoint,
-        new DatabaseCommandOptions() { Token = token }
-      );
-
-      Console.WriteLine("Connected to database.");
-
-      return database;
+        new() { Name = "Apple", Score = 10, Description = "..." },
+        new() { Name = "Peach", Score = 5, Description = "..." },
+        new() { Name = "Walnut", Score = 8, Description = "..." }
     }
-  }
+);
+
+// ...
+
+var findOptions = new CollectionFindOneOptions<MyDocumentClass>() {
+    Sort = Builders<MyDocumentClass>.CollectionSort.Vectorize("<search query>"),
+    IncludeSimilarity = true
+};
+var matchingDocument = await collection.FindOneAsync<MyDocumentSearchResultClass>(findOptions);
+if ( matchingDocument != null ){
+    Console.WriteLine($"Match: '{matchingDocument.Name}' (similarity: {matchingDocument.Similarity})");
 }
 ```
-
