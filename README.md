@@ -2,7 +2,19 @@
 
 `astra-db-csharp` is a C# client for interacting with [DataStax Astra DB](https://astra.datastax.com/) and Hyper-Converged Database.
 
-View the full client and Data API **documentation** at [docs.datastax.com](https://docs.datastax.com/en/astra-db-serverless/api-reference/dataapiclient.html#use-a-client).
+## Documentation 
+
+For Astra DB Serverless:
+
+- [Quickstart for collections](https://docs.datastax.com/en/astra-db-serverless/get-started/quickstart.html)
+- [Quickstart for tables](https://docs.datastax.com/en/astra-db-serverless/get-started/quickstart-tables.html)
+- [Get started with the Data API](https://docs.datastax.com/en/astra-db-serverless/api-reference/dataapiclient.html)
+
+For Hyper-Converged Database (HCD):
+
+- [Quickstart for collections](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/quickstart.html)
+- [Quickstart for tables](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/quickstart-tables.html)
+- [Get started with the Data API](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/dataapiclient.html)
 
 ## Quickstart
 
@@ -57,6 +69,3 @@ namespace Quickstart
 }
 ```
 
-## Learn more
-
-Documentation: [docs.datastax.com](https://docs.datastax.com/en/astra-db-serverless/api-reference/dataapiclient.html#use-a-client).
