@@ -47,9 +47,11 @@ public class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSortBu
     [JsonIgnore]
     public string InitialPageState { get => PageState; set => PageState = value; }
 
+    /// <summary>An optional amount of documents to skip in a find operation.</summary>
     [JsonIgnore]
     public int? Skip { get; set; }
 
+    /// <summary>An optional maximum number of documents to return in a find operation.</summary>
     [JsonIgnore]
     public int? Limit { get; set; }
 

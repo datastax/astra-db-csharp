@@ -37,7 +37,7 @@ internal class DocumentFindManyOptions<T> : DocumentFindOptions<T>, IFindManyOpt
 
     bool? IFindManyOptions<T, CollectionSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
-    internal virtual DocumentFindOptions<T> Clone()
+    new internal virtual DocumentFindOptions<T> Clone()
     {
         return new DocumentFindManyOptions<T>
         {
