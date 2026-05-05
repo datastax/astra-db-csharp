@@ -229,7 +229,11 @@ public class UpdateBuilder<T>
                     .Select(key => new object[] { key, dict[key]! })
                     .ToArray();
 
-                _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
+                if (pairArrays.Length == 0){
+                    _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, dict));
+                } else {
+                    _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
+                }
                 return this;
             }
         }
@@ -251,7 +255,11 @@ public class UpdateBuilder<T>
     public UpdateBuilder<T> Set<TKey, TValue>(string fieldName, (TKey, TValue)[] pairs)
     {
         var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
-        _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
+        if (pairArrays.Length == 0){
+            _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, new Dictionary<TKey, TValue>(){} ));
+        } else {
+            _updates.Add(new Update<T>(UpdateOperator.Set, fieldName, pairArrays));
+        }
         return this;
     }
 
@@ -276,7 +284,12 @@ public class UpdateBuilder<T>
             {
                 pairArrays.Add(new object[] { key, dict[key] });
             }
-            _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairArrays.ToArray()));
+            var pairsFinalArray = pairArrays.ToArray();
+            if (pairsFinalArray.Length == 0){
+                _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), dict ));
+            } else {
+                _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairsFinalArray));
+            }
             return this;
         }
         _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), value));
@@ -294,7 +307,11 @@ public class UpdateBuilder<T>
     public UpdateBuilder<T> Set<TKey, TValue>(Expression<Func<T, IDictionary<TKey, TValue>>> expression, (TKey, TValue)[] pairs)
     {
         var pairArrays = pairs.Select(p => new object[] { p.Item1, p.Item2 }).ToArray();
-        _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairArrays));
+        if (pairArrays.Length == 0){
+            _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), new Dictionary<TKey, TValue>(){} ));
+        } else {
+            _updates.Add(new Update<T>(UpdateOperator.Set, expression.GetMemberNameTree(), pairArrays));
+        }
         return this;
     }
 
