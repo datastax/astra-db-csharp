@@ -42,10 +42,10 @@ public class TypeUtilities
     }
 
     /// <summary>
-    /// Returns the <see cref="DataApiType"/> that corresponds to the given .NET type,
+    /// Returns the <see cref="DataAPIType"/> that corresponds to the given .NET type,
     /// unwrapping <c>Nullable&lt;T&gt;</c> if necessary.
     /// </summary>
-    public static DataApiType GetDataApiType(Type propertyType)
+    public static DataAPIType GetDataAPIType(Type propertyType)
     {
         Type underlyingType;
         if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -56,54 +56,54 @@ public class TypeUtilities
         {
             underlyingType = propertyType;
         }
-        return GetDataApiTypeFromUnderlyingType(underlyingType);
+        return GetDataAPITypeFromUnderlyingType(underlyingType);
     }
 
     /// <summary>
-    /// Returns the <see cref="DataApiType"/> that corresponds to the given non-nullable .NET type.
+    /// Returns the <see cref="DataAPIType"/> that corresponds to the given non-nullable .NET type.
     /// </summary>
-    public static DataApiType GetDataApiTypeFromUnderlyingType(Type propertyType)
+    public static DataAPIType GetDataAPITypeFromUnderlyingType(Type propertyType)
     {
-        DataApiType type = null;
+        DataAPIType type = null;
         switch (Type.GetTypeCode(propertyType))
         {
             case TypeCode.Int32:
             case TypeCode.Int16:
             case TypeCode.Byte:
-                return DataApiType.Int();
+                return DataAPIType.Int();
             case TypeCode.String:
-                return DataApiType.Text();
+                return DataAPIType.Text();
             case TypeCode.Boolean:
-                return DataApiType.Boolean();
+                return DataAPIType.Boolean();
             case TypeCode.DateTime:
-                return DataApiType.Timestamp();
+                return DataAPIType.Timestamp();
             case TypeCode.Decimal:
-                return DataApiType.Decimal();
+                return DataAPIType.Decimal();
             case TypeCode.Double:
-                return DataApiType.Double();
+                return DataAPIType.Double();
             case TypeCode.Int64:
-                return DataApiType.BigInt();
+                return DataAPIType.BigInt();
             case TypeCode.Single:
-                return DataApiType.Float();
+                return DataAPIType.Float();
             case TypeCode.Object:
                 if (propertyType.FullName == "System.DateOnly")
                 {
-                    return DataApiType.Date();
+                    return DataAPIType.Date();
                 }
                 else if (propertyType.FullName == "System.TimeOnly")
                 {
-                    return DataApiType.Time();
+                    return DataAPIType.Time();
                 }
                 else if (propertyType.IsArray)
                 {
                     Type elementType = propertyType.GetElementType();
                     if (elementType == typeof(byte))
                     {
-                        return DataApiType.Blob();
+                        return DataAPIType.Blob();
                     }
                     else
                     {
-                        return DataApiType.List(GetDataApiTypeFromUnderlyingType(elementType));
+                        return DataAPIType.List(GetDataAPITypeFromUnderlyingType(elementType));
                     }
                 }
                 else if (propertyType.IsEnum)
@@ -113,15 +113,15 @@ public class TypeUtilities
                 }
                 else if (propertyType == typeof(Guid))
                 {
-                    return DataApiType.Uuid();
+                    return DataAPIType.Uuid();
                 }
                 else if (propertyType == typeof(Duration))
                 {
-                    return DataApiType.Duration();
+                    return DataAPIType.Duration();
                 }
                 else if (propertyType == typeof(IPAddress))
                 {
-                    return DataApiType.Inet();
+                    return DataAPIType.Inet();
                 }
                 else if (propertyType.IsGenericType)
                 {
@@ -132,16 +132,16 @@ public class TypeUtilities
                     {
                         if (genericArguments.Length == 2)
                         {
-                            return DataApiType.Map(GetDataApiType(genericArguments[0]), GetDataApiType(genericArguments[1]));
+                            return DataAPIType.Map(GetDataAPIType(genericArguments[0]), GetDataAPIType(genericArguments[1]));
                         }
                     }
                     else if (genericTypeDefinition == typeof(List<>))
                     {
-                        return DataApiType.List(GetDataApiType(genericArguments[0]));
+                        return DataAPIType.List(GetDataAPIType(genericArguments[0]));
                     }
                     else if (genericTypeDefinition == typeof(HashSet<>))
                     {
-                        return DataApiType.Set(GetDataApiType(genericArguments[0]));
+                        return DataAPIType.Set(GetDataAPIType(genericArguments[0]));
                     }
                     else
                     {
@@ -155,7 +155,7 @@ public class TypeUtilities
                     if (attribute != null)
                     {
                         var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName(propertyType, attribute);
-                        return DataApiType.UserDefined(typeName);
+                        return DataAPIType.UserDefined(typeName);
                     }
                     //skip
                     Console.WriteLine($"Warning: Unhandled type: {propertyType.Name}");
@@ -235,12 +235,12 @@ internal class UserDefinedProperty
 /// <summary>
 /// Represents a Data API column type (e.g., text, int, uuid, vector).
 /// </summary>
-public class DataApiType
+public class DataAPIType
 {
     /// <summary>
-    /// Initializes a new <see cref="DataApiType"/> with the given type key.
+    /// Initializes a new <see cref="DataAPIType"/> with the given type key.
     /// </summary>
-    public DataApiType(string key)
+    public DataAPIType(string key)
     {
         Key = key;
     }
@@ -258,61 +258,61 @@ public class DataApiType
     internal virtual bool IsSimpleType => true;
 
     /// <summary>Creates an ascii column type.</summary>
-    public static DataApiType Ascii() => new DataApiType("ascii");
+    public static DataAPIType Ascii() => new DataAPIType("ascii");
     /// <summary>Creates a bigint column type.</summary>
-    public static DataApiType BigInt() => new DataApiType("bigint");
+    public static DataAPIType BigInt() => new DataAPIType("bigint");
     /// <summary>Creates a blob column type.</summary>
-    public static DataApiType Blob() => new DataApiType("blob");
+    public static DataAPIType Blob() => new DataAPIType("blob");
     /// <summary>Creates a boolean column type.</summary>
-    public static DataApiType Boolean() => new DataApiType("boolean");
+    public static DataAPIType Boolean() => new DataAPIType("boolean");
     /// <summary>Creates a date column type.</summary>
-    public static DataApiType Date() => new DataApiType("date");
+    public static DataAPIType Date() => new DataAPIType("date");
     /// <summary>Creates a decimal column type.</summary>
-    public static DataApiType Decimal() => new DataApiType("decimal");
+    public static DataAPIType Decimal() => new DataAPIType("decimal");
     /// <summary>Creates a double column type.</summary>
-    public static DataApiType Double() => new DataApiType("double");
+    public static DataAPIType Double() => new DataAPIType("double");
     /// <summary>Creates a duration column type.</summary>
-    public static DataApiType Duration() => new DataApiType("duration");
+    public static DataAPIType Duration() => new DataAPIType("duration");
     /// <summary>Creates a float column type.</summary>
-    public static DataApiType Float() => new DataApiType("float");
+    public static DataAPIType Float() => new DataAPIType("float");
     /// <summary>Creates an inet (IP address) column type.</summary>
-    public static DataApiType Inet() => new DataApiType("inet");
+    public static DataAPIType Inet() => new DataAPIType("inet");
     /// <summary>Creates an int column type.</summary>
-    public static DataApiType Int() => new DataApiType("int");
+    public static DataAPIType Int() => new DataAPIType("int");
 
     /// <summary>Creates a text column type.</summary>
-    public static DataApiType Text() => new DataApiType("text");
+    public static DataAPIType Text() => new DataAPIType("text");
     /// <summary>Creates a time column type.</summary>
-    public static DataApiType Time() => new DataApiType("time");
+    public static DataAPIType Time() => new DataAPIType("time");
     /// <summary>Creates a time uuid column type.</summary>
-    public static DataApiType TimeUuid() => new DataApiType("timeuuid");
+    public static DataAPIType TimeUuid() => new DataAPIType("timeuuid");
     /// <summary>Creates a timestamp column type.</summary>
-    public static DataApiType Timestamp() => new DataApiType("timestamp");
+    public static DataAPIType Timestamp() => new DataAPIType("timestamp");
     /// <summary>Creates a uuid column type.</summary>
-    public static DataApiType Uuid() => new DataApiType("uuid");
+    public static DataAPIType Uuid() => new DataAPIType("uuid");
 
     /// <summary>Creates a list column type with the specified element type.</summary>
-    public static DataApiType List(DataApiType valueType) => new ListDataApiType(valueType);
+    public static DataAPIType List(DataAPIType valueType) => new ListDataAPIType(valueType);
     /// <summary>Creates a map column type with string keys and the specified value type.</summary>
-    public static DataApiType Map(DataApiType valueType) => new MapDataApiType(valueType);
+    public static DataAPIType Map(DataAPIType valueType) => new MapDataAPIType(valueType);
     /// <summary>Creates a map column type with the specified key and value types.</summary>
-    public static DataApiType Map(DataApiType keyType, DataApiType valueType) => new MapDataApiType(keyType, valueType);
+    public static DataAPIType Map(DataAPIType keyType, DataAPIType valueType) => new MapDataAPIType(keyType, valueType);
     /// <summary>Creates a set column type with the specified element type.</summary>
-    public static DataApiType Set(DataApiType valueType) => new ListDataApiType("set", valueType);
+    public static DataAPIType Set(DataAPIType valueType) => new ListDataAPIType("set", valueType);
     /// <summary>Creates a vector column type with the specified dimension.</summary>
-    public static DataApiType Vector(int dimension) => new VectorDataApiType(dimension);
+    public static DataAPIType Vector(int dimension) => new VectorDataAPIType(dimension);
     /// <summary>Creates a vectorize column type backed by the specified vectorization service.</summary>
-    public static DataApiType Vectorize(VectorServiceOptions serviceOptions) => new VectorizeDataApiType(serviceOptions);
+    public static DataAPIType Vectorize(VectorServiceOptions serviceOptions) => new VectorizeDataAPIType(serviceOptions);
     /// <summary>Creates a vectorize column type with explicit dimensions, backed by the specified vectorization service.</summary>
-    public static DataApiType Vectorize(int dimensions, VectorServiceOptions serviceOptions) => new VectorizeDataApiType(dimensions, serviceOptions);
+    public static DataAPIType Vectorize(int dimensions, VectorServiceOptions serviceOptions) => new VectorizeDataAPIType(dimensions, serviceOptions);
     /// <summary>Creates a user-defined (UDT) column type with the specified type name.</summary>
-    public static DataApiType UserDefined(string name) => new UserDefinedDataApiType(name);
+    public static DataAPIType UserDefined(string name) => new UserDefinedDataAPIType(name);
 }
 
 /// <summary>
 /// Vector data type
 /// </summary>
-public class VectorDataApiType : DataApiType
+public class VectorDataAPIType : DataAPIType
 {
     /// <summary>
     /// The dimension of the vector
@@ -325,7 +325,7 @@ public class VectorDataApiType : DataApiType
     /// Vector data type
     /// </summary>
     /// <param name="dimension"></param>
-    public VectorDataApiType(int? dimension) : base("vector")
+    public VectorDataAPIType(int? dimension) : base("vector")
     {
         Dimension = dimension;
     }
@@ -340,7 +340,7 @@ public class VectorDataApiType : DataApiType
 /// <summary>
 /// Vectorize data type
 /// </summary>
-public class VectorizeDataApiType : VectorDataApiType
+public class VectorizeDataAPIType : VectorDataAPIType
 {
     /// <summary>
     /// The vectorization service options
@@ -352,7 +352,7 @@ public class VectorizeDataApiType : VectorDataApiType
     /// Construct a Vectorize data type
     /// </summary>
     /// <param name="serviceOptions"></param>
-    public VectorizeDataApiType(VectorServiceOptions serviceOptions) : base(null)
+    public VectorizeDataAPIType(VectorServiceOptions serviceOptions) : base(null)
     {
         ServiceOptions = serviceOptions;
     }
@@ -362,7 +362,7 @@ public class VectorizeDataApiType : VectorDataApiType
     /// </summary>
     /// <param name="dimensions"></param>
     /// <param name="serviceOptions"></param>
-    public VectorizeDataApiType(int? dimensions, VectorServiceOptions serviceOptions) : base(dimensions)
+    public VectorizeDataAPIType(int? dimensions, VectorServiceOptions serviceOptions) : base(dimensions)
     {
         ServiceOptions = serviceOptions;
     }
@@ -376,7 +376,7 @@ public class VectorizeDataApiType : VectorDataApiType
 /// <summary>
 /// Represents a user-defined type (UDT) column type in the Data API.
 /// </summary>
-public class UserDefinedDataApiType : DataApiType
+public class UserDefinedDataAPIType : DataAPIType
 {
     /// <summary>
     /// The name of the user-defined type as registered in the Data API schema.
@@ -385,9 +385,9 @@ public class UserDefinedDataApiType : DataApiType
     public string UserDefinedTypeName { get; set; }
 
     /// <summary>
-    /// Initializes a new <see cref="UserDefinedDataApiType"/> with the given UDT name.
+    /// Initializes a new <see cref="UserDefinedDataAPIType"/> with the given UDT name.
     /// </summary>
-    public UserDefinedDataApiType(string name) : base("userDefined")
+    public UserDefinedDataAPIType(string name) : base("userDefined")
     {
         UserDefinedTypeName = name;
     }
@@ -402,7 +402,7 @@ public class UserDefinedDataApiType : DataApiType
 /// <summary>
 /// Represents a list column type in the Data API, parameterized by an element type.
 /// </summary>
-public class ListDataApiType : DataApiType
+public class ListDataAPIType : DataAPIType
 {
     [JsonInclude]
     [JsonPropertyName("valueType")]
@@ -412,12 +412,12 @@ public class ListDataApiType : DataApiType
     /// The Data API type of the list's elements.
     /// </summary>
     [JsonIgnore]
-    public DataApiType ValueType { get; set; }
+    public DataAPIType ValueType { get; set; }
 
     /// <summary>
     /// Initializes a new list column type with the specified element type.
     /// </summary>
-    public ListDataApiType(DataApiType valueType) : base("list")
+    public ListDataAPIType(DataAPIType valueType) : base("list")
     {
         ValueType = valueType;
     }
@@ -425,7 +425,7 @@ public class ListDataApiType : DataApiType
     /// <summary>
     /// Initializes a new list-like column type (e.g., set) with the given base type key and element type.
     /// </summary>
-    public ListDataApiType(string baseType, DataApiType valueType) : base(baseType)
+    public ListDataAPIType(string baseType, DataAPIType valueType) : base(baseType)
     {
         ValueType = valueType;
     }
@@ -441,7 +441,7 @@ public class ListDataApiType : DataApiType
 /// <summary>
 /// Definition for a Map data type
 /// </summary>
-public class MapDataApiType : ListDataApiType
+public class MapDataAPIType : ListDataAPIType
 {
     [JsonInclude]
     [JsonPropertyName("keyType")]
@@ -451,7 +451,7 @@ public class MapDataApiType : ListDataApiType
     /// Construct a Map data type with string keys and the specified value type
     /// </summary>
     /// <param name="valueType"></param>
-    public MapDataApiType(DataApiType valueType) : base("map", valueType)
+    public MapDataAPIType(DataAPIType valueType) : base("map", valueType)
     {
     }
 
@@ -460,7 +460,7 @@ public class MapDataApiType : ListDataApiType
     /// </summary>
     /// <param name="keyType"></param>
     /// <param name="valueType"></param>
-    public MapDataApiType(DataApiType keyType, DataApiType valueType) : base("map", valueType)
+    public MapDataAPIType(DataAPIType keyType, DataAPIType valueType) : base("map", valueType)
     {
         KeyType = keyType.AsValueType;
     }

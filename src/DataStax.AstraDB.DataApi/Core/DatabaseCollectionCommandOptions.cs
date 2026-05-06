@@ -24,7 +24,7 @@ public class DatabaseCollectionCommandOptions : DatabaseCommandOptions
     /// <summary>
     /// When specified, the client will send the x-embedding-api-key header with the specified key to any underlying HTTP request that requires vectorize authentication.
     /// </summary>
-    public string EmbeddingApiKey
+    public string EmbeddingAPIKey
     {
         get
         {

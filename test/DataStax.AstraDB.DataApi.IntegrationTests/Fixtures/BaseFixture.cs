@@ -17,11 +17,11 @@ public class BaseFixture
     public BaseFixture(AssemblyFixture assemblyFixture, string fixtureName)
     {
         _assemblyFixture = assemblyFixture;
-        Client = _assemblyFixture.CreateApiClient(fixtureName);
+        Client = _assemblyFixture.CreateAPIClient(fixtureName);
         DatabaseUrl = _assemblyFixture.DatabaseUrl;
         Client.Logger.LogInformation("Using Database URL: {DatabaseUrl}", DatabaseUrl);
         Database = Client.GetDatabase(DatabaseUrl);
-        ClientWithoutToken = _assemblyFixture.CreateApiClient(fixtureName, false);
+        ClientWithoutToken = _assemblyFixture.CreateAPIClient(fixtureName, false);
         Token = _assemblyFixture.Token;
     }
 

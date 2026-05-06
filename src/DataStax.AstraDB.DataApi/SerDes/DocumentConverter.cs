@@ -26,7 +26,7 @@ using System.Text.Json.Serialization;
 
 /// <summary>
 /// A custom converter to handle converting documents to and from JSON using the <see cref="DocumentMappingAttribute"/>
-/// to handle DataApi-specific properties.
+/// to handle DataAPI-specific properties.
 /// </summary>
 /// <typeparam name="T">The type of the document</typeparam>
 public class DocumentConverter<T> : JsonConverter<T>
@@ -47,11 +47,11 @@ public class DocumentConverter<T> : JsonConverter<T>
             {
                 string jsonName = attr.Field switch
                 {
-                    DocumentMappingField.Vectorize => DataApiKeywords.Vectorize,
-                    DocumentMappingField.Vector => DataApiKeywords.Vector,
-                    DocumentMappingField.Similarity => DataApiKeywords.Similarity,
-                    DocumentMappingField.Lexical => DataApiKeywords.Lexical,
-                    DocumentMappingField.Hybrid => DataApiKeywords.Hybrid,
+                    DocumentMappingField.Vectorize => DataAPIKeywords.Vectorize,
+                    DocumentMappingField.Vector => DataAPIKeywords.Vector,
+                    DocumentMappingField.Similarity => DataAPIKeywords.Similarity,
+                    DocumentMappingField.Lexical => DataAPIKeywords.Lexical,
+                    DocumentMappingField.Hybrid => DataAPIKeywords.Hybrid,
                     _ => prop.Name
                 };
                 FieldMappings[prop] = jsonName;
@@ -61,10 +61,10 @@ public class DocumentConverter<T> : JsonConverter<T>
             else
             {
                 var idAttr = prop.GetCustomAttribute<DocumentIdAttribute>();
-                if (idAttr != null || prop.Name == DataApiKeywords.Id)
+                if (idAttr != null || prop.Name == DataAPIKeywords.Id)
                 {
-                    FieldMappings[prop] = DataApiKeywords.Id;
-                    ReverseMappings[DataApiKeywords.Id] = prop;
+                    FieldMappings[prop] = DataAPIKeywords.Id;
+                    ReverseMappings[DataAPIKeywords.Id] = prop;
                     PropertyNamesToIgnore.Add(prop.Name);
                 }
                 else
@@ -111,7 +111,7 @@ public class DocumentConverter<T> : JsonConverter<T>
 
             if (targetProp != null && targetProp.CanWrite)
             {
-                var isId = propertyName == DataApiKeywords.Id;
+                var isId = propertyName == DataAPIKeywords.Id;
                 object value = isId && targetProp.PropertyType == typeof(object) ?
                     IdListConverter.ReadSingleIdValue(ref reader, targetProp.PropertyType, options) :
                     JsonSerializer.Deserialize(ref reader, targetProp.PropertyType, options);

@@ -62,21 +62,21 @@ internal class Sort
         Value = value;
     }
 
-    internal static Sort Ascending(string field) => new(field, DataApiKeywords.SortAscending);
+    internal static Sort Ascending(string field) => new(field, DataAPIKeywords.SortAscending);
 
-    internal static Sort Descending(string field) => new(field, DataApiKeywords.SortDescending);
+    internal static Sort Descending(string field) => new(field, DataAPIKeywords.SortDescending);
 
-    internal static Sort Vector(float[] vector) => new(DataApiKeywords.Vector, vector);
+    internal static Sort Vector(float[] vector) => new(DataAPIKeywords.Vector, vector);
 
-    internal static Sort Vectorize(string valueToVectorize) => new(DataApiKeywords.Vectorize, valueToVectorize);
+    internal static Sort Vectorize(string valueToVectorize) => new(DataAPIKeywords.Vectorize, valueToVectorize);
 
-    internal static Sort Hybrid(string combinedSearchString) => new(DataApiKeywords.Hybrid, combinedSearchString);
+    internal static Sort Hybrid(string combinedSearchString) => new(DataAPIKeywords.Hybrid, combinedSearchString);
 
-    internal static Sort Hybrid(string lexical, string vectorize) => new(DataApiKeywords.Hybrid, new Dictionary<string, object> { { DataApiKeywords.Lexical, lexical }, { DataApiKeywords.Vectorize, vectorize } });
+    internal static Sort Hybrid(string lexical, string vectorize) => new(DataAPIKeywords.Hybrid, new Dictionary<string, object> { { DataAPIKeywords.Lexical, lexical }, { DataAPIKeywords.Vectorize, vectorize } });
 
-    internal static Sort Hybrid(string lexical, float[] vector) => new(DataApiKeywords.Hybrid, new Dictionary<string, object> { { DataApiKeywords.Lexical, lexical }, { DataApiKeywords.Vector, vector } });
+    internal static Sort Hybrid(string lexical, float[] vector) => new(DataAPIKeywords.Hybrid, new Dictionary<string, object> { { DataAPIKeywords.Lexical, lexical }, { DataAPIKeywords.Vector, vector } });
 
-    internal static Sort Lexical(string value) => new(DataApiKeywords.Lexical, value);
+    internal static Sort Lexical(string value) => new(DataAPIKeywords.Lexical, value);
 
     internal static Sort TableLexical(string columnName, string value) => new Sort(columnName, value);
 
@@ -88,12 +88,12 @@ internal class Sort<T> : Sort
 
     internal static Sort Ascending<TField>(Expression<Func<T, TField>> expression)
     {
-        return new Sort<T>(expression.GetMemberNameTree(), DataApiKeywords.SortAscending);
+        return new Sort<T>(expression.GetMemberNameTree(), DataAPIKeywords.SortAscending);
     }
 
     internal static Sort Descending<TField>(Expression<Func<T, TField>> expression)
     {
-        return new Sort<T>(expression.GetMemberNameTree(), DataApiKeywords.SortDescending);
+        return new Sort<T>(expression.GetMemberNameTree(), DataAPIKeywords.SortDescending);
     }
 
     internal static Sort TableLexical<TField>(Expression<Func<T, TField>> expression, string value)

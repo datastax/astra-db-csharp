@@ -19,7 +19,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// The data source to connect to.
 /// </summary>
-public enum DataApiDestination
+public enum DataAPIDestination
 {
     /// <summary>DataStax Astra DB (managed cloud service).</summary>
     ASTRA,

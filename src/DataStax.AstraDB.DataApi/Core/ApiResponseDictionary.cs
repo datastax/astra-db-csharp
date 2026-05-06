@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-internal class ApiResponseDictionary : Dictionary<string, object>
+internal class APIResponseDictionary : Dictionary<string, object>
 {
 
 }

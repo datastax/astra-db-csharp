@@ -56,14 +56,14 @@ public class AdditionalCollectionTests
     }
 
     [Fact]
-    public async Task EmbeddingApiKey_Test()
+    public async Task EmbeddingAPIKey_Test()
     {
-        var collectionName = "testEmbeddingApiKey";
+        var collectionName = "testEmbeddingAPIKey";
         try
         {
             var collection = await fixture.Database.CreateCollectionAsync<Book>(collectionName, new DatabaseCollectionCommandOptions()
             {
-                EmbeddingApiKey = "test-api-key-here"
+                EmbeddingAPIKey = "test-api-key-here"
             });
             var items = new List<Book>() {
                 new Book()

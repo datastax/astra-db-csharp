@@ -70,7 +70,7 @@ public class RerankSorter<T, TResult> where T : class where TResult : class
     public RerankEnumerator<T, TResult> Sort(string lexical, float[] vector)
     {
         _findOptions.Sorts.Add(Query.Sort.Hybrid(lexical, vector));
-        _findOptions.RerankOn = DataApiKeywords.Lexical;
+        _findOptions.RerankOn = DataAPIKeywords.Lexical;
         _findOptions.RerankQuery = lexical;
         return new RerankEnumerator<T, TResult>(_commandFactory, _findOptions, _commandOptions);
     }

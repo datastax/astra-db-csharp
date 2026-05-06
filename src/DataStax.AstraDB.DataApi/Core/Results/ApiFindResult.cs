@@ -23,7 +23,7 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 /// A page of results from a find query.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class ApiFindResult<T>
+public class APIFindResult<T>
 {
     /// <summary>
     /// The documents returned by the query.

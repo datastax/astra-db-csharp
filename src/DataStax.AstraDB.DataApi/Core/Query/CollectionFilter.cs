@@ -42,8 +42,8 @@ public class CollectionFilter<T> : Filter<T>
 internal class LogicalCollectionFilter<T> : CollectionFilter<T>
 {
     internal LogicalCollectionFilter(LogicalOperator op, CollectionFilter<T>[] filters)
-        : base(op.ToApiString(), filters) { }
+        : base(op.ToAPIString(), filters) { }
 
     internal LogicalCollectionFilter(LogicalOperator op, CollectionFilter<T> filter)
-        : base(op.ToApiString(), filter) { }
+        : base(op.ToAPIString(), filter) { }
 }

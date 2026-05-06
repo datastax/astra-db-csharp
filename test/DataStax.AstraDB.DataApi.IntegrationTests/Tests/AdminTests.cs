@@ -178,11 +178,11 @@ public class AdminTests
 
     [SkipWhenNotAstra]
     [Fact]
-    public void DatabaseAdmin_GetApiEndpoint()
+    public void DatabaseAdmin_GetAPIEndpoint()
     {
         var daa = fixture.CreateAdmin(fixture.Database) as DatabaseAdminAstra;
 
-        Assert.Equal(fixture.DatabaseId, AdminFixture.GetDatabaseIdFromUrl(daa.GetApiEndpoint()));
+        Assert.Equal(fixture.DatabaseId, AdminFixture.GetDatabaseIdFromUrl(daa.GetAPIEndpoint()));
     }
 
     [Fact]

@@ -39,7 +39,7 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
     private readonly CommandOptions _commandOptions;
     private readonly FindAndRerankOptions<T> _findOptions;
 
-    private volatile Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult<RerankedResult<TResult>>>> _resultTask;
+    private volatile Task<APIResponseWithData<APIFindResult<TResult>, FindStatusResult<RerankedResult<TResult>>>> _resultTask;
 
     internal RerankEnumerator(Func<Command> commandFactory, FindAndRerankOptions<T> findOptions, CommandOptions commandOptions)
     {
@@ -149,11 +149,11 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
         Dictionary<string, int> hybridLimits = new();
         if (lexicalLimit != null)
         {
-            hybridLimits.Add(DataApiKeywords.Lexical, lexicalLimit.Value);
+            hybridLimits.Add(DataAPIKeywords.Lexical, lexicalLimit.Value);
         }
         if (vectorLimit != null)
         {
-            hybridLimits.Add(DataApiKeywords.Vector, vectorLimit.Value);
+            hybridLimits.Add(DataAPIKeywords.Vector, vectorLimit.Value);
         }
         _findOptions.HybridLimits = hybridLimits;
         return new RerankEnumerator<T, TResult>(_commandFactory, _findOptions, _commandOptions);
@@ -268,18 +268,18 @@ public class RerankEnumerator<T, TResult> : IAsyncEnumerable<TResult>, IEnumerab
         }
     }
 
-    internal async Task<ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult<RerankedResult<TResult>>>> GetAsync(bool runSynchronously = false)
+    internal async Task<APIResponseWithData<APIFindResult<TResult>, FindStatusResult<RerankedResult<TResult>>>> GetAsync(bool runSynchronously = false)
     {
         if (_resultTask == null)
         {
             var command = _commandFactory().WithPayload(_findOptions).AddCommandOptions(_commandOptions);
-            _resultTask = command.RunAsyncReturnDocumentData<ApiFindResult<TResult>, TResult, FindStatusResult<RerankedResult<TResult>>>(runSynchronously);
+            _resultTask = command.RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, FindStatusResult<RerankedResult<TResult>>>(runSynchronously);
         }
 
         return await _resultTask.ConfigureAwait(false);
     }
 
-    private static IEnumerable<RerankedResult<TResult>> GetRerankedResults(ApiResponseWithData<ApiFindResult<TResult>, FindStatusResult<RerankedResult<TResult>>> response, CancellationToken cancellationToken = default)
+    private static IEnumerable<RerankedResult<TResult>> GetRerankedResults(APIResponseWithData<APIFindResult<TResult>, FindStatusResult<RerankedResult<TResult>>> response, CancellationToken cancellationToken = default)
     {
         for (var i = 0; i < response.Data.Items.Count; i++)
         {

@@ -19,7 +19,7 @@ using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
-internal class ApiResponseWithStatus<T>
+internal class APIResponseWithStatus<T>
 {
     /// <summary>
     /// The status payload returned by the Data API.
@@ -31,28 +31,28 @@ internal class ApiResponseWithStatus<T>
     /// Errors returned by the Data API, if any.
     /// </summary>
     [JsonPropertyName("errors")]
-    public List<ApiError> Errors { get; set; }
+    public List<APIError> Errors { get; set; }
 
     /// <summary>
     /// Warnings returned by the Data API, if any.
     /// </summary>
     [JsonPropertyName("warnings")]
-    public List<ApiWarning> Warnings { get; set; }
+    public List<APIWarning> Warnings { get; set; }
 }
 
-internal class ApiResponseWithData<T, TStatus>
+internal class APIResponseWithData<T, TStatus>
 {
     /// <summary>
     /// Errors returned by the Data API, if any.
     /// </summary>
     [JsonPropertyName("errors")]
-    public List<ApiError> Errors { get; set; }
+    public List<APIError> Errors { get; set; }
 
     /// <summary>
     /// Warnings returned by the Data API, if any.
     /// </summary>
     [JsonPropertyName("warnings")]
-    public List<ApiWarning> Warnings { get; set; }
+    public List<APIWarning> Warnings { get; set; }
 
     /// <summary>
     /// The data payload returned by the Data API.

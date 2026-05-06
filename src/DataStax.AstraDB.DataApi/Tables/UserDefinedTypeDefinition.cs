@@ -36,7 +36,7 @@ public class UserDefinedTypeDefinition
     /// List of fields (field name, field type) for this User Defined Type
     /// </summary>
     [JsonIgnore]
-    public Dictionary<string, DataApiType> Fields { get; set; } = new Dictionary<string, DataApiType>();
+    public Dictionary<string, DataAPIType> Fields { get; set; } = new Dictionary<string, DataAPIType>();
 
 }
 
@@ -85,7 +85,7 @@ internal class UserDefinedTypeRequest
         foreach (var property in wrapperType.GetProperties())
         {
             var propertyType = property.PropertyType;
-            var typeInfo = TypeUtilities.GetDataApiType(propertyType);
+            var typeInfo = TypeUtilities.GetDataAPIType(propertyType);
             if (typeInfo.IsSimpleType == false)
             {
                 throw new ArgumentException($"Property '{property.Name}' in type '{wrapperType.Name}' is not a supported simple type for UDTs.");

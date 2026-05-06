@@ -965,7 +965,7 @@ public class Table<T> where T : class
         
         var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
         var command = CreateCommand("find").WithPayload(options).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<ApiFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {

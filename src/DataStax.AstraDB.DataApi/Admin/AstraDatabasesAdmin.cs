@@ -666,11 +666,11 @@ public class AstraDatabasesAdmin
         return new DatabaseAdminAstra(database, _client, _adminOptions);
     }
 
-    private static readonly CommandOptions _devOpsApiOptions = new CommandOptions { SerializeDateAsDollarDate = false };
+    private static readonly CommandOptions _devOpsAPIOptions = new CommandOptions { SerializeDateAsDollarDate = false };
 
     private Command CreateCommand()
     {
-        var options = OptionsTree.Concat(new[] { _devOpsApiOptions }).ToArray();
+        var options = OptionsTree.Concat(new[] { _devOpsAPIOptions }).ToArray();
         return new Command(_client, options, new AdminCommandUrlBuilder());
     }
 }

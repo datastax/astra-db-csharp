@@ -60,9 +60,9 @@ public class CommandOptions
     /// <summary>
     /// The destination datastore.
     /// 
-    /// Defaults to <see cref="DataApiDestination.ASTRA"/>
+    /// Defaults to <see cref="DataAPIDestination.ASTRA"/>
     /// </summary>
-    public DataApiDestination? Destination { get; set; }
+    public DataAPIDestination? Destination { get; set; }
 
     /// <summary>
     /// Options for the HTTP client
@@ -82,15 +82,15 @@ public class CommandOptions
     /// <summary>
     /// API version to connect to
     /// 
-    /// Defaults to <see cref="ApiVersion.V1"/>
+    /// Defaults to <see cref="APIVersion.V1"/>
     /// </summary>
-    public ApiVersion? ApiVersion { get; set; }
+    public APIVersion? APIVersion { get; set; }
 
-    internal string ApiUrlBase
+    internal string APIUrlBase
     {
         get
         {
-            if (Destination == DataApiDestination.ASTRA)
+            if (Destination == DataAPIDestination.ASTRA)
             {
                 return "api/json/";
             }
@@ -140,7 +140,7 @@ public class CommandOptions
                 DatabaseAdminTimeout = list.Select(o => o.TimeoutOptions?.DatabaseAdminTimeout).Merge(),
                 KeyspaceAdminTimeout = list.Select(o => o.TimeoutOptions?.KeyspaceAdminTimeout).Merge(),
             },
-            ApiVersion = list.Select(o => o.ApiVersion).Merge(),
+            APIVersion = list.Select(o => o.APIVersion).Merge(),
             CancellationToken = list.Select(o => o.CancellationToken).Merge(),
             Keyspace = list.Select(o => o.Keyspace).Merge(),
             InputConverter = list.Select(o => o.InputConverter).Merge(),
@@ -171,8 +171,8 @@ public class CommandOptions
         {
             Environment = DBEnvironment.Production,
             RunMode = Core.RunMode.Normal,
-            Destination = DataApiDestination.ASTRA,
-            ApiVersion = Core.ApiVersion.V1,
+            Destination = DataAPIDestination.ASTRA,
+            APIVersion = Core.APIVersion.V1,
             HttpClientOptions = new HttpClientOptions(),
             Keyspace = Database.DefaultKeyspace,
             IncludeKeyspaceInUrl = true,

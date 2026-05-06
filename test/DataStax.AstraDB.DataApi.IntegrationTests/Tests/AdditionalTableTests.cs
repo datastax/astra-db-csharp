@@ -1132,11 +1132,11 @@ public class AdditionalTableTests
         try
         {
             var tableDefinition = new TableDefinition()
-                .AddColumn("id", DataApiType.Text())
-                .AddColumn("TheLstVec", DataApiType.Vector(3))
-                .AddColumn("TheBinVec", DataApiType.Vector(3))
-                .AddColumn("JustAList", DataApiType.List(DataApiType.Float()))
-                .AddColumn("TheBlob", DataApiType.Blob())
+                .AddColumn("id", DataAPIType.Text())
+                .AddColumn("TheLstVec", DataAPIType.Vector(3))
+                .AddColumn("TheBinVec", DataAPIType.Vector(3))
+                .AddColumn("JustAList", DataAPIType.List(DataAPIType.Float()))
+                .AddColumn("TheBlob", DataAPIType.Blob())
                 .AddSinglePrimaryKey("id");
             var createdTable = await fixture.Database.CreateTableAsync(tableName, tableDefinition);
 

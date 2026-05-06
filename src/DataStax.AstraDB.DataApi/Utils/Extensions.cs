@@ -32,11 +32,11 @@ namespace DataStax.AstraDB.DataApi.Utils;
 
 internal static class Extensions
 {
-    internal static string ToUrlString(this ApiVersion apiVersion)
+    internal static string ToUrlString(this APIVersion apiVersion)
     {
         return apiVersion switch
         {
-            ApiVersion.V1 => "v1",
+            APIVersion.V1 => "v1",
             _ => "v1",
         };
     }
@@ -123,7 +123,7 @@ internal static class Extensions
             var attribute = propertyInfo.GetCustomAttribute<DocumentIdAttribute>();
             if (attribute != null)
             {
-                name = DataApiKeywords.Id;
+                name = DataAPIKeywords.Id;
             }
             var columnNameAttribute = propertyInfo.GetCustomAttribute<ColumnNameAttribute>();
             if (columnNameAttribute != null)

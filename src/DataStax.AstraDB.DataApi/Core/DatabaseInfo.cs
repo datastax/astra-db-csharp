@@ -72,7 +72,7 @@ public class DatabaseInfo
 public class AstraDatabaseRegionInfo
 {
     /// <summary>The API endpoint URL for this region.</summary>
-    public string ApiEndpoint { get; set; }
+    public string APIEndpoint { get; set; }
     /// <summary>The date and time when the regional deployment was created.</summary>
     public DateTime CreatedAt { get; set; }
     /// <summary>The name of the region.</summary>

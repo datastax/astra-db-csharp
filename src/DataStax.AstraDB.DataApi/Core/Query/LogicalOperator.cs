@@ -27,7 +27,7 @@ internal enum LogicalOperator : int
 
 internal static class LogicalOperatorExtensions
 {
-    internal static string ToApiString(this LogicalOperator value)
+    internal static string ToAPIString(this LogicalOperator value)
     {
         return value switch
         {

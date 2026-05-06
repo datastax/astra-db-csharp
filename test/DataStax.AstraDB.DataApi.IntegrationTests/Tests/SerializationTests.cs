@@ -160,7 +160,7 @@ public class SerializationTests
             }
         };
         var command = new Command("deserializationTest", new DataAPIClient(), commandOptions.ToArray(), null);
-        var deserialized = command.Deserialize<ApiResponseWithData<ApiFindResult<HybridSearchTestObject>, FindStatusResult<RerankedResult<HybridSearchTestObject>>>>(serializationTestString);
+        var deserialized = command.Deserialize<APIResponseWithData<APIFindResult<HybridSearchTestObject>, FindStatusResult<RerankedResult<HybridSearchTestObject>>>>(serializationTestString);
         Assert.NotNull(deserialized);
         Assert.NotNull(deserialized.Data);
         Assert.NotNull(deserialized.Status);
@@ -207,7 +207,7 @@ public class SerializationTests
         };
         var command = new Command("deserializationTest", new DataAPIClient(), commandOptions.ToArray(), null);
 
-        var deserialized = command.Deserialize<ApiResponseWithData<DocumentResult<TimeUuidObject>, TableFindStatusResult>>(serializationTestString);
+        var deserialized = command.Deserialize<APIResponseWithData<DocumentResult<TimeUuidObject>, TableFindStatusResult>>(serializationTestString);
         Assert.NotNull(deserialized);
         Assert.NotNull(deserialized.Data);
         Assert.NotNull(deserialized.Data.Document);

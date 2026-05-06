@@ -721,7 +721,7 @@ public class Collection<T, TId> where T : class
         options.PageState = nextPageState;
         
         var command = CreateCommand("find").WithPayload(options).AddCommandOptions(cursor.CommandOptions);
-        var response = await command.RunAsyncReturnDocumentData<ApiFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        var response = await command.RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         
         return new FindPage<TResult>(
             response.Data.NextPageState,

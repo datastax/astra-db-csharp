@@ -35,43 +35,43 @@
 //     // [JsonInclude]
 //     // internal string TypeString
 //     // {
-//     //     get { return Type == DataApiType.None ? null : Type.ToString().ToLowerInvariant(); }
-//     //     set { Type = value == null ? DataApiType.None : (DataApiType)Enum.Parse(typeof(DataApiType), value, true); }
+//     //     get { return Type == DataAPIType.None ? null : Type.ToString().ToLowerInvariant(); }
+//     //     set { Type = value == null ? DataAPIType.None : (DataAPIType)Enum.Parse(typeof(DataAPIType), value, true); }
 //     // }
 
 //     // [JsonPropertyName("keyType")]
 //     // [JsonInclude]
 //     // internal string KeyTypeString
 //     // {
-//     //     get { return KeyType == DataApiType.None ? null : KeyType.ToString().ToLowerInvariant(); }
-//     //     set { KeyType = value == null ? DataApiType.None : (DataApiType)Enum.Parse(typeof(DataApiType), value, true); }
+//     //     get { return KeyType == DataAPIType.None ? null : KeyType.ToString().ToLowerInvariant(); }
+//     //     set { KeyType = value == null ? DataAPIType.None : (DataAPIType)Enum.Parse(typeof(DataAPIType), value, true); }
 //     // }
 
 //     // [JsonPropertyName("valueType")]
 //     // [JsonInclude]
 //     // internal string ValueTypeString
 //     // {
-//     //     get { return ValueType == DataApiType.None ? null : ValueType.ToString().ToLowerInvariant(); }
-//     //     set { ValueType = value == null ? DataApiType.None : (DataApiType)Enum.Parse(typeof(DataApiType), value, true); }
+//     //     get { return ValueType == DataAPIType.None ? null : ValueType.ToString().ToLowerInvariant(); }
+//     //     set { ValueType = value == null ? DataAPIType.None : (DataAPIType)Enum.Parse(typeof(DataAPIType), value, true); }
 //     // }
 
 //     // /// <summary>
 //     // /// The type of the column
 //     // /// </summary>
 //     // //[JsonIgnore]
-//     // public virtual DataApiType Type { get; set; }
+//     // public virtual DataAPIType Type { get; set; }
 
 //     // /// <summary>
 //     // /// The type of the keys in the dictionary
 //     // /// </summary>
 //     // //[JsonIgnore]
-//     // public DataApiType KeyType { get; set; }
+//     // public DataAPIType KeyType { get; set; }
 
 //     // /// <summary>
 //     // /// The type of the values in the dictionary
 //     // /// </summary>
 //     // //[JsonIgnore]
-//     // public DataApiType ValueType { get; set; }
+//     // public DataAPIType ValueType { get; set; }
 // }
 
 
@@ -83,7 +83,7 @@
 //     // /// <summary>
 //     // /// Defines the column as type vector
 //     // /// </summary>
-//     // public override DataApiType Type => DataApiType.Vector;
+//     // public override DataAPIType Type => DataAPIType.Vector;
 
 //     /// <summary>
 //     /// The dimension of the vector
@@ -150,7 +150,7 @@
 //     // /// <summary>
 //     // /// Defines the column as type vector
 //     // /// </summary>
-//     // public override DataApiType Type => DataApiType.UserDefined;
+//     // public override DataAPIType Type => DataAPIType.UserDefined;
 
 //     // /// <summary>
 //     // /// The dimension of the vector

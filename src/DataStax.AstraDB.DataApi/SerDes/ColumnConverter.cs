@@ -85,11 +85,11 @@
 //                 // optional keyType/valueType
 //                 if (root.TryGetProperty("keyType", out JsonElement kt) && kt.ValueKind == JsonValueKind.String)
 //                 {
-//                     vecGen.KeyType = (DataApiType)Enum.Parse(typeof(DataApiType), kt.GetString(), true);
+//                     vecGen.KeyType = (DataAPIType)Enum.Parse(typeof(DataAPIType), kt.GetString(), true);
 //                 }
 //                 if (root.TryGetProperty("valueType", out JsonElement vt) && vt.ValueKind == JsonValueKind.String)
 //                 {
-//                     vecGen.ValueType = (DataApiType)Enum.Parse(typeof(DataApiType), vt.GetString(), true);
+//                     vecGen.ValueType = (DataAPIType)Enum.Parse(typeof(DataAPIType), vt.GetString(), true);
 //                 }
 
 //                 return vecGen;
@@ -99,11 +99,11 @@
 //             vecCol.Dimension = dimension;
 //             if (root.TryGetProperty("keyType", out JsonElement kt2) && kt2.ValueKind == JsonValueKind.String)
 //             {
-//                 vecCol.KeyType = (DataApiType)Enum.Parse(typeof(DataApiType), kt2.GetString(), true);
+//                 vecCol.KeyType = (DataAPIType)Enum.Parse(typeof(DataAPIType), kt2.GetString(), true);
 //             }
 //             if (root.TryGetProperty("valueType", out JsonElement vt2) && vt2.ValueKind == JsonValueKind.String)
 //             {
-//                 vecCol.ValueType = (DataApiType)Enum.Parse(typeof(DataApiType), vt2.GetString(), true);
+//                 vecCol.ValueType = (DataAPIType)Enum.Parse(typeof(DataAPIType), vt2.GetString(), true);
 //             }
 
 //             return vecCol;
@@ -113,17 +113,17 @@
 //         var col = new Column();
 //         if (!string.IsNullOrEmpty(typeValue))
 //         {
-//             col.Type = (DataApiType)Enum.Parse(typeof(DataApiType), typeValue, true);
+//             col.Type = (DataAPIType)Enum.Parse(typeof(DataAPIType), typeValue, true);
 //         }
 
 //         if (root.TryGetProperty("keyType", out JsonElement keyEl) && keyEl.ValueKind == JsonValueKind.String)
 //         {
-//             col.KeyType = (DataApiType)Enum.Parse(typeof(DataApiType), keyEl.GetString(), true);
+//             col.KeyType = (DataAPIType)Enum.Parse(typeof(DataAPIType), keyEl.GetString(), true);
 //         }
 
 //         if (root.TryGetProperty("valueType", out JsonElement valEl) && valEl.ValueKind == JsonValueKind.String)
 //         {
-//             col.ValueType = (DataApiType)Enum.Parse(typeof(DataApiType), valEl.GetString(), true);
+//             col.ValueType = (DataAPIType)Enum.Parse(typeof(DataAPIType), valEl.GetString(), true);
 //         }
 
 //         return col;
@@ -145,17 +145,17 @@
 
 //         writer.WriteStartObject();
 
-//         if (value.Type != DataApiType.None)
+//         if (value.Type != DataAPIType.None)
 //         {
 //             writer.WriteString("type", value.Type.ToString().ToLowerInvariant());
 //         }
 
-//         if (value.KeyType != DataApiType.None)
+//         if (value.KeyType != DataAPIType.None)
 //         {
 //             writer.WriteString("keyType", value.KeyType.ToString().ToLowerInvariant());
 //         }
 
-//         if (value.ValueType != DataApiType.None)
+//         if (value.ValueType != DataAPIType.None)
 //         {
 //             writer.WriteString("valueType", value.ValueType.ToString().ToLowerInvariant());
 //         }

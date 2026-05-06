@@ -45,11 +45,11 @@ public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
 
             string propertyName = reader.GetString();
 
-            if (propertyName == DataApiKeywords.Binary)
+            if (propertyName == DataAPIKeywords.Binary)
             {
                 reader.Read();
                 if (reader.TokenType != JsonTokenType.String)
-                    throw new JsonException($"Expected string value for '{DataApiKeywords.Binary}', but got {reader.TokenType}.");
+                    throw new JsonException($"Expected string value for '{DataAPIKeywords.Binary}', but got {reader.TokenType}.");
                 base64String = reader.GetString();
             }
             else
@@ -59,7 +59,7 @@ public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
         }
 
         if (base64String == null)
-            throw new JsonException($"Missing required property '{DataApiKeywords.Binary}'.");
+            throw new JsonException($"Missing required property '{DataAPIKeywords.Binary}'.");
 
         try
         {
@@ -75,7 +75,7 @@ public class ByteArrayAsBinaryJsonConverter : JsonConverter<byte[]>
     public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
-        writer.WriteString(DataApiKeywords.Binary, Convert.ToBase64String(value));
+        writer.WriteString(DataAPIKeywords.Binary, Convert.ToBase64String(value));
         writer.WriteEndObject();
     }
 }
@@ -142,11 +142,11 @@ public class FloatArrayJsonConverterBase : JsonConverter<float[]>
 
             string propertyName = reader.GetString();
 
-            if (propertyName == DataApiKeywords.Binary)
+            if (propertyName == DataAPIKeywords.Binary)
             {
                 reader.Read();
                 if (reader.TokenType != JsonTokenType.String)
-                    throw new JsonException($"Expected string value for '{DataApiKeywords.Binary}', but got {reader.TokenType}.");
+                    throw new JsonException($"Expected string value for '{DataAPIKeywords.Binary}', but got {reader.TokenType}.");
                 base64String = reader.GetString();
             }
             else
@@ -156,7 +156,7 @@ public class FloatArrayJsonConverterBase : JsonConverter<float[]>
         }
 
         if (base64String == null)
-            throw new JsonException($"Missing required property '{DataApiKeywords.Binary}'.");
+            throw new JsonException($"Missing required property '{DataAPIKeywords.Binary}'.");
 
         byte[] bytes;
         try
@@ -232,7 +232,7 @@ public class FloatBinaryWriter : FloatArrayJsonConverterBase
             Buffer.BlockCopy(chunk, 0, bytes, i * 4, 4);
         }
         writer.WriteStartObject();
-        writer.WriteString(DataApiKeywords.Binary, Convert.ToBase64String(bytes));
+        writer.WriteString(DataAPIKeywords.Binary, Convert.ToBase64String(bytes));
         writer.WriteEndObject();
     }
 }

@@ -46,7 +46,7 @@ public class UserDefinedTypeInfo
     /// Information regarding API support for this Type
     /// </summary>
     [JsonPropertyName("apiSupport")]
-    public TypeApiSupportInfo ApiSupport { get; set; }
+    public TypeAPISupportInfo APISupport { get; set; }
 }
 
 /*
@@ -75,7 +75,7 @@ public class UserDefinedTypeInfo
 /// <summary>
 /// Information regarding API support for a User Defined Type
 /// </summary>
-public class TypeApiSupportInfo
+public class TypeAPISupportInfo
 {
     /// <summary>
     /// Can a table be created using this Type?
@@ -121,7 +121,7 @@ public class TypeDefinitionInfo
 }
 
 /// <summary>
-/// DataApi Type for a specific field
+/// DataAPI Type for a specific field
 /// </summary>
 public class FieldTypeInfo
 {

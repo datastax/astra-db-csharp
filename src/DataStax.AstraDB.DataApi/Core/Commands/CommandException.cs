@@ -35,9 +35,9 @@ public class CommandException : Exception
     /// <summary>
     /// Gets the list of errors returned from the API.
     /// </summary>
-    public List<ApiError> Errors { get; set; }
+    public List<APIError> Errors { get; set; }
 
-    internal CommandException(List<ApiError> errors) : base(string.Join(", ", errors.Select(e => $"[{e.ErrorCode}] {e.Message}")))
+    internal CommandException(List<APIError> errors) : base(string.Join(", ", errors.Select(e => $"[{e.ErrorCode}] {e.Message}")))
     {
         Errors = errors;
     }
