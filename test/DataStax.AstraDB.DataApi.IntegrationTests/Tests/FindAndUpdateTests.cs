@@ -94,7 +94,7 @@ public class FindAndUpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 111);
         var update = Builders<SimpleObject>.CollectionUpdate.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
-        var result = await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<SimpleObject> { IsUpsert = true, ReturnDocument = ReturnDocumentDirective.After });
+        var result = await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<SimpleObject> { Upsert = true, ReturnDocument = ReturnDocumentDirective.After });
         Assert.Equal(111, result._id);
         Assert.Equal("ThisWasSetOnInsert", result.Properties.PropertyTwo);
     }

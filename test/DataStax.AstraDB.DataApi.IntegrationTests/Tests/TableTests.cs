@@ -116,7 +116,7 @@ public class TableTests
             });
             var options = new InsertManyOptions
             {
-                IsOrdered = true,
+                Ordered = true,
                 ChunkSize = 2
             };
             var result = await table.InsertManyAsync(rows, options);
