@@ -724,7 +724,7 @@ public class Table<T> where T : class
         Guard.NotNullOrEmpty(rows, nameof(rows));
 
         if (insertOptions == null) insertOptions = new InsertManyOptions();
-        if (insertOptions.Concurrency > 1 && insertOptions.IsOrdered)
+        if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
@@ -748,7 +748,7 @@ public class Table<T> where T : class
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions.IsOrdered, commandOptions, runSynchronously).ConfigureAwait(false);
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions.Ordered, commandOptions, runSynchronously).ConfigureAwait(false);
                             lock (result.InsertedIdTuples)
                             {
                                 result.InsertedIdTuples.AddRange(runResult.InsertedIdTuples);

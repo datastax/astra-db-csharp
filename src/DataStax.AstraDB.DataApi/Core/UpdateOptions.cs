@@ -49,7 +49,7 @@ internal class UpdateOptionsParameters
   [JsonInclude]
   [JsonPropertyName("upsert")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  internal bool? IsUpsert { get; set; }
+  internal bool? Upsert { get; set; }
 
   [JsonInclude]
   [JsonPropertyName("returnDocument")]
@@ -94,10 +94,10 @@ public class FindOneAndUpdateOptions<T> : UpdateOptions<T> where T : class
   /// Whether to insert a new document if the filter does not match any documents.
   /// </summary>
   [JsonIgnore]
-  public bool IsUpsert
+  public bool Upsert
   {
-    get => Parameters.IsUpsert ?? false;
-    set => Parameters.IsUpsert = value;
+    get => Parameters.Upsert ?? false;
+    set => Parameters.Upsert = value;
   }
 
   /// <summary>
@@ -131,10 +131,10 @@ public class UpdateOneOptions<T> : UpdateOptions<T> where T : class
   /// Whether to insert a new document if the filter does not match any documents.
   /// </summary>
   [JsonIgnore]
-  public bool IsUpsert
+  public bool Upsert
   {
-    get => Parameters.IsUpsert ?? false;
-    set => Parameters.IsUpsert = value;
+    get => Parameters.Upsert ?? false;
+    set => Parameters.Upsert = value;
   }
 }
 
@@ -148,10 +148,10 @@ public class UpdateManyOptions<T> : UpdateOptions<T> where T : class
   /// Whether to insert a new document if the filter does not match any documents.
   /// </summary>
   [JsonIgnore]
-  public bool IsUpsert
+  public bool Upsert
   {
-    get => Parameters.IsUpsert ?? false;
-    set => Parameters.IsUpsert = value;
+    get => Parameters.Upsert ?? false;
+    set => Parameters.Upsert = value;
   }
 
   [JsonIgnore]
