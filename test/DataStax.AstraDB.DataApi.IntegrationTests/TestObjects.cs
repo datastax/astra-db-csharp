@@ -784,3 +784,11 @@ public class CursorPaginationTestDocument {
     [DocumentMapping(DocumentMappingField.Vector)]
     public float[] vector { get; set; }
 }
+
+[CollectionName("attribute_coll_name")]
+public class FakeDocument
+{
+    [DocumentId]
+    public int Id { get; set; }
+    public string Name { get; set; }
+}

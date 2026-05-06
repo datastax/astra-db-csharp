@@ -676,6 +676,13 @@ public class Database
         return GetCollection<T>(collectionName, null);
     }
 
+    /// <inheritdoc cref="GetCollection{T}()" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    public Collection<T> GetCollection<T>(DatabaseCollectionCommandOptions options) where T : class
+    {
+        return GetCollection<T>(null, options);
+    }
+
     /// <inheritdoc cref="GetCollection{T}(string)" />
     /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
@@ -712,6 +719,13 @@ public class Database
     public Collection<T, TId> GetCollection<T, TId>(string collectionName) where T : class
     {
         return GetCollection<T, TId>(collectionName, null);
+    }
+
+    /// <inheritdoc cref="GetCollection{T, TId}()" />
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    public Collection<T, TId> GetCollection<T, TId>(DatabaseCollectionCommandOptions options) where T : class
+    {
+        return GetCollection<T, TId>(null, options);
     }
 
     /// <inheritdoc cref="GetCollection{T, TId}(string)" />

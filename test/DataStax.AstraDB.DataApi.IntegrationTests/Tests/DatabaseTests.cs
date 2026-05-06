@@ -156,6 +156,58 @@ public class DatabaseTests
     }
 
     [Fact]
+    public void GetCollection_AdmittedPatterns()
+    {
+        // testing all patterns for GetCollection
+        // TODO: improve by testing for the keyspace as well (currently private into Collection)
+
+        var options = new DatabaseCollectionCommandOptions () { Keyspace = "bla" };
+
+        Assert.Equal(
+            "param_coll_name",
+            fixture.Database.GetCollection("param_coll_name").CollectionName
+        );
+        Assert.Equal(
+            "param_coll_name",
+            fixture.Database.GetCollection("param_coll_name", options).CollectionName
+        );
+
+        Assert.Equal(
+            "attribute_coll_name",
+            fixture.Database.GetCollection<FakeDocument>().CollectionName
+        );
+        Assert.Equal(
+            "param_coll_name",
+            fixture.Database.GetCollection<FakeDocument>("param_coll_name").CollectionName
+        );
+        Assert.Equal(
+            "attribute_coll_name",
+            fixture.Database.GetCollection<FakeDocument>(options).CollectionName
+        );
+        Assert.Equal(
+            "param_coll_name",
+            fixture.Database.GetCollection<FakeDocument>("param_coll_name", options).CollectionName
+        );
+
+        Assert.Equal(
+            "attribute_coll_name",
+            fixture.Database.GetCollection<FakeDocument, int>().CollectionName
+        );
+        Assert.Equal(
+            "param_coll_name",
+            fixture.Database.GetCollection<FakeDocument, int>("param_coll_name").CollectionName
+        );
+        Assert.Equal(
+            "attribute_coll_name",
+            fixture.Database.GetCollection<FakeDocument, int>(options).CollectionName
+        );
+        Assert.Equal(
+            "param_coll_name",
+            fixture.Database.GetCollection<FakeDocument, int>("param_coll_name", options).CollectionName
+        );
+    }
+
+    [Fact]
     public void GetCollection_ReturnsNotNull()
     {
         var collectionName = "collection";
