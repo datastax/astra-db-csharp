@@ -1397,55 +1397,54 @@ public class Table<T> where T : class
     /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
-    public DeleteResult DeleteOne(TableDeleteOptions<T> deleteOptions)
+    public void DeleteOne(TableDeleteOptions<T> deleteOptions)
     {
-        return DeleteOne(null, deleteOptions, null);
+        DeleteOne(null, deleteOptions, null);
     }
 
     /// <summary>
     /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T})"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
-    public DeleteResult DeleteOne(TableFilter<T> filter)
+    public void DeleteOne(TableFilter<T> filter)
     {
-        return DeleteOne(filter, null, null);
+        DeleteOne(filter, null, null);
     }
 
     /// <summary>
     /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(TableFilter<T> filter, CommandOptions commandOptions)
+    public void DeleteOne(TableFilter<T> filter, CommandOptions commandOptions)
     {
-        return DeleteOne(filter, null, commandOptions);
+        DeleteOne(filter, null, commandOptions);
     }
 
     /// <summary>
     /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    public void DeleteOne(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
-        return DeleteOne(null, deleteOptions, commandOptions);
+        DeleteOne(null, deleteOptions, commandOptions);
     }
 
     /// <summary>
     /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
-    public DeleteResult DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
+    public void DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
     {
-        return DeleteOne(filter, deleteOptions, null);
+        DeleteOne(filter, deleteOptions, null);
     }
 
     /// <summary>
     /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    public void DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
-        var response = DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
-        return response;
+        DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
     }
 
     /// <summary>
@@ -1453,7 +1452,7 @@ public class Table<T> where T : class
     /// </summary>
     /// <param name="deleteOptions"></param>
     /// <returns></returns>
-    public Task<DeleteResult> DeleteOneAsync(TableDeleteOptions<T> deleteOptions)
+    public Task DeleteOneAsync(TableDeleteOptions<T> deleteOptions)
     {
         return DeleteOneAsync(null, deleteOptions, null);
     }
@@ -1463,7 +1462,7 @@ public class Table<T> where T : class
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    public Task<DeleteResult> DeleteOneAsync(TableFilter<T> filter)
+    public Task DeleteOneAsync(TableFilter<T> filter)
     {
         return DeleteOneAsync(filter, null, null);
     }
@@ -1471,7 +1470,7 @@ public class Table<T> where T : class
     /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
+    public Task DeleteOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
     {
         return DeleteOneAsync(filter, null, commandOptions);
     }
@@ -1479,7 +1478,7 @@ public class Table<T> where T : class
     /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
     /// <param name="deleteOptions"></param>
     /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    public Task DeleteOneAsync(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
         return DeleteOneAsync(null, deleteOptions, commandOptions);
     }
@@ -1487,7 +1486,7 @@ public class Table<T> where T : class
     /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="deleteOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
+    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
     {
         return DeleteOneAsync(filter, deleteOptions, null);
     }
@@ -1496,18 +1495,17 @@ public class Table<T> where T : class
     /// <param name="filter"></param>
     /// <param name="deleteOptions"></param>
     /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
+    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
     {
         return DeleteOneAsync(filter, deleteOptions, commandOptions, false);
     }
 
-    internal async Task<DeleteResult> DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         deleteOptions ??= new TableDeleteOptions<T>();
         deleteOptions.Filter = filter;
         var command = CreateCommand("deleteOne").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
-        return response.Result;
     }
 
     /// <inheritdoc cref="DeleteManyAsync(TableFilter{T})"/>

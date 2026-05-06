@@ -864,7 +864,7 @@ public class AdditionalTableTests
                 new CreateTableCommandOptions() { IfNotExists = true });
             var untypedTable = fixture.Database.GetTable(tableName);
 
-            // typed insertion
+            // typed insertion from dict / nonempty
             var row = new SBook()
             {
                 MapColumnIntStr = new Dictionary<int, string>
@@ -881,6 +881,7 @@ public class AdditionalTableTests
                 Author = "Kayla McMaster",
             };
             await table.InsertOneAsync(row);
+            // typed insertion from dict / empty
             var rowE = new SBook()
             {
                 MapColumnIntStr = new Dictionary<int, string> { },
@@ -890,7 +891,7 @@ public class AdditionalTableTests
             };
             await table.InsertOneAsync(rowE);
 
-            // untyped insertion
+            // untyped insertion from dict / nonempty
             var untypedRow = new Row()
             {
                 {
@@ -909,7 +910,7 @@ public class AdditionalTableTests
                 { "author", "UNTYP McMaster" },
             };
             await untypedTable.InsertOneAsync(untypedRow);
-
+            // untyped insertion from dict / empty
             var untypedRowE = new Row()
             {
                 {
@@ -925,6 +926,68 @@ public class AdditionalTableTests
             };
 
             await untypedTable.InsertOneAsync(untypedRowE);
+
+            // UPDATES:
+
+            // Typed update from dictionary / nonempty:
+            var mapIntStr_Typed = new Dictionary<int, string> { { 1, "xx1" }, { 2, "xx2" } };
+
+            var filterBuilder_Typed = Builders<SBook>.TableFilter;
+            var filterUpd_Typed = filterBuilder_Typed.Eq(b => b.Title, "Once in a Living Memory");
+
+            var updateTyped = Builders<SBook>
+              .TableUpdate.Set(b => b.MapColumnIntStr, mapIntStr_Typed);
+
+            await table.UpdateOneAsync(filterUpd_Typed, updateTyped);
+
+            // Typed update from dictionary / empty:
+            var mapIntStr_Typed_Empty = new Dictionary<int, string> { };
+
+            var updateTyped_Empty = Builders<SBook>
+              .TableUpdate.Set(b => b.MapColumnIntStr, mapIntStr_Typed_Empty);
+
+            await table.UpdateOneAsync(filterUpd_Typed, updateTyped_Empty);
+
+            // Untyped update from dictionary / nonempty:
+            var mapIntStr_Untyped = new Dictionary<int, string> { { 1, "xx3" }, { 2, "xx4" } };
+
+            var filterBuilder_Untyped = Builders<Row>.TableFilter;
+            var filterUpd_Untyped = filterBuilder_Untyped.Eq("title", "Once in a Living Memory");
+
+            var updateUntyped = Builders<Row>
+              .TableUpdate.Set("map_column_int_str", mapIntStr_Untyped);
+
+            await untypedTable.UpdateOneAsync(filterUpd_Untyped, updateUntyped);
+
+            // Untyped update from dictionary / empty:
+            var mapIntStr_Untyped_Empty = new Dictionary<int, string> { };
+
+            var updateUntyped_Empty = Builders<Row>
+              .TableUpdate.Set("map_column_int_str", mapIntStr_Untyped_Empty);
+
+            await untypedTable.UpdateOneAsync(filterUpd_Untyped, updateUntyped_Empty);
+
+            // Untyped update from list / nonempty:
+            var mapIntStr_List_Untyped = new List<object[]> {
+                new object[] { 1, "xx3" },
+                new object[] { 2, "xx4" }
+            };
+
+            var updateUntyped_List = Builders<Row>
+              .TableUpdate.Set("map_column_int_str", mapIntStr_List_Untyped);
+
+            await untypedTable.UpdateOneAsync(filterUpd_Untyped, updateUntyped_List);
+
+            // Note: there is no way to make this work for empty map columns:
+            /*
+            // Untyped update from list / empty:
+            var mapIntStr_List_Untyped_Empty = new List<object[]> { };
+
+            var updateUntyped_List_Empty = Builders<Row>
+              .TableUpdate.Set("map_column_int_str", mapIntStr_List_Untyped_Empty);
+
+            await untypedTable.UpdateOneAsync(filterUpd_Untyped, updateUntyped_List_Empty);
+            */
         }
         finally
         {
