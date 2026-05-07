@@ -22,7 +22,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// Options for finding a single document in a collection.
 /// </summary>
 /// <typeparam name="T">The type of the document.</typeparam>
-public class DocumentFindOptions<T> : FindOptions<T, CollectionSortBuilder<T>>
+public class CollectionFindOptions<T> : FindOptions<T, CollectionSortBuilder<T>>
 {
     /// <summary>
     /// The sort to apply when running the query.
@@ -30,9 +30,9 @@ public class DocumentFindOptions<T> : FindOptions<T, CollectionSortBuilder<T>>
     [JsonIgnore]
     public override CollectionSortBuilder<T> Sort { get; set; }
 
-    internal DocumentFindOptions<T> Clone()
+    internal CollectionFindOptions<T> Clone()
     {
-        return new DocumentFindOptions<T>
+        return new CollectionFindOptions<T>
         {
             Filter = Filter != null ? Filter.Clone() : null,
             IncludeSimilarity = IncludeSimilarity,
