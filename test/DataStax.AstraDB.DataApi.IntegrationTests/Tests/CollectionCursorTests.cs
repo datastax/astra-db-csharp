@@ -261,15 +261,9 @@ public class CollectionCursorTests
         Assert.Equal(baseRows.Skip(15).Select(d => d.Id), (await ptlCur.ToListAsync()).Select(d => d.Id));
         Assert.Equal(CursorState.Closed, ptlCur.State);
 
-        // Tests on *mapped cursors + ToList* are omitted, as such logic occurs not in cursor territory anymore (rather LINQ's).
+        // No need to test on *mapped cursors + ToList* (not in the c# client's domain)
 
-        // Full ForEach
-        /* TODO (this section):
-            c# differs greatly from other clients. There's no ForEach on cursors (and arguably there shouldn't be).
-            As is now, this part passes but adds little. Even the client pattern of a "ForEach(callback)", with the
-            callback returning whether to stop or not, probably is not needed here, nor is it idiomatic.
-            I think we should be ok with there not being any ForEach fancy thing other than the LINQ stuff (so dropping this part of test?)
-        */
+        // For the C# client, foreach is not a client-implemented construct
         var accum0 = new List<CursorTestDocument>();
         var feCur = filledCollection.Find();
         await foreach (var row in feCur)
@@ -278,32 +272,6 @@ public class CollectionCursorTests
         }
         Assert.Equal(baseRows.Select(d => d.Id), accum0.Select(d => d.Id));
         Assert.Equal(CursorState.Closed, feCur.State);
-
-        /* TODO in the same spirit, porting from Python I am skipping:
-            1. same as above with a coroutine callback (does not apply here)
-            2. foreach on a partially-consumed cursor (trivial once exited cursor to LINQ-land)
-            3. 1+2
-            4. mapped ForEach (we're not testing LINQ after all)
-            5. mapped ForEach with coroutine
-            6. early-break ForEach & coroutine forms, various return types thereof (don't apply)
-        */
-    }
-
-    [Fact]
-    public async Task Test_CollectionCursor_InitialPageState()
-    {
-        const int PAGE_SIZE = 20;
-
-        var filledPagCollection = _fixture.FilledPaginationCollection;
-        var cur = filledPagCollection.Find(
-            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
-
-        // TODO This test is made of two parts (in its Python inspiration)
-        // Part 1: accesses the cursor private page state and puts it to test in a few ways.
-        //      This cannot be done here. The rest is just this (which could be moved to next test):
-
-        // Part 2: tests  an overload `Rewind(initialPageState)` which is not available.
-        //      TODO should it be added? (Python has it)
     }
 
     [Fact]
@@ -314,7 +282,6 @@ public class CollectionCursorTests
         var cur0 = filledPagCollection.Find(
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
         var page0 = await cur0.FetchNextPageAsync();
-        // TODO this should be `Results` (see yellow doc for 'specs') and not `Results`
         var ids0 = page0.Results.Select(d => d.id).ToList();
         var nps0 = page0.NextPageState;
         Assert.IsType<string>(nps0);
