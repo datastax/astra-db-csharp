@@ -52,28 +52,31 @@ public class CollectionCursorTests
         {
             foreach (var item in toClose) { /* moot */ }
         });
-        await Assert.ThrowsAsync<CursorException>( async () => 
+        await Assert.ThrowsAsync<CursorException>( async () =>
             await toClose.ToListAsync()
         );
-        Assert.Throws<CursorException>( () => 
+        Assert.Throws<CursorException>( () =>
             toClose.ToList()
         );
-        // TODO: c# does not error on "MoveNextAsync" for closed cursor (python does). Do we care?
+        // TODO: c# does not error on "MoveNextAsync" for closed cursor (python does):
+        // await Assert.ThrowsAsync<CursorException>( async () =>
+        //     await toClose.MoveNextAsync()
+        // );
 
         // rewinding
-        cur.Rewind();
-        Assert.Equal(CursorState.Idle, cur.State);
-        Assert.Equal(0, cur.Consumed);
-        Assert.Equal(0, cur.Buffered());
+        toClose.Rewind();
+        Assert.Equal(CursorState.Idle, toClose.State);
+        Assert.Equal(0, toClose.Consumed);
+        Assert.Equal(0, toClose.Buffered());
 
         // various fluent-api methods
-        cur.Filter(Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PInt, 789));
-        cur.Project(Builders<CursorTestDocument>.Projection.Include(d => d.PInt));
-        cur.Sort(Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PInt));
-        cur.Limit(1);
-        cur.IncludeSimilarity(false);
-        cur.IncludeSortVector(true);
-        cur.Skip(1);
+        toClose.Filter(Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PInt, 789));
+        toClose.Project(Builders<CursorTestDocument>.Projection.Include(d => d.PInt));
+        toClose.Sort(Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PInt));
+        toClose.Limit(1);
+        toClose.IncludeSimilarity(false);
+        toClose.IncludeSortVector(true);
+        toClose.Skip(1);
     }
 
     [Fact]
@@ -98,7 +101,7 @@ public class CollectionCursorTests
         Assert.Equal(0, cloned.Buffered());
         Assert.Equal(CursorState.Idle, cloned.State);
 
-        // Closed cursors can't receive fluent-API edits:
+        // Closed cursors shouldn't receive fluent-API edits:
 
         // TODO does not throw (and should)
         // Assert.Throws<CursorException>(() => { cur1.Filter(
