@@ -103,28 +103,20 @@ public class CollectionCursorTests
 
         // Closed cursors shouldn't receive fluent-API edits:
 
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Filter(
-        //     Builders<CursorTestDocument>.CollectionFilter.Empty()
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Project(
-        //     Builders<CursorTestDocument>.Projection.Include(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Sort(
-        //     Builders<CursorTestDocument>.Sort.Ascending(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Limit(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Skip(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.IncludeSimilarity(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.IncludeSortVector(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.InitialPageState("blaaaa"); });
+        Assert.Throws<CursorException>(() => { cur1.Filter(
+            Builders<CursorTestDocument>.CollectionFilter.Empty()
+        ); });
+        Assert.Throws<CursorException>(() => { cur1.Project(
+            Builders<CursorTestDocument>.Projection.Include(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur1.Sort(
+            Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur1.Limit(1); });
+        Assert.Throws<CursorException>(() => { cur1.Skip(1); });
+        Assert.Throws<CursorException>(() => { cur1.IncludeSimilarity(true); });
+        Assert.Throws<CursorException>(() => { cur1.IncludeSortVector(true); });
+        Assert.Throws<CursorException>(() => { cur1.InitialPageState("blaaaa"); });
 
         // (note the full prefix required otherwise ambiguous a/sync unresolved)
         await Assert.ThrowsAsync<CursorException>(async () => { 
@@ -158,36 +150,26 @@ public class CollectionCursorTests
 
         // Started cursors can't receive fluent-API edits:
 
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Filter(
-        //     Builders<CursorTestDocument>.CollectionFilter.Empty()
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Project(
-        //     Builders<CursorTestDocument>.Projection.Include(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Sort(
-        //     Builders<CursorTestDocument>.Sort.Ascending(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Limit(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Skip(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.IncludeSimilarity(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.IncludeSortVector(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.InitialPageState("blaaaa"); });
+        Assert.Throws<CursorException>(() => { cur.Filter(
+            Builders<CursorTestDocument>.CollectionFilter.Empty()
+        ); });
+        Assert.Throws<CursorException>(() => { cur.Project(
+            Builders<CursorTestDocument>.Projection.Include(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur.Sort(
+            Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur.Limit(1); });
+        Assert.Throws<CursorException>(() => { cur.Skip(1); });
+        Assert.Throws<CursorException>(() => { cur.IncludeSimilarity(true); });
+        Assert.Throws<CursorException>(() => { cur.IncludeSortVector(true); });
+        Assert.Throws<CursorException>(() => { cur.InitialPageState("blaaaa"); });
 
-        // TODO: this one *does not throw* (other clients don't admit setting mapping *after* started)
-        //       But in this case "we're in LINQ's hands" and can't really do much about it. Are we ok?
+        // Note: other clients don't admit setting mapping *after* started,
+        // but in the c# case "we're in LINQ's hands" and can't really do much about it.
         //
         // (note the full prefix required otherwise ambiguous a/sync unresolved)
-        //await Assert.ThrowsAsync<CursorException>(async () => { 
-            await System.Linq.AsyncEnumerable.Select(cur, doc => doc.PText).ToListAsync();
-        // });
+        await System.Linq.AsyncEnumerable.Select(cur, doc => doc.PText).ToListAsync();
 
     }
 
