@@ -1986,7 +1986,7 @@ public class Collection<T, TId> where T : class
             throw new ArgumentException($"maxDocumentsToCount must be >= 1 (got {maxDocumentsToCount})", nameof(maxDocumentsToCount));
         }
         commandOptions ??= new CommandOptions();
-        var findOptions = new CollectionFindOptions<T>()
+        var findOptions = new DocumentFindOptions<T>()
         {
             Filter = filter,
         };
