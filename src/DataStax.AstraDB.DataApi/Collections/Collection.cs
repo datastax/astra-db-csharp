@@ -642,7 +642,7 @@ public class Collection<T, TId> where T : class
     /// </remarks>
     public CollectionFindCursor<T> Find()
     {
-        return Find(null, null);
+        return Find(null, null, null);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
@@ -657,14 +657,14 @@ public class Collection<T, TId> where T : class
     /// </example>
     public CollectionFindCursor<T> Find(CollectionFilter<T> filter)
     {
-        return Find(filter, null);
+        return Find(filter, null, null);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
     /// <param name="findOptions"></param>
     public CollectionFindCursor<T> Find(CollectionFindManyOptions<T> findOptions)
     {
-        return Find(null, findOptions);
+        return Find(null, findOptions, null);
     }
 
     /// <inheritdoc cref="Find(CollectionFilter{T})"/>
@@ -672,8 +672,17 @@ public class Collection<T, TId> where T : class
     /// <param name="findOptions"></param>
     public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions)
     {
+        return Find(filter, findOptions, null);
+    }
+
+    /// <inheritdoc cref="Find(CollectionFilter{T}, CollectionFindManyOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
+    /// <param name="commandOptions"></param>
+    public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions, CommandOptions commandOptions)
+    {
         findOptions ??= new CollectionFindManyOptions<T>();
-        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
+        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
@@ -683,7 +692,7 @@ public class Collection<T, TId> where T : class
     /// </remarks>
     public CollectionFindCursor<T, TResult> Find<TResult>() where TResult : class
     {
-        return Find<TResult>(null, null);
+        return Find<TResult>(null, null, null);
     }
 
     /// <inheritdoc cref="Find(CollectionFilter{T})"/>
@@ -693,7 +702,7 @@ public class Collection<T, TId> where T : class
     /// </remarks>
     public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter) where TResult : class
     {
-        return Find<TResult>(filter, null);
+        return Find<TResult>(filter, null, null);
     }
 
     /// <inheritdoc cref="Find(CollectionFindManyOptions{T})"/>
@@ -703,16 +712,28 @@ public class Collection<T, TId> where T : class
     /// </remarks>
     public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFindManyOptions<T> findOptions) where TResult : class
     {
-        return Find<TResult>(null, findOptions);
+        return Find<TResult>(null, findOptions, null);
     }
 
-    /// <inheritdoc cref="Find{TResult}(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
+    /// <inheritdoc cref="Find(CollectionFilter{T}, CollectionFindManyOptions{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
     public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions) where TResult : class
     {
+        return Find<TResult>(filter, findOptions, null);
+    }
+
+    /// <inheritdoc cref="Find(CollectionFilter{T}, CollectionFindManyOptions{T}, CommandOptions)"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
+    {
         findOptions ??= new CollectionFindManyOptions<T>();
-        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
+        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
     internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(CollectionFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class

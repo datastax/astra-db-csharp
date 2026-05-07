@@ -2,6 +2,7 @@ using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Enumeration;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.SerDes;
@@ -23,6 +24,27 @@ public class CollectionCursorTests
     public CollectionCursorTests(AssemblyFixture assemblyFixture, CollectionCursorFixture fixture)
     {
         _fixture = fixture;
+    }
+
+    [Fact]
+    public async Task Test_CollectionCursor_CommandOptions()
+    {
+        var filledCollection = _fixture.FilledCollection;
+
+        var theFilter = Builders<CursorTestDocument>.CollectionFilter.Gt(d => d.PInt, 2);
+        var theFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
+            Sort = Builders<CursorTestDocument>.CollectionSort.Descending(d => d.PInt)
+        };
+        var theBadToken = new CommandOptions { Token = "blibblo" };
+
+        var goodCur = filledCollection.Find(theFilter, theFindOptions);
+        var badCur = filledCollection.Find(theFilter, theFindOptions, theBadToken);
+
+        await foreach (var item in goodCur) { /* moot */ };
+        await Assert.ThrowsAsync<System.UnauthorizedAccessException>( async () =>
+        {
+            await foreach (var item in badCur) { /* moot */ }
+        });
     }
 
     [Fact]
