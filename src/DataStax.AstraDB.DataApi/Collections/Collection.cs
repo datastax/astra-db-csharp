@@ -673,7 +673,7 @@ public class Collection<T, TId> where T : class
     public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions)
     {
         findOptions ??= new CollectionFindManyOptions<T>();
-        var commandOptions = findOptions.commandOptions();
+        var commandOptions = findOptions.CommandOptions();
         return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
@@ -715,7 +715,7 @@ public class Collection<T, TId> where T : class
     public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions) where TResult : class
     {
         findOptions ??= new CollectionFindManyOptions<T>();
-        var commandOptions = findOptions.commandOptions();
+        var commandOptions = findOptions.CommandOptions();
         return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 

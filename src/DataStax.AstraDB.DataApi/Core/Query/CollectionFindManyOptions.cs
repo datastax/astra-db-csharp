@@ -128,7 +128,7 @@ public class CollectionFindManyOptions<T> : CommandOptions, IFindManyOptions<T, 
         };
     }
 
-    internal CommandOptions commandOptions()
+    internal CommandOptions CommandOptions()
     {
         return new CommandOptions {
             Token = Token,

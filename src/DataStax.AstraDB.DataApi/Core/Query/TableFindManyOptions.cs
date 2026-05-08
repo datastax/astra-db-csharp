@@ -158,7 +158,7 @@ public class TableFindManyOptions<T> : CommandOptions, IFindManyOptions<T, Table
         };
     }
 
-    internal CommandOptions commandOptions()
+    internal CommandOptions CommandOptions()
     {
         return new CommandOptions {
             Token = Token,

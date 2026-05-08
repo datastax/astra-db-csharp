@@ -916,7 +916,7 @@ public class Table<T> where T : class
     public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
     {
         findOptions ??= new TableFindManyOptions<T>();
-        var commandOptions = findOptions.commandOptions();
+        var commandOptions = findOptions.CommandOptions();
         return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
@@ -958,7 +958,7 @@ public class Table<T> where T : class
     public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
     {
         findOptions ??= new TableFindManyOptions<T>();
-        var commandOptions = findOptions.commandOptions();
+        var commandOptions = findOptions.CommandOptions();
         return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
