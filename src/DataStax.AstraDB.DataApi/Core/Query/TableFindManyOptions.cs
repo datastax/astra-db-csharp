@@ -86,7 +86,7 @@ public class TableFindManyOptions<T> : CommandOptions, IFindManyOptions<T, Table
     /// </code>
     /// </example>
     [JsonIgnore]
-    internal bool? IncludeSortVector { get; set; }
+    public bool? IncludeSortVector { get; set; }
 
     bool? IFindManyOptions<T, TableSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 

@@ -55,14 +55,16 @@ public class CollectionFindManyOptions<T> : CommandOptions, IFindManyOptions<T, 
     [JsonIgnore]
     public int? Limit { get; set; }
 
+    /// <summary>
+    /// Whether to include the sort vector in the result or not
+    /// </summary>
     [JsonIgnore]
-    internal bool? IncludeSortVector { get; set; }
+    public bool? IncludeSortVector { get; set; }
 
     bool? IFindManyOptions<T, CollectionSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
     internal Filter<T> Filter { get; set; }
 
-    [JsonIgnore]
     internal string PageState { get; set; }
 
     string IFindOptions<T, CollectionSortBuilder<T>>.PageState { get => PageState; set => PageState = value; }
