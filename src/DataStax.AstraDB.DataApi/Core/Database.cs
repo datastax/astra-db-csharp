@@ -92,7 +92,7 @@ public class Database
     /// </summary>
     public string Id => _id == null? "" : _id.ToString();
 
-    internal string ApiEndpoint => _apiEndpoint;
+    internal string APIEndpoint => _apiEndpoint;
     internal DataAPIClient Client => _client;
     internal Guid? DatabaseId => _id;
 
@@ -633,7 +633,7 @@ public class Database
             throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
         }
 
-        if (mergedOptions.Destination == DataApiDestination.ASTRA)
+        if (mergedOptions.Destination == DataAPIDestination.ASTRA)
         {
             return new DatabaseAdminAstra(this, _client, mergedOptions);
         }
@@ -1325,7 +1325,7 @@ public class Database
     /// </summary>
     /// <remarks>
     /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
-    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
+    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataAPIType(Type)"/>) will be ignored.
     /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
     /// <typeparam name="T"></typeparam>
@@ -1447,7 +1447,7 @@ public class Database
     /// </summary>
     /// <remarks>
     /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
-    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataApiType(Type)"/>) will be ignored.
+    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataAPIType(Type)"/>) will be ignored.
     /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
     /// <typeparam name="T"></typeparam>

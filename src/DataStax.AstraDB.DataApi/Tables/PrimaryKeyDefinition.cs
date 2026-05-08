@@ -97,12 +97,12 @@ public class PrimaryKeyDefinition
         get
         {
             return Sorts.Select(pair => new { pair.Key, pair.Value }).ToDictionary(
-                pair => pair.Key, pair => pair.Value == SortDirection.Ascending ? DataApiKeywords.SortAscending : DataApiKeywords.SortDescending);
+                pair => pair.Key, pair => pair.Value == SortDirection.Ascending ? DataAPIKeywords.SortAscending : DataAPIKeywords.SortDescending);
         }
         set
         {
             Sorts = value.ToDictionary(
-                pair => pair.Key, pair => pair.Value == DataApiKeywords.SortAscending ? SortDirection.Ascending : SortDirection.Descending);
+                pair => pair.Key, pair => pair.Value == DataAPIKeywords.SortAscending ? SortDirection.Ascending : SortDirection.Descending);
         }
     }
 

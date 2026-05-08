@@ -38,7 +38,7 @@ internal class DatabaseCommandUrlBuilder : CommandUrlBuilder
 
     internal override string BuildUrl(CommandOptions options)
     {
-        var url = $"{_database.ApiEndpoint}/{options.ApiUrlBase}{options.ApiVersion.Value.ToUrlString()}" +
+        var url = $"{_database.APIEndpoint}/{options.APIUrlBase}{options.APIVersion.Value.ToUrlString()}" +
             $"/{options.Keyspace}/{_urlPostfix}";
         return url;
     }
@@ -88,8 +88,8 @@ internal class EmbeddingCommandUrlBuilder : CommandUrlBuilder
 
     internal override string BuildUrl(CommandOptions options)
     {
-        var prefix = options.Destination == DataApiDestination.ASTRA ? "api/json/" : "";
-        var url = $"{_database.ApiEndpoint}/{prefix}{options.ApiVersion.Value.ToUrlString()}";
+        var prefix = options.Destination == DataAPIDestination.ASTRA ? "api/json/" : "";
+        var url = $"{_database.APIEndpoint}/{prefix}{options.APIVersion.Value.ToUrlString()}";
         return url;
     }
 }

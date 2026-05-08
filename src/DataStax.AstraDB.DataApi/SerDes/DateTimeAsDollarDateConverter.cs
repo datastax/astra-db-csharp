@@ -21,7 +21,7 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.SerDes;
 
 /// <summary>
-/// A custom converter to handle DataApi DateTime values
+/// A custom converter to handle DataAPI DateTime values
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class DateTimeAsDollarDateConverter<T> : JsonConverter<T>

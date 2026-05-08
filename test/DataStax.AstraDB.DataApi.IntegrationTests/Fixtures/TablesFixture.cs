@@ -197,18 +197,18 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
     {
         // Create a table with a single primary key
         var createDefinition = new TableDefinition()
-                .AddColumn("Id", DataApiType.Int())
-                .AddColumn("IdTwo", DataApiType.Text())
-                .AddColumn("Name", DataApiType.Text())
-                .AddColumn("Map", DataApiType.Map(DataApiType.Text(), DataApiType.Int()))
-                .AddColumn("SortOneAscending", DataApiType.Text())
-                .AddColumn("SortTwoDescending", DataApiType.Text())
-                .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Id", DataAPIType.Int())
+                .AddColumn("IdTwo", DataAPIType.Text())
+                .AddColumn("Name", DataAPIType.Text())
+                .AddColumn("Map", DataAPIType.Map(DataAPIType.Text(), DataAPIType.Int()))
+                .AddColumn("SortOneAscending", DataAPIType.Text())
+                .AddColumn("SortTwoDescending", DataAPIType.Text())
+                .When(IsAstra, d => d.AddColumn("Vectorize", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
                     ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
-                .AddColumn("Vector", DataApiType.Vector(384))
+                .AddColumn("Vector", DataAPIType.Vector(384))
                 .AddSinglePrimaryKey("Id");
 
         UntypedTableSinglePrimaryKey = await Database.CreateTableAsync(_untypedSinglePkTableName, createDefinition);
@@ -220,17 +220,17 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
 
         // Create a table with a composite primary key
         createDefinition = new TableDefinition()
-                .AddColumn("Id", DataApiType.Int())
-                .AddColumn("IdTwo", DataApiType.Text())
-                .AddColumn("Name", DataApiType.Text())
-                .AddColumn("SortOneAscending", DataApiType.Text())
-                .AddColumn("SortTwoDescending", DataApiType.Text())
-                .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Id", DataAPIType.Int())
+                .AddColumn("IdTwo", DataAPIType.Text())
+                .AddColumn("Name", DataAPIType.Text())
+                .AddColumn("SortOneAscending", DataAPIType.Text())
+                .AddColumn("SortTwoDescending", DataAPIType.Text())
+                .When(IsAstra, d => d.AddColumn("Vectorize", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
                     ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
-                .AddColumn("Vector", DataApiType.Vector(384))
+                .AddColumn("Vector", DataAPIType.Vector(384))
                 .AddCompositePrimaryKey(new[] { "Id", "IdTwo" });
         UntypedTableCompositePrimaryKey = await Database.CreateTableAsync(_untypedCompositePkTableName, createDefinition);
         if (IsAstra)
@@ -241,17 +241,17 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
 
         // Create a table with a compound primary key
         createDefinition = new TableDefinition()
-                .AddColumn("Id", DataApiType.Int())
-                .AddColumn("IdTwo", DataApiType.Text())
-                .AddColumn("Name", DataApiType.Text())
-                .AddColumn("SortOneAscending", DataApiType.Text())
-                .AddColumn("SortTwoDescending", DataApiType.Text())
-                .When(IsAstra, d => d.AddColumn("Vectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Id", DataAPIType.Int())
+                .AddColumn("IdTwo", DataAPIType.Text())
+                .AddColumn("Name", DataAPIType.Text())
+                .AddColumn("SortOneAscending", DataAPIType.Text())
+                .AddColumn("SortTwoDescending", DataAPIType.Text())
+                .When(IsAstra, d => d.AddColumn("Vectorize", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
                     ModelName = "nvidia/nv-embedqa-e5-v5"
                 })))
-                .AddColumn("Vector", DataApiType.Vector(384))
+                .AddColumn("Vector", DataAPIType.Vector(384))
                 .AddCompoundPrimaryKey(new[] { "Id", "IdTwo" }, new[]
                 {
                     new PrimaryKeySort("SortOneAscending", SortDirection.Ascending),

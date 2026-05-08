@@ -38,7 +38,7 @@ public abstract class FilterBuilder<T, TFilter> where TFilter : Filter<T>
     protected abstract TFilter Make(string name, object value);
 
     private TFilter Make(LogicalOperator op, object value)
-        => Make(op.ToApiString(), value);
+        => Make(op.ToAPIString(), value);
 
     /// <summary>
     /// Internal helper: wraps value in an operator node, then wraps that in a field node.

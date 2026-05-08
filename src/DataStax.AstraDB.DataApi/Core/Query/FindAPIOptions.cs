@@ -21,7 +21,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// <summary>
 /// Internal class representing options for the Find API.
 /// </summary>
-internal class FindApiOptions
+internal class FindAPIOptions
 {
     [JsonInclude]
     [JsonPropertyName("skip")]

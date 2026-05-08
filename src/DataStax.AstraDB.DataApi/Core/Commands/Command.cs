@@ -119,14 +119,14 @@ internal class Command
         return dictionary;
     }
 
-    internal async Task<ApiResponseWithStatus<ApiResponseDictionary>> RunAsyncReturnDictionary(bool runSynchronously)
+    internal async Task<APIResponseWithStatus<APIResponseDictionary>> RunAsyncReturnDictionary(bool runSynchronously)
     {
-        return await RunAsyncReturnStatus<ApiResponseDictionary>(runSynchronously).ConfigureAwait(false);
+        return await RunAsyncReturnStatus<APIResponseDictionary>(runSynchronously).ConfigureAwait(false);
     }
 
-    internal async Task<ApiResponseWithStatus<TStatus>> RunAsyncReturnStatus<TStatus>(bool runSynchronously)
+    internal async Task<APIResponseWithStatus<TStatus>> RunAsyncReturnStatus<TStatus>(bool runSynchronously)
     {
-        var response = await RunCommandAsync<ApiResponseWithStatus<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        var response = await RunCommandAsync<APIResponseWithStatus<TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
             throw new CommandException(response.Errors);
@@ -134,7 +134,7 @@ internal class Command
         return response;
     }
 
-    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnDocumentData<TData, TDocument, TStatus>(bool runSynchronously)
+    internal async Task<APIResponseWithData<TData, TStatus>> RunAsyncReturnDocumentData<TData, TDocument, TStatus>(bool runSynchronously)
     {
         var useDocumentConverter = typeof(TDocument) != typeof(Document);
         if (useDocumentConverter)
@@ -144,7 +144,7 @@ internal class Command
                 OutputConverter = new DocumentConverter<TDocument>()
             });
         }
-        var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        var response = await RunCommandAsync<APIResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
             throw new CommandException(response.Errors);
@@ -152,9 +152,9 @@ internal class Command
         return response;
     }
 
-    internal async Task<ApiResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
+    internal async Task<APIResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
     {
-        var response = await RunCommandAsync<ApiResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
+        var response = await RunCommandAsync<APIResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)
         {
             throw new CommandException(response.Errors);

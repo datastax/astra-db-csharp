@@ -42,7 +42,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         private readonly CommandOptions _adminOptions;
         private readonly DataAPIClient _client;
         private CommandOptions[] _optionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
-        private static readonly CommandOptions _devOpsApiOptions = new CommandOptions { SerializeDateAsDollarDate = false };
+        private static readonly CommandOptions _devOpsAPIOptions = new CommandOptions { SerializeDateAsDollarDate = false };
 
         internal DatabaseAdminAstra(Database database, DataAPIClient client, CommandOptions adminOptions)
         {
@@ -84,12 +84,12 @@ namespace DataStax.AstraDB.DataApi.Admin
         /// <returns>The API endpoint as a string.</returns>
         /// <example>
         /// <code>
-        /// string endpoint = admin.GetApiEndpoint();
+        /// string endpoint = admin.GetAPIEndpoint();
         /// </code>
         /// </example>
-        public string GetApiEndpoint()
+        public string GetAPIEndpoint()
         {
-            return _database.ApiEndpoint;
+            return _database.APIEndpoint;
         }
 
         /// <summary>
@@ -435,7 +435,7 @@ namespace DataStax.AstraDB.DataApi.Admin
                 {
                     options = new
                     {
-                        filterModelStatus = options.FilterModelStatus.Value.ToApiString()
+                        filterModelStatus = options.FilterModelStatus.Value.ToAPIString()
                     }
                 };
 
@@ -527,7 +527,7 @@ namespace DataStax.AstraDB.DataApi.Admin
                 {
                     options = new
                     {
-                        filterModelStatus = options.FilterModelStatus.Value.ToApiString()
+                        filterModelStatus = options.FilterModelStatus.Value.ToAPIString()
                     }
                 };
 
@@ -545,7 +545,7 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         private Command CreateCommandAdmin()
         {
-            var options = _optionsTree.Concat(new[] { _devOpsApiOptions }).ToArray();
+            var options = _optionsTree.Concat(new[] { _devOpsAPIOptions }).ToArray();
             return new Command(_database.Client, options, new AdminCommandUrlBuilder());
         }
 

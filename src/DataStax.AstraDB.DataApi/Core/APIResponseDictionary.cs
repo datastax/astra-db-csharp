@@ -15,27 +15,12 @@
  */
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core.Results;
+namespace DataStax.AstraDB.DataApi.Core;
 
-/// <summary>
-/// A page of results from a find query.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public class ApiFindResult<T>
+internal class APIResponseDictionary : Dictionary<string, object>
 {
-    /// <summary>
-    /// The documents returned by the query.
-    /// </summary>
-    [JsonInclude]
-    [JsonPropertyName("documents")]
-    public List<T> Items { get; set; }
 
-    /// <summary>
-    /// A token that can be used to retrieve the next page of results.
-    /// </summary>
-    [JsonInclude]
-    [JsonPropertyName("nextPageState")]
-    public string NextPageState { get; set; }
 }
+
+

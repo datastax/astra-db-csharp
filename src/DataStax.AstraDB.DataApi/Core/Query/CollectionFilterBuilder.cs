@@ -37,7 +37,7 @@ public class CollectionFilterBuilder<T> : FilterBuilder<T, CollectionFilter<T>>
     /// lexicographical match to the specified string of space-separated keywords or terms.
     /// </summary>
     public CollectionFilter<T> LexicalMatch(string value)
-        => new(DataApiKeywords.Lexical, FilterOperator.Match, value);
+        => new(DataAPIKeywords.Lexical, FilterOperator.Match, value);
 
     /// <summary>
     /// Size operator -- Matches items where the specified array has the specified size.

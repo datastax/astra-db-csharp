@@ -54,7 +54,7 @@ public class AlterTypeAddFields : IAlterTypeOperation
   /// Initializes a new instance with the specified fields.
   /// </summary>
   /// <param name="fields">The fields to add (field name -> field type).</param>
-  public AlterTypeAddFields(Dictionary<string, DataApiType> fields)
+  public AlterTypeAddFields(Dictionary<string, DataAPIType> fields)
   {
     Fields = fields.ToDictionary(e => e.Key, e => e.Value.Key);
   }

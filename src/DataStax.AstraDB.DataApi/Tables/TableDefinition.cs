@@ -96,13 +96,13 @@ public class TableDefinition
 
           case ColumnJsonStringAttribute json:
             createColumn = false;
-            definition.AddColumn(columnName, DataApiType.Text());
+            definition.AddColumn(columnName, DataAPIType.Text());
             break;
 
           case ColumnVectorizeAttribute vectorize:
             createColumn = false;
             vectorize.Validate($"Column {columnName}");
-            definition.AddColumn(columnName, new VectorizeDataApiType(vectorize.Dimension, new()
+            definition.AddColumn(columnName, new VectorizeDataAPIType(vectorize.Dimension, new()
             {
               Provider = vectorize.Provider,
               ModelName = vectorize.ModelName,
@@ -117,7 +117,7 @@ public class TableDefinition
               throw new InvalidOperationException($"Vector Column {columnName} must be either float[], double[] or string (if sending already binary-encoded string)");
             }
             createColumn = false;
-            definition.AddColumn(columnName, DataApiType.Vector(vector.Dimension));
+            definition.AddColumn(columnName, DataAPIType.Vector(vector.Dimension));
             break;
         }
       }
@@ -138,7 +138,7 @@ public class TableDefinition
 
   private static void CreateColumnFromPropertyType(string columnName, Type propertyType, TableDefinition definition)
   {
-    var type = TypeUtilities.GetDataApiTypeFromUnderlyingType(propertyType);
+    var type = TypeUtilities.GetDataAPITypeFromUnderlyingType(propertyType);
     if (type != null)
     {
       definition.AddColumn(columnName, type);
@@ -249,7 +249,7 @@ public static class TableDefinitionExtensions
   /// <param name="columnName"></param>
   /// <param name="columnType"></param>
   /// <returns></returns>
-  public static TableDefinition AddColumn(this TableDefinition tableDefinition, string columnName, DataApiType columnType)
+  public static TableDefinition AddColumn(this TableDefinition tableDefinition, string columnName, DataAPIType columnType)
   {
     tableDefinition.Columns.Add(columnName, columnType.AsColumnType);
     return tableDefinition;

@@ -77,7 +77,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         public Database GetDatabase(string keyspace)
         {
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
-            return _client.GetDatabase(_database.ApiEndpoint, new DatabaseCommandOptions { Keyspace = keyspace });
+            return _client.GetDatabase(_database.APIEndpoint, new DatabaseCommandOptions { Keyspace = keyspace });
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace DataStax.AstraDB.DataApi.Admin
         public Database GetDatabase(string keyspace, string userToken)
         {
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
-            return _client.GetDatabase(_database.ApiEndpoint, new DatabaseCommandOptions { Keyspace = keyspace, Token = userToken });
+            return _client.GetDatabase(_database.APIEndpoint, new DatabaseCommandOptions { Keyspace = keyspace, Token = userToken });
         }
 
         /// <summary>
@@ -472,7 +472,7 @@ namespace DataStax.AstraDB.DataApi.Admin
                 {
                     options = new
                     {
-                        filterModelStatus = options.FilterModelStatus.Value.ToApiString()
+                        filterModelStatus = options.FilterModelStatus.Value.ToAPIString()
                     }
                 };
 
@@ -564,7 +564,7 @@ namespace DataStax.AstraDB.DataApi.Admin
                 {
                     options = new
                     {
-                        filterModelStatus = options.FilterModelStatus.Value.ToApiString()
+                        filterModelStatus = options.FilterModelStatus.Value.ToAPIString()
                     }
                 };
 

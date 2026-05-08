@@ -492,7 +492,7 @@ public class DatabaseTests
     public async Task CreateGetCollection_WithVectorizeHeader_Typed()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "coll_SimpleObjectWithVectorizeHeader";
         // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
         var createdCollection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
@@ -585,7 +585,7 @@ public class DatabaseTests
     public async Task CreateGetCollection_WithVectorizeHeader_Untyped()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "collection_WithVectorizeHeader_Untyped";
         var options = new CollectionDefinition
         {
@@ -786,8 +786,8 @@ public class DatabaseTests
     public async Task CreateGetTable_WithVectorizeHeader_Typed()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
-        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {
             var createdTable = await fixture.Database.CreateTableAsync<RowBookVectorizeHeaderBased>(ctHeaderOptions);
@@ -811,9 +811,9 @@ public class DatabaseTests
         try
         {
             var createDefinition = new TableDefinition()
-                .AddColumn("Title", DataApiType.Text())
-                .AddColumn("NumberOfPages", DataApiType.Int())
-                .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Title", DataAPIType.Text())
+                .AddColumn("NumberOfPages", DataAPIType.Int())
+                .AddColumn("Author", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
                     ModelName = "nvidia/nv-embedqa-e5-v5"
@@ -843,9 +843,9 @@ public class DatabaseTests
         try
         {
             var createDefinition = new TableDefinition()
-                .AddColumn("Title", DataApiType.Text())
-                .AddColumn("NumberOfPages", DataApiType.Int())
-                .AddColumn("Author", DataApiType.Vectorize(1536, new VectorServiceOptions
+                .AddColumn("Title", DataAPIType.Text())
+                .AddColumn("NumberOfPages", DataAPIType.Int())
+                .AddColumn("Author", DataAPIType.Vectorize(1536, new VectorServiceOptions
                 {
                     Provider = "openai",
                     ModelName = "text-embedding-3-small",
@@ -880,9 +880,9 @@ public class DatabaseTests
         try
         {
             var createDefinition = new TableDefinition()
-                .AddColumn("Title", DataApiType.Text())
-                .AddColumn("NumberOfPages", DataApiType.Int())
-                .AddColumn("Author", DataApiType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Title", DataAPIType.Text())
+                .AddColumn("NumberOfPages", DataAPIType.Int())
+                .AddColumn("Author", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "voyageAI",
                     ModelName = "voyage-2",
@@ -917,14 +917,14 @@ public class DatabaseTests
     {
         var tableName = "bookTestTableVectorizeHeader_Untyped";
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
-        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingApiKey = embeddingAPIKey };
+        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {
             var createDefinition = new TableDefinition()
-                .AddColumn("Title", DataApiType.Text())
-                .AddColumn("NumberOfPages", DataApiType.Int())
-                .AddColumn("Author", DataApiType.Vectorize(1536, new VectorServiceOptions
+                .AddColumn("Title", DataAPIType.Text())
+                .AddColumn("NumberOfPages", DataAPIType.Int())
+                .AddColumn("Author", DataAPIType.Vectorize(1536, new VectorServiceOptions
                 {
                     Provider = "openai",
                     ModelName = "text-embedding-3-small",
@@ -1072,14 +1072,14 @@ public class DatabaseTests
         try
         {
             var createDefinition = new TableDefinition()
-                .AddColumn("Name", DataApiType.Text())
-                .AddColumn("Vector", DataApiType.Vector(1024))
-                .AddColumn("StringToVectorize", DataApiType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Name", DataAPIType.Text())
+                .AddColumn("Vector", DataAPIType.Vector(1024))
+                .AddColumn("StringToVectorize", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
                     Provider = "nvidia",
                     ModelName = "nvidia/nv-embedqa-e5-v5"
                 }))
-                .AddColumn("Text", DataApiType.Text())
+                .AddColumn("Text", DataAPIType.Text())
                 .AddSinglePrimaryKey("Name");
 
             var table = await fixture.Database.CreateTableAsync(tableName, createDefinition);
@@ -1150,11 +1150,11 @@ public class DatabaseTests
         try
         {
             var createDefinition = new TableDefinition()
-                .AddColumn("KeyOne", DataApiType.Text())
-                .AddColumn("KeyTwo", DataApiType.Text())
-                .AddColumn("Name", DataApiType.Text())
-                .AddColumn("SortOneAscending", DataApiType.Text())
-                .AddColumn("SortTwoDescending", DataApiType.Text())
+                .AddColumn("KeyOne", DataAPIType.Text())
+                .AddColumn("KeyTwo", DataAPIType.Text())
+                .AddColumn("Name", DataAPIType.Text())
+                .AddColumn("SortOneAscending", DataAPIType.Text())
+                .AddColumn("SortTwoDescending", DataAPIType.Text())
                 .AddCompoundPrimaryKey("KeyOne", 1)
                 .AddCompoundPrimaryKey("KeyTwo", 2)
                 .AddCompoundPrimaryKeySort("SortOneAscending", 1, SortDirection.Ascending)

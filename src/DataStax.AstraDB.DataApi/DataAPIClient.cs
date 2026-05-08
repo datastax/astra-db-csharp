@@ -141,7 +141,7 @@ public class DataAPIClient
     {
         var applicableOptions = CommandOptions.Merge(_options, adminOptions);
         var applicableDestination = applicableOptions.Destination;
-        Guard.Equals(applicableDestination, DataApiDestination.ASTRA, "Destinations other than ASTRA cannot be used with GetAstraAdmin. Please check your Destination settings for the DataAPIClient or the overload with adminOptions");
+        Guard.Equals(applicableDestination, DataAPIDestination.ASTRA, "Destinations other than ASTRA cannot be used with GetAstraAdmin. Please check your Destination settings for the DataAPIClient or the overload with adminOptions");
         var applicableToken = applicableOptions.Token;
         Guard.NotNullOrEmpty(applicableToken, nameof(adminOptions.Token), "Token must be provided to the DataAPIClient constructor or to a GetAstraAdmin() overload.");
         return new AstraDatabasesAdmin(this, applicableOptions);

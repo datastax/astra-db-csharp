@@ -21,7 +21,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Represents an error returned by the API.
 /// </summary>
-public class ApiError
+public class APIError
 {
     /// <summary>
     /// The error message.

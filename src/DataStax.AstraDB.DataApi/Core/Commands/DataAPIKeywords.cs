@@ -16,7 +16,7 @@
 
 namespace DataStax.AstraDB.DataApi.Core.Commands;
 
-internal static class DataApiKeywords
+internal static class DataAPIKeywords
 {
     internal const string Id = "_id";
     internal const string All = "$all";

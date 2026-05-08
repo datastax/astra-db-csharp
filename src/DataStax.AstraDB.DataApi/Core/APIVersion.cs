@@ -19,7 +19,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// The version of the backend API to connect to
 /// </summary>
-public enum ApiVersion
+public enum APIVersion
 {
     /// <summary>Version 1 of the Data API.</summary>
     V1

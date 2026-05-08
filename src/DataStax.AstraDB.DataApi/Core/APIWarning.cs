@@ -21,7 +21,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// A warning returned by the Data API, for example to indicate query limitations or deprecated usage.
 /// </summary>
-internal class ApiWarning
+internal class APIWarning
 {
     /// <summary>
     /// The human-readable warning message.

@@ -29,11 +29,11 @@ public class UserDefinedTypesTests
         {
             await fixture.Database.CreateTypeAsync(typeName, new UserDefinedTypeDefinition
             {
-                Fields = new Dictionary<string, DataApiType>
+                Fields = new Dictionary<string, DataAPIType>
                 {
-                    ["id"] = DataApiType.Int(),
-                    ["name"] = DataApiType.Text(),
-                    ["removeMe"] = DataApiType.Boolean()
+                    ["id"] = DataAPIType.Int(),
+                    ["name"] = DataAPIType.Text(),
+                    ["removeMe"] = DataAPIType.Boolean()
                 }
             });
 
@@ -44,7 +44,7 @@ public class UserDefinedTypesTests
 
             var addFieldsOp = new AlterTypeAddFields(new()
             {
-                ["new_field"] = DataApiType.Text()
+                ["new_field"] = DataAPIType.Text()
             });
             await fixture.Database.AlterTypeAsync(typeName, addFieldsOp);
 

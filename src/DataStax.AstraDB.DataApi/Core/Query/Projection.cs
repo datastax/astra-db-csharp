@@ -44,7 +44,7 @@ internal class Projection
                 }
                 return new Dictionary<string, object>
                 {
-                    { DataApiKeywords.Slice, sliceVal }
+                    { DataAPIKeywords.Slice, sliceVal }
                 };
             }
             return Include;

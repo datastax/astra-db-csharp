@@ -11,7 +11,7 @@ public class AssemblyFixture
 {
     public string Token { get; private set; }
     public string AdminToken { get; private set; }
-    public string OpenAiApiKey { get; private set; }
+    public string OpenAiAPIKey { get; private set; }
 
     public string DatabaseUrl { get; private set; }
     public string DatabaseName { get; private set; }
@@ -28,7 +28,7 @@ public class AssemblyFixture
 
         Token = configuration["TOKEN"] ?? configuration["AstraDB:Token"];
         AdminToken = configuration["ADMINTOKEN"] ?? configuration["AstraDB:AdminToken"];
-        OpenAiApiKey = configuration["OPENAI_APIKEYNAME"] ?? configuration["AstraDB:OpenAiApiKey"];
+        OpenAiAPIKey = configuration["OPENAI_APIKEYNAME"] ?? configuration["AstraDB:OpenAiAPIKey"];
         DatabaseName = configuration["DATABASE_NAME"] ?? configuration["AstraDB:DatabaseName"];
         DatabaseUrl = configuration["URL"] ?? configuration["AstraDB:Url"];
         Destination = configuration["DESTINATION"] ?? configuration["AstraDB:Destination"] ?? "astra";
@@ -36,7 +36,7 @@ public class AssemblyFixture
 
     }
 
-    public DataAPIClient CreateApiClient(string fixtureName, bool useToken = true)
+    public DataAPIClient CreateAPIClient(string fixtureName, bool useToken = true)
     {
         using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddFileLogger($"../../../_logs/{fixtureName}_fixture_latest_run.log"));
         ILogger logger = factory.CreateLogger(fixtureName);
@@ -44,26 +44,26 @@ public class AssemblyFixture
         logger.LogInformation("Database URL: {DatabaseUrl}", DatabaseUrl);
         logger.LogInformation("Database Destination: {Destination}", Destination);
 
-        DataApiDestination? destination = DataApiDestination.ASTRA;
+        DataAPIDestination? destination = DataAPIDestination.ASTRA;
         switch (Destination?.ToLower())
         {
             case "astra":
-                destination = DataApiDestination.ASTRA;
+                destination = DataAPIDestination.ASTRA;
                 break;
             case "dse":
-                destination = DataApiDestination.DSE;
+                destination = DataAPIDestination.DSE;
                 break;
             case "hcd":
-                destination = DataApiDestination.HCD;
+                destination = DataAPIDestination.HCD;
                 break;
             case "cassandra":
-                destination = DataApiDestination.CASSANDRA;
+                destination = DataAPIDestination.CASSANDRA;
                 break;
             case "other":
-                destination = DataApiDestination.OTHER;
+                destination = DataAPIDestination.OTHER;
                 break;
             default:
-                destination = DataApiDestination.ASTRA;
+                destination = DataAPIDestination.ASTRA;
                 break;
         }
 

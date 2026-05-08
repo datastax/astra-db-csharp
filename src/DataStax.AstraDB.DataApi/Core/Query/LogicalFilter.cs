@@ -21,12 +21,12 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 internal class LogicalFilter<T> : Filter<T>
 {
     internal LogicalFilter(LogicalOperator logicalOperator, Filter<T>[] filters) :
-        base(logicalOperator.ToApiString(), filters)
+        base(logicalOperator.ToAPIString(), filters)
     {
     }
 
     internal LogicalFilter(LogicalOperator logicalOperator, Filter<T> filter) :
-        base(logicalOperator.ToApiString(), filter)
+        base(logicalOperator.ToAPIString(), filter)
     {
     }
 

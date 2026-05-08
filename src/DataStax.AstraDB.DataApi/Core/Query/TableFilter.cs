@@ -42,8 +42,8 @@ public class TableFilter<T> : Filter<T>
 internal class LogicalTableFilter<T> : TableFilter<T>
 {
     internal LogicalTableFilter(LogicalOperator op, TableFilter<T>[] filters)
-        : base(op.ToApiString(), filters) { }
+        : base(op.ToAPIString(), filters) { }
 
     internal LogicalTableFilter(LogicalOperator op, TableFilter<T> filter)
-        : base(op.ToApiString(), filter) { }
+        : base(op.ToAPIString(), filter) { }
 }
