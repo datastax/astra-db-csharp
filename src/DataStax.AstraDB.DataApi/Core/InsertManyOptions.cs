@@ -24,12 +24,12 @@ public class InsertManyOptions
     /// <summary>
     /// Default batch size.
     /// </summary>
-    public const int DefaultChunkSize = 100;
+    public const int DefaultChunkSize = 50;
 
     /// <summary>
-    /// Maximum concurrency.
+    /// Default concurrency for unordered insertions.
     /// </summary>
-    public const int MaxConcurrency = int.MaxValue;
+    public const int DefaultConcurrency = 20;
 
     private bool _Ordered = false;
     /// <summary>
@@ -48,7 +48,7 @@ public class InsertManyOptions
     /// The number of parallel processes to use while inserting documents.
     /// Must be set to 1 for ordered inserts.
     /// </summary>
-    public int Concurrency { get; set; } = MaxConcurrency;
+    public int Concurrency { get; set; } = DefaultConcurrency;
 
     /// <summary>
     /// The number of documents to insert in each batch.
