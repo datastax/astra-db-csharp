@@ -79,28 +79,30 @@ public class CollectionCursorTests
         {
             foreach (var item in toClose) { /* moot */ }
         });
-        await Assert.ThrowsAsync<CursorException>( async () => 
+        await Assert.ThrowsAsync<CursorException>( async () =>
             await toClose.ToListAsync()
         );
-        Assert.Throws<CursorException>( () => 
+        Assert.Throws<CursorException>( () =>
             toClose.ToList()
         );
-        // TODO: c# does not error on "MoveNextAsync" for closed cursor (python does). Do we care?
+        await Assert.ThrowsAsync<CursorException>( async () =>
+            await toClose.MoveNextAsync()
+        );
 
         // rewinding
-        cur.Rewind();
-        Assert.Equal(CursorState.Idle, cur.State);
-        Assert.Equal(0, cur.Consumed);
-        Assert.Equal(0, cur.Buffered());
+        toClose.Rewind();
+        Assert.Equal(CursorState.Idle, toClose.State);
+        Assert.Equal(0, toClose.Consumed);
+        Assert.Equal(0, toClose.Buffered());
 
         // various fluent-api methods
-        cur.Filter(Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PInt, 789));
-        cur.Project(Builders<CursorTestDocument>.Projection.Include(d => d.PInt));
-        cur.Sort(Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PInt));
-        cur.Limit(1);
-        cur.IncludeSimilarity(false);
-        cur.IncludeSortVector(true);
-        cur.Skip(1);
+        toClose.Filter(Builders<CursorTestDocument>.CollectionFilter.Eq(d => d.PInt, 789));
+        toClose.Project(Builders<CursorTestDocument>.Projection.Include(d => d.PInt));
+        toClose.Sort(Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PInt));
+        toClose.Limit(1);
+        toClose.IncludeSimilarity(false);
+        toClose.IncludeSortVector(true);
+        toClose.Skip(1);
     }
 
     [Fact]
@@ -125,30 +127,22 @@ public class CollectionCursorTests
         Assert.Equal(0, cloned.Buffered());
         Assert.Equal(CursorState.Idle, cloned.State);
 
-        // Closed cursors can't receive fluent-API edits:
+        // Closed cursors shouldn't receive fluent-API edits:
 
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Filter(
-        //     Builders<CursorTestDocument>.CollectionFilter.Empty()
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Project(
-        //     Builders<CursorTestDocument>.Projection.Include(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Sort(
-        //     Builders<CursorTestDocument>.Sort.Ascending(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Limit(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.Skip(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.IncludeSimilarity(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.IncludeSortVector(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur1.InitialPageState("blaaaa"); });
+        Assert.Throws<CursorException>(() => { cur1.Filter(
+            Builders<CursorTestDocument>.CollectionFilter.Empty()
+        ); });
+        Assert.Throws<CursorException>(() => { cur1.Project(
+            Builders<CursorTestDocument>.Projection.Include(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur1.Sort(
+            Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur1.Limit(1); });
+        Assert.Throws<CursorException>(() => { cur1.Skip(1); });
+        Assert.Throws<CursorException>(() => { cur1.IncludeSimilarity(true); });
+        Assert.Throws<CursorException>(() => { cur1.IncludeSortVector(true); });
+        Assert.Throws<CursorException>(() => { cur1.InitialPageState("blaaaa"); });
 
         // (note the full prefix required otherwise ambiguous a/sync unresolved)
         await Assert.ThrowsAsync<CursorException>(async () => { 
@@ -182,36 +176,26 @@ public class CollectionCursorTests
 
         // Started cursors can't receive fluent-API edits:
 
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Filter(
-        //     Builders<CursorTestDocument>.CollectionFilter.Empty()
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Project(
-        //     Builders<CursorTestDocument>.Projection.Include(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Sort(
-        //     Builders<CursorTestDocument>.Sort.Ascending(d => d.PText)
-        // ); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Limit(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.Skip(1); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.IncludeSimilarity(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.IncludeSortVector(true); });
-        // TODO does not throw (and should)
-        // Assert.Throws<CursorException>(() => { cur.InitialPageState("blaaaa"); });
+        Assert.Throws<CursorException>(() => { cur.Filter(
+            Builders<CursorTestDocument>.CollectionFilter.Empty()
+        ); });
+        Assert.Throws<CursorException>(() => { cur.Project(
+            Builders<CursorTestDocument>.Projection.Include(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur.Sort(
+            Builders<CursorTestDocument>.CollectionSort.Ascending(d => d.PText)
+        ); });
+        Assert.Throws<CursorException>(() => { cur.Limit(1); });
+        Assert.Throws<CursorException>(() => { cur.Skip(1); });
+        Assert.Throws<CursorException>(() => { cur.IncludeSimilarity(true); });
+        Assert.Throws<CursorException>(() => { cur.IncludeSortVector(true); });
+        Assert.Throws<CursorException>(() => { cur.InitialPageState("blaaaa"); });
 
-        // TODO: this one *does not throw* (other clients don't admit setting mapping *after* started)
-        //       But in this case "we're in LINQ's hands" and can't really do much about it. Are we ok?
+        // Note: other clients don't admit setting mapping *after* started,
+        // but in the c# case "we're in LINQ's hands" and can't really do much about it.
         //
         // (note the full prefix required otherwise ambiguous a/sync unresolved)
-        //await Assert.ThrowsAsync<CursorException>(async () => { 
-            await System.Linq.AsyncEnumerable.Select(cur, doc => doc.PText).ToListAsync();
-        // });
+        await System.Linq.AsyncEnumerable.Select(cur, doc => doc.PText).ToListAsync();
 
     }
 
@@ -303,15 +287,9 @@ public class CollectionCursorTests
         Assert.Equal(baseRows.Skip(15).Select(d => d.Id), (await ptlCur.ToListAsync()).Select(d => d.Id));
         Assert.Equal(CursorState.Closed, ptlCur.State);
 
-        // Tests on *mapped cursors + ToList* are omitted, as such logic occurs not in cursor territory anymore (rather LINQ's).
+        // No need to test on *mapped cursors + ToList* (not in the c# client's domain)
 
-        // Full ForEach
-        /* TODO (this section):
-            c# differs greatly from other clients. There's no ForEach on cursors (and arguably there shouldn't be).
-            As is now, this part passes but adds little. Even the client pattern of a "ForEach(callback)", with the
-            callback returning whether to stop or not, probably is not needed here, nor is it idiomatic.
-            I think we should be ok with there not being any ForEach fancy thing other than the LINQ stuff (so dropping this part of test?)
-        */
+        // For the C# client, foreach is not a client-implemented construct - test is lightweight here
         var accum0 = new List<CursorTestDocument>();
         var feCur = filledCollection.Find();
         await foreach (var row in feCur)
@@ -320,32 +298,6 @@ public class CollectionCursorTests
         }
         Assert.Equal(baseRows.Select(d => d.Id), accum0.Select(d => d.Id));
         Assert.Equal(CursorState.Closed, feCur.State);
-
-        /* TODO in the same spirit, porting from Python I am skipping:
-            1. same as above with a coroutine callback (does not apply here)
-            2. foreach on a partially-consumed cursor (trivial once exited cursor to LINQ-land)
-            3. 1+2
-            4. mapped ForEach (we're not testing LINQ after all)
-            5. mapped ForEach with coroutine
-            6. early-break ForEach & coroutine forms, various return types thereof (don't apply)
-        */
-    }
-
-    [Fact]
-    public async Task Test_CollectionCursor_InitialPageState()
-    {
-        const int PAGE_SIZE = 20;
-
-        var filledPagCollection = _fixture.FilledPaginationCollection;
-        var cur = filledPagCollection.Find(
-            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
-
-        // TODO This test is made of two parts (in its Python inspiration)
-        // Part 1: accesses the cursor private page state and puts it to test in a few ways.
-        //      This cannot be done here. The rest is just this (which could be moved to next test):
-
-        // Part 2: tests  an overload `Rewind(initialPageState)` which is not available.
-        //      TODO should it be added? (Python has it)
     }
 
     [Fact]
@@ -356,12 +308,10 @@ public class CollectionCursorTests
         var cur0 = filledPagCollection.Find(
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true));
         var page0 = await cur0.FetchNextPageAsync();
-        // TODO this should be `Results` (see yellow doc for 'specs') and not `Results`
         var ids0 = page0.Results.Select(d => d.id).ToList();
         var nps0 = page0.NextPageState;
         Assert.IsType<string>(nps0);
 
-        // TODO: are we ok that there is no 'options' to Find, alternative to fluent way to set initialPS?
         var cur1 = filledPagCollection.Find(
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
         ).InitialPageState(nps0);
@@ -371,8 +321,9 @@ public class CollectionCursorTests
         Assert.IsType<string>(nps1);
 
         var cur2 = filledPagCollection.Find(
-            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
-        ).InitialPageState(nps1);
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true),
+            new CollectionFindManyOptions<CursorPaginationTestDocument>() { InitialPageState = nps1 }
+        );
         var page2 = await cur2.FetchNextPageAsync();
         var ids2 = page2.Results.Select(d => d.id).ToList();
         Assert.Null(page2.NextPageState);

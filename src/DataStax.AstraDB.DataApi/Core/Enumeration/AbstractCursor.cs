@@ -126,6 +126,9 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
     /// </remarks>
     public bool HasNext()
     {
+        if ( State == CursorState.Closed ){
+            return false;
+        }
         return MoveNextAsync(CancellationToken.None, peek: true, runSynchronously: true).ResultSync() != null;
     }
 
@@ -136,6 +139,9 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
     /// <returns>True if there are more items available, false otherwise.</returns>
     public async Task<bool> HasNextAsync(CancellationToken cancellationToken = default)
     {
+        if ( State == CursorState.Closed ){
+            return false;
+        }
         return await MoveNextAsync(cancellationToken, peek: true, runSynchronously: false) != null;
     }
 
@@ -193,7 +199,7 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
         {
             throw new CursorException("Cannot iterate over a closed cursor", State);
         }
-        
+
         T doc;
         while ((doc = MoveNext()) != null)
         {
@@ -259,7 +265,7 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
     {
         if (State == CursorState.Closed)
         {
-            return default;
+            throw new CursorException("Cannot iterate over a closed cursor", State);
         }
 
         State = CursorState.Started;
