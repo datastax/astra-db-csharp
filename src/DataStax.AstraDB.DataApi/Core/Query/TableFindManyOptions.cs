@@ -166,7 +166,7 @@ public class TableFindManyOptions<T> : CommandOptions, IFindManyOptions<T, Table
             Destination = Destination,
             HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
             TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
-            ApiVersion = ApiVersion,
+            APIVersion = APIVersion,
             CancellationToken = CancellationToken
         };
     }
@@ -189,7 +189,7 @@ public class TableFindManyOptions<T> : CommandOptions, IFindManyOptions<T, Table
             Destination = Destination,
             HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
             TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
-            ApiVersion = ApiVersion,
+            APIVersion = APIVersion,
             CancellationToken = CancellationToken
         };
     }

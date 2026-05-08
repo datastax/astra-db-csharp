@@ -26,6 +26,8 @@ public class CollectionCursorTests
         _fixture = fixture;
     }
 
+    // This one is skipped on HCD because in some cases a wrong token will *not* bring failure
+    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionCursor_CommandOptions()
     {
