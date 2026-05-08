@@ -58,10 +58,9 @@ public class CollectionCursorTests
         Assert.Throws<CursorException>( () =>
             toClose.ToList()
         );
-        // TODO: c# does not error on "MoveNextAsync" for closed cursor (python does):
-        // await Assert.ThrowsAsync<CursorException>( async () =>
-        //     await toClose.MoveNextAsync()
-        // );
+        await Assert.ThrowsAsync<CursorException>( async () =>
+            await toClose.MoveNextAsync()
+        );
 
         // rewinding
         toClose.Rewind();
@@ -263,7 +262,7 @@ public class CollectionCursorTests
 
         // No need to test on *mapped cursors + ToList* (not in the c# client's domain)
 
-        // For the C# client, foreach is not a client-implemented construct
+        // For the C# client, foreach is not a client-implemented construct - test is lightweight here
         var accum0 = new List<CursorTestDocument>();
         var feCur = filledCollection.Find();
         await foreach (var row in feCur)
