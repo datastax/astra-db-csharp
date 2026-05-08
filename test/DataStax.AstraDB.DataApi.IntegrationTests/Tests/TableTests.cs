@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
 using Microsoft.VisualBasic;
@@ -49,6 +50,45 @@ public class TableTests
             Assert.Equal(rows[0].NumberOfPages, result.InsertedIdTuples[0][1]);
             Assert.Equal(rows[1].Title, result.InsertedIdTuples[1][0]);
             Assert.Equal(rows[1].NumberOfPages, result.InsertedIdTuples[1][1]);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync(tableName);
+        }
+    }
+
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task InsertManyCommandOptions()
+    {
+        var tableName = "insertRowsTest";
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowBook>(tableName);
+            var row1 = new RowBook()
+            {
+                Title = "Computed Wilderness",
+                Author = "Ryan Eau",
+                NumberOfPages = 432,
+                DueDate = DateTime.UtcNow - TimeSpan.FromDays(1),
+                Genres = new HashSet<string> { "History", "Biography" }
+            };
+            var row2 = new RowBook()
+            {
+                Title = "Desert Peace",
+                Author = "Walter Dray",
+                NumberOfPages = 355,
+                DueDate = DateTime.UtcNow - TimeSpan.FromDays(2),
+                Genres = new HashSet<string> { "Fiction" }
+            };
+            var rows = new List<RowBook> { row1, row2 };
+
+            // passing generic command options:
+            await Assert.ThrowsAsync<BulkOperationException<TableInsertManyResult>>( async () =>
+            {
+                await table.InsertManyAsync(
+                    rows, new InsertManyOptions() { Token = "blibbli" });
+            });
         }
         finally
         {

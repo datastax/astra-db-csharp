@@ -19,7 +19,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Options for inserting multiple documents into a collection.
 /// </summary>
-public class InsertManyOptions
+public class InsertManyOptions : CommandOptions
 {
     /// <summary>
     /// Default batch size.
@@ -54,4 +54,36 @@ public class InsertManyOptions
     /// The number of documents to insert in each batch.
     /// </summary>
     public int ChunkSize { get; set; } = DefaultChunkSize;
+
+    internal CommandOptions CommandOptions()
+    {
+        return new CommandOptions {
+            Token = Token,
+            RunMode = RunMode,
+            Destination = Destination,
+            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
+            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
+            APIVersion = APIVersion,
+            CancellationToken = CancellationToken
+        };
+    }
+
+    internal InsertManyOptions Clone()
+    {
+        return new InsertManyOptions
+        {
+            Ordered = Ordered,
+            Concurrency = Concurrency,
+            ChunkSize = ChunkSize,
+            // CommandOptions properties:
+            Token = Token,
+            RunMode = RunMode,
+            Destination = Destination,
+            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
+            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
+            APIVersion = APIVersion,
+            CancellationToken = CancellationToken
+        };
+    }
+
 }

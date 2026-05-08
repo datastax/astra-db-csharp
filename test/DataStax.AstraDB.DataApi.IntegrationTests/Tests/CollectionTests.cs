@@ -628,6 +628,38 @@ public class CollectionTests
         }
     }
 
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task InsertManyCommandOptions()
+    {
+        var collectionName = "simpleObjects";
+        try
+        {
+            List<SimpleObject> items = new List<SimpleObject>();
+            for (var i = 0; i < 10; i++)
+            {
+                items.Add(new SimpleObject()
+                {
+                    _id = i,
+                    Name = $"Test Object {i}"
+                });
+            }
+            ;
+            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
+
+            // passing generic command options:
+            await Assert.ThrowsAsync<BulkOperationException<CollectionInsertManyResult>>( async () =>
+            {
+                await collection.InsertManyAsync(
+                    items, new InsertManyOptions() { Token = "blibbli" });
+            });
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync(collectionName);
+        }
+    }
+
     [Fact]
     public async Task CountDocuments_NoFilter_ReturnsCorrectCount()
     {
