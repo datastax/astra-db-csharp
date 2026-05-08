@@ -114,7 +114,7 @@ public class CollectionFindManyOptions<T> : CommandOptions, IFindManyOptions<T, 
         }
     }
 
-    IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.payloadOptions()
+    IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.PayloadOptions()
     {
         return new CollectionFindManyOptions<T> {
             Filter = Filter,

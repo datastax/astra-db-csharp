@@ -144,7 +144,7 @@ public class TableFindManyOptions<T> : CommandOptions, IFindManyOptions<T, Table
         }
     }
 
-    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.payloadOptions()
+    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.PayloadOptions()
     {
         return new TableFindManyOptions<T> {
             Filter = Filter,

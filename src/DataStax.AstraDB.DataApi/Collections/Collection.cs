@@ -724,7 +724,7 @@ public class Collection<T, TId> where T : class
         var options = cursor.FindOptions.Clone();
         options.PageState = nextPageState;
 
-        var payloadOptions = options.payloadOptions();
+        var payloadOptions = options.PayloadOptions();
         var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(cursor.CommandOptions);
         var response = await command.RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
 

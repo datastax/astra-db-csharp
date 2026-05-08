@@ -41,5 +41,5 @@ internal interface IFindManyOptions<T, TSort> : IFindOptions<T, TSort>
 
     internal IFindManyOptions<T, TSort> Clone();
 
-    internal IFindManyOptions<T, TSort> payloadOptions();
+    internal IFindManyOptions<T, TSort> PayloadOptions();
 }

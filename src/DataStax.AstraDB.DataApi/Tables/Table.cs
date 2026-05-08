@@ -967,7 +967,7 @@ public class Table<T> where T : class
         var options = cursor.FindOptions.Clone();
         options.PageState = nextPageState;
 
-        var payloadOptions = options.payloadOptions();
+        var payloadOptions = options.PayloadOptions();
         var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
         var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
