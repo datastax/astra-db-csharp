@@ -94,4 +94,18 @@ public class TimeoutOptions
     /// The timeout for keyspace administration operations, such as creating or deleting keyspaces.
     /// </summary>
     public TimeSpan? KeyspaceAdminTimeout { get; set; }
+
+    internal TimeoutOptions Clone()
+    {
+        return new TimeoutOptions
+        {
+            ConnectionTimeout = ConnectionTimeout,
+            RequestTimeout = RequestTimeout,
+            BulkOperationTimeout = BulkOperationTimeout,
+            CollectionAdminTimeout = CollectionAdminTimeout,
+            TableAdminTimeout = TableAdminTimeout,
+            DatabaseAdminTimeout = DatabaseAdminTimeout,
+            KeyspaceAdminTimeout = KeyspaceAdminTimeout,
+        };
+    }
 }

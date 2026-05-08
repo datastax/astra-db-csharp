@@ -32,13 +32,16 @@ public class CollectionCursorTests
         var filledCollection = _fixture.FilledCollection;
 
         var theFilter = Builders<CursorTestDocument>.CollectionFilter.Gt(d => d.PInt, 2);
-        var theFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
+        var theGoodFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
             Sort = Builders<CursorTestDocument>.CollectionSort.Descending(d => d.PInt)
         };
-        var theBadToken = new CommandOptions { Token = "blibblo" };
+        var theBadFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
+            Sort = Builders<CursorTestDocument>.CollectionSort.Descending(d => d.PInt),
+            Token = "blibblo"
+        };
 
-        var goodCur = filledCollection.Find(theFilter, theFindOptions);
-        var badCur = filledCollection.Find(theFilter, theFindOptions, theBadToken);
+        var goodCur = filledCollection.Find(theFilter, theGoodFindOptions);
+        var badCur = filledCollection.Find(theFilter, theBadFindOptions);
 
         await foreach (var item in goodCur) { /* moot */ };
         await Assert.ThrowsAsync<System.UnauthorizedAccessException>( async () =>

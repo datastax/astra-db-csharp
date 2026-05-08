@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// Options for finding multiple documents in a collection.
 /// </summary>
 /// <typeparam name="T">The type of the document.</typeparam>
-public class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSortBuilder<T>>
+public class CollectionFindManyOptions<T> : CommandOptions, IFindManyOptions<T, CollectionSortBuilder<T>>
 {
     /// <summary>The projection to apply to the results.</summary>
     [JsonIgnore]
@@ -114,6 +114,33 @@ public class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSortBu
         }
     }
 
+    IFindManyOptions<T, CollectionSortBuilder<T>> IFindManyOptions<T, CollectionSortBuilder<T>>.payloadOptions()
+    {
+        return new CollectionFindManyOptions<T> {
+            Filter = Filter,
+            InitialPageState = InitialPageState,
+            Skip = Skip,
+            Limit = Limit,
+            IncludeSortVector = IncludeSortVector,
+            IncludeSimilarity = IncludeSimilarity,
+            Projection = Projection != null ? Projection.Clone() : null,
+            Sort = Sort != null ? Sort.Clone() : null,
+        };
+    }
+
+    internal CommandOptions commandOptions()
+    {
+        return new CommandOptions {
+            Token = Token,
+            RunMode = RunMode,
+            Destination = Destination,
+            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
+            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
+            ApiVersion = ApiVersion,
+            CancellationToken = CancellationToken
+        };
+    }
+
     internal CollectionFindManyOptions<T> Clone()
     {
         return new CollectionFindManyOptions<T>
@@ -125,7 +152,15 @@ public class CollectionFindManyOptions<T> : IFindManyOptions<T, CollectionSortBu
             IncludeSortVector = IncludeSortVector,
             IncludeSimilarity = IncludeSimilarity,
             Projection = Projection != null ? Projection.Clone() : null,
-            Sort = Sort != null ? Sort.Clone() : null
+            Sort = Sort != null ? Sort.Clone() : null,
+            // CommandOptions properties:
+            Token = Token,
+            RunMode = RunMode,
+            Destination = Destination,
+            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
+            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
+            ApiVersion = ApiVersion,
+            CancellationToken = CancellationToken
         };
     }
 

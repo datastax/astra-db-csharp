@@ -40,4 +40,6 @@ internal interface IFindManyOptions<T, TSort> : IFindOptions<T, TSort>
     internal bool? IncludeSortVector { get; set; }
 
     internal IFindManyOptions<T, TSort> Clone();
+
+    internal IFindManyOptions<T, TSort> payloadOptions();
 }

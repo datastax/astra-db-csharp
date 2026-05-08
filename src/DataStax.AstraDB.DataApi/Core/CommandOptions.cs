@@ -48,6 +48,7 @@ public class CommandOptions
     /// <summary>
     /// The token to use for authentication
     /// </summary>
+    [JsonIgnore]
     public string Token { get; set; }
     
     /// <summary>
@@ -55,6 +56,7 @@ public class CommandOptions
     /// 
     /// Defaults to <see cref="Core.RunMode.Normal"/>
     /// </summary>
+    [JsonIgnore]
     public RunMode? RunMode { get; set; }
     
     /// <summary>
@@ -62,6 +64,7 @@ public class CommandOptions
     /// 
     /// Defaults to <see cref="DataAPIDestination.ASTRA"/>
     /// </summary>
+    [JsonIgnore]
     public DataAPIDestination? Destination { get; set; }
 
     /// <summary>
@@ -69,6 +72,7 @@ public class CommandOptions
     /// 
     /// Defaults to HttpVersion: 2.0, FollowRedirects: true
     /// </summary>
+    [JsonIgnore]
     public HttpClientOptions HttpClientOptions { get; set; }
 
     /// <summary>
@@ -77,6 +81,7 @@ public class CommandOptions
     /// <remarks>
     /// See <see cref="TimeoutOptions"/> for information.
     /// </remarks>
+    [JsonIgnore]
     public TimeoutOptions TimeoutOptions { get; set; } = new TimeoutOptions();
 
     /// <summary>
@@ -84,6 +89,7 @@ public class CommandOptions
     /// 
     /// Defaults to <see cref="APIVersion.V1"/>
     /// </summary>
+    [JsonIgnore]
     public APIVersion? APIVersion { get; set; }
 
     internal string APIUrlBase
@@ -101,6 +107,7 @@ public class CommandOptions
     /// <summary>
     /// An optional CancellationToken to interrupt asynchronous operations
     /// </summary>
+    [JsonIgnore]
     public CancellationToken? CancellationToken { get; set; }
 
     internal CancellationToken? BulkOperationCancellationToken { get; set; }

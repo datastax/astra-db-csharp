@@ -881,7 +881,7 @@ public class Table<T> where T : class
     /// </remarks>
     public TableFindCursor<T> Find()
     {
-        return Find(null, null, null);
+        return Find(null, null);
     }
 
     /// <inheritdoc cref="Find()"/>
@@ -900,14 +900,14 @@ public class Table<T> where T : class
     /// </example>
     public TableFindCursor<T> Find(TableFilter<T> filter)
     {
-        return Find(filter, null, null);
+        return Find(filter, null);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
     /// <param name="findOptions"></param>
     public TableFindCursor<T> Find(TableFindManyOptions<T> findOptions)
     {
-        return Find(null, findOptions, null);
+        return Find(null, findOptions);
     }
 
     /// <inheritdoc cref="Find(TableFilter{T})"/>
@@ -916,16 +916,7 @@ public class Table<T> where T : class
     public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
     {
         findOptions ??= new TableFindManyOptions<T>();
-        return Find(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        findOptions ??= new TableFindManyOptions<T>();
+        var commandOptions = findOptions.commandOptions();
         return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
@@ -936,7 +927,7 @@ public class Table<T> where T : class
     /// </remarks>
     public TableFindCursor<T, TResult> Find<TResult>() where TResult : class
     {
-        return Find<TResult>(null, null, null);
+        return Find<TResult>(null, null);
     }
 
     /// <inheritdoc cref="Find(TableFilter{T})"/>
@@ -946,7 +937,7 @@ public class Table<T> where T : class
     /// </remarks>
     public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter) where TResult : class
     {
-        return Find<TResult>(filter, null, null);
+        return Find<TResult>(filter, null);
     }
 
     /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
@@ -956,7 +947,7 @@ public class Table<T> where T : class
     /// </remarks>
     public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> findOptions) where TResult : class
     {
-        return Find<TResult>(null, findOptions, null);
+        return Find<TResult>(null, findOptions);
     }
 
     /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
@@ -966,17 +957,8 @@ public class Table<T> where T : class
     /// </remarks>
     public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
     {
-        return Find<TResult>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T}, CommandOptions)"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
-    {
         findOptions ??= new TableFindManyOptions<T>();
+        var commandOptions = findOptions.commandOptions();
         return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
@@ -984,9 +966,10 @@ public class Table<T> where T : class
     {
         var options = cursor.FindOptions.Clone();
         options.PageState = nextPageState;
-        
+
+        var payloadOptions = options.payloadOptions();
         var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
-        var command = CreateCommand("find").WithPayload(options).AddCommandOptions(commandOptions);
+        var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))

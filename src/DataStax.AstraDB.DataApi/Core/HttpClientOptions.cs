@@ -32,4 +32,14 @@ public class HttpClientOptions
     /// Whether the HTTP client should follow redirects or not.
     /// </summary>
     public bool FollowRedirects { get; set; } = true;
+
+    internal HttpClientOptions Clone()
+    {
+        return new HttpClientOptions
+        {
+            HttpVersion = HttpVersion,
+            FollowRedirects = FollowRedirects,
+        };
+    }
+
 }
