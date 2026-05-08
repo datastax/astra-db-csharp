@@ -2,6 +2,7 @@ using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Core.Enumeration;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.SerDes;
@@ -285,7 +286,6 @@ public class CollectionCursorTests
         var nps0 = page0.NextPageState;
         Assert.IsType<string>(nps0);
 
-        // TODO: are we ok that there is no 'options' to Find, alternative to fluent way to set initialPS?
         var cur1 = filledPagCollection.Find(
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
         ).InitialPageState(nps0);
@@ -295,8 +295,9 @@ public class CollectionCursorTests
         Assert.IsType<string>(nps1);
 
         var cur2 = filledPagCollection.Find(
-            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true)
-        ).InitialPageState(nps1);
+            Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true),
+            new CollectionFindManyOptions<CursorPaginationTestDocument>() { InitialPageState = nps1 }
+        );
         var page2 = await cur2.FetchNextPageAsync();
         var ids2 = page2.Results.Select(d => d.id).ToList();
         Assert.Null(page2.NextPageState);
