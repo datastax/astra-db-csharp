@@ -648,7 +648,7 @@ public class CollectionTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
 
             // passing generic command options:
-            await Assert.ThrowsAsync<BulkOperationException<CollectionInsertManyResult>>( async () =>
+            await Assert.ThrowsAsync<BulkOperationException<CollectionInsertManyResult<int>>>( async () =>
             {
                 await collection.InsertManyAsync(
                     items, new InsertManyOptions() { Token = "blibbli" });
