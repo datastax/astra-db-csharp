@@ -652,21 +652,12 @@ public class Table<T> where T : class
     //
 
     /// <summary>
-    /// This is a synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions, CommandOptions)"/>
+    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T})"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions, CommandOptions)"/>
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
     public TableInsertManyResult InsertMany(IEnumerable<T> rows)
     {
-        return InsertMany(rows, null as CommandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CommandOptions)"/>
-    public TableInsertManyResult InsertMany(IEnumerable<T> rows, CommandOptions commandOptions)
-    {
-        return InsertManyAsync(rows, null, commandOptions, true).ResultSync();
+        return InsertMany(rows, null);
     }
 
     /// <summary>
@@ -675,55 +666,38 @@ public class Table<T> where T : class
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
     public TableInsertManyResult InsertMany(IEnumerable<T> rows, InsertManyOptions insertOptions)
     {
-        return InsertManyAsync(rows, insertOptions, null, true).ResultSync();
+        return InsertManyAsync(rows, insertOptions, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
-    /// Insert multiple rows into the table.
+    /// Asynchronously insert multiple rows into the table.
     /// </summary>
-    /// <param name="rows"></param>
+    /// <param name="rows">The list of rows to insert.</param>
     /// <returns></returns>
     /// <remarks>
-    /// If you need to control concurrency, chunk size, or whether the insert is ordered or not, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
-    /// To additionally control timesouts, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions, CommandOptions)"/> overload.
+    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
     /// </remarks>
-    /// <throws cref="ArgumentException">Thrown if the rows collection is null or empty.</throws>
-    /// <throws cref="BulkOperationException{TableInsertManyResult}">Thrown if an error occurs during the bulk operation, with partial results returned in the <see cref="BulkOperationException{TableInsertManyResult}.PartialResult"/> property.</throws>
+    /// <throws cref="BulkOperationException{T}">Thrown if an error occurs during the bulk operation,
+    /// with partial results returned in the <see cref="BulkOperationException{T}.PartialResult"/> property.</throws>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows)
     {
-        return InsertManyAsync(rows, null, null, false);
+        return InsertManyAsync(rows, null);
     }
 
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
-    /// <param name="rows"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, CommandOptions commandOptions)
-    {
-        return InsertManyAsync(rows, null, commandOptions, false);
-    }
-
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
-    /// <param name="rows"></param>
-    /// <param name="insertOptions"></param>
+    /// <param name="rows">The list of rows to insert.</param>
+    /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
     public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions)
     {
-        return InsertManyAsync(rows, insertOptions, null, false);
+        return InsertManyAsync(rows, insertOptions, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CommandOptions)"/>
-    /// <param name="rows"></param>
-    /// <param name="insertOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, CommandOptions commandOptions)
+    private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, bool runSynchronously)
     {
-        return InsertManyAsync(rows, insertOptions, commandOptions, false);
-    }
-
-    private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        Guard.NotNullOrEmpty(rows, nameof(rows));
+        Guard.NotNull(rows, nameof(rows));
 
         if (insertOptions == null) insertOptions = new InsertManyOptions();
+        var commandOptions = insertOptions.CommandOptions();
         if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
@@ -916,7 +890,8 @@ public class Table<T> where T : class
     public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
     {
         findOptions ??= new TableFindManyOptions<T>();
-        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
+        var commandOptions = findOptions.CommandOptions();
+        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
@@ -949,22 +924,26 @@ public class Table<T> where T : class
         return Find<TResult>(null, findOptions);
     }
 
-    /// <inheritdoc cref="Find{TResult}(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
+    /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
     public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
     {
         findOptions ??= new TableFindManyOptions<T>();
-        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
+        var commandOptions = findOptions.CommandOptions();
+        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
     internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
         var options = cursor.FindOptions.Clone();
         options.PageState = nextPageState;
-        
+
+        var payloadOptions = options.PayloadOptions();
         var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
-        var command = CreateCommand("find").WithPayload(options).AddCommandOptions(commandOptions);
+        var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))

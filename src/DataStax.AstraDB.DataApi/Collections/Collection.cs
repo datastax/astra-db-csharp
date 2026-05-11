@@ -134,39 +134,21 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(List{T})"/>
+    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T})"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(List{T})"/>
-    public CollectionInsertManyResult<TId> InsertMany(List<T> documents)
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents)
     {
-        return InsertMany(documents, null, null);
+        return InsertMany(documents, null);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(List{T}, InsertManyOptions)"/>
+    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(List{T}, InsertManyOptions)"/>
-    public CollectionInsertManyResult<TId> InsertMany(List<T> documents, InsertManyOptions insertOptions)
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
+    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents, InsertManyOptions insertOptions)
     {
-        return InsertMany(documents, insertOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(List{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(List{T}, CommandOptions)"/>
-    public CollectionInsertManyResult<TId> InsertMany(List<T> documents, CommandOptions commandOptions)
-    {
-        return InsertMany(documents, null, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(List{T}, InsertManyOptions, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(List{T}, InsertManyOptions, CommandOptions)"/>
-    public CollectionInsertManyResult<TId> InsertMany(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions)
-    {
-        return InsertManyAsync(documents, insertOptions, commandOptions, runSynchronously: true).ResultSync();
+        return InsertManyAsync(documents, insertOptions, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
@@ -174,44 +156,30 @@ public class Collection<T, TId> where T : class
     /// </summary>
     /// <param name="documents">The list of documents to insert.</param>
     /// <returns></returns>
-    /// <throws cref="ArgumentException">Thrown if the documents list is null or empty.</throws>
-    /// <throws cref="BulkOperationException{T}">Thrown if an error occurs during the bulk operation, 
+    /// <remarks>
+    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
+    /// </remarks>
+    /// <throws cref="BulkOperationException{T}">Thrown if an error occurs during the bulk operation,
     /// with partial results returned in the <see cref="BulkOperationException{T}.PartialResult"/> property.</throws>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents)
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents)
     {
-        return InsertManyAsync(documents, new CommandOptions());
+        return InsertManyAsync(documents, null);
     }
 
-    /// <inheritdoc cref="InsertManyAsync(List{T})"/>
-    /// <param name="documents"></param>
-    /// <param name="insertOptions">Allows specifying whether the documents should be inserted in order as well as the chunk size.</param>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions)
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    /// <param name="documents">The list of documents to insert.</param>
+    /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, InsertManyOptions insertOptions)
     {
-        return InsertManyAsync(documents, insertOptions, null, runSynchronously: false);
+        return InsertManyAsync(documents, insertOptions, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="InsertManyAsync(List{T})"/>
-    /// <param name="documents"></param>
-    /// <param name="commandOptions"></param>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, CommandOptions commandOptions)
+    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, InsertManyOptions insertOptions, bool runSynchronously)
     {
-        return InsertManyAsync(documents, null, commandOptions, runSynchronously: false);
-    }
-
-    /// <inheritdoc cref="InsertManyAsync(List{T}, InsertManyOptions)"/>
-    /// <param name="documents"></param>
-    /// <param name="insertOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions)
-    {
-        return InsertManyAsync(documents, insertOptions, commandOptions, runSynchronously: false);
-    }
-
-    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, InsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        Guard.NotNullOrEmpty(documents, nameof(documents));
+        Guard.NotNull(documents, nameof(documents));
 
         if (insertOptions == null) insertOptions = new InsertManyOptions();
+        var commandOptions = insertOptions.CommandOptions();
         if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
@@ -673,7 +641,8 @@ public class Collection<T, TId> where T : class
     public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions)
     {
         findOptions ??= new CollectionFindManyOptions<T>();
-        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
+        var commandOptions = findOptions.CommandOptions();
+        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
@@ -706,23 +675,27 @@ public class Collection<T, TId> where T : class
         return Find<TResult>(null, findOptions);
     }
 
-    /// <inheritdoc cref="Find{TResult}(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
+    /// <inheritdoc cref="Find(CollectionFilter{T}, CollectionFindManyOptions{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
     public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions) where TResult : class
     {
         findOptions ??= new CollectionFindManyOptions<T>();
-        return new(findOptions.WithFilterParam(filter), null, RunFindManyAsync);
+        var commandOptions = findOptions.CommandOptions();
+        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
     }
 
     internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(CollectionFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
         var options = cursor.FindOptions.Clone();
         options.PageState = nextPageState;
-        
-        var command = CreateCommand("find").WithPayload(options).AddCommandOptions(cursor.CommandOptions);
+
+        var payloadOptions = options.PayloadOptions();
+        var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(cursor.CommandOptions);
         var response = await command.RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
-        
+
         return new FindPage<TResult>(
             response.Data.NextPageState,
             response.Data.Items,

@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// A set of options to be used when finding rows in a table.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
+public class TableFindManyOptions<T> : CommandOptions, IFindManyOptions<T, TableSortBuilder<T>>
 {
     /// <summary>The projection to apply to the results.</summary>
     [JsonIgnore]
@@ -86,7 +86,7 @@ public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
     /// </code>
     /// </example>
     [JsonIgnore]
-    internal bool? IncludeSortVector { get; set; }
+    public bool? IncludeSortVector { get; set; }
 
     bool? IFindManyOptions<T, TableSortBuilder<T>>.IncludeSortVector { get => IncludeSortVector; set => IncludeSortVector = value; }
 
@@ -144,6 +144,33 @@ public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
         }
     }
 
+    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.PayloadOptions()
+    {
+        return new TableFindManyOptions<T> {
+            Filter = Filter,
+            InitialPageState = InitialPageState,
+            Skip = Skip,
+            Limit = Limit,
+            IncludeSortVector = IncludeSortVector,
+            IncludeSimilarity = IncludeSimilarity,
+            Projection = Projection != null ? Projection.Clone() : null,
+            Sort = Sort != null ? Sort.Clone() : null,
+        };
+    }
+
+    internal CommandOptions CommandOptions()
+    {
+        return new CommandOptions {
+            Token = Token,
+            RunMode = RunMode,
+            Destination = Destination,
+            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
+            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
+            APIVersion = APIVersion,
+            CancellationToken = CancellationToken
+        };
+    }
+
     internal TableFindManyOptions<T> Clone()
     {
         return new TableFindManyOptions<T>
@@ -155,50 +182,37 @@ public class TableFindManyOptions<T> : IFindManyOptions<T, TableSortBuilder<T>>
             IncludeSortVector = IncludeSortVector,
             IncludeSimilarity = IncludeSimilarity,
             Projection = Projection != null ? Projection.Clone() : null,
-            Sort = Sort != null ? Sort.Clone() : null
+            Sort = Sort != null ? Sort.Clone() : null,
+            // CommandOptions properties:
+            Token = Token,
+            RunMode = RunMode,
+            Destination = Destination,
+            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
+            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
+            APIVersion = APIVersion,
+            CancellationToken = CancellationToken
         };
     }
 
-        IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
-
-        {
-
-            return Clone();
-
-        }
-
-    
-
-        internal TableFindManyOptions<T> WithFilterParam(TableFilter<T> filter)
-
-        {
-
-            if (filter == null)
-
-            {
-
-                return this;
-
-            }
-
-            
-
-            if (Filter != null)
-
-            {
-
-                throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
-
-            }
-
-            
-
-            var cloned = Clone();
-
-            cloned.Filter = filter;
-
-            return cloned;
-
-        }
-
+    IFindManyOptions<T, TableSortBuilder<T>> IFindManyOptions<T, TableSortBuilder<T>>.Clone()
+    {
+        return Clone();
     }
+
+    internal TableFindManyOptions<T> WithFilterParam(TableFilter<T> filter)
+    {
+        if (filter == null)
+        {
+            return this;
+        }
+
+        if (Filter != null)
+        {
+            throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
+        }
+
+        var cloned = Clone();
+        cloned.Filter = filter;
+        return cloned;
+    }
+}

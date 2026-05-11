@@ -26,6 +26,32 @@ public class CollectionCursorTests
         _fixture = fixture;
     }
 
+    // This one is skipped on HCD because in some cases a wrong token will *not* bring failure
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task Test_CollectionCursor_CommandOptions()
+    {
+        var filledCollection = _fixture.FilledCollection;
+
+        var theFilter = Builders<CursorTestDocument>.CollectionFilter.Gt(d => d.PInt, 2);
+        var theGoodFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
+            Sort = Builders<CursorTestDocument>.CollectionSort.Descending(d => d.PInt)
+        };
+        var theBadFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
+            Sort = Builders<CursorTestDocument>.CollectionSort.Descending(d => d.PInt),
+            Token = "blibblo"
+        };
+
+        var goodCur = filledCollection.Find(theFilter, theGoodFindOptions);
+        var badCur = filledCollection.Find(theFilter, theBadFindOptions);
+
+        await foreach (var item in goodCur) { /* moot */ };
+        await Assert.ThrowsAsync<System.UnauthorizedAccessException>( async () =>
+        {
+            await foreach (var item in badCur) { /* moot */ }
+        });
+    }
+
     [Fact]
     public async Task Test_CollectionCursor_IdleProperties()
     {
