@@ -94,12 +94,12 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertOneAsync(T, CommandOptions)"/>
+    /// Synchronous version of <see cref="InsertOneAsync(T, CollectionInsertOneOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="InsertOneAsync(T, CommandOptions)"/>
-    public CollectionInsertOneResult<TId> InsertOne(T document, CommandOptions commandOptions)
+    /// <inheritdoc cref="InsertOneAsync(T, CollectionInsertOneOptions{T})"/>
+    public CollectionInsertOneResult<TId> InsertOne(T document, CollectionInsertOneOptions<T> options)
     {
-        return InsertOneAsync(document, commandOptions, runSynchronously: true).ResultSync();
+        return InsertOneAsync(document, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
@@ -109,26 +109,27 @@ public class Collection<T, TId> where T : class
     /// <returns></returns>
     public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document)
     {
-        return InsertOneAsync(document, new CommandOptions());
+        return InsertOneAsync(document, null);
     }
 
     /// <inheritdoc cref="InsertOneAsync(T)"/>
-    /// <param name="document"></param>
-    /// <param name="commandOptions"></param>
-    public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CommandOptions commandOptions)
+    /// <param name="document">The document to insert.</param>
+    /// <param name="options">Options for the insert operation.</param>
+    public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions<T> options)
     {
-        return InsertOneAsync(document, commandOptions, runSynchronously: false);
+        return InsertOneAsync(document, options, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions<T> options, bool runSynchronously)
     {
         Guard.NotNull(document, nameof(document));
         InsertValidator.Validate(document);
-        var payload = new { document };
-        commandOptions ??= new CommandOptions();
+        options ??= new CollectionInsertOneOptions<T>();
+        var commandOptions = new CommandOptions();
         var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
         commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
-        var command = CreateCommand("insertOne").WithPayload(payload).AddCommandOptions(commandOptions);
+        commandOptions = CommandOptions.Merge(commandOptions, options);
+        var command = CreateCommand("insertOne").WithPayload(options.ToPayload(document)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously).ConfigureAwait(false);
         return new CollectionInsertOneResult<TId> { InsertedId = response.Result.InsertedIds[0] };
     }
@@ -143,10 +144,10 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
+    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
-    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents, InsertManyOptions insertOptions)
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
+    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions)
     {
         return InsertManyAsync(documents, insertOptions, runSynchronously: true).ResultSync();
     }
@@ -157,7 +158,7 @@ public class Collection<T, TId> where T : class
     /// <param name="documents">The list of documents to insert.</param>
     /// <returns></returns>
     /// <remarks>
-    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
+    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/> overload.
     /// </remarks>
     /// <throws cref="BulkOperationException{T}">Thrown if an error occurs during the bulk operation,
     /// with partial results returned in the <see cref="BulkOperationException{T}.PartialResult"/> property.</throws>
@@ -169,17 +170,16 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
     /// <param name="documents">The list of documents to insert.</param>
     /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, InsertManyOptions insertOptions)
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions)
     {
         return InsertManyAsync(documents, insertOptions, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, InsertManyOptions insertOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions, bool runSynchronously)
     {
         Guard.NotNull(documents, nameof(documents));
 
-        if (insertOptions == null) insertOptions = new InsertManyOptions();
-        var commandOptions = insertOptions.CommandOptions();
+        insertOptions ??= new CollectionInsertManyOptions<T>();
         if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
@@ -193,6 +193,7 @@ public class Collection<T, TId> where T : class
         var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
+        var commandOptions = new CommandOptions();
         var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
 
         using (cts)
@@ -209,7 +210,7 @@ public class Collection<T, TId> where T : class
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions.Ordered, commandOptions, runSynchronously).ConfigureAwait(false);
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions, commandOptions, runSynchronously).ConfigureAwait(false);
                             lock (result.InsertedIds)
                             {
                                 result.InsertedIds.AddRange(runResult.InsertedIds);
@@ -237,20 +238,12 @@ public class Collection<T, TId> where T : class
         }
     }
 
-    private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        var payload = new
-        {
-            documents,
-            options = new
-            {
-                ordered = insertOrdered
-            }
-        };
-        commandOptions ??= new CommandOptions();
+        commandOptions = CommandOptions.Merge(commandOptions, insertOptions);
         var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
         commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
-        var command = CreateCommand("insertMany").WithPayload(payload).AddCommandOptions(commandOptions);
+        var command = CreateCommand("insertMany").WithPayload(insertOptions.ToPayload(documents)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously).ConfigureAwait(false);
         return response.Result;
     }

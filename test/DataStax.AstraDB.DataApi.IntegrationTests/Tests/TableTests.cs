@@ -87,7 +87,7 @@ public class TableTests
             await Assert.ThrowsAsync<BulkOperationException<TableInsertManyResult>>( async () =>
             {
                 await table.InsertManyAsync(
-                    rows, new InsertManyOptions() { Token = "blibbli" });
+                    rows, new TableInsertManyOptions<RowBook>() { Token = "blibbli" });
             });
         }
         finally
@@ -154,7 +154,7 @@ public class TableTests
                 DueDate = DateTime.UtcNow,
                 Genres = new HashSet<string> { "Fiction" }
             });
-            var options = new InsertManyOptions
+            var options = new TableInsertManyOptions<RowBook>
             {
                 Ordered = true,
                 ChunkSize = 2

@@ -661,10 +661,10 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
+    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, TableInsertManyOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
-    public TableInsertManyResult InsertMany(IEnumerable<T> rows, InsertManyOptions insertOptions)
+    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, TableInsertManyOptions{T})"/>
+    public TableInsertManyResult InsertMany(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions)
     {
         return InsertManyAsync(rows, insertOptions, runSynchronously: true).ResultSync();
     }
@@ -675,7 +675,7 @@ public class Table<T> where T : class
     /// <param name="rows">The list of rows to insert.</param>
     /// <returns></returns>
     /// <remarks>
-    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
+    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, TableInsertManyOptions{T})"/> overload.
     /// </remarks>
     /// <throws cref="BulkOperationException{T}">Thrown if an error occurs during the bulk operation,
     /// with partial results returned in the <see cref="BulkOperationException{T}.PartialResult"/> property.</throws>
@@ -687,17 +687,16 @@ public class Table<T> where T : class
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
     /// <param name="rows">The list of rows to insert.</param>
     /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
-    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions)
+    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions)
     {
         return InsertManyAsync(rows, insertOptions, runSynchronously: false);
     }
 
-    private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions, bool runSynchronously)
     {
         Guard.NotNull(rows, nameof(rows));
 
-        if (insertOptions == null) insertOptions = new InsertManyOptions();
-        var commandOptions = insertOptions.CommandOptions();
+        insertOptions ??= new TableInsertManyOptions<T>();
         if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
@@ -706,6 +705,7 @@ public class Table<T> where T : class
         var result = new TableInsertManyResult();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
+        var commandOptions = new CommandOptions();
         var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
 
         using (cts)
@@ -722,7 +722,7 @@ public class Table<T> where T : class
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions.Ordered, commandOptions, runSynchronously).ConfigureAwait(false);
+                            var runResult = await RunInsertManyAsync(chunk, insertOptions, commandOptions, runSynchronously).ConfigureAwait(false);
                             lock (result.InsertedIdTuples)
                             {
                                 result.InsertedIdTuples.AddRange(runResult.InsertedIdTuples);
@@ -751,18 +751,11 @@ public class Table<T> where T : class
         }
     }
 
-    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        var payload = new
-        {
-            documents = rows,
-            options = new
-            {
-                ordered = insertOrdered,
-            }
-        };
         commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
-        var command = CreateCommand("insertMany").WithPayload(payload).AddCommandOptions(commandOptions);
+        commandOptions = CommandOptions.Merge(commandOptions, insertOptions);
+        var command = CreateCommand("insertMany").WithPayload(insertOptions.ToPayload(rows)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
         return response.Result;
     }
@@ -777,18 +770,18 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertOneAsync(T, CommandOptions)"/>
+    /// Synchronous version of <see cref="InsertOneAsync(T, TableInsertOneOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="InsertOneAsync(T, CommandOptions)"/>
-    public TableInsertOneResult InsertOne(T row, CommandOptions commandOptions)
+    /// <inheritdoc cref="InsertOneAsync(T, TableInsertOneOptions{T})"/>
+    public TableInsertOneResult InsertOne(T row, TableInsertOneOptions<T> options)
     {
-        return InsertOneAsync(row, commandOptions, true).ResultSync();
+        return InsertOneAsync(row, options, true).ResultSync();
     }
 
     /// <summary>
     /// Insert a single row into the table.
     /// </summary>
-    /// <param name="row"></param>
+    /// <param name="row">The row to insert.</param>
     /// <returns></returns>
     public Task<TableInsertOneResult> InsertOneAsync(T row)
     {
@@ -796,21 +789,19 @@ public class Table<T> where T : class
     }
 
     /// <inheritdoc cref="InsertOneAsync(T)"/>
-    /// <param name="row"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TableInsertOneResult> InsertOneAsync(T row, CommandOptions commandOptions)
+    /// <param name="row">The row to insert.</param>
+    /// <param name="options">Options for the insert operation.</param>
+    public Task<TableInsertOneResult> InsertOneAsync(T row, TableInsertOneOptions<T> options)
     {
-        return InsertOneAsync(row, commandOptions, false);
+        return InsertOneAsync(row, options, false);
     }
 
-    private async Task<TableInsertOneResult> InsertOneAsync(T row, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<TableInsertOneResult> InsertOneAsync(T row, TableInsertOneOptions<T> options, bool runSynchronously)
     {
-        var payload = new
-        {
-            document = row,
-        };
-        commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
-        var command = CreateCommand("insertOne").WithPayload(payload).AddCommandOptions(commandOptions);
+        options ??= new TableInsertOneOptions<T>();
+        var commandOptions = SetRowSerializationOptions<T>(new CommandOptions(), true);
+        commandOptions = CommandOptions.Merge(commandOptions, options);
+        var command = CreateCommand("insertOne").WithPayload(options.ToPayload(row)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
         return new TableInsertOneResult
         {
