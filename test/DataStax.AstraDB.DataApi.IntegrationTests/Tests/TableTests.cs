@@ -687,13 +687,13 @@ public class TableTests
             await table.CreateTextIndexAsync("b_idx", (b) => b.LexicalValue, Builders.TableIndex.Text());
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
+            var filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch((b) => b.LexicalValue, "dog");
             var findOptions = new TableFindOneOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
-                Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch((b) => b.LexicalValue, "dog"),
             };
 
-            var result = await table.FindOneAsync(findOptions);
+            var result = await table.FindOneAsync(filter, findOptions);
             Assert.NotNull(result);
             Assert.Equal(1, result.Id);
         }

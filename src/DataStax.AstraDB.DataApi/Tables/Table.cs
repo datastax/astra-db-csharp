@@ -890,8 +890,7 @@ public class Table<T> where T : class
     public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
     {
         findOptions ??= new TableFindManyOptions<T>();
-        var commandOptions = findOptions.CommandOptions();
-        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
+        return new(filter, findOptions, RunFindManyAsync);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
@@ -932,18 +931,13 @@ public class Table<T> where T : class
     public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
     {
         findOptions ??= new TableFindManyOptions<T>();
-        var commandOptions = findOptions.CommandOptions();
-        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
+        return new(filter, findOptions, RunFindManyAsync);
     }
 
     internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
-        var options = cursor.FindOptions.Clone();
-        options.PageState = nextPageState;
-
-        var payloadOptions = options.PayloadOptions();
-        var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
-        var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(commandOptions);
+        var commandOptions = SetRowSerializationOptions<TResult>(cursor.FindOptions, false);
+        var command = CreateCommand("find").WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
@@ -1142,19 +1136,10 @@ public class Table<T> where T : class
 
     internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously) where TResult : class
     {
-        findOptions = findOptions != null ? findOptions.Clone() : new TableFindOneOptions<T>();
-        if (filter != null)
-        {
-            if (findOptions.Filter == null)
-            {
-                findOptions.Filter = filter;
-            } else
-            {
-                throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
-            }
-        }
+        findOptions ??= new TableFindOneOptions<T>();
+        commandOptions = CommandOptions.Merge(commandOptions, findOptions);
         commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
-        var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        var command = CreateCommand("findOne").WithPayload(findOptions.ToPayload(filter)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {

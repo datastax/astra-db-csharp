@@ -566,9 +566,9 @@ public class Collection<T, TId> where T : class
 
     private async Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        findOptions = findOptions != null ? findOptions.Clone() : new CollectionFindOneOptions<T>();
-        findOptions = findOptions.WithFilterParam(filter);
-        var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        findOptions ??= new CollectionFindOneOptions<T>();
+        commandOptions = CommandOptions.Merge(commandOptions, findOptions);
+        var command = CreateCommand("findOne").WithPayload(findOptions.ToPayload(filter)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response.Data.Document;
     }
@@ -641,8 +641,7 @@ public class Collection<T, TId> where T : class
     public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions)
     {
         findOptions ??= new CollectionFindManyOptions<T>();
-        var commandOptions = findOptions.CommandOptions();
-        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
+        return new(filter, findOptions, RunFindManyAsync);
     }
 
     /// <inheritdoc cref="Find()" path="/summary"/>
@@ -683,17 +682,12 @@ public class Collection<T, TId> where T : class
     public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions) where TResult : class
     {
         findOptions ??= new CollectionFindManyOptions<T>();
-        var commandOptions = findOptions.CommandOptions();
-        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
+        return new(filter, findOptions, RunFindManyAsync);
     }
 
     internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(CollectionFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
-        var options = cursor.FindOptions.Clone();
-        options.PageState = nextPageState;
-
-        var payloadOptions = options.PayloadOptions();
-        var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(cursor.CommandOptions);
+        var command = CreateCommand("find").WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState)).AddCommandOptions(cursor.FindOptions);
         var response = await command.RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
 
         return new FindPage<TResult>(

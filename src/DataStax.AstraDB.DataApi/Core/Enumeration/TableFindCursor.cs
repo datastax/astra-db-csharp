@@ -34,7 +34,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// // Basic usage with foreach
 /// var cursor = table.Find()
 ///     .Filter(Builders&lt;MyRow&gt;.Filter.Eq(r => r.Status, "active"))
-///     .Sort(Builders&lt;MyRow&gt;.Sort.Ascending(r => r.CreatedAt))
+///     .Sort(Builders&lt;MyRow&gt;.Sort.Ascending(r => r.Name))
 ///     .Limit(10);
 /// 
 /// foreach (var row in cursor)
@@ -51,8 +51,8 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </example>
 public class TableFindCursor<T> : TableFindCursor<T, T> where T : class
 {
-    internal TableFindCursor(IFindManyOptions<T, TableSortBuilder<T>> options, CommandOptions commandOptions, FetchPageFunc<T, TableFindCursor<T, T>> fetchPage) 
-        : base(options, commandOptions, fetchPage) { }
+    internal TableFindCursor(Filter<T> filter, BaseFindManyOptions<T, TableSortBuilder<T>> options, FetchPageFunc<T, TableFindCursor<T, T>> fetchPage) 
+        : base(filter, options, fetchPage) { }
 }
 
 /// <summary>
@@ -67,7 +67,7 @@ public class TableFindCursor<T> : TableFindCursor<T, T> where T : class
 /// </remarks>
 /// <example>
 /// <code>
-/// // Using projection to return only specific columns
+/// // Using projection to return only specific fields
 /// public class MyRowProjection
 /// {
 ///     public string Name { get; set; }
@@ -90,16 +90,14 @@ public class TableFindCursor<T, TResult> : FindCursor<T, TResult, TableSortBuild
     /// <summary>
     /// Initializes a new instance of the <see cref="TableFindCursor{T, TResult}"/> class.
     /// </summary>
+    /// <param name="filter">The filter to apply.</param>
     /// <param name="options">The find options to use.</param>
-    /// <param name="commandOptions">The command options to use.</param>
     /// <param name="fetchPage">The function to fetch pages of results.</param>
     internal TableFindCursor(
-        IFindManyOptions<T, TableSortBuilder<T>> options,
-        CommandOptions commandOptions,
+        Filter<T> filter,
+        BaseFindManyOptions<T, TableSortBuilder<T>> options,
         FetchPageFunc<TResult, TableFindCursor<T, TResult>> fetchPage
-    ) : base(options, commandOptions, fetchPage)
-    {
-    }
+    ) : base(filter, options, fetchPage) { }
 
     /// <summary>
     /// Creates a new cursor instance with the same configuration.
@@ -107,16 +105,17 @@ public class TableFindCursor<T, TResult> : FindCursor<T, TResult, TableSortBuild
     /// <returns>A new cursor instance.</returns>
     public override TableFindCursor<T, TResult> Clone()
     {
-        return new(FindOptions.Clone(), CommandOptions, FetchPageFunc);
+        return new(CurrentFilter, FindOptions, FetchPageFunc);
     }
 
     /// <summary>
-    /// Creates a new cursor instance with updated find options.
+    /// Creates a new cursor instance with updated filter and options.
     /// </summary>
-    /// <param name="options">The updated find options.</param>
-    /// <returns>A new cursor instance with the updated options.</returns>
-    internal override TableFindCursor<T, TResult> CloneWithOptions(IFindManyOptions<T, TableSortBuilder<T>> options)
+    /// <param name="filter">The filter to apply.</param>
+    /// <param name="options">The find options to use.</param>
+    /// <returns>A new cursor instance.</returns>
+    internal override TableFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindManyOptions<T, TableSortBuilder<T>> options)
     {
-        return new(options, CommandOptions, FetchPageFunc);
+        return new(filter, options, FetchPageFunc);
     }
 }
