@@ -147,7 +147,7 @@ public class Collection<T, TId> where T : class
     /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
-    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions)
+    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions)
     {
         return InsertManyAsync(documents, insertOptions, runSynchronously: true).ResultSync();
     }
@@ -170,16 +170,16 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
     /// <param name="documents">The list of documents to insert.</param>
     /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions)
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions)
     {
         return InsertManyAsync(documents, insertOptions, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions, bool runSynchronously)
     {
         Guard.NotNull(documents, nameof(documents));
 
-        insertOptions ??= new CollectionInsertManyOptions<T>();
+        insertOptions ??= new CollectionInsertManyOptions();
         if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
@@ -238,7 +238,7 @@ public class Collection<T, TId> where T : class
         }
     }
 
-    private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions<T> insertOptions, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         commandOptions = CommandOptions.Merge(commandOptions, insertOptions);
         var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
@@ -1898,8 +1898,8 @@ public class Collection<T, TId> where T : class
     /// <summary>
     /// Synchronous version of <see cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions{T})"/>
-    public int CountDocuments(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions<T> options)
+    /// <inheritdoc cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions)"/>
+    public int CountDocuments(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions options)
     {
         return CountDocumentsAsync(filter, maxDocumentsToCount, options, true).ResultSync();
     }
@@ -1934,19 +1934,19 @@ public class Collection<T, TId> where T : class
     /// <param name="filter"></param>
     /// <param name="maxDocumentsToCount"></param>
     /// <param name="options"></param>
-    public Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions<T> options)
+    public Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions options)
     {
         return CountDocumentsAsync(filter, maxDocumentsToCount, options, false);
     }
 
-    internal async Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions<T> options, bool runSynchronously)
+    internal async Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions options, bool runSynchronously)
     {
         if (maxDocumentsToCount < 1)
         {
             throw new ArgumentException($"maxDocumentsToCount must be >= 1 (got {maxDocumentsToCount})", nameof(maxDocumentsToCount));
         }
         
-        options ??= new CollectionCountDocumentsOptions<T>();
+        options ??= new CollectionCountDocumentsOptions();
         var command = CreateCommand("countDocuments").WithPayload(options.ToPayload(filter)).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<DocumentsCountResult>(runSynchronously).ConfigureAwait(false);
         if (response.Result.Count >= maxDocumentsToCount || response.Result.MoreData)

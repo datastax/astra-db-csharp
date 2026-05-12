@@ -664,7 +664,7 @@ public class Table<T> where T : class
     /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, TableInsertManyOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, TableInsertManyOptions{T})"/>
-    public TableInsertManyResult InsertMany(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions)
+    public TableInsertManyResult InsertMany(IEnumerable<T> rows, TableInsertManyOptions insertOptions)
     {
         return InsertManyAsync(rows, insertOptions, runSynchronously: true).ResultSync();
     }
@@ -687,16 +687,16 @@ public class Table<T> where T : class
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
     /// <param name="rows">The list of rows to insert.</param>
     /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
-    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions)
+    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions insertOptions)
     {
         return InsertManyAsync(rows, insertOptions, runSynchronously: false);
     }
 
-    private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions insertOptions, bool runSynchronously)
     {
         Guard.NotNull(rows, nameof(rows));
 
-        insertOptions ??= new TableInsertManyOptions<T>();
+        insertOptions ??= new TableInsertManyOptions();
         if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
@@ -751,7 +751,7 @@ public class Table<T> where T : class
         }
     }
 
-    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions<T> insertOptions, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
         commandOptions = CommandOptions.Merge(commandOptions, insertOptions);

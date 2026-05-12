@@ -21,7 +21,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Base class for insert-many operation options.
 /// </summary>
-public abstract class BaseInsertManyOptions<T> : CommandOptions where T : class
+public abstract class BaseInsertManyOptions : CommandOptions
 {
     /// <summary>
     /// Default batch size.
@@ -59,7 +59,7 @@ public abstract class BaseInsertManyOptions<T> : CommandOptions where T : class
     /// </summary>
     public int ChunkSize { get; set; } = DefaultChunkSize;
 
-    internal object ToPayload(IEnumerable<T> documents)
+    internal object ToPayload<T>(IEnumerable<T> documents) where T : class
     {
         return new
         {
@@ -75,13 +75,13 @@ public abstract class BaseInsertManyOptions<T> : CommandOptions where T : class
 /// <summary>
 /// Options for inserting multiple documents into a collection.
 /// </summary>
-public sealed class CollectionInsertManyOptions<T> : BaseInsertManyOptions<T> where T : class
+public sealed class CollectionInsertManyOptions : BaseInsertManyOptions
 {
 }
 
 /// <summary>
 /// Options for inserting multiple rows into a table.
 /// </summary>
-public sealed class TableInsertManyOptions<T> : BaseInsertManyOptions<T> where T : class
+public sealed class TableInsertManyOptions : BaseInsertManyOptions
 {
 }

@@ -21,10 +21,9 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Options for counting documents in a collection.
 /// </summary>
-/// <typeparam name="T">The type of documents in the collection.</typeparam>
-public class CollectionCountDocumentsOptions<T> : CommandOptions where T : class
+public class CollectionCountDocumentsOptions : CommandOptions
 {
-    internal object ToPayload(CollectionFilter<T> filter)
+    internal object ToPayload<T>(CollectionFilter<T> filter) where T : class
     {
         return new
         {

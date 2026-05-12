@@ -582,7 +582,7 @@ public class CollectionTests
             };
 
             var collection = await fixture.Database.CreateCollectionAsync<DifferentIdsObject>(collectionName);
-            var result = await collection.InsertManyAsync(items, new CollectionInsertManyOptions<DifferentIdsObject>() { Ordered = true });
+            var result = await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
 
             Assert.Equal(items.Count, result.InsertedIds.Count);
             for (var i = 0; i < result.InsertedIds.Count; i++)
@@ -613,7 +613,7 @@ public class CollectionTests
             }
             ;
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
-            var result = await collection.InsertManyAsync(items, new CollectionInsertManyOptions<SimpleObject>() { Ordered = true });
+            var result = await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
             await fixture.Database.DropCollectionAsync(collectionName);
             Assert.Equal(items.Count, result.InsertedIds.Count);
             for (var i = 0; i < 10; i++)
@@ -651,7 +651,7 @@ public class CollectionTests
             await Assert.ThrowsAsync<BulkOperationException<CollectionInsertManyResult<int>>>( async () =>
             {
                 await collection.InsertManyAsync(
-                    items, new CollectionInsertManyOptions<SimpleObject>() { Token = "blibbli" });
+                    items, new CollectionInsertManyOptions() { Token = "blibbli" });
             });
         }
         finally
@@ -694,7 +694,7 @@ public class CollectionTests
             }
             ;
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
-            await collection.InsertManyAsync(items, new CollectionInsertManyOptions<SimpleObject>() { Ordered = true });
+            await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
             await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(50));
 
         }
