@@ -81,8 +81,8 @@ public abstract class BaseFindManyOptions<T, TSort> : CommandOptions
                 includeSortVector = IncludeSortVector,
                 pageState = pageState ?? InitialPageState,
                 skip = Skip,
-                limit = Limit
-            }
+                limit = Limit,
+            },
         };
     }
 }

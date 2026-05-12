@@ -47,7 +47,7 @@ public abstract class BaseFindOneOptions<T, TSort> : CommandOptions
             filter = filter?.Serialize(),
             sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
             projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value),
-            options = new { includeSimilarity = IncludeSimilarity }
+            options = new { includeSimilarity = IncludeSimilarity },
         };
     }
 }

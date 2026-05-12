@@ -1903,12 +1903,12 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync(CollectionFilter{T}, int, CommandOptions)"/>
+    /// Synchronous version of <see cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="CountDocumentsAsync(CollectionFilter{T}, int, CommandOptions)"/>
-    public int CountDocuments(CollectionFilter<T> filter, int maxDocumentsToCount, CommandOptions commandOptions)
+    /// <inheritdoc cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions{T})"/>
+    public int CountDocuments(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions<T> options)
     {
-        return CountDocumentsAsync(filter, maxDocumentsToCount, commandOptions, false).ResultSync();
+        return CountDocumentsAsync(filter, maxDocumentsToCount, options, true).ResultSync();
     }
 
     /// <summary>
@@ -1940,25 +1940,21 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="CountDocumentsAsync(int)"/>
     /// <param name="filter"></param>
     /// <param name="maxDocumentsToCount"></param>
-    /// <param name="commandOptions"></param>
-    public Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CommandOptions commandOptions)
+    /// <param name="options"></param>
+    public Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions<T> options)
     {
-        return CountDocumentsAsync(filter, maxDocumentsToCount, commandOptions, false);
+        return CountDocumentsAsync(filter, maxDocumentsToCount, options, false);
     }
 
-    internal async Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<int> CountDocumentsAsync(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions<T> options, bool runSynchronously)
     {
         if (maxDocumentsToCount < 1)
         {
             throw new ArgumentException($"maxDocumentsToCount must be >= 1 (got {maxDocumentsToCount})", nameof(maxDocumentsToCount));
         }
-        commandOptions ??= new CommandOptions();
-        var findOptions = new CollectionFindOptions<T>()
-        {
-            Filter = filter,
-        };
-
-        var command = CreateCommand("countDocuments").WithPayload(findOptions).AddCommandOptions(commandOptions);
+        
+        options ??= new CollectionCountDocumentsOptions<T>();
+        var command = CreateCommand("countDocuments").WithPayload(options.ToPayload(filter)).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<DocumentsCountResult>(runSynchronously).ConfigureAwait(false);
         if (response.Result.Count >= maxDocumentsToCount || response.Result.MoreData)
         {
@@ -1978,12 +1974,12 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="EstimateDocumentCountAsync(CommandOptions)"/>
+    /// Synchronous version of <see cref="EstimateDocumentCountAsync(CollectionEstimateDocumentCountOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="EstimateDocumentCountAsync(CommandOptions)"/>
-    public int EstimateDocumentCount(CommandOptions commandOptions)
+    /// <inheritdoc cref="EstimateDocumentCountAsync(CollectionEstimateDocumentCountOptions)"/>
+    public int EstimateDocumentCount(CollectionEstimateDocumentCountOptions options)
     {
-        return EstimateDocumentCountAsync(commandOptions, true).ResultSync();
+        return EstimateDocumentCountAsync(options, true).ResultSync();
     }
 
     /// <summary>
@@ -1998,16 +1994,17 @@ public class Collection<T, TId> where T : class
     /// <summary>
     /// Estimate the number of documents in the collection.
     /// </summary>
-    /// <param name="commandOptions"></param>
+    /// <param name="options">Options for the estimate operation</param>
     /// <returns></returns>
-    public Task<int> EstimateDocumentCountAsync(CommandOptions commandOptions)
+    public Task<int> EstimateDocumentCountAsync(CollectionEstimateDocumentCountOptions options)
     {
-        return EstimateDocumentCountAsync(commandOptions, false);
+        return EstimateDocumentCountAsync(options, false);
     }
 
-    internal async Task<int> EstimateDocumentCountAsync(CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<int> EstimateDocumentCountAsync(CollectionEstimateDocumentCountOptions options, bool runSynchronously)
     {
-        var command = CreateCommand("estimatedDocumentCount").WithPayload(new { }).AddCommandOptions(commandOptions);
+        options ??= new CollectionEstimateDocumentCountOptions();
+        var command = CreateCommand("estimatedDocumentCount").WithPayload(new { }).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<EstimatedDocumentsCountResult>(runSynchronously).ConfigureAwait(false);
         return response.Result.Count;
     }
