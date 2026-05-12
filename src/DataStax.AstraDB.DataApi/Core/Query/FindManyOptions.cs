@@ -74,7 +74,7 @@ public abstract class BaseFindManyOptions<T, TSort> : CommandOptions
         {
             filter = filter?.Serialize(),
             sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
-            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value),
+            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new(),
             options = new
             {
                 includeSimilarity = IncludeSimilarity,
