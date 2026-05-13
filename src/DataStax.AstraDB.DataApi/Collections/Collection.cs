@@ -191,8 +191,8 @@ public class Collection<T, TId> where T : class
         var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
-        var commandOptions = insertOptions as CommandOptions;
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+        var commandOptions = CommandOptions.Merge(GetOptionsTree().Concat(new[] {insertOptions}).ToArray());
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(new(), ref commandOptions);
 
         using (cts)
         {

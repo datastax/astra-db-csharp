@@ -705,8 +705,8 @@ public class Table<T> where T : class
         var result = new TableInsertManyResult();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
-        var commandOptions = insertOptions as CommandOptions;
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+        var commandOptions = CommandOptions.Merge(GetOptionsTree().Concat(new[] {insertOptions}).ToArray());
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(new(), ref commandOptions);
 
         using (cts)
         {
