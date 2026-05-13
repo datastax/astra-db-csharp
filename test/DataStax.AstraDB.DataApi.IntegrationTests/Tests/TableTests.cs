@@ -57,7 +57,6 @@ public class TableTests
         }
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task InsertManyCommandOptions()
     {

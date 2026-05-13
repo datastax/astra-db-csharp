@@ -197,7 +197,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// </example>
     public TCursor Project(IProjectionBuilder projection)
     {
-        return UpdateOptions(options => options.Projection = (ProjectionBuilder<T>)projection);
+        return UpdateOptions(options => options.Projection = projection);
     }
     
     /// <summary>

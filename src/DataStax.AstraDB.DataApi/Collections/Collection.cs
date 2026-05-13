@@ -125,11 +125,9 @@ public class Collection<T, TId> where T : class
         Guard.NotNull(document, nameof(document));
         InsertValidator.Validate(document);
         options ??= new CollectionInsertOneOptions<T>();
-        var commandOptions = new CommandOptions();
         var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
-        commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
-        commandOptions = CommandOptions.Merge(commandOptions, options);
-        var command = CreateCommand("insertOne").WithPayload(options.ToPayload(document)).AddCommandOptions(commandOptions);
+        options.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
+        var command = CreateCommand("insertOne").WithPayload(options.ToPayload(document)).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously).ConfigureAwait(false);
         return new CollectionInsertOneResult<TId> { InsertedId = response.Result.InsertedIds[0] };
     }
@@ -193,7 +191,7 @@ public class Collection<T, TId> where T : class
         var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
-        var commandOptions = CommandOptions.Merge(new CommandOptions(), insertOptions);
+        var commandOptions = insertOptions as CommandOptions;
         var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
 
         using (cts)
@@ -240,7 +238,6 @@ public class Collection<T, TId> where T : class
 
     private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
     {
-        commandOptions = CommandOptions.Merge(commandOptions, insertOptions);
         var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
         commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
         var command = CreateCommand("insertMany").WithPayload(insertOptions.ToPayload(documents)).AddCommandOptions(commandOptions);
@@ -270,16 +267,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync()"/>
     public T FindOne()
     {
-        return FindOne(null, new CollectionFindOneOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync(CommandOptions)"/>
-    public T FindOne(CommandOptions commandOptions)
-    {
-        return FindOne(null, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOne(null, new CollectionFindOneOptions<T>());
     }
 
     /// <summary>
@@ -288,7 +276,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync(CollectionFilter{T})"/>
     public T FindOne(CollectionFilter<T> filter)
     {
-        return FindOne(filter, new CollectionFindOneOptions<T>(), null);
+        return FindOne(filter, new CollectionFindOneOptions<T>());
     }
 
     /// <summary>
@@ -297,25 +285,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync(CollectionFindOneOptions{T})"/>
     public T FindOne(CollectionFindOneOptions<T> findOptions)
     {
-        return FindOne(null, findOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync(CollectionFindOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync(CollectionFindOneOptions{T}, CommandOptions)"/>
-    public T FindOne(CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOne(null, findOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync(CollectionFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync(CollectionFilter{T}, CommandOptions)"/>
-    public T FindOne(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOne(filter, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOne(null, findOptions);
     }
 
     /// <summary>
@@ -324,16 +294,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
     public T FindOne(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
     {
-        return FindOne(filter, findOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync(CollectionFilter{T}, CollectionFindOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync(CollectionFilter{T}, CollectionFindOneOptions{T}, CommandOptions)"/>
-    public T FindOne(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync<T>(filter, findOptions, commandOptions, true).ResultSync();
+        return FindOneAsync<T>(filter, findOptions, true).ResultSync();
     }
 
     /// <summary>
@@ -342,16 +303,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync{TResult}()"/>
     public TResult FindOne<TResult>()
     {
-        return FindOne<TResult>(null, new CollectionFindOneOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync{TResult}(CommandOptions)"/>
-    public TResult FindOne<TResult>(CommandOptions commandOptions)
-    {
-        return FindOne<TResult>(null, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOne<TResult>(null, new CollectionFindOneOptions<T>());
     }
 
     /// <summary>
@@ -360,7 +312,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
     public TResult FindOne<TResult>(CollectionFilter<T> filter)
     {
-        return FindOne<TResult>(filter, new CollectionFindOneOptions<T>(), null);
+        return FindOne<TResult>(filter, new CollectionFindOneOptions<T>());
     }
 
     /// <summary>
@@ -369,25 +321,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFindOneOptions{T})"/>
     public TResult FindOne<TResult>(CollectionFindOneOptions<T> findOptions)
     {
-        return FindOne<TResult>(null, findOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFindOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFindOneOptions{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOne<TResult>(null, findOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOne<TResult>(filter, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOne<TResult>(null, findOptions);
     }
 
     /// <summary>
@@ -396,16 +330,7 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
     public TResult FindOne<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
     {
-        return FindOne<TResult>(filter, findOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
+        return FindOneAsync<TResult>(filter, findOptions, true).ResultSync();
     }
 
     /// <summary>
@@ -414,14 +339,7 @@ public class Collection<T, TId> where T : class
     /// <returns></returns>
     public Task<T> FindOneAsync()
     {
-        return FindOneAsync(null, new CollectionFindOneOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync()"/>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(CommandOptions commandOptions)
-    {
-        return FindOneAsync(null, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOneAsync(null, new CollectionFindOneOptions<T>());
     }
 
     /// <summary>
@@ -433,15 +351,7 @@ public class Collection<T, TId> where T : class
     /// <returns></returns>
     public Task<T> FindOneAsync(CollectionFindOneOptions<T> findOptions)
     {
-        return FindOneAsync(null, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(CollectionFindOneOptions{T})"/>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync(null, findOptions, commandOptions);
+        return FindOneAsync(null, findOptions);
     }
 
     /// <summary>
@@ -457,15 +367,7 @@ public class Collection<T, TId> where T : class
     /// </example>
     public Task<T> FindOneAsync(CollectionFilter<T> filter)
     {
-        return FindOneAsync(filter, new CollectionFindOneOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOneAsync(filter, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOneAsync(filter, new CollectionFindOneOptions<T>());
     }
 
     /// <inheritdoc cref="FindOneAsync(CollectionFilter{T})"/>
@@ -473,17 +375,10 @@ public class Collection<T, TId> where T : class
     /// <param name="findOptions"></param>
     public Task<T> FindOneAsync(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
     {
-        return FindOneAsync(filter, findOptions, null);
+        return FindOneAsync<T>(filter, findOptions, false);
     }
 
-    /// <inheritdoc cref="FindOneAsync(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync<T>(filter, findOptions, commandOptions, false);
-    }
+
 
     /// <summary>
     /// Returns a single document from the collection.
@@ -496,14 +391,7 @@ public class Collection<T, TId> where T : class
     /// </remarks>
     public Task<TResult> FindOneAsync<TResult>()
     {
-        return FindOneAsync<TResult>(null, new CollectionFindOneOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(CommandOptions commandOptions)
-    {
-        return FindOneAsync<TResult>(null, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOneAsync<TResult>(null, new CollectionFindOneOptions<T>());
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}()"/>
@@ -521,23 +409,14 @@ public class Collection<T, TId> where T : class
     /// </example>
     public Task<TResult> FindOneAsync<TResult>(CollectionFindOneOptions<T> findOptions)
     {
-        return FindOneAsync<TResult>(null, findOptions, null);
+        return FindOneAsync<TResult>(null, findOptions);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFindOneOptions{T})"/>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync<TResult>(null, findOptions, commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T})"/>
     /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions)
+    public Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter)
     {
-        return FindOneAsync<TResult>(filter, new CollectionFindOneOptions<T>(), commandOptions);
+        return FindOneAsync<TResult>(filter, new CollectionFindOneOptions<T>());
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
@@ -545,22 +424,13 @@ public class Collection<T, TId> where T : class
     /// <param name="findOptions"></param>
     public Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
     {
-        return FindOneAsync<TResult>(filter, findOptions, null);
+        return FindOneAsync<TResult>(filter, findOptions, false);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync<TResult>(filter, findOptions, commandOptions, false);
-    }
-
-    private async Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, bool runSynchronously)
     {
         findOptions ??= new CollectionFindOneOptions<T>();
-        commandOptions = CommandOptions.Merge(commandOptions, findOptions);
+        var commandOptions = findOptions;
         var command = CreateCommand("findOne").WithPayload(findOptions.ToPayload(filter)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
         return response.Data.Document;

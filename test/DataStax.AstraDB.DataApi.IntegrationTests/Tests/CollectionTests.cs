@@ -628,7 +628,6 @@ public class CollectionTests
         }
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task InsertManyCommandOptions()
     {

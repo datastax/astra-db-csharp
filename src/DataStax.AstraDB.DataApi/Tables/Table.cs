@@ -705,7 +705,7 @@ public class Table<T> where T : class
         var result = new TableInsertManyResult();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
-        var commandOptions = CommandOptions.Merge(new CommandOptions(), insertOptions);
+        var commandOptions = insertOptions as CommandOptions;
         var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
 
         using (cts)
@@ -754,7 +754,6 @@ public class Table<T> where T : class
     private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
     {
         commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
-        commandOptions = CommandOptions.Merge(commandOptions, insertOptions);
         var command = CreateCommand("insertMany").WithPayload(insertOptions.ToPayload(rows)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
         return response.Result;
@@ -799,8 +798,7 @@ public class Table<T> where T : class
     private async Task<TableInsertOneResult> InsertOneAsync(T row, TableInsertOneOptions<T> options, bool runSynchronously)
     {
         options ??= new TableInsertOneOptions<T>();
-        var commandOptions = SetRowSerializationOptions<T>(new CommandOptions(), true);
-        commandOptions = CommandOptions.Merge(commandOptions, options);
+        var commandOptions = SetRowSerializationOptions<T>(options, true);
         var command = CreateCommand("insertOne").WithPayload(options.ToPayload(row)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
         return new TableInsertOneResult
@@ -954,77 +952,49 @@ public class Table<T> where T : class
     /// Synchronous version of <see cref="FindOneAsync()"/>
     public T FindOne()
     {
-        return FindOne(null, null, null);
+        return FindOne(null, new TableFindOneOptions<T>());
     }
 
     /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
     /// Synchronous version of <see cref="FindOneAsync(TableFilter{T})"/>
     public T FindOne(TableFilter<T> filter)
     {
-        return FindOne(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, CommandOptions)"/>
-    public T FindOne(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOne(filter, null, commandOptions);
+        return FindOne(filter, new TableFindOneOptions<T>());
     }
 
     /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync(TableFindOneOptions{T})"/>
     public T FindOne(TableFindOneOptions<T> findOptions)
     {
-        return FindOne<T>(null, findOptions, null);
+        return FindOne<T>(null, findOptions);
     }
 
     /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
     public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> findOptions)
     {
-        return FindOne<T>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/> 
-    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOne<T>(filter, findOptions, commandOptions);
+        return FindOne<T>(filter, findOptions);
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}()"/>
     /// Synchronous version of <see cref="FindOneAsync{TResult}()"/>
     public TResult FindOne<TResult>() where TResult : class
     {
-        return FindOne<TResult>(null, null, null);
+        return FindOne<TResult>(null, new TableFindOneOptions<T>());
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
     /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T})"/>
     public TResult FindOne<TResult>(TableFilter<T> filter) where TResult : class
     {
-        return FindOne<TResult>(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOne<TResult>(filter, null, commandOptions);
+        return FindOne<TResult>(filter, new TableFindOneOptions<T>());
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
     public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions) where TResult : class
     {
-        return FindOne<TResult>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
+        return FindOneAsync<TResult>(filter, findOptions, true).ResultSync();
     }
 
     /// <summary>
@@ -1033,7 +1003,7 @@ public class Table<T> where T : class
     /// <returns></returns>
     public Task<T> FindOneAsync()
     {
-        return FindOneAsync(null, null, null);
+        return FindOneAsync(null, new TableFindOneOptions<T>());
     }
 
     /// <summary>
@@ -1043,15 +1013,7 @@ public class Table<T> where T : class
     /// <returns></returns>
     public Task<T> FindOneAsync(TableFilter<T> filter)
     {
-        return FindOneAsync(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOneAsync(filter, null, commandOptions);
+        return FindOneAsync(filter, new TableFindOneOptions<T>());
     }
 
     /// <summary>
@@ -1061,7 +1023,7 @@ public class Table<T> where T : class
     /// <returns></returns>
     public Task<T> FindOneAsync(TableFindOneOptions<T> findOptions)
     {
-        return FindOneAsync<T>(null, findOptions, null);
+        return FindOneAsync<T>(null, findOptions, false);
     }
 
     /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
@@ -1069,16 +1031,7 @@ public class Table<T> where T : class
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOneOptions<T> findOptions)
     {
-        return FindOneAsync<T>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync<T>(filter, findOptions, commandOptions);
+        return FindOneAsync<T>(filter, findOptions, false);
     }
 
     /// <summary>
@@ -1089,7 +1042,7 @@ public class Table<T> where T : class
     /// <returns></returns>
     public Task<TResult> FindOneAsync<TResult>() where TResult : class
     {
-        return FindOneAsync<TResult>(null, null, null);
+        return FindOneAsync<TResult>(null, null, false);
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}()"/>
@@ -1097,15 +1050,7 @@ public class Table<T> where T : class
     /// <returns></returns>
     public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter) where TResult : class
     {
-        return FindOneAsync<TResult>(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, null, commandOptions);
+        return FindOneAsync<TResult>(filter, new TableFindOneOptions<T>(), false);
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
@@ -1113,23 +1058,13 @@ public class Table<T> where T : class
     /// <param name="findOptions">Specify Sort options for the find operation.</param>
     public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions) where TResult : class
     {
-        return FindOneAsync<TResult>(filter, findOptions, null);
+        return FindOneAsync<TResult>(filter, findOptions, false);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, findOptions, commandOptions, false);
-    }
-
-    internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously) where TResult : class
+    internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, bool runSynchronously) where TResult : class
     {
         findOptions ??= new TableFindOneOptions<T>();
-        commandOptions = CommandOptions.Merge(commandOptions, findOptions);
-        commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
+        var commandOptions = SetRowSerializationOptions<TResult>(findOptions, false);
         var command = CreateCommand("findOne").WithPayload(findOptions.ToPayload(filter)).AddCommandOptions(commandOptions);
         var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
