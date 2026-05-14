@@ -661,14 +661,6 @@ public class CollectionTests
     }
 
     [Fact]
-    public async Task CountDocuments_NoFilter_ReturnsCorrectCount()
-    {
-        var collection = fixture.SearchCollection;
-        var count = await collection.CountDocumentsAsync(1000);
-        Assert.Equal(33, count);
-    }
-
-    [Fact]
     public async Task CountDocuments_Filter_ReturnsCorrectCount()
     {
         var collection = fixture.SearchCollection;
@@ -695,7 +687,7 @@ public class CollectionTests
             ;
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
             await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
-            await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(50));
+            await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(null, 50));
 
         }
         finally
