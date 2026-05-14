@@ -77,6 +77,10 @@ public abstract class BaseInsertManyOptions : CommandOptions
 /// </summary>
 public sealed class CollectionInsertManyOptions : BaseInsertManyOptions
 {
+    internal CollectionInsertManyOptions ShallowClone()
+    {
+        return (CollectionInsertManyOptions)MemberwiseClone();
+    }
 }
 
 /// <summary>
@@ -84,4 +88,8 @@ public sealed class CollectionInsertManyOptions : BaseInsertManyOptions
 /// </summary>
 public sealed class TableInsertManyOptions : BaseInsertManyOptions
 {
+    internal TableInsertManyOptions ShallowClone()
+    {
+        return (TableInsertManyOptions)MemberwiseClone();
+    }
 }

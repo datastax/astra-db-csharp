@@ -64,4 +64,8 @@ public sealed class CollectionFindOneOptions<T> : BaseFindOneOptions<T, Collecti
 /// </summary>
 public sealed class TableFindOneOptions<T> : BaseFindOneOptions<T, TableSortBuilder<T>> where T : class
 {
+    internal TableFindOneOptions<T> ShallowClone()
+    {
+        return (TableFindOneOptions<T>)MemberwiseClone();
+    }
 }

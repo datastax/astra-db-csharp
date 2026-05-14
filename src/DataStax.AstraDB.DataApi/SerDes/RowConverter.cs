@@ -16,7 +16,7 @@
 
 namespace DataStax.AstraDB.DataApi.SerDes;
 
-using DataStax.AstraDB.DataApi.Tables;
+using Tables;
 using System;
 using System.Linq;
 using System.Reflection;

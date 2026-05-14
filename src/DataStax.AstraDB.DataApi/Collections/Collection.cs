@@ -66,123 +66,97 @@ public class Collection<T> : Collection<T, object> where T : class
 /// <typeparam name="TId">The type of the id field for documents in the collection.</typeparam>
 public class Collection<T, TId> where T : class
 {
-    private readonly string _collectionName;
     private readonly Database _database;
     private readonly CommandOptions _commandOptions;
 
     /// <summary>
     /// Access the name of the collection
     /// </summary>
-    public string CollectionName => _collectionName;
+    public string CollectionName { get; }
 
     internal Collection(string collectionName, Database database, CommandOptions commandOptions)
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         Guard.NotNull(database, nameof(database));
-        _collectionName = collectionName;
+        CollectionName = collectionName;
         _database = database;
         _commandOptions = commandOptions;
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="InsertOneAsync(T)"/>
-    /// </summary>
-    /// <inheritdoc cref="InsertOneAsync(T)"/>
-    public CollectionInsertOneResult<TId> InsertOne(T document)
-    {
-        return InsertOne(document, null);
     }
 
     /// <summary>
     /// Synchronous version of <see cref="InsertOneAsync(T, CollectionInsertOneOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="InsertOneAsync(T, CollectionInsertOneOptions{T})"/>
-    public CollectionInsertOneResult<TId> InsertOne(T document, CollectionInsertOneOptions<T> options)
+    public CollectionInsertOneResult<TId> InsertOne(T document, CollectionInsertOneOptions options = null)
     {
         return InsertOneAsync(document, options, runSynchronously: true).ResultSync();
-    }
-
-    /// <summary>
-    /// Asynchronously insert a single document into the collection.
-    /// </summary>
-    /// <param name="document">The document to insert.</param>
-    /// <returns></returns>
-    public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document)
-    {
-        return InsertOneAsync(document, null);
     }
 
     /// <inheritdoc cref="InsertOneAsync(T)"/>
     /// <param name="document">The document to insert.</param>
     /// <param name="options">Options for the insert operation.</param>
-    public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions<T> options)
+    public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions options = null)
     {
         return InsertOneAsync(document, options, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions<T> options, bool runSynchronously)
+    private async Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions options, bool runSynchronously)
     {
         Guard.NotNull(document, nameof(document));
         InsertValidator.Validate(document);
-        options ??= new CollectionInsertOneOptions<T>();
-        var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
+        
+        var outputConverter = (typeof(TId) == typeof(object))
+            ? new IdListConverter() 
+            : null;
+        
+        options = options?.ShallowCopy() ?? new();
         options.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
-        var command = CreateCommand("insertOne").WithPayload(options.ToPayload(document)).AddCommandOptions(options);
-        var response = await command.RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously).ConfigureAwait(false);
-        return new CollectionInsertOneResult<TId> { InsertedId = response.Result.InsertedIds[0] };
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
-    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents)
-    {
-        return InsertMany(documents, null);
+        
+        var response = await CreateCommand("insertOne")
+            .WithPayload(options.ToPayload(document))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously)
+            .ConfigureAwait(false);
+        
+        return new CollectionInsertOneResult<TId>
+        {
+            InsertedId = response.Result.InsertedIds[0],
+        };
     }
 
     /// <summary>
     /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
-    public CollectionInsertManyResult<TId> InsertMany(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions)
+    public CollectionInsertManyResult<TId> InsertMany(List<T> documents, CollectionInsertManyOptions insertOptions = null)
     {
         return InsertManyAsync(documents, insertOptions, runSynchronously: true).ResultSync();
     }
 
-    /// <summary>
-    /// Asynchronously insert multiple documents into the collection.
-    /// </summary>
-    /// <param name="documents">The list of documents to insert.</param>
-    /// <returns></returns>
-    /// <remarks>
-    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/> overload.
-    /// </remarks>
-    /// <throws cref="BulkOperationException{T}">Thrown if an error occurs during the bulk operation,
-    /// with partial results returned in the <see cref="BulkOperationException{T}.PartialResult"/> property.</throws>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents)
-    {
-        return InsertManyAsync(documents, null);
-    }
-
     /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
     /// <param name="documents">The list of documents to insert.</param>
-    /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
-    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions)
+    /// <param name="options">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
+    public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, CollectionInsertManyOptions options = null)
     {
-        return InsertManyAsync(documents, insertOptions, runSynchronously: false);
+        return InsertManyAsync(documents, options, runSynchronously: false);
     }
 
-    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, CollectionInsertManyOptions options, bool runSynchronously)
     {
         Guard.NotNull(documents, nameof(documents));
 
-        insertOptions ??= new CollectionInsertManyOptions();
-        if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
+        var outputConverter = typeof(TId) == typeof(object)
+            ? new IdListConverter() 
+            : null;
+        
+        options = options?.ShallowClone() ?? new();
+        options.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
+        
+        if (options.Concurrency > 1 && options.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
-
+        
         foreach (var doc in documents)
         {
             InsertValidator.Validate(doc);
@@ -190,16 +164,15 @@ public class Collection<T, TId> where T : class
 
         var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
-        var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
-        var commandOptions = CommandOptions.Merge(GetOptionsTree().Concat(new[] {insertOptions}).ToArray());
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(new(), ref commandOptions);
+        var semaphore = new SemaphoreSlim(options.Concurrency);
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(new(), options);
 
         using (cts)
         {
             var bulkOperationTimeoutToken = cts.Token;
             try
             {
-                var chunks = documents.CreateBatch(insertOptions.ChunkSize);
+                var chunks = documents.CreateBatch(options.ChunkSize);
 
                 foreach (var chunk in chunks)
                 {
@@ -208,7 +181,7 @@ public class Collection<T, TId> where T : class
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions, commandOptions, runSynchronously).ConfigureAwait(false);
+                            var runResult = await RunInsertManyAsync(chunk, options, runSynchronously).ConfigureAwait(false);
                             lock (result.InsertedIds)
                             {
                                 result.InsertedIds.AddRange(runResult.InsertedIds);
@@ -236,12 +209,14 @@ public class Collection<T, TId> where T : class
         }
     }
 
-    private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<CollectionInsertManyResult<TId>> RunInsertManyAsync(IEnumerable<T> documents, CollectionInsertManyOptions insertOptions, bool runSynchronously)
     {
-        var outputConverter = typeof(TId) == typeof(object) ? new IdListConverter() : null;
-        commandOptions.SetConvertersIfNull(new DocumentConverter<T>(), outputConverter);
-        var command = CreateCommand("insertMany").WithPayload(insertOptions.ToPayload(documents)).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously).ConfigureAwait(false);
+        var response = await  CreateCommand("insertMany")
+            .WithPayload(insertOptions.ToPayload(documents))
+            .AddCommandOptions(insertOptions)
+            .RunAsyncReturnStatus<CollectionInsertManyResult<TId>>(runSynchronously)
+            .ConfigureAwait(false);
+
         return response.Result;
     }
 
@@ -250,7 +225,7 @@ public class Collection<T, TId> where T : class
     /// </summary>
     public void Drop()
     {
-        _database.DropCollection(_collectionName);
+        _database.DropCollection(CollectionName);
     }
 
     /// <summary>
@@ -258,88 +233,35 @@ public class Collection<T, TId> where T : class
     /// </summary>
     public Task DropAsync()
     {
-        return _database.DropCollectionAsync(_collectionName);
+        return _database.DropCollectionAsync(CollectionName);
     }
 
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync()"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync()"/>
-    public T FindOne()
-    {
-        return FindOne(null, new CollectionFindOneOptions<T>());
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync(CollectionFilter{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync(CollectionFilter{T})"/>
-    public T FindOne(CollectionFilter<T> filter)
-    {
-        return FindOne(filter, new CollectionFindOneOptions<T>());
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync(CollectionFindOneOptions{T})"/>
-    /// </summary>
     /// <inheritdoc cref="FindOneAsync(CollectionFindOneOptions{T})"/>
-    public T FindOne(CollectionFindOneOptions<T> findOptions)
+    /// Synchronous version of <see cref="FindOneAsync(CollectionFindOneOptions{T})"/>
+    public T FindOne(CollectionFindOneOptions<T> findOptions = null)
     {
-        return FindOne(null, findOptions);
+        return FindOne<T>(null, findOptions);
     }
 
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    /// </summary>
     /// <inheritdoc cref="FindOneAsync(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    public T FindOne(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
+    /// Synchronous version of <see cref="FindOneAsync(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
+    public T FindOne(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions = null)
     {
-        return FindOneAsync<T>(filter, findOptions, true).ResultSync();
+        return FindOne<T>(filter, findOptions);
     }
 
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}()"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
-    public TResult FindOne<TResult>()
-    {
-        return FindOne<TResult>(null, new CollectionFindOneOptions<T>());
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    public TResult FindOne<TResult>(CollectionFilter<T> filter)
-    {
-        return FindOne<TResult>(filter, new CollectionFindOneOptions<T>());
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFindOneOptions{T})"/>
-    /// </summary>
     /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFindOneOptions{T})"/>
-    public TResult FindOne<TResult>(CollectionFindOneOptions<T> findOptions)
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFindOneOptions{T})"/>
+    public TResult FindOne<TResult>(CollectionFindOneOptions<T> findOptions = null) where TResult : class
     {
         return FindOne<TResult>(null, findOptions);
     }
 
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    /// </summary>
     /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    public TResult FindOne<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
+    public TResult FindOne<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions = null) where TResult : class
     {
         return FindOneAsync<TResult>(filter, findOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Returns a single document from the collection.
-    /// </summary>
-    /// <returns></returns>
-    public Task<T> FindOneAsync()
-    {
-        return FindOneAsync(null, new CollectionFindOneOptions<T>());
     }
 
     /// <summary>
@@ -349,15 +271,16 @@ public class Collection<T, TId> where T : class
     /// </summary>
     /// <param name="findOptions"></param>
     /// <returns></returns>
-    public Task<T> FindOneAsync(CollectionFindOneOptions<T> findOptions)
+    public Task<T> FindOneAsync(CollectionFindOneOptions<T> findOptions = null)
     {
-        return FindOneAsync(null, findOptions);
+        return FindOneAsync<T>(null, findOptions);
     }
 
     /// <summary>
     /// Returns a single document from the collection based on the provided filter
     /// </summary>
     /// <param name="filter"></param>
+    /// <param name="options"></param>
     /// <returns></returns>
     /// <example>
     /// <code>
@@ -365,37 +288,21 @@ public class Collection<T, TId> where T : class
     /// var result = await collection.FindOneAsync(filter);
     /// </code>
     /// </example>
-    public Task<T> FindOneAsync(CollectionFilter<T> filter)
+    public Task<T> FindOneAsync(CollectionFilter<T> filter, CollectionFindOneOptions<T> options = null)
     {
-        return FindOneAsync(filter, new CollectionFindOneOptions<T>());
+        return FindOneAsync<T>(filter, options);
     }
-
-    /// <inheritdoc cref="FindOneAsync(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    public Task<T> FindOneAsync(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
-    {
-        return FindOneAsync<T>(filter, findOptions, false);
-    }
-
-
 
     /// <summary>
     /// Returns a single document from the collection.
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
+    /// <param name="findOptions"></param>
     /// <returns></returns>
     /// <remarks>
     /// The FindOneAsync alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public Task<TResult> FindOneAsync<TResult>()
-    {
-        return FindOneAsync<TResult>(null, new CollectionFindOneOptions<T>());
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
-    /// <param name="findOptions"></param>
     /// <example>
     /// <code>
     /// var exclusiveProjection = Builders&lt;FullObject&gt;.Projection
@@ -407,32 +314,29 @@ public class Collection<T, TId> where T : class
     /// var result = await collection.FindOneAsync&lt;ObjectWithoutPropertyTwo&gt;(findOptions);
     /// </code>
     /// </example>
-    public Task<TResult> FindOneAsync<TResult>(CollectionFindOneOptions<T> findOptions)
+    public Task<TResult> FindOneAsync<TResult>(CollectionFindOneOptions<T> findOptions = null) where TResult : class
     {
         return FindOneAsync<TResult>(null, findOptions);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T})"/>
+    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFindOneOptions{T})"/>
     /// <param name="filter"></param>
-    public Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter)
+    /// <param name="options"></param>
+    public Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> options = null) where TResult : class
     {
-        return FindOneAsync<TResult>(filter, new CollectionFindOneOptions<T>());
+        return FindOneAsync<TResult>(filter, options, false);
     }
 
-    /// <inheritdoc cref="FindOneAsync{TResult}(CollectionFilter{T}, CollectionFindOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions)
+    private async Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> options, bool runSynchronously)
     {
-        return FindOneAsync<TResult>(filter, findOptions, false);
-    }
-
-    private async Task<TResult> FindOneAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneOptions<T> findOptions, bool runSynchronously)
-    {
-        findOptions ??= new CollectionFindOneOptions<T>();
-        var commandOptions = findOptions;
-        var command = CreateCommand("findOne").WithPayload(findOptions.ToPayload(filter)).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        options ??= new();
+        
+        var response = await CreateCommand("findOne")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
         return response.Data.Document;
     }
 
@@ -1503,8 +1407,10 @@ public class Collection<T, TId> where T : class
             Filter = filter
         };
 
+        commandOptions ??= new CommandOptions();
+        
         var deleteResult = new DeleteResult();
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), commandOptions);
 
         using (cts)
         {
@@ -1711,7 +1617,9 @@ public class Collection<T, TId> where T : class
         var updateResult = new UpdateResult();
         string nextPageState = null;
 
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+        commandOptions ??= new CommandOptions();
+        
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), commandOptions);
 
         using (cts)
         {
@@ -1940,6 +1848,6 @@ public class Collection<T, TId> where T : class
     internal Command CreateCommand(string name)
     {
         var optionsTree = GetOptionsTree().ToArray();
-        return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _collectionName));
+        return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, CollectionName));
     }
 }

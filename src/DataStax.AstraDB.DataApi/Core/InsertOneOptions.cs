@@ -19,27 +19,32 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Base class for insert-one operation options.
 /// </summary>
-public abstract class BaseInsertOneOptions<T> : CommandOptions where T : class
+public abstract class BaseInsertOneOptions : CommandOptions
 {
-    internal object ToPayload(T document)
+    internal object ToPayload<T>(T document)
     {
-        return new
-        {
-            document
-        };
+        return new { document };
     }
 }
 
 /// <summary>
 /// Options for inserting a single document into a collection.
 /// </summary>
-public sealed class CollectionInsertOneOptions<T> : BaseInsertOneOptions<T> where T : class
+public sealed class CollectionInsertOneOptions : BaseInsertOneOptions
 {
+    internal CollectionInsertOneOptions ShallowCopy()
+    {
+        return (CollectionInsertOneOptions)MemberwiseClone();
+    }
 }
 
 /// <summary>
 /// Options for inserting a single row into a table.
 /// </summary>
-public sealed class TableInsertOneOptions<T> : BaseInsertOneOptions<T> where T : class
+public sealed class TableInsertOneOptions : BaseInsertOneOptions
 {
+    internal TableInsertOneOptions ShallowCopy()
+    {
+        return (TableInsertOneOptions)MemberwiseClone();
+    }
 }
