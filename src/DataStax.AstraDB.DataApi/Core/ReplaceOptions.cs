@@ -15,81 +15,79 @@
  */
 
 using DataStax.AstraDB.DataApi.Core.Query;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options to use when replacing documents in a collection.
+/// Base class for replace-one operation options.
 /// </summary>
-public class ReplaceOptions<T> where T : class
+public abstract class BaseReplaceOneOptions<T, TSort> : CommandOptions
+    where T : class
+    where TSort : SortBuilder<T>
 {
-  [JsonInclude]
-  [JsonPropertyName("options")]
-  internal ReplaceOptionsParameters Parameters { get; set; } = new();
+    /// <summary>
+    /// Sort order for determining which document to replace when multiple match the filter.
+    /// </summary>
+    public TSort Sort { get; set; }
 
-  internal Filter<T> Filter { get; set; }
+    /// <summary>
+    /// Whether to insert the document if no matching document is found or not.
+    /// </summary>
+    public bool Upsert { get; set; }
 
-  [JsonInclude]
-  [JsonPropertyName("filter")]
-  internal Dictionary<string, object> FilterMap => Filter == null ? null : Filter.Serialize();
-
-  /// <summary>
-  /// Defines the fields to be returned in the result.
-  /// </summary>
-  [JsonIgnore]
-  public IProjectionBuilder Projection { get; set; }
-
-  [JsonInclude]
-  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  [JsonPropertyName("projection")]
-  internal Dictionary<string, object> ProjectionMap => Projection == null ? null : Projection.Projections.ToDictionary(x => x.FieldName, x => x.Value);
-
-  /// <summary>
-  /// Defines the sort order to apply before making the replacement.
-  /// </summary>
-  [JsonIgnore]
-  public SortBuilder<T> Sort { get; set; }
-
-  [JsonInclude]
-  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  [JsonPropertyName("sort")]
-  internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.Sorts.ToDictionary(x => x.Name, x => x.Value);
-
-  [JsonInclude]
-  [JsonPropertyName("replacement")]
-  internal T Replacement { get; set; }
-
-  /// <summary>
-  /// Whether to insert the document if no matching document is found or not.
-  /// </summary>
-  [JsonIgnore]
-  public bool Upsert
-  {
-    set => Parameters.Upsert = value;
-  }
-
-  /// <summary>
-  /// Whether to return the document before or after the replacement.
-  /// </summary>
-  [JsonIgnore]
-  public ReturnDocumentDirective? ReturnDocument
-  {
-    set => Parameters.ReturnDocument = value.Serialize();
-  }
+    internal object ToPayload(Filter<T> filter, T replacement)
+    {
+        return new
+        {
+            filter = filter?.Serialize() ?? new(),
+            replacement,
+            sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
+            options = new
+            {
+                upsert = Upsert ? true : (bool?)null
+            }
+        };
+    }
 }
 
-internal class ReplaceOptionsParameters
+/// <summary>
+/// Options for replacing a document in a collection.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public sealed class CollectionReplaceOneOptions<T> : BaseReplaceOneOptions<T, CollectionSortBuilder<T>> where T : class
 {
-  [JsonInclude]
-  [JsonPropertyName("upsert")]
-  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  internal bool? Upsert { get; set; }
+}
 
-  [JsonInclude]
-  [JsonPropertyName("returnDocument")]
-  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  internal string ReturnDocument { get; set; }
+/// <summary>
+/// Options for finding and replacing a single document in a collection.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class CollectionFindOneAndReplaceOptions<T> : BaseReplaceOneOptions<T, CollectionSortBuilder<T>> where T : class
+{
+    /// <summary>
+    /// Define the projection to apply on the returned document.
+    /// </summary>
+    public IProjectionBuilder Projection { get; set; }
+
+    /// <summary>
+    /// Whether to return the document before or after the replacement.
+    /// </summary>
+    public ReturnDocumentDirective? ReturnDocument { get; set; }
+
+    internal new object ToPayload(Filter<T> filter, T replacement)
+    {
+        return new
+        {
+            filter = filter?.Serialize() ?? new(),
+            replacement,
+            sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
+            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new(),
+            options = new
+            {
+                upsert = Upsert ? true : (bool?)null,
+                returnDocument = ReturnDocument.Serialize()
+            },
+        };
+    }
 }

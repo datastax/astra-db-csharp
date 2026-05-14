@@ -561,240 +561,56 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync(T)"/>
+    /// Synchronous version of <see cref="FindOneAndReplaceAsync(CollectionFilter{T}, T, CollectionFindOneAndReplaceOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T)"/>
-    public T FindOneAndReplace(T replacement)
+    /// <inheritdoc cref="FindOneAndReplaceAsync(CollectionFilter{T}, T, CollectionFindOneAndReplaceOptions{T})"/>
+    public T FindOneAndReplace(CollectionFilter<T> filter, T replacement, CollectionFindOneAndReplaceOptions<T> options = null)
     {
-        return FindOneAndReplace(replacement, new ReplaceOptions<T>(), null);
+        return FindOneAndReplace<T>(filter, replacement, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync(T, ReplaceOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAndReplaceAsync{TResult}(CollectionFilter{T}, T, CollectionFindOneAndReplaceOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T, ReplaceOptions{T})"/>
-    public T FindOneAndReplace(T replacement, ReplaceOptions<T> replaceOptions)
+    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(CollectionFilter{T}, T, CollectionFindOneAndReplaceOptions{T})"/>
+    public TResult FindOneAndReplace<TResult>(CollectionFilter<T> filter, T replacement, CollectionFindOneAndReplaceOptions<T> options = null)
     {
-        return FindOneAndReplace(replacement, replaceOptions, null);
+        return FindOneAndReplaceAsync<TResult>(filter, replacement, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync(T, ReplaceOptions{T}, CommandOptions)"/>
+    /// Find a document and replace it with the provided replacement.
+    /// This is similar to <see cref="ReplaceOneAsync(CollectionFilter{T}, T, CollectionReplaceOneOptions{T})"/> but returns the replaced document.
     /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T, ReplaceOptions{T}, CommandOptions)"/>
-    public T FindOneAndReplace(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        var response = FindOneAndReplaceAsync<T>(null, replacement, replaceOptions, commandOptions, true).ResultSync();
-        return response;
-    }
-
-    /// <summary>
-    /// Find a document and replace it with the provided replacement
-    /// </summary>
-    /// <param name="replacement"></param>
+    /// <param name="filter">The filter to match documents.</param>
+    /// <param name="replacement">The replacement document.</param>
+    /// <param name="options">Options for the find and replace operation.</param>
     /// <returns>The replaced document, or null if not found</returns>
-    public Task<T> FindOneAndReplaceAsync(T replacement)
+    public Task<T> FindOneAndReplaceAsync(CollectionFilter<T> filter, T replacement, CollectionFindOneAndReplaceOptions<T> options = null)
     {
-        return FindOneAndReplaceAsync(replacement, new ReplaceOptions<T>(), null);
+        return FindOneAndReplaceAsync<T>(filter, replacement, options);
     }
 
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T)"/>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
+    /// <inheritdoc cref="FindOneAndReplaceAsync(CollectionFilter{T}, T, CollectionFindOneAndReplaceOptions{T})"/>
     /// <remarks>
-    /// Use the <see cref="ReplaceOptions{T}.ReturnDocument"/> parameter on <see cref="ReplaceOptions{T}"/> to specify whether the original or updated document should be returned.
-    /// </remarks>
-    public Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions)
-    {
-        return FindOneAndReplaceAsync(replacement, replaceOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T, ReplaceOptions{T})"/>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAndReplaceAsync(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndReplaceAsync<T>(null, replacement, replaceOptions, commandOptions, false);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync{TResult}(T)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T)"/>
-    public TResult FindOneAndReplace<TResult>(T replacement)
-    {
-        return FindOneAndReplace<TResult>(replacement, new ReplaceOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync{TResult}(T, ReplaceOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T, ReplaceOptions{T})"/>
-    public TResult FindOneAndReplace<TResult>(T replacement, ReplaceOptions<T> replaceOptions)
-    {
-        return FindOneAndReplace<TResult>(replacement, replaceOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync{TResult}(T, ReplaceOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T, ReplaceOptions{T}, CommandOptions)"/>
-    public TResult FindOneAndReplace<TResult>(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        var response = FindOneAndReplaceAsync<TResult>(null, replacement, replaceOptions, commandOptions, true).ResultSync();
-        return response;
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T)"/>
-    /// <remarks>
-    /// The FindOneAndReplace alternatives that accept a TResult type parameter allow for deserializing the resulting document
+    /// The FindOneAndReplaceAsync alternatives that accept a TResult type parameter allow for deserializing the resulting document
     /// as a different type (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement)
+    public Task<TResult> FindOneAndReplaceAsync<TResult>(CollectionFilter<T> filter, T replacement, CollectionFindOneAndReplaceOptions<T> options = null)
     {
-        return FindOneAndReplaceAsync<TResult>(replacement, new ReplaceOptions<T>(), null);
+        return FindOneAndReplaceAsync<TResult>(filter, replacement, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T)"/>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
-    public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions)
+    private async Task<TResult> FindOneAndReplaceAsync<TResult>(CollectionFilter<T> filter, T replacement, CollectionFindOneAndReplaceOptions<T> options, bool runSynchronously)
     {
-        return FindOneAndReplaceAsync<TResult>(replacement, replaceOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T, ReplaceOptions{T})"/>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAndReplaceAsync<TResult>(T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndReplaceAsync<TResult>(null, replacement, replaceOptions, commandOptions, false);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync(T)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T)"/>
-    public T FindOneAndReplace(CollectionFilter<T> filter, T replacement)
-    {
-        return FindOneAndReplace(filter, replacement, new ReplaceOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync(T, ReplaceOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T, ReplaceOptions{T})"/>
-    public T FindOneAndReplace(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
-    {
-        return FindOneAndReplace(filter, replacement, replaceOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync(T, ReplaceOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync(T, ReplaceOptions{T}, CommandOptions)"/>
-    public T FindOneAndReplace(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        var response = FindOneAndReplaceAsync<T>(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
-        return response;
-    }
-
-    /// <summary>
-    /// Find a document and replace it with the provided replacement using the provided filter
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <param name="replacement"></param>
-    /// <returns></returns>
-    public Task<T> FindOneAndReplaceAsync(CollectionFilter<T> filter, T replacement)
-    {
-        return FindOneAndReplaceAsync(filter, replacement, new ReplaceOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync(CollectionFilter{T}, T)"/>
-    /// <param name="filter"></param>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
-    public Task<T> FindOneAndReplaceAsync(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
-    {
-        return FindOneAndReplaceAsync(filter, replacement, replaceOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync(CollectionFilter{T}, T, ReplaceOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAndReplaceAsync(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndReplaceAsync<T>(filter, replacement, replaceOptions, commandOptions, false);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync{TResult}(T)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(T)"/>
-    public TResult FindOneAndReplace<TResult>(CollectionFilter<T> filter, T replacement)
-    {
-        return FindOneAndReplace<TResult>(filter, replacement, new ReplaceOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync{TResult}(CollectionFilter{T}, T, ReplaceOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(CollectionFilter{T}, T, ReplaceOptions{T})"/>
-    public TResult FindOneAndReplace<TResult>(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
-    {
-        return FindOneAndReplace<TResult>(filter, replacement, replaceOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndReplaceAsync{TResult}(CollectionFilter{T}, T, ReplaceOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndReplaceAsync{TResult}(CollectionFilter{T}, T, ReplaceOptions{T}, CommandOptions)"/>
-    public TResult FindOneAndReplace<TResult>(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        var response = FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
-        return response;
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync(CollectionFilter{T}, T)"/>
-    /// <remarks>
-    /// The FindOneAndReplace alternatives that accept a TResult type parameter allow for deserializing the resulting document
-    /// as a different type (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public Task<TResult> FindOneAndReplaceAsync<TResult>(CollectionFilter<T> filter, T replacement)
-    {
-        return FindOneAndReplaceAsync<TResult>(filter, replacement, new ReplaceOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync(CollectionFilter{T}, T)"/>
-    /// <remarks>
-    /// The FindOneAndReplace alternatives that accept a TResult type parameter allow for deserializing the resulting document
-    /// as a different type (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public Task<TResult> FindOneAndReplaceAsync<TResult>(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
-    {
-        return FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAndReplaceAsync(CollectionFilter{T}, T, ReplaceOptions{T}, CommandOptions)"/>
-    /// <remarks>
-    /// The FindOneAndReplace alternatives that accept a TResult type parameter allow for deserializing the resulting document
-    /// as a different type (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public Task<TResult> FindOneAndReplaceAsync<TResult>(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndReplaceAsync<TResult>(filter, replacement, replaceOptions, commandOptions, false);
-    }
-
-    internal async Task<TResult> FindOneAndReplaceAsync<TResult>(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        replaceOptions.Filter = filter;
-        replaceOptions.Replacement = replacement;
-        var command = CreateCommand("findOneAndReplace").WithPayload(replaceOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, T, UpdateResult>(runSynchronously).ConfigureAwait(false);
+        options ??= new();
+        
+        var response = await CreateCommand("findOneAndReplace")
+            .WithPayload(options.ToPayload(filter, replacement))
+            .AddCommandOptions(options)
+            .RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, UpdateResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
         return response.Data.Document;
     }
 
@@ -848,88 +664,61 @@ public class Collection<T, TId> where T : class
     // }
 
     /// <summary>
-    /// Synchronous version of <see cref="ReplaceOneAsync(CollectionFilter{T}, T)"/>
+    /// Synchronous version of <see cref="ReplaceOneAsync(CollectionFilter{T}, T, CollectionReplaceOneOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="ReplaceOneAsync(CollectionFilter{T}, T)"/>
-    public UpdateResult ReplaceOne(CollectionFilter<T> filter, T replacement)
+    /// <inheritdoc cref="ReplaceOneAsync(CollectionFilter{T}, T, CollectionReplaceOneOptions{T})"/>
+    public UpdateResult ReplaceOne(CollectionFilter<T> filter, T replacement, CollectionReplaceOneOptions<T> options = null)
     {
-        return ReplaceOne(filter, replacement, new ReplaceOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ReplaceOneAsync(CollectionFilter{T}, T, ReplaceOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="ReplaceOneAsync(CollectionFilter{T}, T, ReplaceOptions{T})"/>
-    public UpdateResult ReplaceOne(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
-    {
-        return ReplaceOne(filter, replacement, replaceOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ReplaceOneAsync(CollectionFilter{T}, T, ReplaceOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="ReplaceOneAsync(CollectionFilter{T}, T, ReplaceOptions{T}, CommandOptions)"/>
-    public UpdateResult ReplaceOne(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        var response = ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, true).ResultSync();
-        return response;
+        return ReplaceOneAsync(filter, replacement, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Replace a document in the collection that matches the provided filter with the provided replacement.
-    /// This is similar to <see cref="FindOneAndReplaceAsync(CollectionFilter{T},T)"/> but does not return the replaced document.
+    /// This is similar to <see cref="FindOneAndReplaceAsync(CollectionFilter{T}, T, CollectionFindOneAndReplaceOptions{T})"/> but does not return the replaced document.
     /// </summary>
-    /// <param name="filter"></param>
-    /// <param name="replacement"></param>
-    /// <returns></returns>
-    public Task<UpdateResult> ReplaceOneAsync(CollectionFilter<T> filter, T replacement)
+    /// <param name="filter">The filter to match documents.</param>
+    /// <param name="replacement">The replacement document.</param>
+    /// <param name="options">Options for the replace operation.</param>
+    /// <returns>The result of the replace operation.</returns>
+    public Task<UpdateResult> ReplaceOneAsync(CollectionFilter<T> filter, T replacement, CollectionReplaceOneOptions<T> options = null)
     {
-        return ReplaceOneAsync(filter, replacement, new ReplaceOptions<T>(), null);
+        return ReplaceOneAsync(filter, replacement, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="ReplaceOneAsync(CollectionFilter{T}, T)"/>
-    /// <param name="filter"></param>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
-    public Task<UpdateResult> ReplaceOneAsync(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions)
+    private async Task<UpdateResult> ReplaceOneAsync(CollectionFilter<T> filter, T replacement, CollectionReplaceOneOptions<T> options, bool runSynchronously)
     {
-        return ReplaceOneAsync(filter, replacement, replaceOptions, null);
-    }
-
-    /// <inheritdoc cref="ReplaceOneAsync(CollectionFilter{T}, T, ReplaceOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="replacement"></param>
-    /// <param name="replaceOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<UpdateResult> ReplaceOneAsync(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions)
-    {
-        return ReplaceOneAsync(filter, replacement, replaceOptions, commandOptions, false);
-    }
-
-    internal async Task<UpdateResult> ReplaceOneAsync(CollectionFilter<T> filter, T replacement, ReplaceOptions<T> replaceOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        replaceOptions.Filter = filter;
-        replaceOptions.Replacement = replacement;
-        replaceOptions.Projection = new ExclusiveProjectionBuilder<T>().Exclude("*");
-        var command = CreateCommand("findOneAndReplace").WithPayload(replaceOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
+        options ??= new();
+        
+        var replaceOptions = new CollectionFindOneAndReplaceOptions<T>
+        {
+            Sort = options.Sort,
+            Upsert = options.Upsert,
+            Projection = new ExclusiveProjectionBuilder<T>().Exclude("*")
+        };
+        
+        var response = await CreateCommand("findOneAndReplace")
+            .WithPayload(replaceOptions.ToPayload(filter, replacement))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<UpdateResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
         return response.Result;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAndDeleteAsync(CollectionFilter{T}, CollectionFindOneAndDeleteOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
-    public T FindOneAndDelete(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
+    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, CollectionFindOneAndDeleteOptions{T})"/>
+    public T FindOneAndDelete(CollectionFilter<T> filter, CollectionFindOneAndDeleteOptions<T> options = null)
     {
         return FindOneAndDelete<T>(filter, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, CollectionFindOneAndDeleteOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
-    public TResult FindOneAndDelete<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
+    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, CollectionFindOneAndDeleteOptions{T})"/>
+    public TResult FindOneAndDelete<TResult>(CollectionFilter<T> filter, CollectionFindOneAndDeleteOptions<T> options = null)
     {
         return FindOneAndDeleteAsync<TResult>(filter, options, runSynchronously: true).ResultSync();
     }
@@ -941,22 +730,22 @@ public class Collection<T, TId> where T : class
     /// <param name="filter">The filter to match documents.</param>
     /// <param name="options">Options for the find and delete operation.</param>
     /// <returns>The deleted document, or null if not found</returns>
-    public Task<T> FindOneAndDeleteAsync(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
+    public Task<T> FindOneAndDeleteAsync(CollectionFilter<T> filter, CollectionFindOneAndDeleteOptions<T> options = null)
     {
         return FindOneAndDeleteAsync<T>(filter, options);
     }
 
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
+    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, CollectionFindOneAndDeleteOptions{T})"/>
     /// <remarks>
     /// The FindOneAndDeleteAsync alternatives that accept a TResult type parameter allow for deserializing the resulting document
     /// as a different type (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneAndDeleteOptions<T> options = null)
     {
         return FindOneAndDeleteAsync<TResult>(filter, options, runSynchronously: false);
     }
 
-    private async Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options, bool runSynchronously)
+    private async Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, CollectionFindOneAndDeleteOptions<T> options, bool runSynchronously)
     {
         options ??= new();
         

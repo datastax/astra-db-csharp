@@ -97,7 +97,7 @@ public sealed class TableDeleteManyOptions : BaseDeleteManyOptions
 /// Options for finding and deleting a single document from a collection.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class FindOneAndDeleteOptions<T> : BaseDeleteOneOptions<T, CollectionSortBuilder<T>> where T : class
+public class CollectionFindOneAndDeleteOptions<T> : BaseDeleteOneOptions<T, CollectionSortBuilder<T>> where T : class
 {
     /// <summary>
     /// Define the projection to apply on the returned document.

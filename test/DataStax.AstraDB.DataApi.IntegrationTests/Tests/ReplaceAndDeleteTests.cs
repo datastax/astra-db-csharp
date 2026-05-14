@@ -69,7 +69,7 @@ public class ReplaceAndDeleteTests
         var collection = fixture.ReplaceCollection;
         var filter = Builders<SimpleObject>.CollectionFilter
             .Eq(so => so.Name, "Horse");
-        var options = new ReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After };
+        var options = new CollectionFindOneAndReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After };
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
         Assert.Equal("replacement", result.Properties.PropertyTwo);
     }
@@ -79,7 +79,7 @@ public class ReplaceAndDeleteTests
     {
         var collection = fixture.ReplaceCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 111);
-        var options = new ReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After, Upsert = true };
+        var options = new CollectionFindOneAndReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.After, Upsert = true };
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
         Assert.Equal("replacement", result.Properties.PropertyTwo);
     }
@@ -88,9 +88,10 @@ public class ReplaceAndDeleteTests
     public async Task FindAndUpdateOne_WithSimpleSort()
     {
         var collection = fixture.ReplaceCollection;
+        var filter = Builders<SimpleObject>.CollectionFilter.Empty();
         var sort = Builders<SimpleObject>.CollectionSort.Descending(so => so.Properties.IntProperty);
-        var options = new ReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.Before, Sort = sort };
-        var result = await collection.FindOneAndReplaceAsync(CreateSimpleObject(), options);
+        var options = new CollectionFindOneAndReplaceOptions<SimpleObject>() { ReturnDocument = ReturnDocumentDirective.Before, Sort = sort };
+        var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
         Assert.NotNull(result.Name);
     }
 
@@ -102,7 +103,7 @@ public class ReplaceAndDeleteTests
             .Eq(so => so.Name, "Animal5");
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
-        var options = new ReplaceOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = inclusiveProjection };
+        var options = new CollectionFindOneAndReplaceOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = inclusiveProjection };
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
         Assert.Equal("replacement", result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
@@ -117,7 +118,7 @@ public class ReplaceAndDeleteTests
             .Eq(so => so.Name, "Animal6");
         var exclusiveProjection = Builders<SimpleObject>.Projection
                 .Exclude("Properties.PropertyOne");
-        var options = new ReplaceOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = exclusiveProjection };
+        var options = new CollectionFindOneAndReplaceOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = exclusiveProjection };
         var result = await collection.FindOneAndReplaceAsync(filter, CreateSimpleObject(), options);
         Assert.Equal("replacement", result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
@@ -167,7 +168,8 @@ public class ReplaceAndDeleteTests
                 Name = "replacement",
                 VectorEmbeddings = (new double[] { }).Select(d => (float)d).ToArray()
             };
-            var result = await collection.FindOneAndReplaceAsync(null, replacement, new ReplaceOptions<SimpleObjectWithVector> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            var filter = Builders<SimpleObjectWithVector>.CollectionFilter.Empty();
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement, new CollectionFindOneAndReplaceOptions<SimpleObjectWithVector> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("replacement", result.Name);
         }
         finally
@@ -222,7 +224,8 @@ public class ReplaceAndDeleteTests
             {
                 Name = "replacement",
             };
-            var result = await collection.FindOneAndReplaceAsync(null, replacement, new ReplaceOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            var filter = Builders<SimpleObjectWithVectorize>.CollectionFilter.Empty();
+            var result = await collection.FindOneAndReplaceAsync(filter, replacement, new CollectionFindOneAndReplaceOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("replacement", result.Name);
         }
         finally
@@ -266,7 +269,7 @@ public class ReplaceAndDeleteTests
     {
         var collection = fixture.ReplaceCollection;
         var sort = Builders<SimpleObject>.CollectionSort.Descending(so => so.Properties.IntProperty);
-        var result = await collection.FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<SimpleObject> { Sort = sort });
+        var result = await collection.FindOneAndDeleteAsync(null, new CollectionFindOneAndDeleteOptions<SimpleObject> { Sort = sort });
         Assert.NotNull(result.Name);
     }
 
@@ -278,7 +281,7 @@ public class ReplaceAndDeleteTests
             .Eq(so => so.Name, "Animal9");
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
-        var options = new FindOneAndDeleteOptions<SimpleObject> { Projection = inclusiveProjection };
+        var options = new CollectionFindOneAndDeleteOptions<SimpleObject> { Projection = inclusiveProjection };
         var result = await collection.FindOneAndDeleteAsync(filter, options);
         Assert.NotNull(result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
@@ -293,7 +296,7 @@ public class ReplaceAndDeleteTests
             .Eq(so => so.Name, "Animal10");
         var exclusiveProjection = Builders<SimpleObject>.Projection
                 .Exclude("Properties.PropertyOne");
-        var options = new FindOneAndDeleteOptions<SimpleObject> { Projection = exclusiveProjection };
+        var options = new CollectionFindOneAndDeleteOptions<SimpleObject> { Projection = exclusiveProjection };
         var result = await collection.FindOneAndDeleteAsync(filter, options);
         Assert.Equal("Animal10", result.Name);
         Assert.Null(result.Properties.PropertyOne);
@@ -338,7 +341,7 @@ public class ReplaceAndDeleteTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector);
-            var result = await collection.FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<SimpleObjectWithVector> { Sort = sort });
+            var result = await collection.FindOneAndDeleteAsync(null, new CollectionFindOneAndDeleteOptions<SimpleObjectWithVector> { Sort = sort });
             Assert.Equal("This is about a dog.", result.Name);
         }
         finally
@@ -393,7 +396,8 @@ public class ReplaceAndDeleteTests
             {
                 Name = "replacement",
             };
-            var result = await collection.FindOneAndReplaceAsync(null, replacement, new ReplaceOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            
+            var result = await collection.FindOneAndReplaceAsync(null, replacement, new CollectionFindOneAndReplaceOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("replacement", result.Name);
         }
         finally
@@ -570,7 +574,7 @@ public class ReplaceAndDeleteTests
             Assert.Equal(30, result.DeletedCount);
             result = await collection.DeleteManyAsync(null);
             Assert.Equal(-1, result.DeletedCount);
-            Assert.Equal(0, await collection.CountDocumentsAsync(1000));
+            Assert.Equal(0, await collection.CountDocumentsAsync(Builders<SimpleObject>.CollectionFilter.Empty(), 1000));
         }
         finally
         {
