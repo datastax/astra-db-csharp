@@ -1117,53 +1117,38 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
+    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
-    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update)
+    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions{T})"/>
+    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions<T> options = null)
     {
-        UpdateOne(filter, update, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, CommandOptions)"/>
-    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
-    {
-        UpdateOneAsync(filter, update, commandOptions, true).ResultSync();
+        UpdateOneAsync(filter, update, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Update a single row in the table using the provided filter and update builder.
-    /// 
     /// </summary>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <returns></returns>
-    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update)
+    /// <param name="filter">The filter to match rows.</param>
+    /// <param name="update">The update operations to apply.</param>
+    /// <param name="options">Options for the update operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions<T> options = null)
     {
-        return UpdateOneAsync(filter, update, null);
+        return UpdateOneAsync(filter, update, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <param name="commandOptions"></param>
-    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
+    private async Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions<T> options, bool runSynchronously)
     {
-        return UpdateOneAsync(filter, update, commandOptions, false);
-    }
-
-    internal async Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions, bool runSynchronously)
-    {
-        var updateOptions = new UpdateOneOptions<T>
-        {
-            Filter = filter,
-            Update = update
-        };
-        var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
-        await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
+        Guard.NotNull(filter, nameof(filter));
+        Guard.NotNull(update, nameof(update));
+        
+        options ??= new();
+        
+        await CreateCommand("updateOne")
+            .WithPayload(options.ToPayload(filter, update))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<UpdateResult>(runSynchronously)
+            .ConfigureAwait(false);
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
@@ -171,7 +172,7 @@ public class UpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 111);
         var update = Builders<SimpleObject>.CollectionUpdate.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
-        var result = await collection.UpdateOneAsync(filter, update, new UpdateOneOptions<SimpleObject> { Upsert = true });
+        var result = await collection.UpdateOneAsync(filter, update, new CollectionUpdateOneOptions<SimpleObject> { Upsert = true });
         Assert.Equal(0, result.ModifiedCount);
         Assert.NotNull(result.UpsertedId);
         Assert.Equal(0, result.MatchedCount);
@@ -367,7 +368,7 @@ public class UpdateTests
             var insertResult = await collection.InsertManyAsync(items);
             var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector); ;
             var update = Builders<SimpleObjectWithVector>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
-            var result = await collection.UpdateOneAsync(null, update, new UpdateOneOptions<SimpleObjectWithVector> { Sort = sort });
+            var result = await collection.UpdateOneAsync(null, update, new CollectionUpdateOneOptions<SimpleObjectWithVector> { Sort = sort });
             Assert.Equal(1, result.ModifiedCount);
             var filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(so => so.Id, 1);
             var updatedDocument = await collection.FindOneAsync(filter);
@@ -422,7 +423,7 @@ public class UpdateTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString); ;
             var update = Builders<SimpleObjectWithVectorize>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
-            var result = await collection.UpdateOneAsync(null, update, new UpdateOneOptions<SimpleObjectWithVectorize> { Sort = sort });
+        var result = await collection.UpdateOneAsync(null, update, new CollectionUpdateOneOptions<SimpleObjectWithVectorize> { Sort = sort });
             Assert.Equal(1, result.ModifiedCount);
             var filter = Builders<SimpleObjectWithVectorize>.CollectionFilter.Eq(so => so.Id, 1);
             var updatedDocument = await collection.FindOneAsync(filter);

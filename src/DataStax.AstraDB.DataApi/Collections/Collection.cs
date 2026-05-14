@@ -1401,71 +1401,12 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T})"/>
+    /// Synchronous version of <see cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T}, CollectionUpdateOneOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    public UpdateResult UpdateOne(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
+    /// <inheritdoc cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T}, CollectionUpdateOneOptions{T})"/>
+    public UpdateResult UpdateOne(CollectionFilter<T> filter, UpdateBuilder<T> update, CollectionUpdateOneOptions<T> options = null)
     {
-        return UpdateOne(null, update, updateOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    public UpdateResult UpdateOne(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        return UpdateOne(null, update, updateOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T})"/>
-    public UpdateResult UpdateOne(CollectionFilter<T> filter, UpdateBuilder<T> update)
-    {
-        return UpdateOne(filter, update, new UpdateOneOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    public UpdateResult UpdateOne(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
-    {
-        return UpdateOne(filter, update, updateOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateOneOptions{T}, CommandOptions)"/>
-    public UpdateResult UpdateOne(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        var response = UpdateOneAsync(filter, update, updateOptions, commandOptions, true).ResultSync();
-        return response;
-    }
-
-    /// <summary>
-    /// Update a single document in the collection using the provided update builder and options.
-    /// 
-    /// This is similar to <see cref="FindOneAndUpdateAsync(CollectionFilter{T}, UpdateBuilder{T})"/> but does not return the updated document.
-    /// </summary>
-    /// <param name="update"></param>
-    /// <param name="updateOptions"></param>
-    /// <returns></returns>
-    public Task<UpdateResult> UpdateOneAsync(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
-    {
-        return UpdateOneAsync(null, update, updateOptions, null);
-    }
-
-    /// <inheritdoc cref="UpdateOneAsync(UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    /// <param name="update"></param>
-    /// <param name="updateOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<UpdateResult> UpdateOneAsync(UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        return UpdateOneAsync(null, update, updateOptions, commandOptions);
+        return UpdateOneAsync(filter, update, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
@@ -1473,128 +1414,80 @@ public class Collection<T, TId> where T : class
     /// 
     /// This is similar to <see cref="FindOneAndUpdateAsync(CollectionFilter{T}, UpdateBuilder{T})"/> but does not return the updated document.
     /// </summary>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <returns></returns>
-    public Task<UpdateResult> UpdateOneAsync(CollectionFilter<T> filter, UpdateBuilder<T> update)
+    /// <param name="filter">The filter to match documents.</param>
+    /// <param name="update">The update operations to apply.</param>
+    /// <param name="options">Options for the update operation.</param>
+    /// <returns>The result of the update operation.</returns>
+    public Task<UpdateResult> UpdateOneAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, CollectionUpdateOneOptions<T> options = null)
     {
-        return UpdateOneAsync(filter, update, new UpdateOneOptions<T>(), null);
+        return UpdateOneAsync(filter, update, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <param name="updateOptions"></param>
-    public Task<UpdateResult> UpdateOneAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions)
+    private async Task<UpdateResult> UpdateOneAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, CollectionUpdateOneOptions<T> options, bool runSynchronously)
     {
-        return UpdateOneAsync(filter, update, updateOptions, null);
-    }
-
-    /// <inheritdoc cref="UpdateOneAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <param name="updateOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<UpdateResult> UpdateOneAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        return UpdateOneAsync(filter, update, updateOptions, commandOptions, false);
-    }
-
-    internal async Task<UpdateResult> UpdateOneAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateOneOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        updateOptions.Filter = filter;
-        updateOptions.Update = update;
-        var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
+        Guard.NotNull(update, nameof(update));
+        
+        options ??= new();
+        
+        var response = await CreateCommand("updateOne")
+            .WithPayload(options.ToPayload(filter, update))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<UpdateResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
         return response.Result;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T})"/>
+    /// Synchronous version of <see cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T}, CollectionUpdateManyOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T})"/>
-    public UpdateResult UpdateMany(CollectionFilter<T> filter, UpdateBuilder<T> update)
+    /// <inheritdoc cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T}, CollectionUpdateManyOptions)"/>
+    public UpdateResult UpdateMany(CollectionFilter<T> filter, UpdateBuilder<T> update, CollectionUpdateManyOptions options = null)
     {
-        return UpdateMany(filter, update, new UpdateManyOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateManyOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateManyOptions{T})"/>
-    public UpdateResult UpdateMany(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions)
-    {
-        return UpdateMany(filter, update, updateOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateManyOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateManyOptions{T}, CommandOptions)"/>
-    public UpdateResult UpdateMany(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        var response = UpdateManyAsync(filter, update, updateOptions, commandOptions, false).ResultSync();
-        return response;
+        return UpdateManyAsync(filter, update, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Update all documents matching the filter by applying the provided updates.
     /// </summary>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <returns></returns>
-    public Task<UpdateResult> UpdateManyAsync(CollectionFilter<T> filter, UpdateBuilder<T> update)
+    /// <param name="filter">The filter to match documents.</param>
+    /// <param name="update">The update operations to apply.</param>
+    /// <param name="options">Options for the update operation.</param>
+    /// <returns>The result of the update operation.</returns>
+    public Task<UpdateResult> UpdateManyAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, CollectionUpdateManyOptions options = null)
     {
-        return UpdateManyAsync(filter, update, new UpdateManyOptions<T>(), null);
+        return UpdateManyAsync(filter, update, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <param name="updateOptions"></param>
-    public Task<UpdateResult> UpdateManyAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions)
+    private async Task<UpdateResult> UpdateManyAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, CollectionUpdateManyOptions options, bool runSynchronously)
     {
-        return UpdateManyAsync(filter, update, updateOptions, null);
-    }
-
-    /// <inheritdoc cref="UpdateManyAsync(CollectionFilter{T}, UpdateBuilder{T}, UpdateManyOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <param name="updateOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<UpdateResult> UpdateManyAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions)
-    {
-        return UpdateManyAsync(filter, update, updateOptions, commandOptions, false);
-    }
-
-    internal async Task<UpdateResult> UpdateManyAsync(CollectionFilter<T> filter, UpdateBuilder<T> update, UpdateManyOptions<T> updateOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        updateOptions.Filter = filter;
-        updateOptions.Update = update;
-
+        Guard.NotNull(update, nameof(update));
+        
+        options ??= new();
+        
         var keepProcessing = true;
         var updateResult = new UpdateResult();
         string nextPageState = null;
-
-        commandOptions ??= new CommandOptions();
         
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), commandOptions);
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), options);
 
         using (cts)
         {
-            var bulkOperationTimeoutToken = cts.Token;
             try
             {
                 while (keepProcessing)
                 {
-                    updateOptions ??= new UpdateManyOptions<T>();
-                    updateOptions.NextPageState = nextPageState;
-                    var command = CreateCommand("updateMany").WithPayload(updateOptions).AddCommandOptions(commandOptions);
-                    var response = await command.RunAsyncReturnStatus<PagedUpdateResult>(runSynchronously).ConfigureAwait(false);
+                    var response = await CreateCommand("updateMany")
+                        .WithPayload(options.ToPayload(filter, update, nextPageState))
+                        .AddCommandOptions(options)
+                        .RunAsyncReturnStatus<PagedUpdateResult>(runSynchronously)
+                        .ConfigureAwait(false);
+                        
                     updateResult.MatchedCount += response.Result.MatchedCount;
                     updateResult.ModifiedCount += response.Result.ModifiedCount;
                     updateResult.UpsertedId = response.Result.UpsertedId;
                     nextPageState = response.Result.NextPageState;
+                    
                     if (string.IsNullOrEmpty(nextPageState))
                     {
                         keepProcessing = false;
@@ -1611,6 +1504,7 @@ public class Collection<T, TId> where T : class
                 throw new BulkOperationException<UpdateResult>(ex, updateResult);
             }
         }
+        
         return updateResult;
     }
 
