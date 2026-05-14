@@ -97,7 +97,7 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, Collectio
         Filter<T> filter,
         BaseFindManyOptions<T, CollectionSortBuilder<T>> options,
         FetchPageFunc<TResult, CollectionFindCursor<T, TResult>> fetchPage
-    ) : base(filter, options, fetchPage) { }
+    ) : base(filter, options ?? new CollectionFindManyOptions<T>(), fetchPage) { }
 
     /// <summary>
     /// Creates a new cursor instance with the same configuration.
@@ -114,7 +114,7 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, Collectio
     /// <param name="filter">The filter to apply.</param>
     /// <param name="options">The find options to use.</param>
     /// <returns>A new cursor instance.</returns>
-    internal override CollectionFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindManyOptions<T, CollectionSortBuilder<T>> options)
+    protected override CollectionFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindManyOptions<T, CollectionSortBuilder<T>> options)
     {
         return new(filter, options, FetchPageFunc);
     }

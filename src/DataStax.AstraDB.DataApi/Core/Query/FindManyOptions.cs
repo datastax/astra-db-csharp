@@ -26,14 +26,6 @@ public abstract class BaseFindManyOptions<T, TSort> : CommandOptions
     where TSort : SortBuilder<T>
 {
     /// <summary>
-    /// Creates a shallow copy of this options object.
-    /// </summary>
-    public BaseFindManyOptions<T, TSort> Clone()
-    {
-        return (BaseFindManyOptions<T, TSort>)MemberwiseClone();
-    }
-    
-    /// <summary>
     /// Sort order for the query.
     /// </summary>
     public TSort Sort { get; set; }
@@ -84,6 +76,11 @@ public abstract class BaseFindManyOptions<T, TSort> : CommandOptions
                 limit = Limit,
             },
         };
+    }
+    
+    internal BaseFindManyOptions<T, TSort> ShallowClone()
+    {
+        return (BaseFindManyOptions<T, TSort>)MemberwiseClone();
     }
 }
 

@@ -779,147 +779,6 @@ public class Table<T> where T : class
         return response.Result;
     }
     
-    /// <summary>
-    /// Find rows in the table.
-    /// 
-    /// The Find() methods return a <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object that can be used to further structure the query
-    /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
-    /// 
-    /// The <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
-    /// </summary>
-    /// <returns></returns>
-    /// <example>
-    /// Synchronous Enumeration:
-    /// <code>
-    /// var cursor = table.Find();
-    /// foreach (var row in cursor)
-    /// {
-    ///     // Process row
-    /// }
-    /// </code>
-    /// </example>
-    /// <example>
-    /// Asynchronous Enumeration:
-    /// <code>
-    /// var results = table.Find();
-    /// await foreach (var row in results)
-    /// {
-    ///     // Process row
-    /// }
-    /// </code>
-    /// </example>
-    /// <remarks>
-    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
-    /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
-    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
-    /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
-    /// </remarks>
-    public TableFindCursor<T> Find()
-    {
-        return Find(null, null);
-    }
-
-    /// <inheritdoc cref="Find()"/>
-    /// <param name="filter">The filter(s) to apply to the query.</param>
-    /// <returns></returns>
-    /// <example>
-    /// <code>
-    /// var filterBuilder = Builders{BookRow}.Filter;
-    /// var filter = filterBuilder.Gt(x => x.NumberOfPages, 430);
-    /// var matchingBooks = table.Find(filter).ToList();
-    /// await foreach (var bookRow in matchingBooks)
-    /// {
-    ///     //handle each row
-    /// }
-    /// </code>
-    /// </example>
-    public TableFindCursor<T> Find(TableFilter<T> filter)
-    {
-        return Find(filter, null);
-    }
-
-    /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <param name="findOptions"></param>
-    public TableFindCursor<T> Find(TableFindManyOptions<T> findOptions)
-    {
-        return Find(null, findOptions);
-    }
-
-    /// <inheritdoc cref="Find(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
-    {
-        findOptions ??= new TableFindManyOptions<T>();
-        return new(filter, findOptions, RunFindManyAsync);
-    }
-
-    /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>() where TResult : class
-    {
-        return Find<TResult>(null, null);
-    }
-
-    /// <inheritdoc cref="Find(TableFilter{T})"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter) where TResult : class
-    {
-        return Find<TResult>(filter, null);
-    }
-
-    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> findOptions) where TResult : class
-    {
-        return Find<TResult>(null, findOptions);
-    }
-
-    /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
-    {
-        findOptions ??= new TableFindManyOptions<T>();
-        return new(filter, findOptions, RunFindManyAsync);
-    }
-
-    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
-    {
-        SetRowSerializationOptions<TResult>(cursor.FindOptions, false);
-        var command = CreateCommand("find").WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState)).AddCommandOptions(cursor.FindOptions);
-        var response = await command.RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
-        
-        if (typeof(Row).IsAssignableFrom(typeof(TResult)))
-        {
-            var columnsInResult = response.Status.ProjectionSchema;
-            if (response.Data is { Items: not null })
-            {
-                foreach (var row in response.Data.Items)
-                {
-                    ProcessUntypedRow(row as Row, columnsInResult);
-                }
-            }
-        }
-        
-        return new FindPage<TResult>(
-            response.Data.NextPageState,
-            response.Data.Items,
-            response.Status?.SortVector
-        );
-    }
-    
     /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync(TableFindOneOptions{T})"/>
     public T FindOne(TableFindOneOptions<T> findOptions = null)
@@ -1004,6 +863,103 @@ public class Table<T> where T : class
             }
         }
         return response.Data.Document;
+    }
+    
+    /// <summary>
+    /// Find rows in the table.
+    /// 
+    /// The Find() methods return a <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object that can be used to further structure the query
+    /// by adding Sort, Projection, Skip, Limit, etc. to affect the final results.
+    /// 
+    /// The <see cref="Core.Enumeration.TableFindCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
+    /// </summary>
+    /// <returns></returns>
+    /// <example>
+    /// Synchronous Enumeration:
+    /// <code>
+    /// var cursor = table.Find();
+    /// foreach (var row in cursor)
+    /// {
+    ///     // Process row
+    /// }
+    /// </code>
+    /// </example>
+    /// <example>
+    /// Asynchronous Enumeration:
+    /// <code>
+    /// var results = table.Find();
+    /// await foreach (var row in results)
+    /// {
+    ///     // Process row
+    /// }
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
+    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
+    /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
+    /// </remarks>
+    public TableFindCursor<T> Find(TableFindManyOptions<T> findOptions = null)
+    {
+        return Find(null, findOptions);
+    }
+
+    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="findOptions"></param>
+    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions = null)
+    {
+        return new(filter, findOptions, RunFindManyAsync);
+    }
+    
+    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> findOptions = null) where TResult : class
+    {
+        return Find<TResult>(null, findOptions);
+    }
+
+    /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
+    /// <remarks>
+    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions = null) where TResult : class
+    {
+        return new(filter, findOptions, RunFindManyAsync);
+    }
+
+    private async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
+    {
+        SetRowSerializationOptions<TResult>(cursor.FindOptions, false);
+
+        var response = await CreateCommand("find")
+            .WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState))
+            .AddCommandOptions(cursor.FindOptions)
+            .RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously)
+            .ConfigureAwait(false);
+
+        if (typeof(Row).IsAssignableFrom(typeof(TResult)))
+        {
+            var columnsInResult = response.Status.ProjectionSchema;
+            if (response.Data is { Items: not null })
+            {
+                foreach (var row in response.Data.Items)
+                {
+                    ProcessUntypedRow(row as Row, columnsInResult);
+                }
+            }
+        }
+        
+        return new FindPage<TResult>(
+            response.Data.NextPageState,
+            response.Data.Items,
+            response.Status?.SortVector
+        );
     }
 
     private void ProcessUntypedRow(Row row, Dictionary<string, SchemaColumn> projectionSchema)

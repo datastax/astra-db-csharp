@@ -375,29 +375,7 @@ public class Collection<T, TId> where T : class
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public CollectionFindCursor<T> Find()
-    {
-        return Find(null, null);
-    }
-
-    /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <param name="filter"></param>
-    /// <example>
-    /// <code>
-    /// var builder = Builders&lt;SimpleObject&gt;.Filter;
-    /// var filter = builder.Gt(so => so.Properties.IntProperty, 20);
-    /// var sort = Builders&lt;SimpleObject&gt;.CollectionSort.Ascending(o => o.Properties.IntProperty);
-    /// var results = collection.Find(filter).Sort(sort);
-    /// </code>
-    /// </example>
-    public CollectionFindCursor<T> Find(CollectionFilter<T> filter)
-    {
-        return Find(filter, null);
-    }
-
-    /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <param name="findOptions"></param>
-    public CollectionFindCursor<T> Find(CollectionFindManyOptions<T> findOptions)
+    public CollectionFindCursor<T> Find(CollectionFindManyOptions<T> findOptions = null)
     {
         return Find(null, findOptions);
     }
@@ -405,38 +383,17 @@ public class Collection<T, TId> where T : class
     /// <inheritdoc cref="Find(CollectionFilter{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions"></param>
-    public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions)
+    public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions = null)
     {
-        findOptions ??= new CollectionFindManyOptions<T>();
         return new(filter, findOptions, RunFindManyAsync);
     }
-
-    /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public CollectionFindCursor<T, TResult> Find<TResult>() where TResult : class
-    {
-        return Find<TResult>(null, null);
-    }
-
-    /// <inheritdoc cref="Find(CollectionFilter{T})"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter) where TResult : class
-    {
-        return Find<TResult>(filter, null);
-    }
-
+    
     /// <inheritdoc cref="Find(CollectionFindManyOptions{T})"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFindManyOptions<T> findOptions) where TResult : class
+    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFindManyOptions<T> findOptions = null) where TResult : class
     {
         return Find<TResult>(null, findOptions);
     }
@@ -446,17 +403,19 @@ public class Collection<T, TId> where T : class
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions) where TResult : class
+    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions = null) where TResult : class
     {
-        findOptions ??= new CollectionFindManyOptions<T>();
         return new(filter, findOptions, RunFindManyAsync);
     }
 
-    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(CollectionFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
+    private async Task<FindPage<TResult>> RunFindManyAsync<TResult>(CollectionFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
-        var command = CreateCommand("find").WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState)).AddCommandOptions(cursor.FindOptions);
-        var response = await command.RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
-
+        var response = await CreateCommand("find")
+            .WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState))
+            .AddCommandOptions(cursor.FindOptions)
+            .RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, FindStatusResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
         return new FindPage<TResult>(
             response.Data.NextPageState,
             response.Data.Items,

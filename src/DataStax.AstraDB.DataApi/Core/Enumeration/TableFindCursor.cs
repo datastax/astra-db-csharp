@@ -97,7 +97,7 @@ public class TableFindCursor<T, TResult> : FindCursor<T, TResult, TableSortBuild
         Filter<T> filter,
         BaseFindManyOptions<T, TableSortBuilder<T>> options,
         FetchPageFunc<TResult, TableFindCursor<T, TResult>> fetchPage
-    ) : base(filter, options, fetchPage) { }
+    ) : base(filter, options ?? new TableFindManyOptions<T>(), fetchPage) { }
 
     /// <summary>
     /// Creates a new cursor instance with the same configuration.
@@ -114,7 +114,7 @@ public class TableFindCursor<T, TResult> : FindCursor<T, TResult, TableSortBuild
     /// <param name="filter">The filter to apply.</param>
     /// <param name="options">The find options to use.</param>
     /// <returns>A new cursor instance.</returns>
-    internal override TableFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindManyOptions<T, TableSortBuilder<T>> options)
+    protected override TableFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindManyOptions<T, TableSortBuilder<T>> options)
     {
         return new(filter, options, FetchPageFunc);
     }

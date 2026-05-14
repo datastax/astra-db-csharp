@@ -118,7 +118,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     internal FindCursor(Filter<T> filter, BaseFindManyOptions<T, TSort> options, FetchPageFunc<TResult, TCursor> fetchPage) 
     {
         CurrentFilter = filter;
-        FindOptions = options;
+        FindOptions = options.ShallowClone();
         FetchPageFunc = fetchPage;
 
         if (options.InitialPageState != null)
@@ -384,7 +384,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
         {
             throw new CursorException("Cursors must be idle when building their options", State);
         }
-        var newOptions = FindOptions.Clone();
+        var newOptions = FindOptions.ShallowClone();
         optionsUpdater(newOptions);
         return CloneWith(CurrentFilter, newOptions);
     }
@@ -395,5 +395,5 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <param name="filter">The filter to apply.</param>
     /// <param name="options">The find options to use.</param>
     /// <returns>A new cursor instance.</returns>
-    internal abstract TCursor CloneWith(Filter<T> filter, BaseFindManyOptions<T, TSort> options);
+    protected abstract TCursor CloneWith(Filter<T> filter, BaseFindManyOptions<T, TSort> options);
 }
