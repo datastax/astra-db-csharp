@@ -71,9 +71,7 @@ public sealed class CollectionUpdateManyOptions : CommandOptions
     /// </summary>
     public bool Upsert { get; set; }
     
-    internal string PageState { get; set; }
-
-    internal object ToPayload<T>(Filter<T> filter, UpdateBuilder<T> update, string pageState = null) where T : class
+    internal object ToPayload<T>(Filter<T> filter, UpdateBuilder<T> update, string pageState) where T : class
     {
         return new
         {
@@ -81,9 +79,9 @@ public sealed class CollectionUpdateManyOptions : CommandOptions
             update = update?.Serialize(),
             options = new
             {
-                upsert = Upsert,
-                pageState = pageState ?? PageState
-            }
+                upsert = Upsert, 
+                pageState,
+            },
         };
     }
 }

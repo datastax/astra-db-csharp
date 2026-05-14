@@ -1152,188 +1152,69 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T})"/>
+    /// Synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
-    public void DeleteOne(TableDeleteOptions<T> deleteOptions)
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions{T})"/>
+    public void DeleteOne(TableFilter<T> filter, TableDeleteOneOptions<T> options = null)
     {
-        DeleteOne(null, deleteOptions, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
-    public void DeleteOne(TableFilter<T> filter)
-    {
-        DeleteOne(filter, null, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
-    public void DeleteOne(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        DeleteOne(filter, null, commandOptions);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
-    public void DeleteOne(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        DeleteOne(null, deleteOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
-    public void DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
-    {
-        DeleteOne(filter, deleteOptions, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
-    public void DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
+        DeleteOneAsync(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Delete a row from the table.
     /// </summary>
-    /// <param name="deleteOptions"></param>
-    /// <returns></returns>
-    public Task DeleteOneAsync(TableDeleteOptions<T> deleteOptions)
+    /// <param name="filter">The filter to match rows.</param>
+    /// <param name="options">Options for the delete operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions<T> options = null)
     {
-        return DeleteOneAsync(null, deleteOptions, null);
+        return DeleteOneAsync(filter, options, runSynchronously: false);
     }
 
-    /// <summary>
-    /// Delete a row from the table.
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task DeleteOneAsync(TableFilter<T> filter)
+    private async Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions<T> options, bool runSynchronously)
     {
-        return DeleteOneAsync(filter, null, null);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(filter, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
-    /// <param name="deleteOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteOneAsync(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(null, deleteOptions, commandOptions);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="deleteOptions"></param>
-    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
-    {
-        return DeleteOneAsync(filter, deleteOptions, null);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="deleteOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(filter, deleteOptions, commandOptions, false);
-    }
-
-    internal async Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        deleteOptions ??= new TableDeleteOptions<T>();
-        deleteOptions.Filter = filter;
-        var command = CreateCommand("deleteOne").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T})"/>
-    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T})"/>
-    public void DeleteMany(TableFilter<T> filter)
-    {
-        DeleteMany(filter, null);
-    }
-
-    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T}, CommandOptions)"/>
-    public void DeleteMany(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        DeleteManyAsync(filter, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Delete all documents matching the filter from the table.
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task DeleteManyAsync(TableFilter<T> filter)
-    {
-        return DeleteManyAsync(filter, null);
-    }
-
-    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteManyAsync(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        return DeleteManyAsync(filter, commandOptions, false);
-    }
-
-    internal async Task DeleteManyAsync(TableFilter<T> filter, CommandOptions commandOptions, bool runSynchronously)
-    {
-        var deleteOptions = new DeleteManyOptions<T>
-        {
-            Filter = filter
-        };
-
-        commandOptions ??= new CommandOptions();
+        Guard.NotNull(filter, nameof(filter));
         
-        var keepProcessing = true;
-        var deleteResult = new DeleteResult();
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), commandOptions);
+        options ??= new();
+        
+        await CreateCommand("deleteOne")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<DeleteResult>(runSynchronously)
+            .ConfigureAwait(false);
+    }
 
-        using (cts)
-        {
-            var bulkOperationTimeoutToken = cts.Token;
-            try
-            {
-                while (keepProcessing)
-                {
-                    var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-                    var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
-                    deleteResult.DeletedCount += response.Result.DeletedCount;
-                    keepProcessing = response.Result.MoreData;
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                var innerException = new TimeoutException($"DeleteMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
-                throw new BulkOperationException<DeleteResult>(innerException, deleteResult);
-            }
-            catch (Exception ex)
-            {
-                throw new BulkOperationException<DeleteResult>(ex, deleteResult);
-            }
-        }
+    /// <summary>
+    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T}, TableDeleteManyOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T}, TableDeleteManyOptions)"/>
+    public void DeleteMany(TableFilter<T> filter, TableDeleteManyOptions options = null)
+    {
+        DeleteManyAsync(filter, options, runSynchronously: true).ResultSync();
+    }
+
+    /// <summary>
+    /// Delete all rows matching the filter from the table.
+    /// </summary>
+    /// <param name="filter">The filter to match rows.</param>
+    /// <param name="options">Options for the delete operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public Task DeleteManyAsync(TableFilter<T> filter, TableDeleteManyOptions options = null)
+    {
+        return DeleteManyAsync(filter, options, runSynchronously: false);
+    }
+
+    private async Task DeleteManyAsync(TableFilter<T> filter, TableDeleteManyOptions options, bool runSynchronously)
+    {
+        Guard.NotNull(filter, nameof(filter));
+        
+        options ??= new();
+        
+        await CreateCommand("deleteMany")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<DeleteResult>(runSynchronously)
+            .ConfigureAwait(false);
     }
 
     /// <summary>

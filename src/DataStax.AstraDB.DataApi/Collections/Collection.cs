@@ -917,426 +917,107 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync()"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync()"/>
-    public T FindOneAndDelete()
-    {
-        return FindOneAndDelete(null, new FindOneAndDeleteOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CommandOptions)"/>
-    public T FindOneAndDelete(CommandOptions commandOptions)
-    {
-        return FindOneAndDelete(null, new FindOneAndDeleteOptions<T>(), commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync(CollectionFilter{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T})"/>
-    public T FindOneAndDelete(CollectionFilter<T> filter)
-    {
-        return FindOneAndDelete(filter, new FindOneAndDeleteOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync(FindOneAndDeleteOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync(FindOneAndDeleteOptions{T})"/>
-    public T FindOneAndDelete(FindOneAndDeleteOptions<T> findOptions)
-    {
-        return FindOneAndDelete(null, findOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync(FindOneAndDeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync(FindOneAndDeleteOptions{T}, CommandOptions)"/>
-    public T FindOneAndDelete(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDelete(null, findOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync(CollectionFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, CommandOptions)"/>
-    public T FindOneAndDelete(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOneAndDelete(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
-    public T FindOneAndDelete(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions)
+    public T FindOneAndDelete(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
     {
-        return FindOneAndDelete(filter, findOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T}, CommandOptions)"/>
-    public T FindOneAndDelete(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync<T>(filter, findOptions, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}()"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}()"/>
-    public TResult FindOneAndDelete<TResult>()
-    {
-        return FindOneAndDelete<TResult>(null, new FindOneAndDeleteOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CommandOptions)"/>
-    public TResult FindOneAndDelete<TResult>(CommandOptions commandOptions)
-    {
-        return FindOneAndDelete<TResult>(null, new FindOneAndDeleteOptions<T>(), commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T})"/>
-    public TResult FindOneAndDelete<TResult>(CollectionFilter<T> filter)
-    {
-        return FindOneAndDelete<TResult>(filter, new FindOneAndDeleteOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(FindOneAndDeleteOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(FindOneAndDeleteOptions{T})"/>
-    public TResult FindOneAndDelete<TResult>(FindOneAndDeleteOptions<T> findOptions)
-    {
-        return FindOneAndDelete<TResult>(null, findOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(FindOneAndDeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(FindOneAndDeleteOptions{T}, CommandOptions)"/>
-    public TResult FindOneAndDelete<TResult>(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDelete<TResult>(null, findOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, CommandOptions)"/>
-    public TResult FindOneAndDelete<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOneAndDelete<TResult>(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
+        return FindOneAndDelete<T>(filter, options);
     }
 
     /// <summary>
     /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
-    public TResult FindOneAndDelete<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions)
+    public TResult FindOneAndDelete<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
     {
-        return FindOneAndDelete<TResult>(filter, findOptions, null);
+        return FindOneAndDeleteAsync<TResult>(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, FindOneAndDeleteOptions{T}, CommandOptions)"/>
+    /// Find a document and delete it from the collection.
+    /// This is similar to <see cref="DeleteOneAsync(CollectionFilter{T}, CollectionDeleteOneOptions{T})"/> but returns the deleted document.
     /// </summary>
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, FindOneAndDeleteOptions{T}, CommandOptions)"/>
-    public TResult FindOneAndDelete<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Find a document and delete it from the collection
-    /// </summary>
+    /// <param name="filter">The filter to match documents.</param>
+    /// <param name="options">Options for the find and delete operation.</param>
     /// <returns>The deleted document, or null if not found</returns>
-    public Task<T> FindOneAndDeleteAsync()
+    public Task<T> FindOneAndDeleteAsync(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
     {
-        return FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync()"/>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAndDeleteAsync(CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<T>(), commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync()"/>
-    /// <param name="findOptions"></param>
-    public Task<T> FindOneAndDeleteAsync(FindOneAndDeleteOptions<T> findOptions)
-    {
-        return FindOneAndDeleteAsync(null, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync(FindOneAndDeleteOptions{T})"/>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAndDeleteAsync(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync(null, findOptions, commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync()"/>
-    /// <param name="filter"></param>
-    public Task<T> FindOneAndDeleteAsync(CollectionFilter<T> filter)
-    {
-        return FindOneAndDeleteAsync(filter, new FindOneAndDeleteOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAndDeleteAsync(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    public Task<T> FindOneAndDeleteAsync(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions)
-    {
-        return FindOneAndDeleteAsync(filter, findOptions, null);
+        return FindOneAndDeleteAsync<T>(filter, options);
     }
 
     /// <inheritdoc cref="FindOneAndDeleteAsync(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAndDeleteAsync(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync<T>(filter, findOptions, commandOptions, false);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync()"/>
     /// <remarks>
     /// The FindOneAndDeleteAsync alternatives that accept a TResult type parameter allow for deserializing the resulting document
     /// as a different type (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>()
+    public Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options = null)
     {
-        return FindOneAndDeleteAsync<TResult>(null, new FindOneAndDeleteOptions<T>(), null);
+        return FindOneAndDeleteAsync<TResult>(filter, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}()"/>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(CommandOptions commandOptions)
+    private async Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> options, bool runSynchronously)
     {
-        return FindOneAndDeleteAsync<TResult>(null, new FindOneAndDeleteOptions<T>(), commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}()"/>
-    /// <param name="findOptions"></param>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(FindOneAndDeleteOptions<T> findOptions)
-    {
-        return FindOneAndDeleteAsync<TResult>(null, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(FindOneAndDeleteOptions{T})"/>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync<TResult>(null, findOptions, commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}()"/>
-    /// <param name="filter"></param>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter)
-    {
-        return FindOneAndDeleteAsync<TResult>(filter, new FindOneAndDeleteOptions<T>(), null);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync<TResult>(filter, new FindOneAndDeleteOptions<T>(), commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions)
-    {
-        return FindOneAndDeleteAsync<TResult>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAndDeleteAsync{TResult}(CollectionFilter{T}, FindOneAndDeleteOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAndDeleteAsync<TResult>(filter, findOptions, commandOptions, false);
-    }
-
-    private async Task<TResult> FindOneAndDeleteAsync<TResult>(CollectionFilter<T> filter, FindOneAndDeleteOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        findOptions.Filter = filter;
-        var command = CreateCommand("findOneAndDelete").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously).ConfigureAwait(false);
+        options ??= new();
+        
+        var response = await CreateCommand("findOneAndDelete")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnDocumentData<DocumentResult<TResult>, TResult, FindStatusResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
         return response.Data.Document;
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(DeleteOptions{T})"/>
+    /// Synchronous version of <see cref="DeleteOneAsync(CollectionFilter{T}, CollectionDeleteOneOptions{T})"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(DeleteOptions{T})"/>
-    public DeleteResult DeleteOne(DeleteOptions<T> deleteOptions)
+    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T}, CollectionDeleteOneOptions{T})"/>
+    public DeleteResult DeleteOne(CollectionFilter<T> filter, CollectionDeleteOneOptions<T> options = null)
     {
-        return DeleteOne(null, deleteOptions, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(CollectionFilter{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T})"/>
-    public DeleteResult DeleteOne(CollectionFilter<T> filter)
-    {
-        return DeleteOne(filter, new DeleteOptions<T>(), null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(CollectionFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        return DeleteOne(filter, new DeleteOptions<T>(), commandOptions);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(DeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(DeleteOptions{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        return DeleteOne(null, deleteOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(CollectionFilter{T}, DeleteOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T}, DeleteOptions{T})"/>
-    public DeleteResult DeleteOne(CollectionFilter<T> filter, DeleteOptions<T> deleteOptions)
-    {
-        return DeleteOne(filter, deleteOptions, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(CollectionFilter{T}, DeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T}, DeleteOptions{T}, CommandOptions)"/>
-    public DeleteResult DeleteOne(CollectionFilter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        var response = DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
-        return response;
-    }
-
-    /// <summary>
-    /// Delete a document from the collection.
-    /// This is similar to <see cref="FindOneAndDeleteAsync(FindOneAndDeleteOptions{T})"/> but does not return the deleted document.
-    /// </summary>
-    /// <param name="deleteOptions"></param>
-    /// <returns></returns>
-    public Task<DeleteResult> DeleteOneAsync(DeleteOptions<T> deleteOptions)
-    {
-        return DeleteOneAsync(null, deleteOptions, null);
+        return DeleteOneAsync(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Delete a document from the collection.
     /// This is similar to <see cref="FindOneAndDeleteAsync(CollectionFilter{T})"/> but does not return the deleted document.
     /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task<DeleteResult> DeleteOneAsync(CollectionFilter<T> filter)
+    /// <param name="filter">The filter to match documents.</param>
+    /// <param name="options">Options for the delete operation.</param>
+    /// <returns>The result of the delete operation.</returns>
+    public Task<DeleteResult> DeleteOneAsync(CollectionFilter<T> filter, CollectionDeleteOneOptions<T> options = null)
     {
-        return DeleteOneAsync(filter, new DeleteOptions<T>(), null);
+        return DeleteOneAsync(filter, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(CollectionFilter<T> filter, CommandOptions commandOptions)
+    private async Task<DeleteResult> DeleteOneAsync(CollectionFilter<T> filter, CollectionDeleteOneOptions<T> options, bool runSynchronously)
     {
-        return DeleteOneAsync(filter, new DeleteOptions<T>(), commandOptions);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(DeleteOptions{T})"/>
-    /// <param name="deleteOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(null, deleteOptions, commandOptions);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="deleteOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(CollectionFilter<T> filter, DeleteOptions<T> deleteOptions)
-    {
-        return DeleteOneAsync(filter, deleteOptions, null);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(CollectionFilter{T}, DeleteOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="deleteOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteOneAsync(CollectionFilter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(filter, deleteOptions, commandOptions, false);
-    }
-
-    internal async Task<DeleteResult> DeleteOneAsync(CollectionFilter<T> filter, DeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        deleteOptions.Filter = filter;
-        var command = CreateCommand("deleteOne").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
+        options ??= new();
+        
+        var response = await CreateCommand("deleteOne")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<DeleteResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
         return response.Result;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DeleteManyAsync(CollectionFilter{T})"/>
+    /// Synchronous version of <see cref="DeleteManyAsync(CollectionFilter{T}, CollectionDeleteManyOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteManyAsync(CollectionFilter{T})"/>
-    public DeleteResult DeleteMany(CollectionFilter<T> filter)
+    /// <inheritdoc cref="DeleteManyAsync(CollectionFilter{T}, CollectionDeleteManyOptions)"/>
+    public DeleteResult DeleteMany(CollectionFilter<T> filter, CollectionDeleteManyOptions options = null)
     {
-        return DeleteMany(filter, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DeleteManyAsync(CollectionFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteManyAsync(CollectionFilter{T}, CommandOptions)"/>
-    public DeleteResult DeleteMany(CollectionFilter<T> filter, CommandOptions commandOptions)
-    {
-        var response = DeleteManyAsync(filter, commandOptions, true).ResultSync();
-        return response;
+        return DeleteManyAsync(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Delete all documents matching the filter from the collection.
     /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
+    /// <param name="filter">The filter to match documents.</param>
+    /// <param name="options">Options for the delete operation.</param>
+    /// <returns>The result of the delete operation.</returns>
     /// <remarks>
     /// Deleting all documents in a collection is not recommended for large collections. However, if needed
     /// you can pass null as the filter to delete all documents in the collection.
@@ -1346,42 +1027,33 @@ public class Collection<T, TId> where T : class
     /// </code>
     /// </example>
     /// </remarks>
-    public Task<DeleteResult> DeleteManyAsync(CollectionFilter<T> filter)
+    public Task<DeleteResult> DeleteManyAsync(CollectionFilter<T> filter, CollectionDeleteManyOptions options = null)
     {
-        return DeleteManyAsync(filter, null);
+        return DeleteManyAsync(filter, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="DeleteManyAsync(CollectionFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<DeleteResult> DeleteManyAsync(CollectionFilter<T> filter, CommandOptions commandOptions)
+    private async Task<DeleteResult> DeleteManyAsync(CollectionFilter<T> filter, CollectionDeleteManyOptions options, bool runSynchronously)
     {
-        return DeleteManyAsync(filter, commandOptions, false);
-    }
-
-    internal async Task<DeleteResult> DeleteManyAsync(CollectionFilter<T> filter, CommandOptions commandOptions, bool runSynchronously)
-    {
-        var deleteOptions = new DeleteManyOptions<T>
-        {
-            Filter = filter
-        };
-
-        commandOptions ??= new CommandOptions();
+        options ??= new();
         
         var deleteResult = new DeleteResult();
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), commandOptions);
+        var keepProcessing = true;
+        string nextPageState = null;
+        
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), options);
 
         using (cts)
         {
-            var bulkOperationTimeoutToken = cts.Token;
-            var keepProcessing = true;
-
             try
             {
                 while (keepProcessing)
                 {
-                    var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-                    var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
+                    var response = await CreateCommand("deleteMany")
+                        .WithPayload(options.ToPayload(filter, nextPageState))
+                        .AddCommandOptions(options)
+                        .RunAsyncReturnStatus<DeleteResult>(runSynchronously)
+                        .ConfigureAwait(false);
+                        
                     deleteResult.DeletedCount += response.Result.DeletedCount;
                     keepProcessing = response.Result.MoreData;
                 }

@@ -265,7 +265,7 @@ public class ReplaceAndDeleteTests
     {
         var collection = fixture.ReplaceCollection;
         var sort = Builders<SimpleObject>.CollectionSort.Descending(so => so.Properties.IntProperty);
-        var result = await collection.FindOneAndDeleteAsync(new FindOneAndDeleteOptions<SimpleObject> { Sort = sort });
+        var result = await collection.FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<SimpleObject> { Sort = sort });
         Assert.NotNull(result.Name);
     }
 
@@ -337,7 +337,7 @@ public class ReplaceAndDeleteTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector);
-            var result = await collection.FindOneAndDeleteAsync(new FindOneAndDeleteOptions<SimpleObjectWithVector> { Sort = sort });
+            var result = await collection.FindOneAndDeleteAsync(null, new FindOneAndDeleteOptions<SimpleObjectWithVector> { Sort = sort });
             Assert.Equal("This is about a dog.", result.Name);
         }
         finally
@@ -436,7 +436,7 @@ public class ReplaceAndDeleteTests
     {
         var collection = fixture.ReplaceCollection;
         var sort = Builders<SimpleObject>.CollectionSort.Descending(so => so.Properties.IntProperty);
-        var result = await collection.DeleteOneAsync(new DeleteOptions<SimpleObject> { Sort = sort });
+        var result = await collection.DeleteOneAsync(null, new CollectionDeleteOneOptions<SimpleObject> { Sort = sort });
         Assert.Equal(1, result.DeletedCount);
     }
 
@@ -478,7 +478,7 @@ public class ReplaceAndDeleteTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVector>(collectionName, options);
             var insertResult = await collection.InsertManyAsync(items);
             var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector);
-            var result = await collection.DeleteOneAsync(new DeleteOptions<SimpleObjectWithVector> { Sort = sort });
+            var result = await collection.DeleteOneAsync(null, new CollectionDeleteOneOptions<SimpleObjectWithVector> { Sort = sort });
             Assert.Equal(1, result.DeletedCount);
         }
         finally
@@ -529,7 +529,7 @@ public class ReplaceAndDeleteTests
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString);
-            var result = await collection.DeleteOneAsync(new DeleteOptions<SimpleObjectWithVectorize> { Sort = sort });
+            var result = await collection.DeleteOneAsync(null, new CollectionDeleteOneOptions<SimpleObjectWithVectorize> { Sort = sort });
             Assert.Equal(1, result.DeletedCount);
         }
         finally
