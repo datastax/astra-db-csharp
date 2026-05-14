@@ -62,6 +62,39 @@ public sealed class TableUpdateOneOptions<T> : BaseUpdateOneOptions<T, TableSort
 }
 
 /// <summary>
+/// Options for finding and updating a single document in a collection.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class CollectionFindOneAndUpdateOptions<T> : BaseUpdateOneOptions<T, CollectionSortBuilder<T>> where T : class
+{
+    /// <summary>
+    /// Define the projection to apply on the returned document.
+    /// </summary>
+    public IProjectionBuilder Projection { get; set; }
+
+    /// <summary>
+    /// Whether to return the document before or after the update.
+    /// </summary>
+    public ReturnDocumentDirective? ReturnDocument { get; set; }
+
+    internal new object ToPayload(Filter<T> filter, UpdateBuilder<T> update)
+    {
+        return new
+        {
+            filter = filter?.Serialize() ?? new(),
+            update = update?.Serialize() ?? new(),
+            sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
+            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new(),
+            options = new
+            {
+                upsert = Upsert ? true : (bool?)null,
+                returnDocument = ReturnDocument.Serialize()
+            },
+        };
+    }
+}
+
+/// <summary>
 /// Options for updating multiple documents in a collection.
 /// </summary>
 public sealed class CollectionUpdateManyOptions : CommandOptions

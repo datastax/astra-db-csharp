@@ -1,4 +1,5 @@
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 
@@ -37,7 +38,7 @@ public class FindAndUpdateTests
         var updater = Builders<SimpleObject>.CollectionUpdate;
         var update = updater.Set(so => so.Properties.PropertyTwo, "Animal5Updated")
             .Unset("Properties.PropertyOne");
-        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
+        var options = new CollectionFindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
         var result = await collection.FindOneAndUpdateAsync(filter, update, options);
         Assert.Equal("Animal5Updated", result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
@@ -53,7 +54,7 @@ public class FindAndUpdateTests
         var update = updater.Set(so => so.Properties.PropertyTwo, "HorseUpdated");
         var inclusiveProjection = Builders<SimpleObject>.Projection
                 .Include("Properties.PropertyTwo");
-        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = inclusiveProjection };
+        var options = new CollectionFindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = inclusiveProjection };
         var result = await collection.FindOneAndUpdateAsync(filter, update, options);
         Assert.Equal("HorseUpdated", result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
@@ -70,7 +71,7 @@ public class FindAndUpdateTests
         var combinedUpdate = updater.Set(so => so.Properties.PropertyTwo, "CowUpdated");
         var exclusiveProjection = Builders<SimpleObject>.Projection
                 .Exclude("Properties.PropertyOne");
-        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = exclusiveProjection };
+        var options = new CollectionFindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After, Projection = exclusiveProjection };
         var result = await collection.FindOneAndUpdateAsync(filter, combinedUpdate, options);
         Assert.Equal("CowUpdated", result.Properties.PropertyTwo);
         Assert.Null(result.Properties.PropertyOne);
@@ -82,7 +83,7 @@ public class FindAndUpdateTests
     {
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq("_id", 4);
-        var options = new FindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
+        var options = new CollectionFindOneAndUpdateOptions<SimpleObject> { ReturnDocument = ReturnDocumentDirective.After };
         var update = Builders<SimpleObject>.CollectionUpdate.Set(so => so.Properties.PropertyTwo, "AlligatorUpdated");
         var result = await collection.FindOneAndUpdateAsync(filter, update, options);
         Assert.Equal("AlligatorUpdated", result.Properties.PropertyTwo);
@@ -94,7 +95,7 @@ public class FindAndUpdateTests
         var collection = fixture.UpdatesCollection;
         var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so._id, 111);
         var update = Builders<SimpleObject>.CollectionUpdate.SetOnInsert(so => so.Properties.PropertyTwo, "ThisWasSetOnInsert");
-        var result = await collection.FindOneAndUpdateAsync(filter, update, new FindOneAndUpdateOptions<SimpleObject> { Upsert = true, ReturnDocument = ReturnDocumentDirective.After });
+        var result = await collection.FindOneAndUpdateAsync(filter, update, new CollectionFindOneAndUpdateOptions<SimpleObject> { Upsert = true, ReturnDocument = ReturnDocumentDirective.After });
         Assert.Equal(111, result._id);
         Assert.Equal("ThisWasSetOnInsert", result.Properties.PropertyTwo);
     }
@@ -138,7 +139,7 @@ public class FindAndUpdateTests
             var insertResult = await collection.InsertManyAsync(items);
             var sort = Builders<SimpleObjectWithVector>.CollectionSort.Vector(dogQueryVector); ;
             var update = Builders<SimpleObjectWithVector>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
-            var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVector> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            var result = await collection.FindOneAndUpdateAsync(null, update, new CollectionFindOneAndUpdateOptions<SimpleObjectWithVector> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("Updated Dog Name", result.Name);
         }
         finally
@@ -190,7 +191,7 @@ public class FindAndUpdateTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var sort = Builders<SimpleObjectWithVectorize>.CollectionSort.Vectorize(dogQueryVectorString); ;
             var update = Builders<SimpleObjectWithVectorize>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
-            var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            var result = await collection.FindOneAndUpdateAsync(null, update, new CollectionFindOneAndUpdateOptions<SimpleObjectWithVectorize> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("Updated Dog Name", result.Name);
         }
         finally
@@ -230,7 +231,7 @@ public class FindAndUpdateTests
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
             var sort = Builders<SimpleObjectWithVectorizeAttribute>.CollectionSort.Vectorize(dogQueryVectorString);
             var update = Builders<SimpleObjectWithVectorizeAttribute>.CollectionUpdate.Set(so => so.Name, "Updated Dog Name");
-            var result = await collection.FindOneAndUpdateAsync(null, update, new FindOneAndUpdateOptions<SimpleObjectWithVectorizeAttribute> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
+            var result = await collection.FindOneAndUpdateAsync(null, update, new CollectionFindOneAndUpdateOptions<SimpleObjectWithVectorizeAttribute> { Sort = sort, ReturnDocument = ReturnDocumentDirective.After });
             Assert.Equal("Updated Dog Name", result.Name);
         }
         finally
