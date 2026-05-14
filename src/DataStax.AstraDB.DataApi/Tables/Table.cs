@@ -1206,8 +1206,6 @@ public class Table<T> where T : class
 
     private async Task DeleteManyAsync(TableFilter<T> filter, TableDeleteManyOptions options, bool runSynchronously)
     {
-        Guard.NotNull(filter, nameof(filter));
-        
         options ??= new();
         
         await CreateCommand("deleteMany")

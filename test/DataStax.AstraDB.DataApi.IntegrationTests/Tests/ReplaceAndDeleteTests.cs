@@ -1,5 +1,6 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using Xunit;
 

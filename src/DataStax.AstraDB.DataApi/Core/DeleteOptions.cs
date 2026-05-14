@@ -35,7 +35,7 @@ public abstract class BaseDeleteOneOptions<T, TSort> : CommandOptions
     {
         return new
         {
-            filter = filter?.Serialize(),
+            filter = filter?.Serialize() ?? new(),
             sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value)
         };
     }
@@ -70,15 +70,11 @@ public abstract class BaseDeleteManyOptions : CommandOptions
 /// </summary>
 public sealed class CollectionDeleteManyOptions : BaseDeleteManyOptions
 {
-    internal object ToPayload<T>(Filter<T> filter, string pageState) where T : class
+    internal object ToPayload<T>(Filter<T> filter) where T : class
     {
         return new
         {
             filter = filter?.Serialize(),
-            options = new
-            {
-                pageState = pageState
-            }
         };
     }
 }
@@ -114,7 +110,7 @@ public class FindOneAndDeleteOptions<T> : BaseDeleteOneOptions<T, CollectionSort
         {
             filter = filter?.Serialize(),
             sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
-            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value)
+            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new()
         };
     }
 }

@@ -1038,7 +1038,6 @@ public class Collection<T, TId> where T : class
         
         var deleteResult = new DeleteResult();
         var keepProcessing = true;
-        string nextPageState = null;
         
         var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), options);
 
@@ -1049,7 +1048,7 @@ public class Collection<T, TId> where T : class
                 while (keepProcessing)
                 {
                     var response = await CreateCommand("deleteMany")
-                        .WithPayload(options.ToPayload(filter, nextPageState))
+                        .WithPayload(options.ToPayload(filter))
                         .AddCommandOptions(options)
                         .RunAsyncReturnStatus<DeleteResult>(runSynchronously)
                         .ConfigureAwait(false);
