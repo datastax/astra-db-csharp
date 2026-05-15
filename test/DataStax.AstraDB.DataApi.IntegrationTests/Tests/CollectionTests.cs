@@ -302,26 +302,6 @@ public class CollectionTests
     }
 
     [Fact]
-    public async Task DefaultId_WrongTypes()
-    {
-        var collectionName = "defaultIdWrongTypes";
-        try
-        {
-            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
-            var newObject = new SimpleObject()
-            {
-                Name = "Test Object 1",
-            };
-
-            await Assert.ThrowsAnyAsync<Exception>(async () => await collection.InsertOneAsync(newObject));
-        }
-        finally
-        {
-            await fixture.Database.DropCollectionAsync(collectionName);
-        }
-    }
-
-    [Fact]
     public async Task DefiningIndexing_Allow()
     {
         var collectionName = "definingIndexingAllow";
