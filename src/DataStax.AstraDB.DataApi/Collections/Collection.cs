@@ -103,7 +103,6 @@ public class Collection<T, TId> where T : class
     private async Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions options, bool runSynchronously)
     {
         Guard.NotNull(document, nameof(document));
-        InsertValidator.Validate(document);
         
         var outputConverter = (typeof(TId) == typeof(object))
             ? new IdListConverter() 
@@ -157,11 +156,6 @@ public class Collection<T, TId> where T : class
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
         
-        foreach (var doc in documents)
-        {
-            InsertValidator.Validate(doc);
-        }
-
         var result = new CollectionInsertManyResult<TId>();
         var tasks = new List<Task>();
         var semaphore = new SemaphoreSlim(options.Concurrency);
