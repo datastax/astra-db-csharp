@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </summary>
 /// <typeparam name="T">The type of the rows in the table.</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Table{T}.Find()"/> and provides a fluent API
+/// This cursor is returned by <see cref="Table{T}.Find(TableFindManyOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting rows. It supports both synchronous
 /// and asynchronous iteration patterns.
 /// </remarks>
@@ -62,7 +62,7 @@ public class TableFindCursor<T> : TableFindCursor<T, T> where T : class
 /// <typeparam name="T">The type of the rows in the table.</typeparam>
 /// <typeparam name="TResult">The type to deserialize the results to (e.g., when using projections).</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Table{T}.Find{TResult}()"/> and provides a fluent API
+/// This cursor is returned by <see cref="Table{T}.Find{TResult}(TableFindManyOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting rows into a different result type.
 /// </remarks>
 /// <example>

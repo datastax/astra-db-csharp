@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Collection{T, Tid}.Find()"/> and provides a fluent API
+/// This cursor is returned by <see cref="Collection{T, Tid}.Find(CollectionFilter{T}, CollectionFindManyOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting documents. It supports both synchronous
 /// and asynchronous iteration patterns.
 /// </remarks>
@@ -62,7 +62,7 @@ public class CollectionFindCursor<T> : CollectionFindCursor<T, T> where T : clas
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <typeparam name="TResult">The type to deserialize the results to (e.g., when using projections).</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Collection{T, TId}.Find{TResult}()"/> and provides a fluent API
+/// This cursor is returned by <see cref="Collection{T, TId}.Find{TResult}(CollectionFilter{T}, CollectionFindManyOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting documents into a different result type.
 /// </remarks>
 /// <example>

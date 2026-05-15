@@ -84,15 +84,17 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertOneAsync(T, CollectionInsertOneOptions{T})"/>
+    /// Synchronous version of <see cref="InsertOneAsync(T, CollectionInsertOneOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="InsertOneAsync(T, CollectionInsertOneOptions{T})"/>
+    /// <inheritdoc cref="InsertOneAsync(T, CollectionInsertOneOptions)"/>
     public CollectionInsertOneResult<TId> InsertOne(T document, CollectionInsertOneOptions options = null)
     {
         return InsertOneAsync(document, options, runSynchronously: true).ResultSync();
     }
 
-    /// <inheritdoc cref="InsertOneAsync(T)"/>
+    /// <summary>
+    /// Insert a document into the collection.
+    /// </summary>
     /// <param name="document">The document to insert.</param>
     /// <param name="options">Options for the insert operation.</param>
     public Task<CollectionInsertOneResult<TId>> InsertOneAsync(T document, CollectionInsertOneOptions options = null)
@@ -124,15 +126,17 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
+    /// Synchronous version of <see cref="InsertManyAsync(List{T}, CollectionInsertManyOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, CollectionInsertManyOptions{T})"/>
+    /// <inheritdoc cref="InsertManyAsync(List{T}, CollectionInsertManyOptions)"/>
     public CollectionInsertManyResult<TId> InsertMany(List<T> documents, CollectionInsertManyOptions insertOptions = null)
     {
         return InsertManyAsync(documents, insertOptions, runSynchronously: true).ResultSync();
     }
 
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    /// <summary>
+    /// Insert multiple documents into the collection.
+    /// </summary>
     /// <param name="documents">The list of documents to insert.</param>
     /// <param name="options">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
     public Task<CollectionInsertManyResult<TId>> InsertManyAsync(List<T> documents, CollectionInsertManyOptions options = null)
@@ -260,7 +264,7 @@ public class Collection<T, TId> where T : class
 
     /// <summary>
     /// Returns a single document from the collection based on the provided <see cref="CollectionFindOneOptions{T}"/>.
-    /// This will return the first document found, most often used in conjunction with <see cref="CollectionFindOneOptions{T}.Sort"/>.
+    /// This will return the first document found, most often used in conjunction with <see cref="BaseFindOneOptions{T, TSort}.Sort"/>.
     /// See <see cref="CollectionFindOneOptions{T}"/> for more details on sorting, projecting and the other options for finding a document.
     /// </summary>
     /// <param name="findOptions"></param>
@@ -374,7 +378,7 @@ public class Collection<T, TId> where T : class
         return Find(null, findOptions);
     }
 
-    /// <inheritdoc cref="Find(CollectionFilter{T})"/>
+    /// <inheritdoc cref="Find(CollectionFindManyOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="findOptions"></param>
     public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> findOptions = null)
@@ -692,7 +696,7 @@ public class Collection<T, TId> where T : class
 
     /// <summary>
     /// Delete a document from the collection.
-    /// This is similar to <see cref="FindOneAndDeleteAsync(CollectionFilter{T})"/> but does not return the deleted document.
+    /// This is similar to <see cref="FindOneAndDeleteAsync(CollectionFilter{T}, CollectionFindOneAndDeleteOptions{T})"/> but does not return the deleted document.
     /// </summary>
     /// <param name="filter">The filter to match documents.</param>
     /// <param name="options">Options for the delete operation.</param>
@@ -795,7 +799,7 @@ public class Collection<T, TId> where T : class
     /// <summary>
     /// Update a single document in the collection using the provided filter and update builder.
     /// 
-    /// This is similar to <see cref="FindOneAndUpdateAsync(CollectionFilter{T}, UpdateBuilder{T})"/> but does not return the updated document.
+    /// This is similar to <see cref="FindOneAndUpdateAsync(CollectionFilter{T}, UpdateBuilder{T}, CollectionFindOneAndUpdateOptions{T})"/> but does not return the updated document.
     /// </summary>
     /// <param name="filter">The filter to match documents.</param>
     /// <param name="update">The update operations to apply.</param>
@@ -892,7 +896,7 @@ public class Collection<T, TId> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions{T})"/>
+    /// Synchronous version of <see cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CountDocumentsAsync(CollectionFilter{T}, int, CollectionCountDocumentsOptions)"/>
     public int CountDocuments(CollectionFilter<T> filter, int maxDocumentsToCount, CollectionCountDocumentsOptions options = null)
@@ -900,7 +904,9 @@ public class Collection<T, TId> where T : class
         return CountDocumentsAsync(filter, maxDocumentsToCount, options, true).ResultSync();
     }
 
-    /// <inheritdoc cref="CountDocumentsAsync(int)"/>
+    /// <summary>
+    /// Count the documents matching a specified filter, up to a maximum count.
+    /// </summary>
     /// <param name="filter"></param>
     /// <param name="maxDocumentsToCount"></param>
     /// <param name="options"></param>

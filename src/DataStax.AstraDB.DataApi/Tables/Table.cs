@@ -654,15 +654,17 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertOneAsync(T, TableInsertOneOptions{T})"/>
+    /// Synchronous version of <see cref="InsertOneAsync(T, TableInsertOneOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="InsertOneAsync(T, TableInsertOneOptions{T})"/>
+    /// <inheritdoc cref="InsertOneAsync(T, TableInsertOneOptions)"/>
     public TableInsertOneResult InsertOne(T row, TableInsertOneOptions options = null)
     {
         return InsertOneAsync(row, options, true).ResultSync();
     }
 
-    /// <inheritdoc cref="InsertOneAsync(T)"/>
+    /// <summary>
+    /// Insert a row into the table.
+    /// </summary>
     /// <param name="row">The row to insert.</param>
     /// <param name="options">Options for the insert operation.</param>
     public Task<TableInsertOneResult> InsertOneAsync(T row, TableInsertOneOptions options = null)
@@ -692,15 +694,17 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, TableInsertManyOptions{T})"/>
+    /// Synchronous version of <see cref="InsertManyAsync(List{T}, TableInsertManyOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, TableInsertManyOptions{T})"/>
+    /// <inheritdoc cref="InsertManyAsync(List{T}, TableInsertManyOptions)"/>
     public TableInsertManyResult InsertMany(List<T> rows, TableInsertManyOptions insertOptions = null)
     {
         return InsertManyAsync(rows, insertOptions, runSynchronously: true).ResultSync();
     }
 
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
+    /// <summary>
+    /// Insert multiple rows into the table.
+    /// </summary>
     /// <param name="rows">The list of rows to insert.</param>
     /// <param name="options">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
     public Task<TableInsertManyResult> InsertManyAsync(List<T> rows, TableInsertManyOptions options = null)
