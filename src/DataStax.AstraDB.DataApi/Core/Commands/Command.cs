@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -49,6 +50,14 @@ internal class Command
 
     private Func<HttpResponseMessage, Task> _responseHandler;
     internal Func<HttpResponseMessage, Task> ResponseHandler { set { _responseHandler = value; } }
+
+    private const string ClientAPICallerName = "astra-db-csharp";
+    private static readonly APICaller ClientAPICaller = new APICaller() {
+        Name = ClientAPICallerName,
+        Version = (
+            Assembly.GetExecutingAssembly().GetName().Version
+        )?.ToString()
+    };
 
     internal Command(DataAPIClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
@@ -329,6 +338,13 @@ internal class Command
             request.Version = commandOptions.HttpClientOptions.HttpVersion;
         }
 
+        var fullCallers = new List<APICaller>();
+        if ( commandOptions.APICallers != null ) {
+            fullCallers.AddRange(commandOptions.APICallers);
+        }
+        fullCallers.Add(ClientAPICaller);
+        request.Headers.Add("User-Agent", APICaller.ToString(fullCallers));
+
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commandOptions.Token);
         request.Headers.Add("Token", commandOptions.Token);
         if (commandOptions.AdditionalHeaders != null)
@@ -340,6 +356,10 @@ internal class Command
         }
 
         MaybeLogDebugMessage("Headers: {Headers}", request.Headers);
+        // This header can contain spaces, and the GetValues returns the pieces as enumerable:
+        MaybeLogDebugMessage(
+            "User-Agent: {UserAgent}",
+            string.Join(" ", request.Headers.GetValues("User-Agent")));
 
         string responseContent = null;
         HttpResponseMessage response = null;

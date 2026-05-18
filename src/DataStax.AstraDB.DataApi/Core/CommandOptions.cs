@@ -76,6 +76,13 @@ public class CommandOptions
     public HttpClientOptions HttpClientOptions { get; set; }
 
     /// <summary>
+    /// List of API callers for self-identification in API requests, arranged hierarchically:
+    /// conventionally, the lowest-level component of the stack is in the last position.
+    /// </summary>
+    [JsonIgnore]
+    public List<APICaller> APICallers { get; set; }
+
+    /// <summary>
     /// Specify various timeout options to use for the command execution.
     /// </summary>
     /// <remarks>
@@ -158,6 +165,7 @@ public class CommandOptions
             SerializeIEEE754SpecialValues = FirstNonNull(x => x.SerializeIEEE754SpecialValues) ?? Defaults().SerializeIEEE754SpecialValues,
             DeserializeToObjectDictionary = FirstNonNull(x => x.DeserializeToObjectDictionary) ?? Defaults().DeserializeToObjectDictionary,
             BulkOperationCancellationToken = list.Select(o => o.BulkOperationCancellationToken).Merge(),
+            APICallers = list.Select(o => o.APICallers).Merge(),
             AdditionalHeaders = list
                 .Select(o => o.AdditionalHeaders)
                 .Where(d => d != null)

@@ -33,7 +33,7 @@ public class APICaller
     /// </summary>
     public string Version { get; set; } = null;
 
-    internal string ToString()
+    new internal string ToString()
     {
         if (Name == null && Version == null)
         {

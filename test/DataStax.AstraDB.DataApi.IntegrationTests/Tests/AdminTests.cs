@@ -202,6 +202,29 @@ public class AdminTests
     }
 
     [Fact]
+    public async Task DatabaseAdmin_UserAgentTest()
+    {
+        // This test requires manual inspection of the logs for the user-agents.
+        var callers = new List<APICaller>(){
+            new (){ Name = "n1" },
+            new (){ Name = "n2", Version = "v2" },
+            new (){ },
+            new (){ Name = "n4", Version = "v4" }
+        };
+        var callerOptions = new CommandOptions(){ APICallers = callers };
+
+        var daa0 = fixture.Database.GetAdmin();
+        var daa1 = fixture.Database.GetAdmin(callerOptions);
+
+        // Expected User-Agent: "astra-db-csharp/<version>" (e.g. "2.2.0.0")
+        await daa0.ListKeyspacesAsync();
+        // expected User-Agent for these 3: "n1 n2/v2 n4/v4 astra-db-csharp/<version>"
+        await daa1.ListKeyspacesAsync();
+        await daa0.ListKeyspacesAsync(callerOptions);
+        await daa1.ListKeyspacesAsync(callerOptions);
+    }
+
+    [Fact]
     public async Task DatabaseAdmin_GetKeyspaces_TokenSuppliedToDb()
     {
         var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
