@@ -21,14 +21,19 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// <summary>
 /// Base class for update-one operation options.
 /// </summary>
-public abstract class BaseUpdateOneOptions<T, TSort> : CommandOptions 
-    where T : class
-    where TSort : SortBuilder<T>
+public abstract class BaseUpdateOneOptions : CommandOptions 
+{
+}
+
+/// <summary>
+/// Options for updating a single document in a collection.
+/// </summary>
+public class CollectionUpdateOneOptions<T> : BaseUpdateOneOptions where T : class
 {
     /// <summary>
     /// Sort order for determining which document to update when multiple match the filter.
     /// </summary>
-    public TSort Sort { get; set; }
+    public CollectionSortBuilder<T> Sort { get; set; }
     
     /// <summary>
     /// Whether to insert a new document if the filter does not match any documents.
@@ -48,24 +53,25 @@ public abstract class BaseUpdateOneOptions<T, TSort> : CommandOptions
 }
 
 /// <summary>
-/// Options for updating a single document in a collection.
-/// </summary>
-public sealed class CollectionUpdateOneOptions<T> : BaseUpdateOneOptions<T, CollectionSortBuilder<T>> where T : class
-{
-}
-
-/// <summary>
 /// Options for updating a single row in a table.
 /// </summary>
-public sealed class TableUpdateOneOptions<T> : BaseUpdateOneOptions<T, TableSortBuilder<T>> where T : class
+public sealed class TableUpdateOneOptions : BaseUpdateOneOptions
 {
+    internal object ToPayload<T>(Filter<T> filter, UpdateBuilder<T> update) where T : class
+    {
+        return new 
+        {
+            filter = filter?.Serialize(),
+            update = update?.Serialize(),
+        };
+    }
 }
 
 /// <summary>
 /// Options for finding and updating a single document in a collection.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class CollectionFindOneAndUpdateOptions<T> : BaseUpdateOneOptions<T, CollectionSortBuilder<T>> where T : class
+public sealed class CollectionFindOneAndUpdateOptions<T> : CollectionUpdateOneOptions<T> where T : class
 {
     /// <summary>
     /// Define the projection to apply on the returned document.

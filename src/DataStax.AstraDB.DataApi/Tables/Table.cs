@@ -697,9 +697,9 @@ public class Table<T> where T : class
     /// Synchronous version of <see cref="InsertManyAsync(List{T}, TableInsertManyOptions)"/>
     /// </summary>
     /// <inheritdoc cref="InsertManyAsync(List{T}, TableInsertManyOptions)"/>
-    public TableInsertManyResult InsertMany(List<T> rows, TableInsertManyOptions insertOptions = null)
+    public TableInsertManyResult InsertMany(List<T> rows, TableInsertManyOptions options = null)
     {
-        return InsertManyAsync(rows, insertOptions, runSynchronously: true).ResultSync();
+        return InsertManyAsync(rows, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
@@ -772,11 +772,11 @@ public class Table<T> where T : class
         }
     }
 
-    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions insertOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions options, bool runSynchronously)
     {
         var response = await CreateCommand("insertMany")
-            .WithPayload(insertOptions.ToPayload(rows))
-            .AddCommandOptions(insertOptions)
+            .WithPayload(options.ToPayload(rows))
+            .AddCommandOptions(options)
             .RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously)
             .ConfigureAwait(false);
 
@@ -785,40 +785,40 @@ public class Table<T> where T : class
     
     /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync(TableFindOneOptions{T})"/>
-    public T FindOne(TableFindOneOptions<T> findOptions = null)
+    public T FindOne(TableFindOneOptions<T> options = null)
     {
-        return FindOne<T>(null, findOptions);
+        return FindOne<T>(null, options);
     }
 
     /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
-    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> findOptions = null)
+    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> options = null)
     {
-        return FindOne<T>(filter, findOptions);
+        return FindOne<T>(filter, options);
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
-    public TResult FindOne<TResult>(TableFindOneOptions<T> findOptions = null) where TResult : class
+    public TResult FindOne<TResult>(TableFindOneOptions<T> options = null) where TResult : class
     {
-        return FindOne<TResult>(null, findOptions);
+        return FindOne<TResult>(null, options);
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
     /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions = null) where TResult : class
+    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> options = null) where TResult : class
     {
-        return FindOneAsync<TResult>(filter, findOptions, runSynchronously: true).ResultSync();
+        return FindOneAsync<TResult>(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Find a single row in the table using the specified find options.
     /// </summary>
-    /// <param name="findOptions">Specify Sort options for the find operation.</param>
+    /// <param name="options">Specify Sort options for the find operation.</param>
     /// <returns></returns>
-    public Task<T> FindOneAsync(TableFindOneOptions<T> findOptions = null)
+    public Task<T> FindOneAsync(TableFindOneOptions<T> options = null)
     {
-        return FindOneAsync<T>(null, findOptions);
+        return FindOneAsync<T>(null, options);
     }
 
     /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
@@ -835,9 +835,9 @@ public class Table<T> where T : class
     /// </summary>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public Task<TResult> FindOneAsync<TResult>(TableFindOneOptions<T> findOptions = null) where TResult : class
+    public Task<TResult> FindOneAsync<TResult>(TableFindOneOptions<T> options = null) where TResult : class
     {
-        return FindOneAsync<TResult>(null, findOptions);
+        return FindOneAsync<TResult>(null, options);
     }
 
     /// <inheritdoc cref="FindOneAsync{TResult}(TableFindOneOptions{T})"/>
@@ -904,17 +904,17 @@ public class Table<T> where T : class
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public TableFindCursor<T> Find(TableFindManyOptions<T> findOptions = null)
+    public TableFindCursor<T> Find(TableFindManyOptions<T> options = null)
     {
-        return Find(null, findOptions);
+        return Find(null, options);
     }
 
     /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
     /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions = null)
+    /// <param name="options"></param>
+    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> options = null)
     {
-        return new(filter, findOptions, RunFindManyAsync);
+        return new(filter, options, RunFindManyAsync);
     }
     
     /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
@@ -922,9 +922,9 @@ public class Table<T> where T : class
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> findOptions = null) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> options = null) where TResult : class
     {
-        return Find<TResult>(null, findOptions);
+        return Find<TResult>(null, options);
     }
 
     /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
@@ -932,9 +932,9 @@ public class Table<T> where T : class
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions = null) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> options = null) where TResult : class
     {
-        return new(filter, findOptions, RunFindManyAsync);
+        return new(filter, options, RunFindManyAsync);
     }
 
     private async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
@@ -1096,7 +1096,7 @@ public class Table<T> where T : class
         return _database.DropTableAsync(TableName);
     }
 
-    private void SetRowSerializationOptions<TResult>(CommandOptions options, bool isInsert) where TResult : class
+    private static void SetRowSerializationOptions<TResult>(CommandOptions options, bool isInsert) where TResult : class
     {
         options.SerializeGuidAsDollarUuid = false;
         options.SerializeDateAsDollarDate = false;

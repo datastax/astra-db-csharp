@@ -22,15 +22,21 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Base class for delete-one operation options.
 /// </summary>
-public abstract class BaseDeleteOneOptions<T, TSort> : CommandOptions
-    where T : class
-    where TSort : SortBuilder<T>
+public abstract class BaseDeleteOneOptions : CommandOptions
+{
+}
+
+/// <summary>
+/// Options for deleting a document from a collection.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public class CollectionDeleteOneOptions<T> : BaseDeleteOneOptions where T : class
 {
     /// <summary>
     /// Sort order for determining which document to delete when multiple match the filter.
     /// </summary>
-    public TSort Sort { get; set; }
-
+    public CollectionSortBuilder<T> Sort { get; set; }
+    
     internal object ToPayload(Filter<T> filter)
     {
         return new
@@ -42,21 +48,41 @@ public abstract class BaseDeleteOneOptions<T, TSort> : CommandOptions
 }
 
 /// <summary>
-/// Options for deleting a document from a collection.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public sealed class CollectionDeleteOneOptions<T> : BaseDeleteOneOptions<T, CollectionSortBuilder<T>> where T : class
-{
-}
-
-/// <summary>
 /// Options for deleting a row from a table.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public sealed class TableDeleteOneOptions<T> : BaseDeleteOneOptions<T, TableSortBuilder<T>> where T : class
+public sealed class TableDeleteOneOptions : BaseDeleteOneOptions
 {
+    internal object ToPayload<T>(Filter<T> filter) where T : class
+    {
+        return new 
+        {
+            filter = filter?.Serialize(),
+        };
+    }
 }
 
+/// <summary>
+/// Options for finding and deleting a single document from a collection.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public sealed class CollectionFindOneAndDeleteOptions<T> : CollectionDeleteOneOptions<T> where T : class
+{
+    /// <summary>
+    /// Define the projection to apply on the returned document.
+    /// </summary>
+    public IProjectionBuilder Projection { get; set; }
+
+    internal new object ToPayload(Filter<T> filter)
+    {
+        return new
+        {
+            filter = filter?.Serialize(),
+            sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
+            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new()
+        };
+    }
+}
 
 /// <summary>
 /// Base class for delete-many operation options.
@@ -89,28 +115,6 @@ public sealed class TableDeleteManyOptions : BaseDeleteManyOptions
         return new
         {
             filter = filter?.Serialize(),
-        };
-    }
-}
-
-/// <summary>
-/// Options for finding and deleting a single document from a collection.
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public class CollectionFindOneAndDeleteOptions<T> : BaseDeleteOneOptions<T, CollectionSortBuilder<T>> where T : class
-{
-    /// <summary>
-    /// Define the projection to apply on the returned document.
-    /// </summary>
-    public IProjectionBuilder Projection { get; set; }
-
-    internal new object ToPayload(Filter<T> filter)
-    {
-        return new
-        {
-            filter = filter?.Serialize(),
-            sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
-            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new()
         };
     }
 }
