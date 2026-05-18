@@ -1124,7 +1124,7 @@ public class Table<T> where T : class
     /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions{T})"/>
-    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions<T> options = null)
+    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions options = null)
     {
         UpdateOneAsync(filter, update, options, runSynchronously: true).ResultSync();
     }
@@ -1136,12 +1136,12 @@ public class Table<T> where T : class
     /// <param name="update">The update operations to apply.</param>
     /// <param name="options">Options for the update operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions<T> options = null)
+    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions options = null)
     {
         return UpdateOneAsync(filter, update, options, runSynchronously: false);
     }
 
-    private async Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions<T> options, bool runSynchronously)
+    private async Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions options, bool runSynchronously)
     {
         Guard.NotNull(filter, nameof(filter));
         Guard.NotNull(update, nameof(update));
@@ -1159,7 +1159,7 @@ public class Table<T> where T : class
     /// Synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions{T})"/>
     /// </summary>
     /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions{T})"/>
-    public void DeleteOne(TableFilter<T> filter, TableDeleteOneOptions<T> options = null)
+    public void DeleteOne(TableFilter<T> filter, TableDeleteOneOptions options = null)
     {
         DeleteOneAsync(filter, options, runSynchronously: true).ResultSync();
     }
@@ -1170,12 +1170,12 @@ public class Table<T> where T : class
     /// <param name="filter">The filter to match rows.</param>
     /// <param name="options">Options for the delete operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions<T> options = null)
+    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions options = null)
     {
         return DeleteOneAsync(filter, options, runSynchronously: false);
     }
 
-    private async Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions<T> options, bool runSynchronously)
+    private async Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions options, bool runSynchronously)
     {
         Guard.NotNull(filter, nameof(filter));
         
