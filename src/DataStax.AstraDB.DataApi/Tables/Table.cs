@@ -1121,9 +1121,9 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions{T})"/>
+    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions{T})"/>
+    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions)"/>
     public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions options = null)
     {
         UpdateOneAsync(filter, update, options, runSynchronously: true).ResultSync();
@@ -1156,9 +1156,9 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions{T})"/>
+    /// Synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions{T})"/>
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions)"/>
     public void DeleteOne(TableFilter<T> filter, TableDeleteOneOptions options = null)
     {
         DeleteOneAsync(filter, options, runSynchronously: true).ResultSync();

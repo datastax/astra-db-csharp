@@ -50,7 +50,6 @@ public class CollectionDeleteOneOptions<T> : BaseDeleteOneOptions where T : clas
 /// <summary>
 /// Options for deleting a row from a table.
 /// </summary>
-/// <typeparam name="T"></typeparam>
 public sealed class TableDeleteOneOptions : BaseDeleteOneOptions
 {
     internal object ToPayload<T>(Filter<T> filter) where T : class
