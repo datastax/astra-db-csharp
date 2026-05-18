@@ -211,6 +211,36 @@ public class AdminTests
         Assert.NotNull(names);
     }
 
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task DatabaseAdmin_GetAdmin_TypedPatterns_Astra()
+    {
+        var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
+
+        var genAdmin = database.GetAdmin();
+        var astraAdmin = database.GetAdmin<DatabaseAdminAstra>();
+
+        Assert.IsType<DatabaseAdminAstra>(astraAdmin);
+        Assert.Throws<ArgumentException>(() =>
+            database.GetAdmin<DatabaseAdminDataAPI>()
+        );
+    }
+
+    [SkipWhenAstra]
+    [Fact]
+    public async Task DatabaseAdmin_GetAdmin_TypedPatterns_NonAstra()
+    {
+        var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
+
+        var genAdmin = database.GetAdmin();
+        var hcdAdmin = database.GetAdmin<DatabaseAdminDataAPI>();
+
+        Assert.IsType<DatabaseAdminDataAPI>(hcdAdmin);
+        Assert.Throws<ArgumentException>(() =>
+            database.GetAdmin<DatabaseAdminAstra>()
+        );
+    }
+
     [Fact]
     public async Task DatabaseAdmin_DoesKeyspaceExist()
     {
