@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Collection{T, Tid}.Find()"/> and provides a fluent API
+/// This cursor is returned by <see cref="Collection{T, Tid}.Find(CollectionFilter{T}, CollectionFindManyOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting documents. It supports both synchronous
 /// and asynchronous iteration patterns.
 /// </remarks>
@@ -51,8 +51,8 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </example>
 public class CollectionFindCursor<T> : CollectionFindCursor<T, T> where T : class
 {
-    internal CollectionFindCursor(IFindManyOptions<T, CollectionSortBuilder<T>> options, CommandOptions commandOptions, FetchPageFunc<T, CollectionFindCursor<T, T>> fetchPage) 
-        : base(options, commandOptions, fetchPage) { }
+    internal CollectionFindCursor(Filter<T> filter, BaseFindManyOptions<T, CollectionSortBuilder<T>> options, FetchPageFunc<T, CollectionFindCursor<T, T>> fetchPage) 
+        : base(filter, options, fetchPage) { }
 }
 
 /// <summary>
@@ -62,7 +62,7 @@ public class CollectionFindCursor<T> : CollectionFindCursor<T, T> where T : clas
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <typeparam name="TResult">The type to deserialize the results to (e.g., when using projections).</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Collection{T, TId}.Find{TResult}()"/> and provides a fluent API
+/// This cursor is returned by <see cref="Collection{T, TId}.Find{TResult}(CollectionFilter{T}, CollectionFindManyOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting documents into a different result type.
 /// </remarks>
 /// <example>
@@ -90,14 +90,14 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, Collectio
     /// <summary>
     /// Initializes a new instance of the <see cref="CollectionFindCursor{T, TResult}"/> class.
     /// </summary>
+    /// <param name="filter">The filter to apply.</param>
     /// <param name="options">The find options to use.</param>
-    /// <param name="commandOptions">The command options to use.</param>
     /// <param name="fetchPage">The function to fetch pages of results.</param>
     internal CollectionFindCursor(
-        IFindManyOptions<T, CollectionSortBuilder<T>> options,
-        CommandOptions commandOptions,
+        Filter<T> filter,
+        BaseFindManyOptions<T, CollectionSortBuilder<T>> options,
         FetchPageFunc<TResult, CollectionFindCursor<T, TResult>> fetchPage
-    ) : base(options, commandOptions, fetchPage) { }
+    ) : base(filter, options ?? new CollectionFindManyOptions<T>(), fetchPage) { }
 
     /// <summary>
     /// Creates a new cursor instance with the same configuration.
@@ -105,16 +105,17 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, Collectio
     /// <returns>A new cursor instance.</returns>
     public override CollectionFindCursor<T, TResult> Clone()
     {
-        return new(FindOptions.Clone(), CommandOptions, FetchPageFunc);
+        return new(CurrentFilter, FindOptions, FetchPageFunc);
     }
 
     /// <summary>
-    /// Creates a new cursor instance with updated find options.
+    /// Creates a new cursor instance with updated filter and options.
     /// </summary>
-    /// <param name="options">The updated find options.</param>
-    /// <returns>A new cursor instance with the updated options.</returns>
-    internal override CollectionFindCursor<T, TResult> CloneWithOptions(IFindManyOptions<T, CollectionSortBuilder<T>> options)
+    /// <param name="filter">The filter to apply.</param>
+    /// <param name="options">The find options to use.</param>
+    /// <returns>A new cursor instance.</returns>
+    protected override CollectionFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindManyOptions<T, CollectionSortBuilder<T>> options)
     {
-        return new(options, CommandOptions, FetchPageFunc);
+        return new(filter, options, FetchPageFunc);
     }
 }

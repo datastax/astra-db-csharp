@@ -40,13 +40,17 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <typeparam name="T">The type to use for rows in the table (when not specified, defaults to <see cref="Row"/> </typeparam>
 public class Table<T> where T : class
 {
-    private readonly string _tableName;
     private readonly Database _database;
     private readonly CommandOptions _commandOptions;
 
+    /// <summary>
+    /// Access the name of the table
+    /// </summary>
+    public string TableName { get; }
+
     internal Table(string tableName, Database database, CommandOptions commandOptions)
     {
-        _tableName = tableName;
+        TableName = tableName;
         _database = database;
         _commandOptions = commandOptions;
     }
@@ -649,71 +653,88 @@ public class Table<T> where T : class
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
 
-    //
-
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T})"/>
+    /// Synchronous version of <see cref="InsertOneAsync(T, TableInsertOneOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
-    public TableInsertManyResult InsertMany(IEnumerable<T> rows)
+    /// <inheritdoc cref="InsertOneAsync(T, TableInsertOneOptions)"/>
+    public TableInsertOneResult InsertOne(T row, TableInsertOneOptions options = null)
     {
-        return InsertMany(rows, null);
+        return InsertOneAsync(row, options, true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
+    /// Insert a row into the table.
     /// </summary>
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/>
-    public TableInsertManyResult InsertMany(IEnumerable<T> rows, InsertManyOptions insertOptions)
+    /// <param name="row">The row to insert.</param>
+    /// <param name="options">Options for the insert operation.</param>
+    public Task<TableInsertOneResult> InsertOneAsync(T row, TableInsertOneOptions options = null)
     {
-        return InsertManyAsync(rows, insertOptions, runSynchronously: true).ResultSync();
+        return InsertOneAsync(row, options, false);
+    }
+
+    private async Task<TableInsertOneResult> InsertOneAsync(T row, TableInsertOneOptions options, bool runSynchronously)
+    {
+        Guard.NotNull(row, nameof(row));
+
+        options = options?.ShallowCopy() ?? new();
+        SetRowSerializationOptions<T>(options, true);
+        
+        var response = await CreateCommand("insertOne")
+            .WithPayload(options.ToPayload(row))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
+        return new TableInsertOneResult
+        {
+            InsertedIdTuple = (response.Result.InsertedIdTuples.Count > 0) 
+                ? response.Result.InsertedIdTuples[0]
+                : null,
+        };
     }
 
     /// <summary>
-    /// Asynchronously insert multiple rows into the table.
+    /// Synchronous version of <see cref="InsertManyAsync(List{T}, TableInsertManyOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="InsertManyAsync(List{T}, TableInsertManyOptions)"/>
+    public TableInsertManyResult InsertMany(List<T> rows, TableInsertManyOptions options = null)
+    {
+        return InsertManyAsync(rows, options, runSynchronously: true).ResultSync();
+    }
+
+    /// <summary>
+    /// Insert multiple rows into the table.
     /// </summary>
     /// <param name="rows">The list of rows to insert.</param>
-    /// <returns></returns>
-    /// <remarks>
-    /// If you need to control concurrency, chunk size, whether the insert is ordered or not, or other options, use the <see cref="InsertManyAsync(IEnumerable{T}, InsertManyOptions)"/> overload.
-    /// </remarks>
-    /// <throws cref="BulkOperationException{T}">Thrown if an error occurs during the bulk operation,
-    /// with partial results returned in the <see cref="BulkOperationException{T}.PartialResult"/> property.</throws>
-    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows)
+    /// <param name="options">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
+    public Task<TableInsertManyResult> InsertManyAsync(List<T> rows, TableInsertManyOptions options = null)
     {
-        return InsertManyAsync(rows, null);
+        return InsertManyAsync(rows, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="InsertManyAsync(IEnumerable{T})"/>
-    /// <param name="rows">The list of rows to insert.</param>
-    /// <param name="insertOptions">Allows specifying the insertion chunk size, ordered/unordered mode, concurrency, as well as other generic command-execution options.</param>
-    public Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions)
-    {
-        return InsertManyAsync(rows, insertOptions, runSynchronously: false);
-    }
-
-    private async Task<TableInsertManyResult> InsertManyAsync(IEnumerable<T> rows, InsertManyOptions insertOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> InsertManyAsync(List<T> rows, TableInsertManyOptions options, bool runSynchronously)
     {
         Guard.NotNull(rows, nameof(rows));
 
-        if (insertOptions == null) insertOptions = new InsertManyOptions();
-        var commandOptions = insertOptions.CommandOptions();
-        if (insertOptions.Concurrency > 1 && insertOptions.Ordered)
+        options = options?.ShallowClone() ?? new();
+        SetRowSerializationOptions<T>(options, true);
+        
+        if (options.Concurrency > 1 && options.Ordered)
         {
             throw new ArgumentException("Cannot run ordered insert_many concurrently.");
         }
 
         var result = new TableInsertManyResult();
         var tasks = new List<Task>();
-        var semaphore = new SemaphoreSlim(insertOptions.Concurrency);
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
+        var semaphore = new SemaphoreSlim(options.Concurrency);
+        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), options);
 
         using (cts)
         {
             var bulkOperationTimeoutToken = cts.Token;
             try
             {
-                var chunks = rows.CreateBatch(insertOptions.ChunkSize);
+                var chunks = rows.CreateBatch(options.ChunkSize);
 
                 foreach (var chunk in chunks)
                 {
@@ -722,7 +743,7 @@ public class Table<T> where T : class
                         await semaphore.WaitAsync(bulkOperationTimeoutToken);
                         try
                         {
-                            var runResult = await RunInsertManyAsync(chunk, insertOptions.Ordered, commandOptions, runSynchronously).ConfigureAwait(false);
+                            var runResult = await RunInsertManyAsync(chunk, options, runSynchronously).ConfigureAwait(false);
                             lock (result.InsertedIdTuples)
                             {
                                 result.InsertedIdTuples.AddRange(runResult.InsertedIdTuples);
@@ -751,73 +772,103 @@ public class Table<T> where T : class
         }
     }
 
-    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, bool insertOrdered, CommandOptions commandOptions, bool runSynchronously)
+    private async Task<TableInsertManyResult> RunInsertManyAsync(IEnumerable<T> rows, TableInsertManyOptions options, bool runSynchronously)
     {
-        var payload = new
-        {
-            documents = rows,
-            options = new
-            {
-                ordered = insertOrdered,
-            }
-        };
-        commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
-        var command = CreateCommand("insertMany").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
+        var response = await CreateCommand("insertMany")
+            .WithPayload(options.ToPayload(rows))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously)
+            .ConfigureAwait(false);
+
         return response.Result;
     }
-
-    /// <summary>
-    /// Synchronous version of <see cref="InsertOneAsync(T)"/>
-    /// </summary>
-    /// <inheritdoc cref="InsertOneAsync(T)"/>
-    public TableInsertOneResult InsertOne(T row)
+    
+    /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFindOneOptions{T})"/>
+    public T FindOne(TableFindOneOptions<T> options = null)
     {
-        return InsertOne(row, null);
+        return FindOne<T>(null, options);
+    }
+
+    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
+    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> options = null)
+    {
+        return FindOne<T>(filter, options);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
+    public TResult FindOne<TResult>(TableFindOneOptions<T> options = null) where TResult : class
+    {
+        return FindOne<TResult>(null, options);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
+    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
+    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> options = null) where TResult : class
+    {
+        return FindOneAsync<TResult>(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="InsertOneAsync(T, CommandOptions)"/>
+    /// Find a single row in the table using the specified find options.
     /// </summary>
-    /// <inheritdoc cref="InsertOneAsync(T, CommandOptions)"/>
-    public TableInsertOneResult InsertOne(T row, CommandOptions commandOptions)
-    {
-        return InsertOneAsync(row, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Insert a single row into the table.
-    /// </summary>
-    /// <param name="row"></param>
+    /// <param name="options">Specify Sort options for the find operation.</param>
     /// <returns></returns>
-    public Task<TableInsertOneResult> InsertOneAsync(T row)
+    public Task<T> FindOneAsync(TableFindOneOptions<T> options = null)
     {
-        return InsertOneAsync(row, null);
+        return FindOneAsync<T>(null, options);
     }
 
-    /// <inheritdoc cref="InsertOneAsync(T)"/>
-    /// <param name="row"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TableInsertOneResult> InsertOneAsync(T row, CommandOptions commandOptions)
+    /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="options">Specify Sort options for the find operation.</param> = null
+    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOneOptions<T> options = null)
     {
-        return InsertOneAsync(row, commandOptions, false);
+        return FindOneAsync<T>(filter, options);
     }
 
-    private async Task<TableInsertOneResult> InsertOneAsync(T row, CommandOptions commandOptions, bool runSynchronously)
+    /// <summary>
+    /// Find a single row in the table, specifying a different result row class type <typeparamref name="TResult"/>
+    ///  (useful when you want to project only certain fields).
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    public Task<TResult> FindOneAsync<TResult>(TableFindOneOptions<T> options = null) where TResult : class
     {
-        var payload = new
+        return FindOneAsync<TResult>(null, options);
+    }
+
+    /// <inheritdoc cref="FindOneAsync{TResult}(TableFindOneOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="options">Specify Sort options for the find operation.</param>
+    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> options = null) where TResult : class
+    {
+        return FindOneAsync<TResult>(filter, options, runSynchronously: false);
+    }
+
+    private async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> options, bool runSynchronously) where TResult : class
+    {
+        options = options?.ShallowClone() ?? new();
+        SetRowSerializationOptions<TResult>(options, false);
+        
+        var response = await CreateCommand("findOne")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously)
+            .ConfigureAwait(false);
+        
+        if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
-            document = row,
-        };
-        commandOptions = SetRowSerializationOptions<T>(commandOptions, true);
-        var command = CreateCommand("insertOne").WithPayload(payload).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<TableInsertManyResult>(runSynchronously).ConfigureAwait(false);
-        return new TableInsertOneResult
-        {
-            InsertedIdTuple = response.Result.InsertedIdTuples.Count > 0 ? response.Result.InsertedIdTuples[0] : null
-        };
+            if (response is { Data.Document: not null })
+            {
+                ProcessUntypedRow(response.Data.Document as Row, response.Status.ProjectionSchema);
+            }
+        }
+        return response.Data.Document;
     }
-
+    
     /// <summary>
     /// Find rows in the table.
     /// 
@@ -853,75 +904,27 @@ public class Table<T> where T : class
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public TableFindCursor<T> Find()
+    public TableFindCursor<T> Find(TableFindManyOptions<T> options = null)
     {
-        return Find(null, null);
+        return Find(null, options);
     }
 
-    /// <inheritdoc cref="Find()"/>
-    /// <param name="filter">The filter(s) to apply to the query.</param>
-    /// <returns></returns>
-    /// <example>
-    /// <code>
-    /// var filterBuilder = Builders{BookRow}.Filter;
-    /// var filter = filterBuilder.Gt(x => x.NumberOfPages, 430);
-    /// var matchingBooks = table.Find(filter).ToList();
-    /// await foreach (var bookRow in matchingBooks)
-    /// {
-    ///     //handle each row
-    /// }
-    /// </code>
-    /// </example>
-    public TableFindCursor<T> Find(TableFilter<T> filter)
-    {
-        return Find(filter, null);
-    }
-
-    /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <param name="findOptions"></param>
-    public TableFindCursor<T> Find(TableFindManyOptions<T> findOptions)
-    {
-        return Find(null, findOptions);
-    }
-
-    /// <inheritdoc cref="Find(TableFilter{T})"/>
+    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
     /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> findOptions)
+    /// <param name="options"></param>
+    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> options = null)
     {
-        findOptions ??= new TableFindManyOptions<T>();
-        var commandOptions = findOptions.CommandOptions();
-        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
+        return new(filter, options, RunFindManyAsync);
     }
-
-    /// <inheritdoc cref="Find()" path="/summary"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>() where TResult : class
-    {
-        return Find<TResult>(null, null);
-    }
-
-    /// <inheritdoc cref="Find(TableFilter{T})"/>
-    /// <remarks>
-    /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
-    /// (most commonly used when using projection to return a subset of fields)
-    /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter) where TResult : class
-    {
-        return Find<TResult>(filter, null);
-    }
-
+    
     /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> findOptions) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> options = null) where TResult : class
     {
-        return Find<TResult>(null, findOptions);
+        return Find<TResult>(null, options);
     }
 
     /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
@@ -929,23 +932,21 @@ public class Table<T> where T : class
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> findOptions) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> options = null) where TResult : class
     {
-        findOptions ??= new TableFindManyOptions<T>();
-        var commandOptions = findOptions.CommandOptions();
-        return new(findOptions.WithFilterParam(filter), commandOptions, RunFindManyAsync);
+        return new(filter, options, RunFindManyAsync);
     }
 
-    internal async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
+    private async Task<FindPage<TResult>> RunFindManyAsync<TResult>(TableFindCursor<T, TResult> cursor, string nextPageState, bool runSynchronously) where TResult : class
     {
-        var options = cursor.FindOptions.Clone();
-        options.PageState = nextPageState;
+        SetRowSerializationOptions<TResult>(cursor.FindOptions, false);
 
-        var payloadOptions = options.PayloadOptions();
-        var commandOptions = SetRowSerializationOptions<TResult>(cursor.CommandOptions, false);
-        var command = CreateCommand("find").WithPayload(payloadOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
-        
+        var response = await CreateCommand("find")
+            .WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState))
+            .AddCommandOptions(cursor.FindOptions)
+            .RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously)
+            .ConfigureAwait(false);
+
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
         {
             var columnsInResult = response.Status.ProjectionSchema;
@@ -963,207 +964,6 @@ public class Table<T> where T : class
             response.Data.Items,
             response.Status?.SortVector
         );
-    }
-
-    /// <inheritdoc cref="FindOneAsync()"/>
-    /// Synchronous version of <see cref="FindOneAsync()"/>
-    public T FindOne()
-    {
-        return FindOne(null, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T})"/>
-    public T FindOne(TableFilter<T> filter)
-    {
-        return FindOne(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, CommandOptions)"/>
-    public T FindOne(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOne(filter, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFindOneOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFindOneOptions{T})"/>
-    public T FindOne(TableFindOneOptions<T> findOptions)
-    {
-        return FindOne<T>(null, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
-    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> findOptions)
-    {
-        return FindOne<T>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/> 
-    public T FindOne(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOne<T>(filter, findOptions, commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}()"/>
-    public TResult FindOne<TResult>() where TResult : class
-    {
-        return FindOne<TResult>(null, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T})"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter) where TResult : class
-    {
-        return FindOne<TResult>(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOne<TResult>(filter, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions) where TResult : class
-    {
-        return FindOne<TResult>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T}, CommandOptions)"/>
-    public TResult FindOne<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, findOptions, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Find a single row in the table.
-    /// </summary>
-    /// <returns></returns>
-    public Task<T> FindOneAsync()
-    {
-        return FindOneAsync(null, null, null);
-    }
-
-    /// <summary>
-    /// Find a single row in the table that matches the specified filter.
-    /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task<T> FindOneAsync(TableFilter<T> filter)
-    {
-        return FindOneAsync(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        return FindOneAsync(filter, null, commandOptions);
-    }
-
-    /// <summary>
-    /// Find a single row in the table using the specified find options.
-    /// </summary>
-    /// <param name="findOptions">Specify Sort options for the find operation.</param>
-    /// <returns></returns>
-    public Task<T> FindOneAsync(TableFindOneOptions<T> findOptions)
-    {
-        return FindOneAsync<T>(null, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions">Specify Sort options for the find operation.</param>
-    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOneOptions<T> findOptions)
-    {
-        return FindOneAsync<T>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync(TableFilter{T}, TableFindOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<T> FindOneAsync(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions)
-    {
-        return FindOneAsync<T>(filter, findOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// Find a single row in the table, specifying a different result row class type <typeparamref name="TResult"/>
-    ///  (useful when you want to project only certain fields).
-    /// </summary>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
-    public Task<TResult> FindOneAsync<TResult>() where TResult : class
-    {
-        return FindOneAsync<TResult>(null, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}()"/>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, null, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions">Specify Sort options for the find operation.</param>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, findOptions, null);
-    }
-
-    /// <inheritdoc cref="FindOneAsync{TResult}(TableFilter{T}, TableFindOneOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="findOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions) where TResult : class
-    {
-        return FindOneAsync<TResult>(filter, findOptions, commandOptions, false);
-    }
-
-    internal async Task<TResult> FindOneAsync<TResult>(TableFilter<T> filter, TableFindOneOptions<T> findOptions, CommandOptions commandOptions, bool runSynchronously) where TResult : class
-    {
-        findOptions = findOptions != null ? findOptions.Clone() : new TableFindOneOptions<T>();
-        if (filter != null)
-        {
-            if (findOptions.Filter == null)
-            {
-                findOptions.Filter = filter;
-            } else
-            {
-                throw new ArgumentException("Cannot pass a filter both within FindOptions and as stand-alone argument");
-            }
-        }
-        commandOptions = SetRowSerializationOptions<TResult>(commandOptions, false);
-        var command = CreateCommand("findOne").WithPayload(findOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously).ConfigureAwait(false);
-        if (typeof(Row).IsAssignableFrom(typeof(TResult)))
-        {
-            if (response is { Data.Document: not null })
-            {
-                ProcessUntypedRow(response.Data.Document as Row, response.Status.ProjectionSchema);
-            }
-        }
-        return response.Data.Document;
     }
 
     private void ProcessUntypedRow(Row row, Dictionary<string, SchemaColumn> projectionSchema)
@@ -1293,269 +1093,131 @@ public class Table<T> where T : class
     /// </summary>
     public Task DropAsync()
     {
-        return _database.DropTableAsync(_tableName);
+        return _database.DropTableAsync(TableName);
     }
 
-    private CommandOptions SetRowSerializationOptions<TResult>(CommandOptions commandOptions, bool isInsert)
-        where TResult : class
+    private static void SetRowSerializationOptions<TResult>(CommandOptions options, bool isInsert) where TResult : class
     {
-        commandOptions ??= new CommandOptions();
-        commandOptions.SerializeGuidAsDollarUuid = false;
-        commandOptions.SerializeDateAsDollarDate = false;
+        options.SerializeGuidAsDollarUuid = false;
+        options.SerializeDateAsDollarDate = false;
+        
         if (typeof(TResult) == typeof(Row))
         {
-            // Register SimpleDictionaryConverter for untyped Row serialization
             if (isInsert && typeof(T) == typeof(Row))
             {
-                commandOptions.InputConverter = new SimpleDictionaryConverter();
+                options.InputConverter = new SimpleDictionaryConverter();
             }
-            return commandOptions;
+            return;
         }
+        
         if (isInsert)
         {
-            commandOptions.InputConverter = new RowConverter<T>();
+            options.InputConverter = new RowConverter<T>();
         }
         else
         {
-            commandOptions.OutputConverter = new RowConverter<TResult>();
+            options.OutputConverter = new RowConverter<TResult>();
         }
-        return commandOptions;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
+    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
-    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update)
+    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, TableUpdateOneOptions)"/>
+    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions options = null)
     {
-        UpdateOne(filter, update, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T}, CommandOptions)"/>
-    public void UpdateOne(TableFilter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
-    {
-        UpdateOneAsync(filter, update, commandOptions, true).ResultSync();
+        UpdateOneAsync(filter, update, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Update a single row in the table using the provided filter and update builder.
-    /// 
     /// </summary>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <returns></returns>
-    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update)
+    /// <param name="filter">The filter to match rows.</param>
+    /// <param name="update">The update operations to apply.</param>
+    /// <param name="options">Options for the update operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions options = null)
     {
-        return UpdateOneAsync(filter, update, null);
+        return UpdateOneAsync(filter, update, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="UpdateOneAsync(TableFilter{T}, UpdateBuilder{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="update"></param>
-    /// <param name="commandOptions"></param>
-    public Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions)
+    private async Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, TableUpdateOneOptions options, bool runSynchronously)
     {
-        return UpdateOneAsync(filter, update, commandOptions, false);
-    }
-
-    internal async Task UpdateOneAsync(TableFilter<T> filter, UpdateBuilder<T> update, CommandOptions commandOptions, bool runSynchronously)
-    {
-        var updateOptions = new UpdateOneOptions<T>
-        {
-            Filter = filter,
-            Update = update
-        };
-        var command = CreateCommand("updateOne").WithPayload(updateOptions).AddCommandOptions(commandOptions);
-        await command.RunAsyncReturnStatus<UpdateResult>(runSynchronously).ConfigureAwait(false);
+        Guard.NotNull(filter, nameof(filter));
+        Guard.NotNull(update, nameof(update));
+        
+        options ??= new();
+        
+        await CreateCommand("updateOne")
+            .WithPayload(options.ToPayload(filter, update))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<UpdateResult>(runSynchronously)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T})"/>
+    /// Synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
-    public void DeleteOne(TableDeleteOptions<T> deleteOptions)
+    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOneOptions)"/>
+    public void DeleteOne(TableFilter<T> filter, TableDeleteOneOptions options = null)
     {
-        DeleteOne(null, deleteOptions, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
-    public void DeleteOne(TableFilter<T> filter)
-    {
-        DeleteOne(filter, null, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, CommandOptions)"/>
-    public void DeleteOne(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        DeleteOne(filter, null, commandOptions);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T}, CommandOptions)"/>
-    public void DeleteOne(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        DeleteOne(null, deleteOptions, commandOptions);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
-    public void DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
-    {
-        DeleteOne(filter, deleteOptions, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T}, CommandOptions)"/>
-    public void DeleteOne(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        DeleteOneAsync(filter, deleteOptions, commandOptions, true).ResultSync();
+        DeleteOneAsync(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
     /// Delete a row from the table.
     /// </summary>
-    /// <param name="deleteOptions"></param>
-    /// <returns></returns>
-    public Task DeleteOneAsync(TableDeleteOptions<T> deleteOptions)
+    /// <param name="filter">The filter to match rows.</param>
+    /// <param name="options">Options for the delete operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions options = null)
     {
-        return DeleteOneAsync(null, deleteOptions, null);
+        return DeleteOneAsync(filter, options, runSynchronously: false);
+    }
+
+    private async Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOneOptions options, bool runSynchronously)
+    {
+        Guard.NotNull(filter, nameof(filter));
+        
+        options ??= new();
+        
+        await CreateCommand("deleteOne")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<DeleteResult>(runSynchronously)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Delete a row from the table.
+    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T}, TableDeleteManyOptions)"/>
     /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task DeleteOneAsync(TableFilter<T> filter)
+    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T}, TableDeleteManyOptions)"/>
+    public void DeleteMany(TableFilter<T> filter, TableDeleteManyOptions options = null)
     {
-        return DeleteOneAsync(filter, null, null);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteOneAsync(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(filter, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableDeleteOptions{T})"/>
-    /// <param name="deleteOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteOneAsync(TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(null, deleteOptions, commandOptions);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="deleteOptions"></param>
-    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions)
-    {
-        return DeleteOneAsync(filter, deleteOptions, null);
-    }
-
-    /// <inheritdoc cref="DeleteOneAsync(TableFilter{T}, TableDeleteOptions{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="deleteOptions"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions)
-    {
-        return DeleteOneAsync(filter, deleteOptions, commandOptions, false);
-    }
-
-    internal async Task DeleteOneAsync(TableFilter<T> filter, TableDeleteOptions<T> deleteOptions, CommandOptions commandOptions, bool runSynchronously)
-    {
-        deleteOptions ??= new TableDeleteOptions<T>();
-        deleteOptions.Filter = filter;
-        var command = CreateCommand("deleteOne").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-        var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T})"/>
-    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T})"/>
-    public void DeleteMany(TableFilter<T> filter)
-    {
-        DeleteMany(filter, null);
-    }
-
-    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T}, CommandOptions)"/>
-    /// Synchronous version of <see cref="DeleteManyAsync(TableFilter{T}, CommandOptions)"/>
-    public void DeleteMany(TableFilter<T> filter, CommandOptions commandOptions)
-    {
-        DeleteManyAsync(filter, commandOptions, true).ResultSync();
+        DeleteManyAsync(filter, options, runSynchronously: true).ResultSync();
     }
 
     /// <summary>
-    /// Delete all documents matching the filter from the table.
+    /// Delete all rows matching the filter from the table.
     /// </summary>
-    /// <param name="filter"></param>
-    /// <returns></returns>
-    public Task DeleteManyAsync(TableFilter<T> filter)
+    /// <param name="filter">The filter to match rows.</param>
+    /// <param name="options">Options for the delete operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public Task DeleteManyAsync(TableFilter<T> filter, TableDeleteManyOptions options = null)
     {
-        return DeleteManyAsync(filter, null);
+        return DeleteManyAsync(filter, options, runSynchronously: false);
     }
 
-    /// <inheritdoc cref="DeleteManyAsync(TableFilter{T})"/>
-    /// <param name="filter"></param>
-    /// <param name="commandOptions"></param>
-    public Task DeleteManyAsync(TableFilter<T> filter, CommandOptions commandOptions)
+    private async Task DeleteManyAsync(TableFilter<T> filter, TableDeleteManyOptions options, bool runSynchronously)
     {
-        return DeleteManyAsync(filter, commandOptions, false);
+        options ??= new();
+        
+        await CreateCommand("deleteMany")
+            .WithPayload(options.ToPayload(filter))
+            .AddCommandOptions(options)
+            .RunAsyncReturnStatus<DeleteResult>(runSynchronously)
+            .ConfigureAwait(false);
     }
-
-    internal async Task DeleteManyAsync(TableFilter<T> filter, CommandOptions commandOptions, bool runSynchronously)
-    {
-        var deleteOptions = new DeleteManyOptions<T>
-        {
-            Filter = filter
-        };
-
-        var keepProcessing = true;
-        var deleteResult = new DeleteResult();
-        var (timeout, cts) = BulkOperationHelper.InitTimeout(GetOptionsTree(), ref commandOptions);
-
-        using (cts)
-        {
-            var bulkOperationTimeoutToken = cts.Token;
-            try
-            {
-                while (keepProcessing)
-                {
-                    var command = CreateCommand("deleteMany").WithPayload(deleteOptions).AddCommandOptions(commandOptions);
-                    var response = await command.RunAsyncReturnStatus<DeleteResult>(runSynchronously).ConfigureAwait(false);
-                    deleteResult.DeletedCount += response.Result.DeletedCount;
-                    keepProcessing = response.Result.MoreData;
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                var innerException = new TimeoutException($"DeleteMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
-                throw new BulkOperationException<DeleteResult>(innerException, deleteResult);
-            }
-            catch (Exception ex)
-            {
-                throw new BulkOperationException<DeleteResult>(ex, deleteResult);
-            }
-        }
-    }
-
-
 
     /// <summary>
     /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
@@ -1649,7 +1311,7 @@ public class Table<T> where T : class
 
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
 
-        return new Table<TRowAfterAlter>(_tableName, _database, _commandOptions);
+        return new Table<TRowAfterAlter>(TableName, _database, _commandOptions);
 
     }
 
@@ -1662,6 +1324,6 @@ public class Table<T> where T : class
     internal Command CreateCommand(string name)
     {
         var optionsTree = GetOptionsTree().ToArray();
-        return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, _tableName));
+        return new Command(name, _database.Client, optionsTree, new DatabaseCommandUrlBuilder(_database, TableName));
     }
 }

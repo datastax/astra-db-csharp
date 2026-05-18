@@ -90,12 +90,12 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <summary>
     /// Gets the find options used for this cursor.
     /// </summary>
-    internal IFindManyOptions<T, TSort> FindOptions { get; }
+    internal BaseFindManyOptions<T, TSort> FindOptions { get; }
     
     /// <summary>
-    /// Gets the command options used for this cursor.
+    /// Gets the filter for this cursor.
     /// </summary>
-    internal CommandOptions CommandOptions { get; }
+    internal Filter<T> CurrentFilter { get; private set; }
     
     /// <summary>
     /// Gets the function used to fetch pages of results.
@@ -112,18 +112,18 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <summary>
     /// Initializes a new instance of the <see cref="FindCursor{T, TResult, TSort, TCursor}"/> class.
     /// </summary>
+    /// <param name="filter">The filter to apply.</param>
     /// <param name="options">The find options to use.</param>
-    /// <param name="commandOptions">The command options to use.</param>
     /// <param name="fetchPage">The function to fetch pages of results.</param>
-    internal FindCursor(IFindManyOptions<T, TSort> options, CommandOptions commandOptions, FetchPageFunc<TResult, TCursor> fetchPage) 
+    internal FindCursor(Filter<T> filter, BaseFindManyOptions<T, TSort> options, FetchPageFunc<TResult, TCursor> fetchPage) 
     {
-        FindOptions = options.Clone();
-        CommandOptions = commandOptions;
+        CurrentFilter = filter;
+        FindOptions = options.ShallowClone();
         FetchPageFunc = fetchPage;
 
-        if (options.PageState != null)
+        if (options.InitialPageState != null)
         {
-            _currentPage = new FindPage<TResult>(options.PageState, new List<TResult>(), null);
+            _currentPage = new FindPage<TResult>(options.InitialPageState, new List<TResult>(), null);
         }
     }
     
@@ -140,7 +140,11 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// </example>
     public TCursor Filter(Filter<T> filter)
     {
-        return UpdateOptions(options => options.Filter = filter);
+        if (State != CursorState.Idle)
+        {
+            throw new CursorException("Cursors must be idle when building their options", State);
+        }
+        return CloneWith(filter, FindOptions);
     }
     
     /// <summary>
@@ -258,7 +262,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <returns>A new cursor instance with the updated initial page state.</returns>
     public TCursor InitialPageState(string initialPageState)
     {
-        return UpdateOptions(options => options.PageState = initialPageState);
+        return UpdateOptions(options => options.InitialPageState = initialPageState);
     }
     
     /// <summary>
@@ -366,7 +370,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     {
         if (cancellationToken != CancellationToken.None)
         {
-            CommandOptions.BulkOperationCancellationToken = cancellationToken;
+            FindOptions.BulkOperationCancellationToken = cancellationToken;
         }
 
         _currentPage = await FetchPageFunc((TCursor)this, _currentPage?.NextPageState, runSynchronously).ConfigureAwait(false);
@@ -374,21 +378,22 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
         return _currentPage.NextPageState != null;
     }
 
-    private TCursor UpdateOptions(Action<IFindManyOptions<T, TSort>> optionsUpdater)
+    private TCursor UpdateOptions(Action<BaseFindManyOptions<T, TSort>> optionsUpdater)
     {
         if (State != CursorState.Idle)
         {
             throw new CursorException("Cursors must be idle when building their options", State);
         }
-        var newOptions = FindOptions.Clone();
+        var newOptions = FindOptions.ShallowClone();
         optionsUpdater(newOptions);
-        return CloneWithOptions(newOptions);
+        return CloneWith(CurrentFilter, newOptions);
     }
     
     /// <summary>
-    /// Creates a new cursor instance with updated find options.
+    /// Creates a new cursor instance with updated filter and options.
     /// </summary>
-    /// <param name="options">The updated find options.</param>
-    /// <returns>A new cursor instance with the updated options.</returns>
-    internal abstract TCursor CloneWithOptions(IFindManyOptions<T, TSort> options);
+    /// <param name="filter">The filter to apply.</param>
+    /// <param name="options">The find options to use.</param>
+    /// <returns>A new cursor instance.</returns>
+    protected abstract TCursor CloneWith(Filter<T> filter, BaseFindManyOptions<T, TSort> options);
 }

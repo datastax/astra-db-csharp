@@ -78,7 +78,7 @@ public class SearchTests
             };
 
             var collection = await fixture.Database.CreateCollectionAsync<DifferentIdsObject>(collectionName);
-            await collection.InsertManyAsync(items, new InsertManyOptions() { Ordered = true });
+            await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
 
             //Search using Expression
             var filter = Builders<DifferentIdsObject>.CollectionFilter.Eq(d => d.TheId, 1);
@@ -945,13 +945,13 @@ public class SearchTests
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithLexical>(collectionName);
             var insertResult = await collection.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIds.Count);
+            var filter = Builders<SimpleObjectWithLexical>.CollectionFilter.LexicalMatch("dog");
             var findOptions = new CollectionFindOneOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.CollectionSort.Lexical("dog"),
-                Filter = Builders<SimpleObjectWithLexical>.CollectionFilter.LexicalMatch("dog"),
             };
 
-            var result = await collection.FindOneAsync(findOptions);
+            var result = await collection.FindOneAsync(filter, findOptions);
             Assert.NotNull(result);
             Assert.Equal(1, result.Id);
         }

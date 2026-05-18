@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
+
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options for inserting multiple documents into a collection.
+/// Base class for insert-many operation options.
 /// </summary>
-public class InsertManyOptions : CommandOptions
+public abstract class BaseInsertManyOptions : CommandOptions
 {
     /// <summary>
     /// Default batch size.
@@ -32,6 +34,7 @@ public class InsertManyOptions : CommandOptions
     public const int DefaultConcurrency = 20;
 
     private bool _Ordered = false;
+    
     /// <summary>
     /// Whether to insert documents in order or not.
     /// </summary>
@@ -44,6 +47,7 @@ public class InsertManyOptions : CommandOptions
             _Ordered = value;
         }
     }
+    
     /// <summary>
     /// The number of parallel processes to use while inserting documents.
     /// Must be set to 1 for ordered inserts.
@@ -55,35 +59,37 @@ public class InsertManyOptions : CommandOptions
     /// </summary>
     public int ChunkSize { get; set; } = DefaultChunkSize;
 
-    internal CommandOptions CommandOptions()
+    internal object ToPayload<T>(IEnumerable<T> documents) where T : class
     {
-        return new CommandOptions {
-            Token = Token,
-            RunMode = RunMode,
-            Destination = Destination,
-            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
-            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
-            APIVersion = APIVersion,
-            CancellationToken = CancellationToken
-        };
-    }
-
-    internal InsertManyOptions Clone()
-    {
-        return new InsertManyOptions
+        return new
         {
-            Ordered = Ordered,
-            Concurrency = Concurrency,
-            ChunkSize = ChunkSize,
-            // CommandOptions properties:
-            Token = Token,
-            RunMode = RunMode,
-            Destination = Destination,
-            HttpClientOptions = HttpClientOptions != null ? HttpClientOptions.Clone() : null,
-            TimeoutOptions = TimeoutOptions != null ? TimeoutOptions.Clone() : null,
-            APIVersion = APIVersion,
-            CancellationToken = CancellationToken
+            documents,
+            options = new
+            {
+                ordered = Ordered
+            }
         };
     }
+}
 
+/// <summary>
+/// Options for inserting multiple documents into a collection.
+/// </summary>
+public sealed class CollectionInsertManyOptions : BaseInsertManyOptions
+{
+    internal CollectionInsertManyOptions ShallowClone()
+    {
+        return (CollectionInsertManyOptions)MemberwiseClone();
+    }
+}
+
+/// <summary>
+/// Options for inserting multiple rows into a table.
+/// </summary>
+public sealed class TableInsertManyOptions : BaseInsertManyOptions
+{
+    internal TableInsertManyOptions ShallowClone()
+    {
+        return (TableInsertManyOptions)MemberwiseClone();
+    }
 }

@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core.Query;
+using DataStax.AstraDB.DataApi.Core.Query;
+
+namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Represents options for find operations.
+/// Options for counting documents in a collection.
 /// </summary>
-/// <typeparam name="T">The type of the document/entity.</typeparam>
-/// <typeparam name="TSort">The type of the sort builder.</typeparam>
-internal interface IFindOptions<T, TSort> where TSort : SortBuilder<T>
+public class CollectionCountDocumentsOptions : CommandOptions
 {
-    internal Filter<T> Filter { get; set; }
-
-    internal string PageState { get; set; }
-
-    internal TSort Sort { get; set; }
-
-    internal IProjectionBuilder Projection { get; set; }
-
-    internal bool? IncludeSimilarity { get; set; }
+    internal object ToPayload<T>(CollectionFilter<T> filter) where T : class
+    {
+        return new
+        {
+            filter = filter?.Serialize()
+        };
+    }
 }

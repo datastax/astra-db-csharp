@@ -50,12 +50,10 @@ public class AdditionalTableTests
             await table.CreateIndexAsync("StringArray_idx", (b) => b.StringArray);
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
-            var findOptions = new TableFindOneOptions<ArrayTestRow>()
-            {
-                Filter = Builders<ArrayTestRow>.TableFilter.In(x => x.StringArray, new string[] { "five" }),
-            };
+            var filter = Builders<ArrayTestRow>.TableFilter.In(x => x.StringArray, new string[] { "five" });
+            var findOptions = new TableFindOneOptions<ArrayTestRow>();
 
-            var result = await table.FindOneAsync(findOptions);
+            var result = await table.FindOneAsync(filter, findOptions);
             Assert.NotNull(result);
             Assert.Equal(1, result.Id);
         }
@@ -235,28 +233,24 @@ public class AdditionalTableTests
             Assert.Equal(5, result.InsertedCount);
 
             // Query the data
-            var findOptions = new TableFindOneOptions<DictionaryTypeTest>()
-            {
-                Filter = Builders<DictionaryTypeTest>.TableFilter.ValuesIn((t) => t.IntKey, new string[] { "IntValue 1A" }),
-            };
+            var filter = Builders<DictionaryTypeTest>.TableFilter.ValuesIn((t) => t.IntKey, new string[] { "IntValue 1A" });
+            var findOptions = new TableFindOneOptions<DictionaryTypeTest>();
 
-            var findResult = await table.FindOneAsync(findOptions);
+            var findResult = await table.FindOneAsync(filter, findOptions);
             Assert.NotNull(findResult);
             Assert.Equal(1, findResult.Id);
             Assert.Equal("DecimalValue 1A", findResult.DecimalKey[2.1m]);
 
-            findOptions = new TableFindOneOptions<DictionaryTypeTest>()
-            {
-                Filter = Builders<DictionaryTypeTest>.TableFilter.ValuesIn((t) => t.IntKey, new string[] { "IntValue 1ABC" }),
-            };
+            filter = Builders<DictionaryTypeTest>.TableFilter.ValuesIn((t) => t.IntKey, new string[] { "IntValue 1ABC" });
+            findOptions = new TableFindOneOptions<DictionaryTypeTest>();
 
-            findResult = await table.FindOneAsync(findOptions);
+            findResult = await table.FindOneAsync(filter, findOptions);
             Assert.Null(findResult);
 
-            var filter = Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 2);
+            var filter2 = Builders<DictionaryTypeTest>.TableFilter.Eq(x => x.Id, 2);
             var update = Builders<DictionaryTypeTest>.TableUpdate.PullAll(x => x.IntKey, new int[] { 12, 22 });
-            await table.UpdateOneAsync(filter, update);
-            var updatedDocument = await table.FindOneAsync(filter);
+            await table.UpdateOneAsync(filter2, update);
+            var updatedDocument = await table.FindOneAsync(filter2);
             Assert.NotNull(updatedDocument);
             Assert.Single(updatedDocument.IntKey);
             Assert.Equal(32, updatedDocument.IntKey.Keys.First());
@@ -1225,46 +1219,20 @@ public class AdditionalTableTests
             Assert.Equal("one", find_f_id1.Name);
             Assert.Equal("two", find_f_id2.Name);
 
-            // findOne through FINDOPTIONS ONLY:
+            // findOne with filter parameter:
             //
-            var findOpt_id1 = new TableFindOneOptions<SimpleTwoColumnRow>()
-            {
-                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 1)
-            };
-            var findOpt_id2 = new TableFindOneOptions<SimpleTwoColumnRow>()
-            {
-                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 2)
-            };
+            var filter_id1 = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 1);
+            var filter_id2 = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 2);
+            var findOptions = new TableFindOneOptions<SimpleTwoColumnRow>();
+            
             // exp. payload: {"findOne":{"filter":{"Id":{"$eq":1}}}}
-            var find_o_id1 = await table.FindOneAsync(findOpt_id1);
+            var find_o_id1 = await table.FindOneAsync(filter_id1, findOptions);
             // exp. payload: {"findOne":{"filter":{"Id":{"$eq":2}}}}
-            var find_o_id2 = await table.FindOneAsync(findOpt_id2);
+            var find_o_id2 = await table.FindOneAsync(filter_id2, findOptions);
             Assert.Equal("one", find_o_id1.Name);
             Assert.Equal("two", find_o_id2.Name);
 
-            // findOne through BOTH FILTER AND FINDOPTIONS (should throw):
-            var findOpt_id991 = new TableFindOneOptions<SimpleTwoColumnRow>()
-            {
-                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 991)
-            };
-            var findOpt_id992 = new TableFindOneOptions<SimpleTwoColumnRow>()
-            {
-                Filter = Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 992)
-            };
-            await Assert.ThrowsAsync<ArgumentException>(async () =>
-            {
-                await table.FindOneAsync(
-                    Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 1),
-                    findOpt_id991
-                );
-            });
-            await Assert.ThrowsAsync<ArgumentException>(async () =>
-            {
-                await table.FindOneAsync(
-                    Builders<SimpleTwoColumnRow>.TableFilter.Eq(d => d.Id, 2),
-                    findOpt_id992
-                );
-            });
+
         }
         finally
         {

@@ -32,32 +32,14 @@ internal static class BulkOperationHelper
     /// <param name="optionsTree">The tree of command options to merge.</param>
     /// <param name="commandOptions">The command options to configure with timeout.</param>
     /// <returns>A tuple containing the timeout duration and the cancellation token source.</returns>
-    internal static (TimeSpan timeout, CancellationTokenSource cts) InitTimeout(
-        List<CommandOptions> optionsTree,
-        ref CommandOptions commandOptions)
+    internal static (TimeSpan timeout, CancellationTokenSource cts) InitTimeout(List<CommandOptions> optionsTree, CommandOptions commandOptions)
     {
-        if (commandOptions != null)
-        {
-            optionsTree.Add(commandOptions);
-        }
+        optionsTree.Add(commandOptions);
         var mergedOptions = CommandOptions.Merge(optionsTree.ToArray());
         var timeout = new TimeoutManager().GetBulkOperationTimeout(mergedOptions);
         var cts = new CancellationTokenSource(timeout);
         var bulkOperationTimeoutToken = cts.Token;
-
-        if (commandOptions == null)
-        {
-            commandOptions = new CommandOptions
-            {
-                BulkOperationCancellationToken = bulkOperationTimeoutToken
-            };
-        }
-        else
-        {
-            commandOptions.BulkOperationCancellationToken = bulkOperationTimeoutToken;
-        }
-
+        commandOptions.BulkOperationCancellationToken = bulkOperationTimeoutToken;
         return (timeout, cts);
     }
-
 }

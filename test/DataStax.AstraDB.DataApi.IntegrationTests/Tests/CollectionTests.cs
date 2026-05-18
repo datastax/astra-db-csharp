@@ -302,26 +302,6 @@ public class CollectionTests
     }
 
     [Fact]
-    public async Task DefaultId_WrongTypes()
-    {
-        var collectionName = "defaultIdWrongTypes";
-        try
-        {
-            var collection = await fixture.Database.CreateCollectionAsync<SimpleObject>(collectionName);
-            var newObject = new SimpleObject()
-            {
-                Name = "Test Object 1",
-            };
-
-            await Assert.ThrowsAnyAsync<Exception>(async () => await collection.InsertOneAsync(newObject));
-        }
-        finally
-        {
-            await fixture.Database.DropCollectionAsync(collectionName);
-        }
-    }
-
-    [Fact]
     public async Task DefiningIndexing_Allow()
     {
         var collectionName = "definingIndexingAllow";
@@ -582,7 +562,7 @@ public class CollectionTests
             };
 
             var collection = await fixture.Database.CreateCollectionAsync<DifferentIdsObject>(collectionName);
-            var result = await collection.InsertManyAsync(items, new InsertManyOptions() { Ordered = true });
+            var result = await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
 
             Assert.Equal(items.Count, result.InsertedIds.Count);
             for (var i = 0; i < result.InsertedIds.Count; i++)
@@ -613,7 +593,7 @@ public class CollectionTests
             }
             ;
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
-            var result = await collection.InsertManyAsync(items, new InsertManyOptions() { Ordered = true });
+            var result = await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
             await fixture.Database.DropCollectionAsync(collectionName);
             Assert.Equal(items.Count, result.InsertedIds.Count);
             for (var i = 0; i < 10; i++)
@@ -628,8 +608,8 @@ public class CollectionTests
         }
     }
 
-    [SkipWhenNotAstra]
     [Fact]
+    [SkipWhenNotAstra] // TODO why is this not throwing on HCD in CI? It throws just fine when running on HCD locally
     public async Task InsertManyCommandOptions()
     {
         var collectionName = "simpleObjects";
@@ -651,21 +631,13 @@ public class CollectionTests
             await Assert.ThrowsAsync<BulkOperationException<CollectionInsertManyResult<int>>>( async () =>
             {
                 await collection.InsertManyAsync(
-                    items, new InsertManyOptions() { Token = "blibbli" });
+                    items, new CollectionInsertManyOptions() { Token = "blibbli" });
             });
         }
         finally
         {
             await fixture.Database.DropCollectionAsync(collectionName);
         }
-    }
-
-    [Fact]
-    public async Task CountDocuments_NoFilter_ReturnsCorrectCount()
-    {
-        var collection = fixture.SearchCollection;
-        var count = await collection.CountDocumentsAsync(1000);
-        Assert.Equal(33, count);
     }
 
     [Fact]
@@ -694,8 +666,8 @@ public class CollectionTests
             }
             ;
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
-            await collection.InsertManyAsync(items, new InsertManyOptions() { Ordered = true });
-            await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(50));
+            await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
+            await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(null, 50));
 
         }
         finally

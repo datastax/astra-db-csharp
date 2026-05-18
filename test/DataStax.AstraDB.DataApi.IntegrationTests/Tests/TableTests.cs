@@ -57,8 +57,8 @@ public class TableTests
         }
     }
 
-    [SkipWhenNotAstra]
     [Fact]
+    [SkipWhenNotAstra] // TODO why is this not throwing on HCD in CI? It throws just fine when running on HCD locally
     public async Task InsertManyCommandOptions()
     {
         var tableName = "insertRowsTest";
@@ -87,7 +87,7 @@ public class TableTests
             await Assert.ThrowsAsync<BulkOperationException<TableInsertManyResult>>( async () =>
             {
                 await table.InsertManyAsync(
-                    rows, new InsertManyOptions() { Token = "blibbli" });
+                    rows, new TableInsertManyOptions() { Token = "blibbli" });
             });
         }
         finally
@@ -154,7 +154,7 @@ public class TableTests
                 DueDate = DateTime.UtcNow,
                 Genres = new HashSet<string> { "Fiction" }
             });
-            var options = new InsertManyOptions
+            var options = new TableInsertManyOptions
             {
                 Ordered = true,
                 ChunkSize = 2
@@ -687,13 +687,13 @@ public class TableTests
             await table.CreateTextIndexAsync("b_idx", (b) => b.LexicalValue, Builders.TableIndex.Text());
             var insertResult = await table.InsertManyAsync(items);
             Assert.Equal(items.Count, insertResult.InsertedIdTuples.Count);
+            var filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch((b) => b.LexicalValue, "dog");
             var findOptions = new TableFindOneOptions<SimpleObjectWithLexical>()
             {
                 Sort = Builders<SimpleObjectWithLexical>.TableSort.Lexical((b) => b.LexicalValue, "dog"),
-                Filter = Builders<SimpleObjectWithLexical>.TableFilter.LexicalMatch((b) => b.LexicalValue, "dog"),
             };
 
-            var result = await table.FindOneAsync(findOptions);
+            var result = await table.FindOneAsync(filter, findOptions);
             Assert.NotNull(result);
             Assert.Equal(1, result.Id);
         }

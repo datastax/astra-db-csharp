@@ -15,59 +15,105 @@
  */
 
 using DataStax.AstraDB.DataApi.Core.Query;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options for deleting documents from a collection
+/// Base class for delete-one operation options.
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public class DeleteOptions<T> where T : class
+public abstract class BaseDeleteOneOptions : CommandOptions
 {
-  internal Filter<T> Filter { get; set; }
-
-  [JsonInclude]
-  [JsonPropertyName("filter")]
-  internal Dictionary<string, object> FilterMap => Filter == null ? new Dictionary<string, object>() : Filter.Serialize();
-
-  /// <summary>
-  /// Define the sort to apply before the delete operation
-  /// </summary>
-  [JsonIgnore]
-  public SortBuilder<T> Sort { get; set; }
-
-  [JsonInclude]
-  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  [JsonPropertyName("sort")]
-  internal Dictionary<string, object> SortMap => Sort == null ? null : Sort.Sorts.ToDictionary(x => x.Name, x => x.Value);
 }
 
 /// <summary>
-/// Options for finding and deleting a single document from a collection
+/// Options for deleting a document from a collection.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class FindOneAndDeleteOptions<T> : DeleteOptions<T> where T : class
+public class CollectionDeleteOneOptions<T> : BaseDeleteOneOptions where T : class
 {
-  /// <summary>
-  /// Define the projection to apply on the returned document
-  /// </summary>
-  [JsonIgnore]
-  public IProjectionBuilder Projection { get; set; }
-
-  [JsonInclude]
-  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  [JsonPropertyName("projection")]
-  internal Dictionary<string, object> ProjectionMap => Projection == null ? null : Projection.Projections.ToDictionary(x => x.FieldName, x => x.Value);
+    /// <summary>
+    /// Sort order for determining which document to delete when multiple match the filter.
+    /// </summary>
+    public CollectionSortBuilder<T> Sort { get; set; }
+    
+    internal object ToPayload(Filter<T> filter)
+    {
+        return new
+        {
+            filter = filter?.Serialize() ?? new(),
+            sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value)
+        };
+    }
 }
 
-internal class DeleteManyOptions<T> where T : class
+/// <summary>
+/// Options for deleting a row from a table.
+/// </summary>
+public sealed class TableDeleteOneOptions : BaseDeleteOneOptions
 {
-  internal Filter<T> Filter { get; set; }
+    internal object ToPayload<T>(Filter<T> filter) where T : class
+    {
+        return new 
+        {
+            filter = filter?.Serialize(),
+        };
+    }
+}
 
-  [JsonInclude]
-  [JsonPropertyName("filter")]
-  internal Dictionary<string, object> FilterMap => Filter == null ? new Dictionary<string, object>() : Filter.Serialize();
+/// <summary>
+/// Options for finding and deleting a single document from a collection.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public sealed class CollectionFindOneAndDeleteOptions<T> : CollectionDeleteOneOptions<T> where T : class
+{
+    /// <summary>
+    /// Define the projection to apply on the returned document.
+    /// </summary>
+    public IProjectionBuilder Projection { get; set; }
+
+    internal new object ToPayload(Filter<T> filter)
+    {
+        return new
+        {
+            filter = filter?.Serialize(),
+            sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
+            projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new()
+        };
+    }
+}
+
+/// <summary>
+/// Base class for delete-many operation options.
+/// </summary>
+public abstract class BaseDeleteManyOptions : CommandOptions
+{
+}
+
+/// <summary>
+/// Options for deleting multiple documents from a collection.
+/// </summary>
+public sealed class CollectionDeleteManyOptions : BaseDeleteManyOptions
+{
+    internal object ToPayload<T>(Filter<T> filter) where T : class
+    {
+        return new
+        {
+            filter = filter?.Serialize(),
+        };
+    }
+}
+
+/// <summary>
+/// Options for deleting multiple rows from a table.
+/// </summary>
+public sealed class TableDeleteManyOptions : BaseDeleteManyOptions
+{
+    internal object ToPayload<T>(Filter<T> filter) where T : class
+    {
+        return new
+        {
+            filter = filter?.Serialize(),
+        };
+    }
 }

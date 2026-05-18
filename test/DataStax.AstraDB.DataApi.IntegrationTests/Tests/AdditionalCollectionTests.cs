@@ -518,46 +518,20 @@ public class AdditionalCollectionTests
             Assert.Equal("one", find_f_id1.Name);
             Assert.Equal("two", find_f_id2.Name);
 
-            // findOne through FINDOPTIONS ONLY:
+            // findOne with filter parameter:
             //
-            var findOpt_id1 = new CollectionFindOneOptions<SimpleObjectWithVector>()
-            {
-                Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 1)
-            };
-            var findOpt_id2 = new CollectionFindOneOptions<SimpleObjectWithVector>()
-            {
-                Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 2)
-            };
+            var filter_id1 = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 1);
+            var filter_id2 = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 2);
+            var findOptions = new CollectionFindOneOptions<SimpleObjectWithVector>();
+            
             // exp. payload: {"findOne":{"filter":{"_id":{"$eq":1}}}}
-            var find_o_id1 = await collection.FindOneAsync(findOpt_id1);
+            var find_o_id1 = await collection.FindOneAsync(filter_id1, findOptions);
             // exp. payload: {"findOne":{"filter":{"_id":{"$eq":2}}}}
-            var find_o_id2 = await collection.FindOneAsync(findOpt_id2);
+            var find_o_id2 = await collection.FindOneAsync(filter_id2, findOptions);
             Assert.Equal("one", find_o_id1.Name);
             Assert.Equal("two", find_o_id2.Name);
 
-            // findOne through BOTH FILTER AND FINDOPTIONS (should throw):
-            var findOpt_id991 = new CollectionFindOneOptions<SimpleObjectWithVector>()
-            {
-                Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 991)
-            };
-            var findOpt_id992 = new CollectionFindOneOptions<SimpleObjectWithVector>()
-            {
-                Filter = Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 992)
-            };
-            await Assert.ThrowsAsync<ArgumentException>(async () =>
-            {
-                await collection.FindOneAsync(
-                    Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 1),
-                    findOpt_id991
-                );
-            });
-            await Assert.ThrowsAsync<ArgumentException>(async () =>
-            {
-                await collection.FindOneAsync(
-                    Builders<SimpleObjectWithVector>.CollectionFilter.Eq(d => d.Id, 2),
-                    findOpt_id992
-                );
-            });
+
         }
         finally
         {
