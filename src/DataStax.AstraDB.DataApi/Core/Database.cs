@@ -664,22 +664,7 @@ public class Database
     /// <param name="options">The options to use for the command, useful e.g. for customizing timeout settings</param>
     public TAdmin GetAdmin<TAdmin>(CommandOptions options) where TAdmin : IDatabaseAdmin
     {
-        var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
-
-        if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
-        {
-            throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
-        }
-
-        IDatabaseAdmin admin;
-        if (mergedOptions.Destination == DataAPIDestination.ASTRA)
-        {
-            admin = new DatabaseAdminAstra(this, _client, mergedOptions);
-        }
-        else
-        {
-            admin = new DatabaseAdminDataAPI(this, _client, mergedOptions);
-        }
+        IDatabaseAdmin admin = GetAdmin(options);
 
         // Validate that the requested type matches the actual admin type
         if (admin is not TAdmin typedAdmin)
