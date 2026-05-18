@@ -612,6 +612,7 @@ public class Database
     /// <summary>
     /// Returns an instance of <see cref="IDatabaseAdmin"/> that can be used to perform database management operations for this database
     /// </summary>
+    /// <param name="options">Optional. The options for the admin, useful e.g. for customizing timeout settings</param>
     /// <returns>An appropriate database admin instance</returns>
     /// <exception cref="ArgumentException">
     /// Thrown when the options request a different destination
@@ -619,18 +620,9 @@ public class Database
     /// <remarks>
     /// The type-parameterized form of this method, <see cref="GetAdmin{TAdmin}()"/>, is recommended for a more type-safe code.
     /// </remarks>
-    public IDatabaseAdmin GetAdmin()
+    public IDatabaseAdmin GetAdmin(CommandOptions options = null)
     {
-        return GetAdmin(null);
-    }
-
-    /// <inheritdoc cref="GetAdmin()"/>
-    /// <param name="options">The options to use for the command, useful e.g. for customizing timeout settings</param>
-    /// <remarks>
-    /// The type-parameterized form of this method, <see cref="GetAdmin{TAdmin}(CommandOptions)"/>, is recommended for a more type-safe code.
-    /// </remarks>
-    public IDatabaseAdmin GetAdmin(CommandOptions options)
-    {
+        options ??= new();
         var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
 
         if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
@@ -651,26 +643,21 @@ public class Database
     /// <typeparam name="TAdmin">
     /// The type of database admin to return. Must be either <see cref="DatabaseAdminAstra"/> or <see cref="DatabaseAdminDataAPI"/>
     /// </typeparam>
+    /// <param name="options">Optional. The options for the admin, useful e.g. for customizing timeout settings</param>
     /// <returns>An instance of the specified admin type</returns>
     /// <exception cref="ArgumentException">
     /// Thrown when the options request a different destination, or when the resulting admin does not match the provided <typeparamref name="TAdmin"/>
     /// </exception>
-    public TAdmin GetAdmin<TAdmin>() where TAdmin : IDatabaseAdmin
-    {
-        return GetAdmin<TAdmin>(null);
-    }
-
-    /// <inheritdoc cref="GetAdmin{TAdmin}()"/>
-    /// <param name="options">The options to use for the command, useful e.g. for customizing timeout settings</param>
-    public TAdmin GetAdmin<TAdmin>(CommandOptions options) where TAdmin : IDatabaseAdmin
+    public TAdmin GetAdmin<TAdmin>(CommandOptions options = null) where TAdmin : IDatabaseAdmin
     {
         IDatabaseAdmin admin = GetAdmin(options);
 
-        // Validate that the requested type matches the actual admin type
+        // Actual type validation
         if (admin is not TAdmin typedAdmin)
         {
             throw new ArgumentException(
-                $"Requested a {typeof(TAdmin).Name}, but produced a {admin.GetType().Name}");
+                $"Requested a {typeof(TAdmin).Name}, but produced a {admin.GetType().Name}. " +
+                "Please ensure the requested admin type matches the database 'Destination'.");
         }
 
         return typedAdmin;
