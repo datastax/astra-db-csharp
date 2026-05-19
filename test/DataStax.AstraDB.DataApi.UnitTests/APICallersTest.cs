@@ -44,7 +44,7 @@ public class APICallersTests
 
         Assert.Equal(
             "n2 v3 n5/v5",
-            APICaller.ToString(callers)
+            APICaller.ToHeaderString(callers)
         );
     }
 }
