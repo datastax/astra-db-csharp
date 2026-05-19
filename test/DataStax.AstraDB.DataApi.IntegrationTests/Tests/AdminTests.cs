@@ -211,6 +211,50 @@ public class AdminTests
         Assert.NotNull(names);
     }
 
+    [SkipWhenNotAstra]
+    [Fact]
+    public async Task DatabaseAdmin_GetAdmin_TypedPatterns_Astra()
+    {
+        var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
+        var options = new CommandOptions();
+
+        var genAdmin = database.GetAdmin();
+        var astraAdmin = database.GetAdmin<DatabaseAdminAstra>();
+        var genAdminO = database.GetAdmin(options);
+        var astraAdminO = database.GetAdmin<DatabaseAdminAstra>(options);
+
+        Assert.IsType<DatabaseAdminAstra>(astraAdmin);
+        Assert.Throws<ArgumentException>(() =>
+            database.GetAdmin<DatabaseAdminDataAPI>()
+        );
+        Assert.IsType<DatabaseAdminAstra>(astraAdminO);
+        Assert.Throws<ArgumentException>(() =>
+            database.GetAdmin<DatabaseAdminDataAPI>(options)
+        );
+    }
+
+    [SkipWhenAstra]
+    [Fact]
+    public async Task DatabaseAdmin_GetAdmin_TypedPatterns_NonAstra()
+    {
+        var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
+        var options = new CommandOptions();
+
+        var genAdmin = database.GetAdmin();
+        var hcdAdmin = database.GetAdmin<DatabaseAdminDataAPI>();
+        var genAdminO = database.GetAdmin(options);
+        var hcdAdminO = database.GetAdmin<DatabaseAdminDataAPI>(options);
+
+        Assert.IsType<DatabaseAdminDataAPI>(hcdAdmin);
+        Assert.Throws<ArgumentException>(() =>
+            database.GetAdmin<DatabaseAdminAstra>()
+        );
+        Assert.IsType<DatabaseAdminDataAPI>(hcdAdminO);
+        Assert.Throws<ArgumentException>(() =>
+            database.GetAdmin<DatabaseAdminAstra>(options)
+        );
+    }
+
     [Fact]
     public async Task DatabaseAdmin_DoesKeyspaceExist()
     {

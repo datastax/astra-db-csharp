@@ -612,20 +612,17 @@ public class Database
     /// <summary>
     /// Returns an instance of <see cref="IDatabaseAdmin"/> that can be used to perform database management operations for this database
     /// </summary>
-    /// <returns></returns>
-    public IDatabaseAdmin GetAdmin()
+    /// <param name="options">Optional. The options for the admin, useful e.g. for customizing timeout settings</param>
+    /// <returns>An appropriate database admin instance</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the options request a different destination
+    /// </exception>
+    /// <remarks>
+    /// The type-parameterized form of this method, <see cref="GetAdmin{TAdmin}()"/>, is recommended for a more type-safe code.
+    /// </remarks>
+    public IDatabaseAdmin GetAdmin(CommandOptions options = null)
     {
-        return GetAdmin(null);
-    }
-
-    /// <summary>
-    /// Returns an instance of <see cref="IDatabaseAdmin"/> that can be used to perform database management operations for this database
-    /// </summary>
-    /// <param name="options">The options to use for the command, useful for overriding the destination database</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException">Thrown when the destination is not the same for all CommandOptions when overriding the default destination</exception>
-    public IDatabaseAdmin GetAdmin(CommandOptions options)
-    {
+        options ??= new();
         var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
 
         if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
@@ -638,6 +635,32 @@ public class Database
             return new DatabaseAdminAstra(this, _client, mergedOptions);
         }
         return new DatabaseAdminDataAPI(this, _client, mergedOptions);
+    }
+
+    /// <summary>
+    /// Returns an instance of <typeparamref name="TAdmin"/> that can be used to perform database management operations for this database
+    /// </summary>
+    /// <typeparam name="TAdmin">
+    /// The type of database admin to return. Must be either <see cref="DatabaseAdminAstra"/> or <see cref="DatabaseAdminDataAPI"/>
+    /// </typeparam>
+    /// <param name="options">Optional. The options for the admin, useful e.g. for customizing timeout settings</param>
+    /// <returns>An instance of the specified admin type</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the options request a different destination, or when the resulting admin does not match the provided <typeparamref name="TAdmin"/>
+    /// </exception>
+    public TAdmin GetAdmin<TAdmin>(CommandOptions options = null) where TAdmin : IDatabaseAdmin
+    {
+        IDatabaseAdmin admin = GetAdmin(options);
+
+        // Actual type validation
+        if (admin is not TAdmin typedAdmin)
+        {
+            throw new ArgumentException(
+                $"Requested a {typeof(TAdmin).Name}, but produced a {admin.GetType().Name}. " +
+                "Please ensure the requested admin type matches the database 'Destination'.");
+        }
+
+        return typedAdmin;
     }
 
     /// <summary>
