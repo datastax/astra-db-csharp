@@ -45,7 +45,7 @@ public class APICaller
         return string.Join("/", parts);
     }
 
-    static internal string ToString(List<APICaller> callers) {
+    static internal string ToHeaderString(List<APICaller> callers) {
         var callerStrings = new List<string>();
         foreach (var caller in callers)
         {

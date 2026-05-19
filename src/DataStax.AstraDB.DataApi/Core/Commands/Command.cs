@@ -54,10 +54,32 @@ internal class Command
     private const string ClientAPICallerName = "astra-db-csharp";
     private static readonly APICaller ClientAPICaller = new APICaller() {
         Name = ClientAPICallerName,
-        Version = (
-            Assembly.GetExecutingAssembly().GetName().Version
-        )?.ToString()
+        Version = GetAssemblyVersion()
     };
+
+    private static string GetAssemblyVersion()
+    {
+        try
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            // Try full version string identifier:
+            var infoVersion = assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion;
+            if (!string.IsNullOrEmpty(infoVersion))
+            {
+                // Strip away the trailing git commit SHA if present
+                var plusIndex = infoVersion.IndexOf('+');
+                return plusIndex >= 0 ? infoVersion.Substring(0, plusIndex) : infoVersion;
+            }
+            // Numeric-only version as fallback:
+            return assembly.GetName().Version?.ToString();
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     internal Command(DataAPIClient client, CommandOptions[] options, CommandUrlBuilder urlBuilder) : this(null, client, options, urlBuilder)
     {
@@ -343,7 +365,7 @@ internal class Command
             fullCallers.AddRange(commandOptions.APICallers);
         }
         fullCallers.Add(ClientAPICaller);
-        request.Headers.Add("User-Agent", APICaller.ToString(fullCallers));
+        request.Headers.Add("User-Agent", APICaller.ToHeaderString(fullCallers));
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commandOptions.Token);
         request.Headers.Add("Token", commandOptions.Token);
