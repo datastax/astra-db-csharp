@@ -27,7 +27,7 @@ public class APICallersTests
     {
         Assert.Null(new APICaller().ToString());
         Assert.Equal("n", new APICaller(){ Name = "n" }.ToString());
-        Assert.Equal("v", new APICaller(){ Version = "v" }.ToString());
+        Assert.Null(new APICaller(){ Version = "v" }.ToString());
         Assert.Equal("n/v", new APICaller(){ Name = "n", Version = "v" }.ToString());
     }
 
@@ -43,7 +43,7 @@ public class APICallersTests
         callers.Add(new APICaller(){ Name = "n5", Version = "v5" });
 
         Assert.Equal(
-            "n2 v3 n5/v5",
+            "n2 n5/v5",
             APICaller.ToHeaderString(callers)
         );
     }

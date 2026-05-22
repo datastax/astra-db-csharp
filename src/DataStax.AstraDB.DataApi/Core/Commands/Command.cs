@@ -378,10 +378,6 @@ internal class Command
         }
 
         MaybeLogDebugMessage("Headers: {Headers}", request.Headers);
-        // This header can contain spaces, and the GetValues returns the pieces as enumerable:
-        MaybeLogDebugMessage(
-            "User-Agent: {UserAgent}",
-            string.Join(" ", request.Headers.GetValues("User-Agent")));
 
         string responseContent = null;
         HttpResponseMessage response = null;

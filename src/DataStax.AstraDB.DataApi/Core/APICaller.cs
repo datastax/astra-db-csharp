@@ -35,14 +35,21 @@ public class APICaller
 
     new internal string ToString()
     {
-        if (Name == null && Version == null)
+        if (Name == null)
         {
             return null;
         }
-        var parts = new List<string>();
-        if (Name != null) parts.Add(Name);
-        if (Version != null) parts.Add(Version);
-        return string.Join("/", parts);
+        else
+        {
+            if (Version != null)
+            {
+                return $"{Name}/{Version}";
+            }
+            else
+            {
+                return Name;
+            }
+        }
     }
 
     static internal string ToHeaderString(List<APICaller> callers) {
