@@ -760,7 +760,7 @@ public class Table<T> where T : class
             }
             catch (OperationCanceledException)
             {
-                var innerException = new TimeoutException($"InsertMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                var innerException = new TimeoutException($"InsertMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the TableInsertManyOptions.TimeoutOptions.BulkOperationTimeout parameter.");
                 throw new BulkOperationException<TableInsertManyResult>(innerException, result);
             }
             catch (Exception ex)
@@ -899,7 +899,7 @@ public class Table<T> where T : class
     /// </code>
     /// </example>
     /// <remarks>
-    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// Timeouts passed in the <see cref="TableFindManyOptions{T}"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
     /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.

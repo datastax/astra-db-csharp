@@ -197,7 +197,7 @@ public class Collection<T, TId> where T : class
             }
             catch (OperationCanceledException)
             {
-                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CollectionInsertManyOptions.TimeoutOptions.BulkOperationTimeout parameter.");
                 throw new BulkOperationException<CollectionInsertManyResult<TId>>(innerException, result);
             }
             catch (Exception ex)
@@ -368,7 +368,7 @@ public class Collection<T, TId> where T : class
     /// </code>
     /// </example>
     /// <remarks>
-    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// Timeouts passed in the <see cref="CollectionFindManyOptions{T}"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
     /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
@@ -775,7 +775,7 @@ public class Collection<T, TId> where T : class
             }
             catch (OperationCanceledException)
             {
-                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CollectionDeleteManyOptions.TimeoutOptions.BulkOperationTimeout parameter.");
                 throw new BulkOperationException<DeleteResult>(innerException, deleteResult);
             }
             catch (Exception ex)
@@ -883,7 +883,7 @@ public class Collection<T, TId> where T : class
             }
             catch (OperationCanceledException)
             {
-                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                var innerException = new TimeoutException($"Bulk operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CollectionUpdateManyOptions.TimeoutOptions.BulkOperationTimeout parameter.");
                 throw new BulkOperationException<UpdateResult>(innerException, updateResult);
             }
             catch (Exception ex)

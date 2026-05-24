@@ -618,7 +618,7 @@ public class Database
     /// Thrown when the options request a different destination
     /// </exception>
     /// <remarks>
-    /// The type-parameterized form of this method, <see cref="GetAdmin{TAdmin}()"/>, is recommended for a more type-safe code.
+    /// The type-parameterized form of this method, <see cref="GetAdmin{TAdmin}(CommandOptions)"/>, is recommended for a more type-safe code.
     /// </remarks>
     public IDatabaseAdmin GetAdmin(CommandOptions options = null)
     {
