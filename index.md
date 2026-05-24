@@ -38,7 +38,11 @@ var documents = new List<SimpleObject>
 };
 var insertResult = await collection.InsertManyAsync(documents);
 
-//find a document
-var filter = Builders<SimpleObject>.Filter.Eq(so => so.Name, "Test Object 1");
-var results = await collection.Find(filter);
+//find documents
+var filter = Builders<SimpleObject>.CollectionFilter.Eq(so => so.Name, "Test Object 1");
+var cursor = collection.Find(filter);
+await foreach (var doc in cursor)
+{
+    // Process 'doc''
+}
 ```

@@ -282,7 +282,7 @@ public class Collection<T, TId> where T : class
     /// <returns></returns>
     /// <example>
     /// <code>
-    /// var filter = Builders&lt;DifferentIdsObject&gt;.Filter.Eq(d => d.TheId, 1);
+    /// var filter = Builders&lt;DifferentIdsObject&gt;.CollectionFilter.Eq(d => d.TheId, 1);
     /// var result = await collection.FindOneAsync(filter);
     /// </code>
     /// </example>
