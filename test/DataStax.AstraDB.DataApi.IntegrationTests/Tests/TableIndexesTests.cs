@@ -831,12 +831,12 @@ public class TableIndexesTests
             // third drop (should fail when IfNotExists is false)
             var ex2 = await Assert.ThrowsAsync<CommandException>(() =>
                 fixture.Database.DropTableIndexAsync(indexName,
-                    new DropIndexCommandOptions(){IfExists = false}));
+                    new DropTableIndexOptions(){IfExists = false}));
 
             Assert.Contains("attempted to drop", ex2.Message);
 
             // fourth drop (should not fail when IfNotExists is true)
-            await fixture.Database.DropTableIndexAsync(indexName, new DropIndexCommandOptions()
+            await fixture.Database.DropTableIndexAsync(indexName, new DropTableIndexOptions()
             {
                 IfExists = true
             });

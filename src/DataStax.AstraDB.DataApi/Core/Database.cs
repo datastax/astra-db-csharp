@@ -1234,54 +1234,38 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTableIndexAsync(string)"/>
+    /// Synchronous version of <see cref="DropTableIndexAsync(string, DropTableIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DropTableIndexAsync(string)"/>
-    public void DropTableIndex(string indexName)
+    /// <inheritdoc cref="DropTableIndexAsync(string, DropTableIndexOptions)"/>
+    public void DropTableIndex(string indexName, DropTableIndexOptions options = null)
     {
-        DropTableIndex(indexName, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTableIndexAsync(string, DropIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DropTableIndexAsync(string, DropIndexCommandOptions)"/>
-    public void DropTableIndex(string indexName, DropIndexCommandOptions commandOptions)
-    {
-        DropTableIndexAsync(indexName, commandOptions, true).ResultSync();
+        DropTableIndexAsync(indexName, options, true).ResultSync();
     }
 
     /// <summary>
     /// Drops an index on the table.
     /// </summary>
-    /// <param name="indexName">The name of the index to drop</param>
-    public Task DropTableIndexAsync(string indexName)
-    {
-        return DropTableIndexAsync(indexName, null, false);
-    }
-
-    /// <inheritdoc cref="DropTableIndexAsync(string)"/>
     /// <param name="indexName"></param>
-    /// <param name="commandOptions"></param>
-    public Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions)
+    /// <param name="options"></param>
+    public Task DropTableIndexAsync(string indexName, DropTableIndexOptions options = null)
     {
-        return DropTableIndexAsync(indexName, commandOptions, false);
+        return DropTableIndexAsync(indexName, options, false);
     }
 
-    private async Task DropTableIndexAsync(string indexName, DropIndexCommandOptions commandOptions, bool runSynchronously)
+    private async Task DropTableIndexAsync(string indexName, DropTableIndexOptions options, bool runSynchronously)
     {
         var payload = new Dictionary<string, object>
         {
             ["name"] = indexName,
         };
-        if (commandOptions != null)
+        if (options != null)
         {
-            payload["options"] = new { ifExists = commandOptions.IfExists };
+            payload["options"] = new { ifExists = options.IfExists };
         }
         var command = CreateCommand("dropIndex")
             .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())
-            .AddCommandOptions(commandOptions);
+            .AddCommandOptions(options);
 
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
     }
