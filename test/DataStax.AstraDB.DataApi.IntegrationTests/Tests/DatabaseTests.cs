@@ -786,8 +786,8 @@ public class DatabaseTests
     public async Task CreateGetTable_WithVectorizeHeader_Typed()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
-        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var gtHeaderOptions = new GetTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {
             var createdTable = await fixture.Database.CreateTableAsync<RowBookVectorizeHeaderBased>(ctHeaderOptions);
@@ -917,8 +917,8 @@ public class DatabaseTests
     {
         var tableName = "bookTestTableVectorizeHeader_Untyped";
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
-        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var gtHeaderOptions = new GetTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {
             var createDefinition = new TableDefinition()

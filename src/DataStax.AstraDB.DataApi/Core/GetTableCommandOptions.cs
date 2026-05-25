@@ -17,12 +17,22 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Additional command options when a command can be skipped if the target resource already exists.
+/// Command options specific to the database GetTable methods.
 /// </summary>
-public class CreateTableCommandOptions : DatabaseTableCommandOptions
+public class GetTableCommandOptions : DatabaseCommandOptions
 {
-  /// <summary>
-  /// Skip creating the resource if it already exists (instead of throwing an error).
-  /// </summary>
-  public bool IfNotExists { get; set; } = false;
+    /// <summary>
+    /// When specified, the client will send the x-embedding-api-key header with the specified key to any underlying HTTP request that requires vectorize authentication.
+    /// </summary>
+    public string EmbeddingAPIKey
+    {
+        get
+        {
+            return AdditionalHeaders.TryGetValue("x-embedding-api-key", out var value) ? value : null;
+        }
+        set
+        {
+            AdditionalHeaders["x-embedding-api-key"] = value;
+        }
+    }
 }

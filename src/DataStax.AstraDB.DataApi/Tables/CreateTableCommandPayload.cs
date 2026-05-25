@@ -19,7 +19,7 @@ using System.Text.Json.Serialization;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 
-internal class TableCommandPayload
+internal class CreateTableCommandPayload
 {
     /*
      * "createTable": {
@@ -30,6 +30,9 @@ internal class TableCommandPayload
                     "COLUMN_NAME": "DATA_TYPE"
                 },
                 "primaryKey": "PRIMARY_KEY_DEFINITION"
+            },
+            "options": {
+                "ifNotExists": true
             }
         }
      */
@@ -41,5 +44,15 @@ internal class TableCommandPayload
     [JsonInclude]
     internal TableDefinition Definition { get; set; }
 
+    [JsonPropertyName("options")]
+    [JsonInclude]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    internal CreateTableCommandOptions Options { get; set; }
+}
 
+internal class CreateTableCommandOptions
+{
+    [JsonPropertyName("ifNotExists")]
+    [JsonInclude]
+    internal bool IfNotExists { get; set; }
 }

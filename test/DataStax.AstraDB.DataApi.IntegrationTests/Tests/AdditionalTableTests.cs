@@ -494,7 +494,7 @@ public class AdditionalTableTests
                 await fixture.Database.CreateTableAsync<SimpleRowObject>(tableName);
             });
 
-            var sameTable = await fixture.Database.CreateTableAsync<SimpleRowObject>(tableName, new CreateTableCommandOptions()
+            var sameTable = await fixture.Database.CreateTableAsync<SimpleRowObject>(tableName, new CreateTableOptions()
             {
                 IfNotExists = true
             });
@@ -855,7 +855,7 @@ public class AdditionalTableTests
         try
         {
             var table = await fixture.Database.CreateTableAsync<SBook>(tableName,
-                new CreateTableCommandOptions() { IfNotExists = true });
+                new CreateTableOptions() { IfNotExists = true });
             var untypedTable = fixture.Database.GetTable(tableName);
 
             // typed insertion from dict / nonempty
@@ -995,7 +995,7 @@ public class AdditionalTableTests
         var tableName = "test_map_table";
         try
         {
-            var table = await fixture.Database.CreateTableAsync<TripleMapObject>(tableName, new CreateTableCommandOptions()
+            var table = await fixture.Database.CreateTableAsync<TripleMapObject>(tableName, new CreateTableOptions()
             {
                 IfNotExists = true
             });

@@ -839,83 +839,13 @@ public class Database
     }
 
     /// <summary>
-    /// Creates a table using the schema inferred from the <typeparamref name="TRow"/> type.
-    /// </summary>
-    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
-    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public Task<Table<TRow>> CreateTableAsync<TRow>() where TRow : class, new()
-    {
-        return CreateTableAsync<TRow>(null as CreateTableCommandOptions);
-    }
-
-    /// <summary>
-    /// Creates a table using the schema inferred from the <typeparamref name="TRow"/> type.
-    /// </summary>
-    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
-    /// <param name="options">Options for the create table command.</param>
-    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public Task<Table<TRow>> CreateTableAsync<TRow>(CreateTableCommandOptions options) where TRow : class, new()
-    {
-        var tableName = TableDefinition.GetTableName<TRow>();
-        return CreateTableAsync<TRow>(tableName, options);
-    }
-
-    /// <summary>
-    /// Creates a table with the specified name using the schema inferred from the <typeparamref name="TRow"/> type.
-    /// </summary>
-    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
-    /// <param name="tableName">The name to give the table.</param>
-    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName) where TRow : class, new()
-    {
-        return CreateTableAsync<TRow>(tableName, null);
-    }
-
-    /// <summary>
-    /// Creates a table with the specified name using the schema inferred from the <typeparamref name="TRow"/> type.
-    /// </summary>
-    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
-    /// <param name="tableName">The name to give the table.</param>
-    /// <param name="options">Options for the create table command.</param>
-    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CreateTableCommandOptions options) where TRow : class, new()
-    {
-        var udtProperties = TypeUtilities.FindPropertiesWithUserDefinedTypeAttribute(typeof(TRow));
-        if (udtProperties.Any())
-        {
-            var existingTypes = await ListTypeNamesAsync();
-            foreach (var udtProperty in udtProperties)
-            {
-                var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName(udtProperty.UnderlyingType, udtProperty.Attribute);
-                if (!existingTypes.Contains(typeName))
-                {
-                    await CreateTypeAsync(typeName, UserDefinedTypeRequest.CreateDefinitionFromType(udtProperty.UnderlyingType), new CreateTypeOptions() { IfNotExists = true });
-                }
-            }
-        }
-        var definition = TableDefinition.CreateTableDefinition<TRow>();
-        return await CreateTableAsync<TRow>(tableName, definition, options, false);
-    }
-
-    /// <summary>
-    /// Creates a table with the specified name and definition.
-    /// </summary>
-    /// <param name="tableName">The name to give the table.</param>
-    /// <param name="definition">The table definition describing columns and primary key.</param>
-    /// <returns>A <see cref="Table{Row}"/> instance for the created table.</returns>
-    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition)
-    {
-        return CreateTableAsync(tableName, definition, null);
-    }
-
-    /// <summary>
     /// Creates a table with the specified name, definition, and options.
     /// </summary>
     /// <param name="tableName">The name to give the table.</param>
     /// <param name="definition">The table definition describing columns and primary key.</param>
     /// <param name="options">Options for the create table command.</param>
     /// <returns>A <see cref="Table{Row}"/> instance for the created table.</returns>
-    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, CreateTableCommandOptions options)
+    public Task<Table<Row>> CreateTableAsync(string tableName, TableDefinition definition, CreateTableOptions options = null)
     {
         if (definition.PrimaryKey == null)
         {
@@ -924,22 +854,95 @@ public class Database
         return CreateTableAsync<Row>(tableName, definition, options, false);
     }
 
-    private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableCommandOptions options, bool runSynchronously) where TRow : class
+    /// <summary>
+    /// Creates a table using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// Any required user-defined type is created as well.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
+    public Task<Table<TRow>> CreateTableAsync<TRow>(CreateTableOptions options = null) where TRow : class, new()
     {
-        options = options ?? new CreateTableCommandOptions();
-        if (options.IfNotExists)
+        var tableName = TableDefinition.GetTableName<TRow>();
+        var definition = TableDefinition.CreateTableDefinition<TRow>();
+        return CreateTableAsync<TRow>(tableName, definition, options);
+    }
+
+    /// <summary>
+    /// Creates a table with the specified name using the schema inferred from the <typeparamref name="TRow"/> type.
+    /// Any required user-defined type is created as well.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
+    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CreateTableOptions options = null) where TRow : class, new()
+    {
+        var definition = TableDefinition.CreateTableDefinition<TRow>();
+        return await CreateTableAsync<TRow>(tableName, definition, options, false);
+    }
+
+    /// <summary>
+    /// Creates a table with a name inferred from the <typeparamref name="TRow"/> type.
+    /// Any required user-defined type is created as well.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="definition">A table definition, replacing that inferred from TRow.</param>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
+    public async Task<Table<TRow>> CreateTableAsync<TRow>(TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return await CreateTableAsync<TRow>(tableName, definition, options, false);
+    }
+
+    /// <summary>
+    /// Creates a table with the specified name and definitions.
+    /// Any required user-defined type is created as well.
+    /// </summary>
+    /// <typeparam name="TRow">The type representing the table row schema.</typeparam>
+    /// <param name="tableName">The name to give the table.</param>
+    /// <param name="definition">A table definition, replacing that inferred from TRow.</param>
+    /// <param name="options">Options for the create table command.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
+    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    {
+        return await CreateTableAsync<TRow>(tableName, definition, options, false);
+    }
+
+    private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableOptions options, bool runSynchronously) where TRow : class
+    {
+        // UDTs
+        var udtProperties = TypeUtilities.FindPropertiesWithUserDefinedTypeAttribute(typeof(TRow));
+        if (udtProperties.Any())
         {
-            var existingTables = await ListTableNamesAsync().ConfigureAwait(false);
-            if (existingTables.Contains(tableName))
+            var existingTypes = await ListTypesAsync(null, false, runSynchronously).ConfigureAwait(false);
+            var existingTypeNames = existingTypes.Select(x => x.Name).ToList();
+            foreach (var udtProperty in udtProperties)
             {
-                return GetTable<TRow>(tableName, options);
+                var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName(udtProperty.UnderlyingType, udtProperty.Attribute);
+                if (!existingTypeNames.Contains(typeName))
+                {
+                    await CreateTypeAsync(
+                        typeName,
+                        UserDefinedTypeRequest.CreateDefinitionFromType(udtProperty.UnderlyingType),
+                        new CreateTypeOptions() { IfNotExists = true },
+                        runSynchronously
+                    ).ConfigureAwait(false);
+                }
             }
         }
-        var payload = new TableCommandPayload
+        // table
+        options = options ?? new CreateTableOptions();
+        var payload = new CreateTableCommandPayload
         {
             Name = tableName,
             Definition = definition
         };
+        if (options.IfNotExists)
+        {
+            payload.Options = new CreateTableCommandOptions { IfNotExists = options.IfNotExists };
+        }
         var command = CreateCommand("createTable")
             .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())
@@ -949,53 +952,34 @@ public class Database
     }
 
     /// <summary>
-    /// Returns a reference to the table with the name defined by a [TableName] attribute on the type, or the type name if no attribute is present.
+    /// Returns a reference to a table by name.
     /// </summary>
+    /// <param name="tableName">The name of the table being targeted.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns>A table class allowing performing operations on the table.</returns>
-    public Table<TRow> GetTable<TRow>() where TRow : class, new()
+    public Table<Row> GetTable(string tableName, GetTableCommandOptions options = null)
     {
-        var tableName = TableDefinition.GetTableName<TRow>();
-        return GetTable<TRow>(tableName);
+        return GetTable<Row>(tableName, options);
     }
 
-    /// <inheritdoc cref="GetTable{TRow}()" />
+    /// <summary>
+    /// Returns a reference to the table with the name defined by a [TableName] attribute on the row type, or the type name if no attribute is present.
+    /// </summary>
+    /// <returns>A table class allowing performing operations on the table.</returns>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<TRow> GetTable<TRow>(DatabaseTableCommandOptions options) where TRow : class, new()
+    /// <typeparam name="TRow">The type of the rows in the table.</typeparam>
+    public Table<TRow> GetTable<TRow>(GetTableCommandOptions options = null) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
         return GetTable<TRow>(tableName, options);
     }
 
-    /// <summary>
-    /// Returns a reference to the table with the specified name.
-    /// </summary>
-    /// <param name="tableName"></param>
-    /// <returns></returns>
-    public Table<Row> GetTable(string tableName)
-    {
-        return GetTable(tableName, null);
-    }
-
-    /// <inheritdoc cref="GetTable(string)" />
-    /// <param name="tableName"></param>
+    /// <inheritdoc cref="GetTable{TRow}(GetTableCommandOptions)" />
+    /// <param name="tableName">The name of the table - if provided, overrides the information found on the row type.</param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<Row> GetTable(string tableName, DatabaseTableCommandOptions options)
+    public Table<TRow> GetTable<TRow>(string tableName, GetTableCommandOptions options = null) where TRow : class
     {
-        return GetTable<Row>(tableName, options);
-    }
-
-    /// <inheritdoc cref="GetTable(string)" />
-    /// <typeparam name="T">The type of the document stored in the referenced table</typeparam>
-    public Table<T> GetTable<T>(string tableName) where T : class
-    {
-        return GetTable<T>(tableName, null);
-    }
-
-    /// <inheritdoc cref="GetTable{T}(string)" />
-    /// <param name="tableName"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    public Table<TRow> GetTable<TRow>(string tableName, DatabaseTableCommandOptions options) where TRow : class
-    {
+        options ??= new();
         Guard.NotNullOrEmpty(tableName, nameof(tableName));
         return new Table<TRow>(tableName, this, options);
     }
