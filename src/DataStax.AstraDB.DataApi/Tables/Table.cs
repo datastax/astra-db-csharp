@@ -1220,21 +1220,12 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
+    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, AlterTableOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    public Table<T> Alter(IAlterTableOperation operation)
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, AlterTableOptions)"/>
+    public Table<T> Alter(IAlterTableOperation operation, AlterTableOptions options = null)
     {
-        return Alter(operation, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>.
-    /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>
-    public Table<T> Alter(IAlterTableOperation operation, CommandOptions commandOptions)
-    {
-        var response = AlterAsync<T>(operation, commandOptions, true).ResultSync();
+        var response = AlterAsync<T>(operation, options, true).ResultSync();
         return response;
     }
 
@@ -1242,62 +1233,41 @@ public class Table<T> where T : class
     /// Alters a table using the specified operation.
     /// </summary>
     /// <param name="operation">The alteration operation to apply.</param>
-    /// <returns>The status result of the alterTable command.</returns>
-    public Task<Table<T>> AlterAsync(IAlterTableOperation operation)
+    /// <param name="options">Options to customize the command execution.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance representing the table.</returns>
+    /// <remarks>
+    /// The type-parameterized form of this method, <see cref="AlterAsync{TRowAfterAlter}(IAlterTableOperation, AlterTableOptions)"/>, is recommended for type safety.
+    /// </remarks>
+    public Task<Table<T>> AlterAsync(IAlterTableOperation operation, AlterTableOptions options = null)
     {
-        return AlterAsync<T>(operation, null, false);
-    }
-
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    /// <param name="operation">The alteration operation to apply.</param>
-    /// <param name="commandOptions">Options to customize the command execution.</param>
-    public Task<Table<T>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions)
-    {
-        return AlterAsync<T>(operation, commandOptions, false);
+        return AlterAsync<T>(operation, options, false);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
+    /// This is a synchronous version of <see cref="AlterAsync{TRowAfterAlter}(IAlterTableOperation, AlterTableOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation)
+    /// <inheritdoc cref="AlterAsync{TRowAfterAlter}(IAlterTableOperation, AlterTableOptions)"/>
+    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation, AlterTableOptions options = null)
         where TRowAfterAlter : class
     {
-        return Alter<TRowAfterAlter>(operation, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>.
-    /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>
-    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions)
-        where TRowAfterAlter : class
-    {
-        var response = AlterAsync<TRowAfterAlter>(operation, commandOptions, true).ResultSync();
+        var response = AlterAsync<TRowAfterAlter>(operation, options, true).ResultSync();
         return response;
     }
 
     /// <summary>
     /// Alters a table using the specified operation.
     /// </summary>
+    /// <typeparam name="TRowAfterAlter">The type representing the row after the table is altered.</typeparam>
     /// <param name="operation">The alteration operation to apply.</param>
-    /// <returns>The status result of the alterTable command.</returns>
-    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation)
+    /// <param name="options">Options to customize the command execution.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance with the new row type.</returns>
+    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, AlterTableOptions options = null)
         where TRowAfterAlter : class
     {
-        return AlterAsync<TRowAfterAlter>(operation, null, false);
+        return AlterAsync<TRowAfterAlter>(operation, options, false);
     }
 
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    /// <param name="operation">The alteration operation to apply.</param>
-    /// <param name="commandOptions">Options to customize the command execution.</param>
-    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions)
-        where TRowAfterAlter : class
-    {
-        return AlterAsync<TRowAfterAlter>(operation, commandOptions, false);
-    }
-
-    internal async Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, AlterTableOptions options, bool runSynchronously)
         where TRowAfterAlter : class
     {
         var payload = new
@@ -1307,7 +1277,7 @@ public class Table<T> where T : class
 
         var command = CreateCommand("alterTable")
             .WithPayload(payload)
-            .AddCommandOptions(commandOptions);
+            .AddCommandOptions(options);
 
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
 
