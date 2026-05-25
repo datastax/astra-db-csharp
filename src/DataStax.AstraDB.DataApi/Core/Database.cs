@@ -290,7 +290,7 @@ public class Database
     /// <inheritdoc cref="CreateCollectionAsync(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
     public Collection<Document> CreateCollection(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options)
     {
-        return CreateCollectionAsync<Document>(collectionName, definition, options, false).ResultSync();
+        return CreateCollectionAsync<Document>(collectionName, definition, options, true).ResultSync();
     }
 
     /// <summary>
@@ -367,7 +367,7 @@ public class Database
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
     public Collection<T> CreateCollection<T>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
-        return CreateCollectionAsync<T>(collectionName, definition, options, false).ResultSync();
+        return CreateCollectionAsync<T>(collectionName, definition, options, true).ResultSync();
     }
 
     /// <summary>
@@ -375,7 +375,7 @@ public class Database
     /// </summary>
     public Collection<T> CreateCollection<T>() where T : class
     {
-        return CreateCollectionAsync<T>(null, null, null, false).ResultSync();
+        return CreateCollectionAsync<T>(null, null, null, true).ResultSync();
     }
 
     /// <summary>
@@ -383,7 +383,7 @@ public class Database
     /// </summary>
     public Collection<T> CreateCollection<T>(CollectionDefinition definition) where T : class
     {
-        return CreateCollectionAsync<T>(null, definition, null, false).ResultSync();
+        return CreateCollectionAsync<T>(null, definition, null, true).ResultSync();
     }
 
     /// <summary>
@@ -391,7 +391,7 @@ public class Database
     /// </summary>
     public Collection<T> CreateCollection<T>(DatabaseCollectionCommandOptions options) where T : class
     {
-        return CreateCollectionAsync<T>(null, null, options, false).ResultSync();
+        return CreateCollectionAsync<T>(null, null, options, true).ResultSync();
     }
 
     /// <summary>
@@ -399,7 +399,7 @@ public class Database
     /// </summary>
     public Collection<T> CreateCollection<T>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
-        return CreateCollectionAsync<T>(null, definition, options, false).ResultSync();
+        return CreateCollectionAsync<T>(null, definition, options, true).ResultSync();
     }
 
     /// <summary>
@@ -487,7 +487,7 @@ public class Database
     /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, DatabaseCollectionCommandOptions)" />
     public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
-        return CreateCollectionAsync<T, TId>(collectionName, definition, options, false).ResultSync();
+        return CreateCollectionAsync<T, TId>(collectionName, definition, options, true).ResultSync();
     }
 
     /// <summary>
@@ -495,7 +495,7 @@ public class Database
     /// </summary>
     public Collection<T, TId> CreateCollection<T, TId>() where T : class
     {
-        return CreateCollectionAsync<T, TId>(null, null, null, false).ResultSync();
+        return CreateCollectionAsync<T, TId>(null, null, null, true).ResultSync();
     }
 
     /// <summary>
@@ -503,7 +503,7 @@ public class Database
     /// </summary>
     public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition) where T : class
     {
-        return CreateCollectionAsync<T, TId>(null, definition, null, false).ResultSync();
+        return CreateCollectionAsync<T, TId>(null, definition, null, true).ResultSync();
     }
 
     /// <summary>
@@ -511,7 +511,7 @@ public class Database
     /// </summary>
     public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition, DatabaseCollectionCommandOptions options) where T : class
     {
-        return CreateCollectionAsync<T, TId>(null, definition, options, false).ResultSync();
+        return CreateCollectionAsync<T, TId>(null, definition, options, true).ResultSync();
     }
 
     /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
@@ -839,6 +839,59 @@ public class Database
     }
 
     /// <summary>
+    /// Synchronous version of <see cref="CreateTableAsync(string, TableDefinition, CreateTableOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="CreateTableAsync(string, TableDefinition, CreateTableOptions)" />
+    public Table<Row> CreateTable(string tableName, TableDefinition definition, CreateTableOptions options = null)
+    {
+        if (definition.PrimaryKey == null)
+        {
+            throw new InvalidOperationException("No primary key defined for table class. Please use definition.AddPrimaryKey() or definition.AddCompoundPrimaryKey()");
+        }
+        return CreateTableAsync<Row>(tableName, definition, options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTableAsync{TRow}(CreateTableOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="CreateTableAsync{TRow}(CreateTableOptions)" />
+    public Table<TRow> CreateTable<TRow>(CreateTableOptions options = null) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        var definition = TableDefinition.CreateTableDefinition<TRow>();
+        return CreateTable<TRow>(tableName, definition, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTableAsync{TRow}(string, CreateTableOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="CreateTableAsync{TRow}(string, CreateTableOptions)" />
+    public Table<TRow> CreateTable<TRow>(string tableName, CreateTableOptions options = null) where TRow : class, new()
+    {
+        var definition = TableDefinition.CreateTableDefinition<TRow>();
+        return CreateTable<TRow>(tableName, definition, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTableAsync{TRow}(TableDefinition, CreateTableOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="CreateTableAsync{TRow}(TableDefinition, CreateTableOptions)" />
+    public Table<TRow> CreateTable<TRow>(TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    {
+        var tableName = TableDefinition.GetTableName<TRow>();
+        return CreateTable<TRow>(tableName, definition, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateTableAsync{TRow}(string, TableDefinition, CreateTableOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="CreateTableAsync{TRow}(string, TableDefinition, CreateTableOptions)" />
+    public Table<TRow> CreateTable<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    {
+        return CreateTableAsync<TRow>(tableName, definition, options, true).ResultSync();
+    }
+
+    /// <summary>
     /// Creates a table with the specified name, definition, and options.
     /// </summary>
     /// <param name="tableName">The name to give the table.</param>
@@ -876,10 +929,10 @@ public class Database
     /// <param name="tableName">The name to give the table.</param>
     /// <param name="options">Options for the create table command.</param>
     /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CreateTableOptions options = null) where TRow : class, new()
+    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, CreateTableOptions options = null) where TRow : class, new()
     {
         var definition = TableDefinition.CreateTableDefinition<TRow>();
-        return await CreateTableAsync<TRow>(tableName, definition, options, false);
+        return CreateTableAsync<TRow>(tableName, definition, options, false);
     }
 
     /// <summary>
@@ -890,10 +943,10 @@ public class Database
     /// <param name="definition">A table definition, replacing that inferred from TRow.</param>
     /// <param name="options">Options for the create table command.</param>
     /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public async Task<Table<TRow>> CreateTableAsync<TRow>(TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    public Task<Table<TRow>> CreateTableAsync<TRow>(TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
     {
         var tableName = TableDefinition.GetTableName<TRow>();
-        return await CreateTableAsync<TRow>(tableName, definition, options, false);
+        return CreateTableAsync<TRow>(tableName, definition, options, false);
     }
 
     /// <summary>
@@ -905,9 +958,9 @@ public class Database
     /// <param name="definition">A table definition, replacing that inferred from TRow.</param>
     /// <param name="options">Options for the create table command.</param>
     /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
     {
-        return await CreateTableAsync<TRow>(tableName, definition, options, false);
+        return CreateTableAsync<TRow>(tableName, definition, options, false);
     }
 
     private async Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableOptions options, bool runSynchronously) where TRow : class
