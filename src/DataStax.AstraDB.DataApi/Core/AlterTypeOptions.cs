@@ -19,6 +19,6 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Options for altering a type definition on a database, e.g. with <see cref="Database.AlterTypeAsync{T}(Tables.IAlterTypeOperation, AlterTypeOptions)"/>.
 /// </summary>
-public class AlterTypeOptions : CommandOptions
+public class AlterTypeOptions : DatabaseCommandOptions
 {
 }

@@ -22,7 +22,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 /// <summary>
 /// Options for dropping a table index.
 /// </summary>
-public class DropTableIndexOptions : CommandOptions
+public class DropTableIndexOptions : DatabaseCommandOptions
 {
     /// <summary>
     /// A value indicating whether to skip the drop operation if the index does not exist,
