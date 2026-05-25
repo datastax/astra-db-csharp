@@ -618,16 +618,16 @@ public class Database
     /// Thrown when the options request a different destination
     /// </exception>
     /// <remarks>
-    /// The type-parameterized form of this method, <see cref="GetAdmin{TAdmin}(CommandOptions)"/>, is recommended for a more type-safe code.
+    /// The type-parameterized form of this method, <see cref="GetAdmin{TAdmin}(GetAdminOptions)"/>, is recommended for a more type-safe code.
     /// </remarks>
-    public IDatabaseAdmin GetAdmin(CommandOptions options = null)
+    public IDatabaseAdmin GetAdmin(GetAdminOptions options = null)
     {
         options ??= new();
         var mergedOptions = CommandOptions.Merge(CommandOptions.Merge(OptionsTree), options);
 
         if (options is { Destination: not null } && mergedOptions is { Destination: not null } && options.Destination != mergedOptions.Destination)
         {
-            throw new ArgumentException("Destination must be the same for all CommandOptions when overriding the default destination");
+            throw new ArgumentException("Destination cannot be overridden when supplying additional options.");
         }
 
         if (mergedOptions.Destination == DataAPIDestination.ASTRA)
@@ -648,7 +648,7 @@ public class Database
     /// <exception cref="ArgumentException">
     /// Thrown when the options request a different destination, or when the resulting admin does not match the provided <typeparamref name="TAdmin"/>
     /// </exception>
-    public TAdmin GetAdmin<TAdmin>(CommandOptions options = null) where TAdmin : IDatabaseAdmin
+    public TAdmin GetAdmin<TAdmin>(GetAdminOptions options = null) where TAdmin : IDatabaseAdmin
     {
         IDatabaseAdmin admin = GetAdmin(options);
 
