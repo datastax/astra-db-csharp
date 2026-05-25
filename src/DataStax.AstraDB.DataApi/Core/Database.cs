@@ -311,10 +311,10 @@ public class Database
 
     /// <inheritdoc cref="CreateCollectionAsync(string)" />
     /// <param name="collectionName"></param>
-    /// <param name="commandOptions"></param>
-    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, DatabaseCollectionCommandOptions commandOptions)
+    /// <param name="options"></param>
+    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, DatabaseCollectionCommandOptions options)
     {
-        return CreateCollectionAsync<Document>(collectionName, null, commandOptions);
+        return CreateCollectionAsync<Document>(collectionName, null, options);
     }
 
     /// <inheritdoc cref="CreateCollectionAsync(string)" />
