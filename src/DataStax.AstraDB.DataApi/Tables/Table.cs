@@ -56,44 +56,25 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListIndexesAsync()"/>
+    /// Synchronous version of <see cref="ListIndexesAsync(ListIndexesOptions)"/>
     /// </summary>
-    /// <returns></returns>
-    public List<TableIndexMetadata> ListIndexes()
+    /// <inheritdoc cref="ListIndexesAsync(ListIndexesOptions)"/>
+    public List<TableIndexMetadata> ListIndexes(ListIndexesOptions options = null)
     {
-        return ListIndexes(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListIndexesAsync(CommandOptions)"/>
-    /// </summary>
-    /// <param name="commandOptions"></param>
-    /// <returns></returns>
-    public List<TableIndexMetadata> ListIndexes(CommandOptions commandOptions)
-    {
-        return ListIndexesAsync(commandOptions, true).ResultSync();
+        return ListIndexesAsync(options, true).ResultSync();
     }
 
     /// <summary>
     /// Get a list of indexes for the table.
     /// </summary>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task<List<TableIndexMetadata>> ListIndexesAsync()
+    public Task<List<TableIndexMetadata>> ListIndexesAsync(ListIndexesOptions options = null)
     {
-        return ListIndexesAsync(null);
+        return ListIndexesAsync(options, false);
     }
 
-    /// <summary>
-    /// Get a list of indexes for the table.
-    /// </summary>
-    /// <param name="commandOptions"></param>
-    /// <returns></returns>
-    public Task<List<TableIndexMetadata>> ListIndexesAsync(CommandOptions commandOptions)
-    {
-        return ListIndexesAsync(commandOptions, false);
-    }
-
-    private async Task<List<TableIndexMetadata>> ListIndexesAsync(CommandOptions commandOptions, bool runSynchronously)
+    private async Task<List<TableIndexMetadata>> ListIndexesAsync(ListIndexesOptions options, bool runSynchronously)
     {
         var payload = new
         {
@@ -102,49 +83,31 @@ public class Table<T> where T : class
                 explain = true,
             }
         };
-        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
+        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<ListTableIndexMetadataResult>(runSynchronously).ConfigureAwait(false);
         return response.Result.Indexes;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListIndexNamesAsync()"/>
+    /// Synchronous version of <see cref="ListIndexNamesAsync(ListIndexNamesOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="ListIndexNamesAsync()"/>
-    public List<string> ListIndexNames()
+    /// <inheritdoc cref="ListIndexNamesAsync(ListIndexNamesOptions)"/>
+    public List<string> ListIndexNames(ListIndexNamesOptions options = null)
     {
-        return ListIndexNames(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListIndexNamesAsync(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="ListIndexNamesAsync(CommandOptions)"/>
-    public List<string> ListIndexNames(CommandOptions commandOptions)
-    {
-        return ListIndexNamesAsync(commandOptions, true).ResultSync();
+        return ListIndexNamesAsync(options, true).ResultSync();
     }
 
     /// <summary>
     /// Get a list of index names for the table.
     /// </summary>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task<List<string>> ListIndexNamesAsync()
+    public Task<List<string>> ListIndexNamesAsync(ListIndexNamesOptions options = null)
     {
-        return ListIndexNamesAsync(null);
+        return ListIndexNamesAsync(options, false);
     }
 
-    /// <summary>
-    /// Get a list of index names for the table.
-    /// </summary>
-    /// <param name="commandOptions"></param>
-    /// <returns></returns>
-    public Task<List<string>> ListIndexNamesAsync(CommandOptions commandOptions)
-    {
-        return ListIndexNamesAsync(commandOptions, false);
-    }
-
-    private async Task<List<string>> ListIndexNamesAsync(CommandOptions commandOptions, bool runSynchronously)
+    private async Task<List<string>> ListIndexNamesAsync(ListIndexNamesOptions options, bool runSynchronously)
     {
         var payload = new
         {
@@ -153,7 +116,7 @@ public class Table<T> where T : class
                 explain = false,
             }
         };
-        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
+        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<ListTableIndexNamesResult>(runSynchronously).ConfigureAwait(false);
         return response.Result.IndexNames;
     }
