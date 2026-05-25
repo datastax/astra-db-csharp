@@ -17,9 +17,9 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Additional command options for the Database.CreateType commands.
+/// Additional command options for the <see cref="Database.DropType{T}(DropTypeOptions)"/> method.
 /// </summary>
-public class DropTypeCommandOptions : CommandOptions
+public class DropTypeOptions : CommandOptions
 {
   /// <summary>
   /// Skip dropping the type if it does not exist (instead of throwing an error).

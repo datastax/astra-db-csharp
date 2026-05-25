@@ -919,7 +919,7 @@ public class Database
                 var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName(udtProperty.UnderlyingType, udtProperty.Attribute);
                 if (!existingTypes.Contains(typeName))
                 {
-                    await CreateTypeAsync(typeName, UserDefinedTypeRequest.CreateDefinitionFromType(udtProperty.UnderlyingType), new CreateTypeCommandOptions() { IfNotExists = true });
+                    await CreateTypeAsync(typeName, UserDefinedTypeRequest.CreateDefinitionFromType(udtProperty.UnderlyingType), new CreateTypeOptions() { IfNotExists = true });
                 }
             }
         }
@@ -1287,28 +1287,10 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateTypeAsync{T}()"/> 
+    /// Synchronous version of <see cref="CreateTypeAsync{T}(CreateTypeOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
-    public void CreateType<T>() where T : new()
-    {
-        CreateType<T>(null as CreateTypeCommandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateTypeAsync{T}(string)"/> 
-    /// </summary>
-    /// <inheritdoc cref="CreateTypeAsync{T}(string)"/>
-    public void CreateType<T>(string typeName) where T : new()
-    {
-        CreateType<T>(typeName, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/>
-    public void CreateType<T>(CreateTypeCommandOptions options)
+    /// <inheritdoc cref="CreateTypeAsync{T}(CreateTypeOptions)"/>
+    public void CreateType<T>(CreateTypeOptions options = null)
     {
         var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
         var definition = UserDefinedTypeRequest.CreateDefinitionFromType<T>();
@@ -1316,29 +1298,20 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/> 
+    /// Synchronous version of <see cref="CreateTypeAsync{T}(CreateTypeOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="CreateTypeAsync{T}(CreateTypeCommandOptions)"/>
-    public void CreateType<T>(string typeName, CreateTypeCommandOptions options)
+    /// <inheritdoc cref="CreateTypeAsync{T}(CreateTypeOptions)"/>
+    public void CreateType<T>(string typeName, CreateTypeOptions options = null)
     {
         var definition = UserDefinedTypeRequest.CreateDefinitionFromType<T>();
         CreateType(typeName, definition, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateTypeAsync(string, UserDefinedTypeDefinition)"/> 
+    /// Synchronous version of <see cref="CreateTypeAsync(string, UserDefinedTypeDefinition, CreateTypeOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition)"/>
-    public void CreateType(string typeName, UserDefinedTypeDefinition definition)
-    {
-        CreateType(typeName, definition, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateTypeAsync(string, UserDefinedTypeDefinition, CreateTypeCommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition, CreateTypeCommandOptions)"/>
-    public void CreateType(string typeName, UserDefinedTypeDefinition definition, CreateTypeCommandOptions options)
+    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition, CreateTypeOptions)"/>
+    public void CreateType(string typeName, UserDefinedTypeDefinition definition, CreateTypeOptions options = null)
     {
         CreateTypeAsync(typeName, definition, options, true).ResultSync();
     }
@@ -1346,65 +1319,52 @@ public class Database
     /// <summary>
     /// Create a User Defined Type dynamically by specifying the class that defines the type
     /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="options"></param>
     /// <remarks>
     /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
     /// Columns that do not match available types (<see cref="TypeUtilities.GetDataAPIType(Type)"/>) will be ignored.
     /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
-    /// <typeparam name="T"></typeparam>
-    public Task CreateTypeAsync<T>() where T : new()
-    {
-        return CreateTypeAsync<T>(null as CreateTypeCommandOptions);
-    }
-
-    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
-    /// <param name="typeName"></param>
-    public Task CreateTypeAsync<T>(string typeName)
-    {
-        return CreateTypeAsync<T>(typeName, null);
-    }
-
-    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
-    /// <param name="options"></param>
-    public Task CreateTypeAsync<T>(CreateTypeCommandOptions options)
+    public Task CreateTypeAsync<T>(CreateTypeOptions options = null)
     {
         string typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
         return CreateTypeAsync<T>(typeName, options);
     }
 
-    /// <inheritdoc cref="CreateTypeAsync{T}()"/>
-    /// <param name="typeName"></param>
+    /// <summary>
+    /// Create a User Defined Type dynamically by specifying the class that defines the type
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="typeName">The name of the type to create (overrides the name extracted from the provided class)</param>
     /// <param name="options"></param>
-    public Task CreateTypeAsync<T>(string typeName, CreateTypeCommandOptions options)
+    /// <remarks>
+    /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
+    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataAPIType(Type)"/>) will be ignored.
+    /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
+    /// </remarks>
+    public Task CreateTypeAsync<T>(string typeName, CreateTypeOptions options = null)
     {
         var definition = UserDefinedTypeRequest.CreateDefinitionFromType<T>();
         return CreateTypeAsync(typeName, definition, options);
     }
 
     /// <summary>
-    /// Create a User Defined Type given the <see cref="UserDefinedTypeDefinition"/> 
+    /// Create a User Defined Type dynamically by specifying its name and definition
     /// </summary>
-    /// <param name="typeName"></param>
-    /// <param name="definition"></param>
-    public Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition)
-    {
-        return CreateTypeAsync(typeName, definition, null);
-    }
-
-    /// <inheritdoc cref="CreateTypeAsync(string, UserDefinedTypeDefinition)"/>
-    /// <param name="typeName"></param>
-    /// <param name="definition"></param>
+    /// <param name="typeName">The name of the type to create</param>
+    /// <param name="definition">The type definition</param>
     /// <param name="options"></param>
-    public Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition, CreateTypeCommandOptions options)
+    public Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition, CreateTypeOptions options = null)
     {
         return CreateTypeAsync(typeName, definition, options, false);
     }
 
-    private async Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition, CreateTypeCommandOptions options, bool runSynchronously)
+    private async Task CreateTypeAsync(string typeName, UserDefinedTypeDefinition definition, CreateTypeOptions options, bool runSynchronously)
     {
         if (options == null)
         {
-            options = new CreateTypeCommandOptions();
+            options = new CreateTypeOptions();
         }
         var request = new UserDefinedTypeRequest()
         {
@@ -1420,47 +1380,20 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTypeAsync{T}()"/> 
+    /// Synchronous version of <see cref="DropTypeAsync{T}(DropTypeOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="DropTypeAsync{T}()"/>
-    public void DropType<T>() where T : new()
-    {
-        DropType<T>(null as DropTypeCommandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTypeAsync(string)"/> 
-    /// </summary>
-    /// <inheritdoc cref="DropTypeAsync(string)"/>
-    public void DropType(string typeName)
-    {
-        DropType(typeName, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTypeAsync{T}(DropTypeCommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="DropTypeAsync{T}(DropTypeCommandOptions)"/>
-    public void DropType<T>(DropTypeCommandOptions options)
+    /// <inheritdoc cref="DropTypeAsync{T}(DropTypeOptions)"/>
+    public void DropType<T>(DropTypeOptions options = null)
     {
         var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
         DropType(typeName, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropTypeAsync{T}(DropTypeCommandOptions)"/> 
+    /// Synchronous version of <see cref="DropTypeAsync(string, DropTypeOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="DropTypeAsync{T}(DropTypeCommandOptions)"/>
-    public void DropType<T>(string typeName, DropTypeCommandOptions options)
-    {
-        DropType(typeName, options);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropTypeAsync(string, DropTypeCommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="DropTypeAsync(string, DropTypeCommandOptions)"/>
-    public void DropType(string typeName, DropTypeCommandOptions options)
+    /// <inheritdoc cref="DropTypeAsync(string, DropTypeOptions)"/>
+    public void DropType(string typeName, DropTypeOptions options = null)
     {
         DropTypeAsync(typeName, options, true).ResultSync();
     }
@@ -1468,45 +1401,32 @@ public class Database
     /// <summary>
     /// Drop a User Defined Type dynamically by specifying the class that defines the type
     /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="options"></param>
     /// <remarks>
     /// If the class includes a <see cref="UserDefinedTypeAttribute"/> attribute, that name will be used, otherwise the name of the class itself will be used.
-    /// Columns that do not match available types (<see cref="TypeUtilities.GetDataAPIType(Type)"/>) will be ignored.
-    /// If properties include a <see cref="ColumnNameAttribute"/> attribute, that name will be used, otherwise the name of the property itself will be used. 
     /// </remarks>
-    /// <typeparam name="T"></typeparam>
-    public Task DropTypeAsync<T>() where T : new()
-    {
-        return DropTypeAsync<T>(null as DropTypeCommandOptions);
-    }
-
-    /// <inheritdoc cref="DropTypeAsync{T}()"/>
-    /// <param name="typeName"></param>
-    public Task DropTypeAsync(string typeName)
-    {
-        return DropTypeAsync(typeName, null);
-    }
-
-    /// <inheritdoc cref="DropTypeAsync{T}()"/>
-    /// <param name="options"></param>
-    public Task DropTypeAsync<T>(DropTypeCommandOptions options)
+    public Task DropTypeAsync<T>(DropTypeOptions options = null)
     {
         string typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
         return DropTypeAsync(typeName, options);
     }
 
-    /// <inheritdoc cref="DropTypeAsync(string)"/>
-    /// <param name="typeName"></param>
+    /// <summary>
+    /// Drop a User Defined Type dynamically by specifying the type name
+    /// </summary>
+    /// <param name="typeName">The name of the user-defined type to drop.</param>
     /// <param name="options"></param>
-    public Task DropTypeAsync(string typeName, DropTypeCommandOptions options)
+    public Task DropTypeAsync(string typeName, DropTypeOptions options = null)
     {
         return DropTypeAsync(typeName, options, false);
     }
 
-    private async Task DropTypeAsync(string typeName, DropTypeCommandOptions options, bool runSynchronously)
+    private async Task DropTypeAsync(string typeName, DropTypeOptions options, bool runSynchronously)
     {
         if (options == null)
         {
-            options = new DropTypeCommandOptions();
+            options = new DropTypeOptions();
         }
         var request = new DropUserDefinedTypeRequest()
         {

@@ -19,7 +19,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Additional command options for the Database.CreateType commands.
 /// </summary>
-public class CreateTypeCommandOptions : CommandOptions
+public class CreateTypeOptions : CommandOptions
 {
   /// <summary>
   /// Skip creating the type if one with the same name already exists
