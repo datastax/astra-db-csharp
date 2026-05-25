@@ -1521,38 +1521,20 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync{T}(IAlterTypeOperation)"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync{T}(IAlterTypeOperation, AlterTypeOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation)"/>
-    public void AlterType<T>(IAlterTypeOperation operation) where T : new()
-    {
-        AlterType<T>(operation, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync{T}(IAlterTypeOperation, CommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation, CommandOptions)"/>
-    public void AlterType<T>(IAlterTypeOperation operation, CommandOptions options) where T : new()
+    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation, AlterTypeOptions)"/>
+    public void AlterType<T>(IAlterTypeOperation operation, AlterTypeOptions options = null) where T : new()
     {
         var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
         AlterType(typeName, operation, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync(string, IAlterTypeOperation)"/> 
+    /// Synchronous version of <see cref="AlterTypeAsync(string, IAlterTypeOperation, AlterTypeOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation)"/>
-    public void AlterType(string typeName, IAlterTypeOperation operation)
-    {
-        AlterType(typeName, operation, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="AlterTypeAsync(string, IAlterTypeOperation, CommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation, CommandOptions)"/>
-    public void AlterType(string typeName, IAlterTypeOperation operation, CommandOptions options)
+    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation, AlterTypeOptions)"/>
+    public void AlterType(string typeName, IAlterTypeOperation operation, AlterTypeOptions options = null)
     {
         AlterTypeAsync(typeName, operation, options, true).ResultSync();
     }
@@ -1565,15 +1547,8 @@ public class Database
     /// </remarks>
     /// <typeparam name="T">The type that defines the User Defined Type</typeparam>
     /// <param name="operation">The operation to apply to the User Defined Type.</param>
-    public Task AlterTypeAsync<T>(IAlterTypeOperation operation) where T : new()
-    {
-        return AlterTypeAsync<T>(operation, null);
-    }
-
-    /// <inheritdoc cref="AlterTypeAsync{T}(IAlterTypeOperation)"/>
-    /// <param name="operation"></param>
     /// <param name="options"></param>
-    public Task AlterTypeAsync<T>(IAlterTypeOperation operation, CommandOptions options) where T : new()
+    public Task AlterTypeAsync<T>(IAlterTypeOperation operation, AlterTypeOptions options = null) where T : new()
     {
         var typeName = UserDefinedTypeRequest.GetUserDefinedTypeName<T>();
         return AlterTypeAsync(typeName, operation, options);
@@ -1584,25 +1559,17 @@ public class Database
     /// </summary>
     /// <param name="typeName">The name of the User Defined Type to alter.</param>
     /// <param name="operation">The operation to apply to the User Defined Type.</param>
-    public Task AlterTypeAsync(string typeName, IAlterTypeOperation operation)
-    {
-        return AlterTypeAsync(typeName, operation, null);
-    }
-
-    /// <inheritdoc cref="AlterTypeAsync(string, IAlterTypeOperation)"/>
-    /// <param name="typeName"></param>
-    /// <param name="operation"></param>
     /// <param name="options"></param>
-    public Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, CommandOptions options)
+    public Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, AlterTypeOptions options = null)
     {
         return AlterTypeAsync(typeName, operation, options, false);
     }
 
-    private async Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, CommandOptions options, bool runSynchronously)
+    private async Task AlterTypeAsync(string typeName, IAlterTypeOperation operation, AlterTypeOptions options, bool runSynchronously)
     {
         if (options == null)
         {
-            options = new CommandOptions();
+            options = new AlterTypeOptions();
         }
 
         var (operationName, operationData) = operation.GetOperation();

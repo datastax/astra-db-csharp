@@ -46,7 +46,7 @@ public class UserDefinedTypesTests
             {
                 ["new_field"] = DataAPIType.Text()
             });
-            await fixture.Database.AlterTypeAsync(typeName, addFieldsOp);
+            await fixture.Database.AlterTypeAsync(typeName, addFieldsOp, new AlterTypeOptions());
 
             var renameFieldsOp = new AlterTypeRenameFields(new()
             {
