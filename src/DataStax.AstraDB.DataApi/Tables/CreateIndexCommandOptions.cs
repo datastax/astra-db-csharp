@@ -20,7 +20,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 
 
 /// <summary>
-/// Options for creating a table index.
+/// Options for creating a generic table index.
 /// </summary>
 public class CreateIndexCommandOptions : CommandOptions
 {
@@ -29,4 +29,25 @@ public class CreateIndexCommandOptions : CommandOptions
     /// avoiding an error.
     /// </summary>
     public bool IfNotExists { get; set; } = false;
+}
+
+/// <summary>
+/// Options for creating a table regular index.
+/// </summary>
+public class CreateIndexOptions : CreateIndexCommandOptions
+{
+}
+
+/// <summary>
+/// Options for creating a table vector index.
+/// </summary>
+public class CreateVectorIndexOptions : CreateIndexCommandOptions
+{
+}
+
+/// <summary>
+/// Options for creating a table text index.
+/// </summary>
+public class CreateTextIndexOptions : CreateIndexCommandOptions
+{
 }

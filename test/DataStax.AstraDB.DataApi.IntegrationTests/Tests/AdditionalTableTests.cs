@@ -1000,7 +1000,7 @@ public class AdditionalTableTests
                 IfNotExists = true
             });
 
-            await table.CreateIndexAsync("tmp_map_e_idx", (b) => b.map_e, new CreateIndexCommandOptions()
+            await table.CreateIndexAsync("tmp_map_e_idx", (b) => b.map_e, new CreateIndexOptions()
             {
                 IfNotExists = true
             });

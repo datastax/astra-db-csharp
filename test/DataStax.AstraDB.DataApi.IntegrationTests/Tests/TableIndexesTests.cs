@@ -40,13 +40,13 @@ public class TableIndexesTests
             // third creation (should fail when IfNotExists is false)
             var ex2 = await Assert.ThrowsAsync<CommandException>(() =>
                 table.CreateIndexAsync(indexName, (b) => b.Category,
-                    new CreateIndexCommandOptions(){IfNotExists = false}));
+                    new CreateIndexOptions(){IfNotExists = false}));
                 // compare: {"createIndex":{"name":"category_idx","definition":{"column":"category"},"options":{"ifNotExists":false}}}
 
             Assert.Contains("already exists", ex2.Message);
 
             // fourth creation (should not fail when IfNotExists is true)
-            await table.CreateIndexAsync(indexName, (b) => b.Category, new CreateIndexCommandOptions()
+            await table.CreateIndexAsync(indexName, (b) => b.Category, new CreateIndexOptions()
             {
                 IfNotExists = true
             });
@@ -115,7 +115,7 @@ public class TableIndexesTests
             Assert.Contains("already exists", ex.Message);
 
             // third creation (should not fail when IfNotExists is set)
-            await table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition, new CreateIndexCommandOptions()
+            await table.CreateIndexAsync(indexName, (b) => b.Category, indexDefinition, new CreateIndexOptions()
             {
                 IfNotExists = true
             });
