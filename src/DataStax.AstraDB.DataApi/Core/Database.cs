@@ -770,39 +770,20 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropCollectionAsync(string)"/>
+    /// Synchronous version of <see cref="DropCollectionAsync(string, DropCollectionOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DropCollection(string)" />
-    public void DropCollection(string collectionName)
-    {
-        DropCollection(collectionName, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropCollectionAsync{T}()"/>
-    /// </summary>
-    /// <inheritdoc cref="DropCollection()" />
-    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
-    public void DropCollection<T>()
-    {
-        DropCollection<T>(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropCollectionAsync(string, DatabaseCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="DropCollection(string, DatabaseCommandOptions)" />
-    public void DropCollection(string collectionName, DatabaseCommandOptions options)
+    /// <inheritdoc cref="DropCollection(string, DropCollectionOptions)" />
+    public void DropCollection(string collectionName, DropCollectionOptions options = null)
     {
         DropCollectionAsync(collectionName, options, true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropCollectionAsync{T}(DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="DropCollectionAsync{T}(DropCollectionOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DropCollection(string, DatabaseCommandOptions)" />
+    /// <inheritdoc cref="DropCollection(string, DropCollectionOptions)" />
     /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
-    public void DropCollection<T>(DatabaseCommandOptions options)
+    public void DropCollection<T>(DropCollectionOptions options = null)
     {
         string collectionName = null;
         Type type = typeof(T);
@@ -818,31 +799,20 @@ public class Database
     /// Remove a collection from the database.
     /// </summary>
     /// <param name="collectionName">The collection to remove</param>
-    /// <returns></returns>
-    public Task DropCollectionAsync(string collectionName)
-    {
-        return DropCollectionAsync(collectionName, null);
-    }
-
-    /// <inheritdoc cref="DropCollectionAsync(string)" />
-    /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
-    public Task DropCollectionAsync(string collectionName, DatabaseCommandOptions options)
+    /// <returns></returns>
+    public Task DropCollectionAsync(string collectionName, DropCollectionOptions options = null)
     {
         return DropCollectionAsync(collectionName, options, false);
     }
 
-    /// <inheritdoc cref="DropCollectionAsync(string)" />
-    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
-    public Task DropCollectionAsync<T>()
-    {
-        return DropCollectionAsync<T>(null);
-    }
-
-    /// <inheritdoc cref="DropCollectionAsync(string)" />
+    /// <summary>
+    /// Remove a collection from the database based on the class for its documents.
+    /// </summary>
+    /// <typeparam name="T">The type of the document stored in the referenced collection. The name of the collection to drop is extracted from this.</typeparam>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
-    /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
-    public Task DropCollectionAsync<T>(DatabaseCommandOptions options)
+    /// <returns></returns>
+    public Task DropCollectionAsync<T>(DropCollectionOptions options = null)
     {
         string collectionName = null;
         Type type = typeof(T);
@@ -854,7 +824,7 @@ public class Database
         return DropCollectionAsync(collectionName, options, false);
     }
 
-    private async Task DropCollectionAsync(string collectionName, DatabaseCommandOptions options, bool runSynchronously)
+    private async Task DropCollectionAsync(string collectionName, DropCollectionOptions options, bool runSynchronously)
     {
         Guard.NotNullOrEmpty(collectionName, nameof(collectionName));
         var payload = new
