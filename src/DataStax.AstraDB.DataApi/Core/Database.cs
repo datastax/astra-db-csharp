@@ -258,308 +258,197 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync(string)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync(string)" />
-    public Collection<Document> CreateCollection(string collectionName)
-    {
-        return CreateCollection(collectionName, null, null);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync(string, CreateCollectionOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CreateCollectionAsync(string, CreateCollectionOptions)" />
-    public Collection<Document> CreateCollection(string collectionName, CreateCollectionOptions options)
+    public Collection<Document> CreateCollection(string collectionName, CreateCollectionOptions options = null)
     {
         return CreateCollection(collectionName, null, options);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync(string, CollectionDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync(string, CollectionDefinition)" />
-    public Collection<Document> CreateCollection(string collectionName, CollectionDefinition definition)
-    {
-        return CreateCollection(collectionName, definition, null);
     }
 
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync(string, CollectionDefinition, CreateCollectionOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CreateCollectionAsync(string, CollectionDefinition, CreateCollectionOptions)" />
-    public Collection<Document> CreateCollection(string collectionName, CollectionDefinition definition, CreateCollectionOptions options)
+    public Collection<Document> CreateCollection(string collectionName, CollectionDefinition definition, CreateCollectionOptions options = null)
     {
         return CreateCollectionAsync<Document>(collectionName, definition, options, true).ResultSync();
     }
 
     /// <summary>
-    /// Create a new collection in the database, using the keyspace specified in the <see cref="DatabaseCommandOptions"/>
-    /// passed to the DataAPIClient's GetDatabase method (for example: <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/>), or the default keyspace otherwise.
+    /// Create a new collection in the database.
+    /// The collection is created in the database's working keyspace, unless this is overridden through the options parameter.
     /// </summary>
     /// <param name="collectionName">The name of the collection to create.</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
     /// <returns>A reference to the created collection.</returns>
     /// <remarks>
-    /// This version uses a simple <see cref="Dictionary{String, Object}"/>for the documents stored in the collection
+    /// This version uses a simple <see cref="Dictionary{String, Object}"/>for the documents stored in the collection.
     /// See the <see cref="Document"/> class.
-    /// Use the strongly-typed overloads for specify a custom type, for example <see cref="CreateCollectionAsync{T}(string)"/>.
+    /// Use the strongly-typed overloads to specify a custom document type, for example <see cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, CreateCollectionOptions)"/>.
     /// </remarks>
-    public Task<Collection<Document>> CreateCollectionAsync(string collectionName)
-    {
-        return CreateCollectionAsync<Document>(collectionName, null, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync(string)" />
-    /// <param name="collectionName"></param>
-    /// <param name="options"></param>
-    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CreateCollectionOptions options)
+    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CreateCollectionOptions options = null)
     {
         return CreateCollectionAsync<Document>(collectionName, null, options);
     }
 
-    /// <inheritdoc cref="CreateCollectionAsync(string)" />
-    /// <param name="collectionName"></param>
-    /// <param name="definition">Specify options to use when creating the collection.</param>
-    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition)
-    {
-        return CreateCollectionAsync<Document>(collectionName, definition, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync(string, CollectionDefinition)" />
-    /// <param name="collectionName"></param>
-    /// <param name="definition"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition, CreateCollectionOptions options)
+    /// <inheritdoc cref="CreateCollectionAsync(string, CreateCollectionOptions)" />
+    /// <param name="collectionName">The name of the collection to create.</param>
+    /// <param name="definition">Configuration for the collection.</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    public Task<Collection<Document>> CreateCollectionAsync(string collectionName, CollectionDefinition definition, CreateCollectionOptions options = null)
     {
         return CreateCollectionAsync<Document>(collectionName, definition, options, false);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}(string)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CreateCollectionOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
-    public Collection<T> CreateCollection<T>(string collectionName) where T : class
+    public Collection<T> CreateCollection<T>(CreateCollectionOptions options = null) where T : class
     {
-        return CreateCollection<T>(collectionName, null, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}(string, CollectionDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
-    public Collection<T> CreateCollection<T>(string collectionName, CollectionDefinition definition) where T : class
-    {
-        return CreateCollection<T>(collectionName, definition, null);
+        return CreateCollection<T>(null, null, options);
     }
 
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T}(string, CreateCollectionOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CreateCollectionOptions)" />
-    public Collection<T> CreateCollection<T>(string collectionName, CreateCollectionOptions options) where T : class
+    public Collection<T> CreateCollection<T>(string collectionName, CreateCollectionOptions options = null) where T : class
     {
         return CreateCollection<T>(collectionName, null, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition, CreateCollectionOptions)"/>
+    /// </summary>
+    public Collection<T> CreateCollection<T>(CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
+    {
+        return CreateCollection<T>(null, definition, options);
     }
 
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T}(string, CollectionDefinition, CreateCollectionOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, CreateCollectionOptions)" />
-    public Collection<T> CreateCollection<T>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options) where T : class
+    public Collection<T> CreateCollection<T>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
     {
         return CreateCollectionAsync<T>(collectionName, definition, options, true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}()"/>
+    /// Create a new collection in the database.
+    /// The collection is created in the database's working keyspace, unless this is overridden through the options parameter.
+    /// Unless explicit parameters are provided, the name and configuration are extracted from the document type class.
     /// </summary>
-    public Collection<T> CreateCollection<T>() where T : class
-    {
-        return CreateCollectionAsync<T>(null, null, null, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition)"/>
-    /// </summary>
-    public Collection<T> CreateCollection<T>(CollectionDefinition definition) where T : class
-    {
-        return CreateCollectionAsync<T>(null, definition, null, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CreateCollectionOptions)"/>
-    /// </summary>
-    public Collection<T> CreateCollection<T>(CreateCollectionOptions options) where T : class
-    {
-        return CreateCollectionAsync<T>(null, null, options, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition, CreateCollectionOptions)"/>
-    /// </summary>
-    public Collection<T> CreateCollection<T>(CollectionDefinition definition, CreateCollectionOptions options) where T : class
-    {
-        return CreateCollectionAsync<T>(null, definition, options, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Create a new collection in the database, using the keyspace specified in the <see cref="DatabaseCommandOptions"/>
-    /// passed to the <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/> method, or the default keyspace otherwise.
-    /// </summary>
-    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
-    /// <param name="collectionName">The name of the collection to create.</param>
+    /// <typeparam name="T">The type to use for the document.</typeparam>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
     /// <returns>A reference to the created collection.</returns>
-    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName) where T : class
-    {
-        return CreateCollectionAsync<T>(collectionName, null, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
-    /// <param name="collectionName"></param>
-    /// <param name="definition">Specify options to use when creating the collection.</param>
-    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition) where T : class
-    {
-        return CreateCollectionAsync<T>(collectionName, definition, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
-    /// <param name="collectionName"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CreateCollectionOptions options) where T : class
-    {
-        return CreateCollectionAsync<T>(collectionName, null, options);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
-    /// <param name="collectionName"></param>
-    /// <param name="definition"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options) where T : class
-    {
-        return CreateCollectionAsync<T>(collectionName, definition, options, false);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
-    public Task<Collection<T>> CreateCollectionAsync<T>() where T : class
-    {
-        return CreateCollectionAsync<T>(null, null, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
-    public Task<Collection<T>> CreateCollectionAsync<T>(CollectionDefinition definition) where T : class
-    {
-        return CreateCollectionAsync<T>(null, definition, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CreateCollectionOptions)" />
-    public Task<Collection<T>> CreateCollectionAsync<T>(CreateCollectionOptions options) where T : class
+    public Task<Collection<T>> CreateCollectionAsync<T>(CreateCollectionOptions options = null) where T : class
     {
         return CreateCollectionAsync<T>(null, null, options);
     }
 
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, CreateCollectionOptions)" />
-    public Task<Collection<T>> CreateCollectionAsync<T>(CollectionDefinition definition, CreateCollectionOptions options) where T : class
+    /// <inheritdoc cref="CreateCollectionAsync{T}(CreateCollectionOptions)" />
+    /// <param name="collectionName">The name of the collection to create, overriding the information from the document type</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CreateCollectionOptions options = null) where T : class
     {
-        return CreateCollectionAsync<T>(null, definition, options, false);
+        return CreateCollectionAsync<T>(collectionName, null, options);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CreateCollectionOptions)" />
+    /// <param name="definition">Configuration for the collection, overriding the information from the document type.</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    public Task<Collection<T>> CreateCollectionAsync<T>(CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
+    {
+        return CreateCollectionAsync<T>(null, definition, options);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CreateCollectionOptions)" />
+    /// <param name="collectionName">The name of the collection to create, overriding the information from the document type</param>
+    /// <param name="definition">Configuration for the collection, overriding the information from the document type.</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    public Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
+    {
+        return CreateCollectionAsync<T>(collectionName, definition, options, false);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CreateCollectionOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string)" />
-    public Collection<T, TId> CreateCollection<T, TId>(string collectionName) where T : class
+    public Collection<T, TId> CreateCollection<T, TId>(CreateCollectionOptions options = null) where T : class
     {
-        return CreateCollection<T, TId>(collectionName, null, null);
+        return CreateCollection<T, TId>(null, null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition)"/>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string, CreateCollectionOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition)" />
-    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition) where T : class
+    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CreateCollectionOptions options = null) where T : class
     {
-        return CreateCollection<T, TId>(collectionName, definition, null);
+        return CreateCollection<T, TId>(collectionName, null, options);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition, CreateCollectionOptions)"/>
+    /// </summary>
+    public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
+    {
+        return CreateCollection<T, TId>(null, definition, options);
     }
 
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, CreateCollectionOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CollectionDefinition, CreateCollectionOptions)" />
-    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options) where T : class
+    public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
     {
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}()"/>
+    /// Create a new collection in the database.
+    /// The collection is created in the database's working keyspace, unless this is overridden through the options parameter.
+    /// Unless explicit parameters are provided, the name and configuration are extracted from the document type class.
     /// </summary>
-    public Collection<T, TId> CreateCollection<T, TId>() where T : class
-    {
-        return CreateCollectionAsync<T, TId>(null, null, null, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition)"/>
-    /// </summary>
-    public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition) where T : class
-    {
-        return CreateCollectionAsync<T, TId>(null, definition, null, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition, CreateCollectionOptions)"/>
-    /// </summary>
-    public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition, CreateCollectionOptions options) where T : class
-    {
-        return CreateCollectionAsync<T, TId>(null, definition, options, true).ResultSync();
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
     /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName) where T : class
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    /// <returns>A reference to the created collection.</returns>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CreateCollectionOptions options = null) where T : class
     {
-        return CreateCollectionAsync<T, TId>(collectionName, null, null);
+        return CreateCollectionAsync<T, TId>(null, null, options, false);
     }
 
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
+    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(CreateCollectionOptions)" />
     /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition) where T : class
+    /// <param name="collectionName">The name of the collection to create, overriding the information from the document type</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CreateCollectionOptions options = null) where T : class
     {
-        return CreateCollectionAsync<T, TId>(collectionName, definition, null);
+        return CreateCollectionAsync<T, TId>(collectionName, null, options, false);
     }
 
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, CreateCollectionOptions)" />
+    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CreateCollectionOptions)" />
+    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
+    /// <typeparam name="TId">The type to use for the document id.</typeparam>
+    /// <param name="definition">Configuration for the collection, overriding the information from the document type.</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
+    {
+        return CreateCollectionAsync<T, TId>(null, definition, options);
+    }
+
+    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CreateCollectionOptions)" />
     /// <typeparam name="T">The type to use for the document.</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options) where T : class
+    /// <param name="collectionName">The name of the collection to create, overriding the information from the document type</param>
+    /// <param name="definition">Configuration for the collection, overriding the information from the document type.</param>
+    /// <param name="options">Options for the collection, such as API keys, keyspace override, or timeouts.</param>
+    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
     {
         return CreateCollectionAsync<T, TId>(collectionName, definition, options, false);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string)" />
-    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
-    /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>() where T : class
-    {
-        return CreateCollectionAsync<T, TId>(null, null, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition)" />
-    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
-    /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CollectionDefinition definition) where T : class
-    {
-        return CreateCollectionAsync<T, TId>(null, definition, null);
-    }
-
-    /// <inheritdoc cref="CreateCollectionAsync{T}(string, CollectionDefinition, CreateCollectionOptions)" />
-    /// <typeparam name="T">The type to use for serialization/deserialization of the documents stored in the collection.</typeparam>
-    /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    public Task<Collection<T, TId>> CreateCollectionAsync<T, TId>(CollectionDefinition definition, CreateCollectionOptions options) where T : class
-    {
-        return CreateCollectionAsync<T, TId>(null, definition, options, false);
     }
 
     private async Task<Collection<T>> CreateCollectionAsync<T>(string collectionName, CollectionDefinition definition, CreateCollectionOptions options, bool runSynchronously) where T : class
