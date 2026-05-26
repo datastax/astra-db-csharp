@@ -35,10 +35,13 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// Entrypoint for the interactions with a specific database such as creating/deleting collections/tables, 
 /// connecting to collections/tables, and executing arbitrary commands.
 /// 
-/// Note that creating an instance of a Database doesn't trigger actual database creation; the database must have already existed beforehand. If you need to create a new database, use the AstraAdmin class.
+/// Note that creating an instance of a Database doesn't trigger actual database creation;
+/// the database must have already existed beforehand.
+/// If you need to create a new database, use the AstraAdmin class.
 /// </summary>
 /// <remarks>
-/// The Database class has a concept of a "current keyspace", which is the keyspace used for all operations. This can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter,
+/// The Database class has a concept of a "current keyspace", which is the keyspace used for all operations.
+/// This can be overridden in each method call by passing the adequate 'options' parameter,
 /// or when creating the <see cref="Database"/> instance (see <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/>).
 /// If unset, the default keyspace will be used.
 /// </remarks>
@@ -119,7 +122,8 @@ public class Database
     }
 
     /// <summary>
-    /// Set the current keyspace to use for all subsequent operations (can be overridden in each method call via an overload with the <see cref="DatabaseCommandOptions"/> parameter)
+    /// Set the current keyspace to use for all subsequent operations
+    /// (can be overridden in each method call by passing the adequate 'options' parameter).
     /// </summary>
     /// <param name="keyspace"></param>
     public void UseKeyspace(string keyspace)
@@ -147,7 +151,7 @@ public class Database
     /// Looks to see if a collection exists in the database.
     /// </summary>
     /// <param name="collectionName"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns>True if the collection exists, false otherwise.</returns>
     public async Task<bool> DoesCollectionExistAsync(string collectionName, DoesCollectionExistOptions options = null)
     {
@@ -167,7 +171,7 @@ public class Database
     /// <summary>
     /// Get a list of all collection names in the current keyspace.
     /// </summary>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns>The list of collection names.</returns>
     public async Task<List<string>> ListCollectionNamesAsync(ListCollectionNamesOptions options = null)
     {
@@ -188,7 +192,7 @@ public class Database
     /// <summary>
     /// Get a list of all collections (name and metadata) in the current keyspace.
     /// </summary>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns>The list of collections.</returns>
     public async Task<IEnumerable<CollectionInfo>> ListCollectionsAsync(ListCollectionsOptions options = null)
     {
@@ -509,7 +513,7 @@ public class Database
     /// Returns a reference to the collection with the specified name.
     /// </summary>
     /// <param name="collectionName"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Collection<Document> GetCollection(string collectionName, GetCollectionOptions options = null)
     {
         return GetCollection<Document>(collectionName, options);
@@ -521,7 +525,7 @@ public class Database
     /// or the name of the document type if the attribute is not present.
     /// </summary>
     /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Collection<T> GetCollection<T>(GetCollectionOptions options = null) where T : class
     {
         return GetCollection<T>(null, options);
@@ -532,7 +536,7 @@ public class Database
     /// </summary>
     /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
     /// <param name="collectionName"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Collection<T> GetCollection<T>(string collectionName, GetCollectionOptions options = null) where T : class
     {
         if (string.IsNullOrEmpty(collectionName))
@@ -555,7 +559,7 @@ public class Database
     /// </summary>
     /// <typeparam name="T">The type of the document stored in the referenced collection</typeparam>
     /// <typeparam name="TId">The type to use for the document id.</typeparam>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Collection<T, TId> GetCollection<T, TId>(GetCollectionOptions options = null) where T : class
     {
         return GetCollection<T, TId>(null, options);
@@ -565,7 +569,7 @@ public class Database
     /// Returns a reference to the collection with the specified name.
     /// </summary>
     /// <param name="collectionName"></param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Collection<T, TId> GetCollection<T, TId>(string collectionName, GetCollectionOptions options = null) where T : class
     {
         if (string.IsNullOrEmpty(collectionName))
@@ -611,7 +615,7 @@ public class Database
     /// Remove a collection from the database.
     /// </summary>
     /// <param name="collectionName">The collection to remove</param>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
     public Task DropCollectionAsync(string collectionName, DropCollectionOptions options = null)
     {
@@ -622,7 +626,7 @@ public class Database
     /// Remove a collection from the database based on the class for its documents.
     /// </summary>
     /// <typeparam name="T">The type of the document stored in the referenced collection. The name of the collection to drop is extracted from this.</typeparam>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace</param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
     public Task DropCollectionAsync<T>(DropCollectionOptions options = null)
     {
@@ -904,6 +908,28 @@ public class Database
             .WithTimeoutManager(new TableAdminTimeoutManager())
             .AddCommandOptions(options);
         await command.RunAsyncReturnDictionary(runSynchronously).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Synchronous version of <see cref="DoesTableExistAsync(string, DoesTableExistOptions)"/>.
+    /// </summary>
+    /// <inheritdoc cref="DoesTableExistAsync(string, DoesTableExistOptions)"/>
+    public bool DoesTableExist(string tableName, DoesTableExistOptions options = null)
+    {
+        var tableNames = ListTableNames(options);
+        return tableNames.Count > 0 && tableNames.Contains(tableName);
+    }
+
+    /// <summary>
+    /// Looks to see if a collection exists in the database.
+    /// </summary>
+    /// <param name="tableName"></param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    /// <returns>True if the collection exists, false otherwise.</returns>
+    public async Task<bool> DoesTableExistAsync(string tableName, DoesTableExistOptions options = null)
+    {
+        var tableNames = await ListTableNamesAsync(options);
+        return tableNames.Count > 0 && tableNames.Contains(tableName);
     }
 
     /// <summary>

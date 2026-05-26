@@ -731,6 +731,40 @@ public class DatabaseTests
         }
     }
 
+    [Fact]
+    public async Task DoesTableExistAsync_Test()
+    {
+        const string tableName = "testDTETable_async";
+        const string wrongTableName = "table_blirippi_999_async";
+        var table = await fixture.Database.CreateTableAsync<SimpleRowObject>(tableName);
+        var exists = await fixture.Database.DoesTableExistAsync(tableName);
+        Assert.True(exists);
+        var missed1 = await fixture.Database.DoesTableExistAsync(wrongTableName);
+        Assert.False(missed1);
+        var missed2 = await fixture.Database.DoesTableExistAsync("");
+        Assert.False(missed2);
+        var missed3 = await fixture.Database.DoesTableExistAsync(null);
+        Assert.False(missed3);
+        await fixture.Database.DropTableAsync(tableName);
+    }
+
+    [Fact]
+    public void DoesTableExistSync_Test()
+    {
+        const string tableName = "testDTETable_sync";
+        const string wrongTableName = "table_blirippi_999_sync";
+        var table = fixture.Database.CreateTable<SimpleRowObject>(tableName);
+        var exists = fixture.Database.DoesTableExist(tableName);
+        Assert.True(exists);
+        var missed1 = fixture.Database.DoesTableExist(wrongTableName);
+        Assert.False(missed1);
+        var missed2 = fixture.Database.DoesTableExist("");
+        Assert.False(missed2);
+        var missed3 = fixture.Database.DoesTableExist(null);
+        Assert.False(missed3);
+        fixture.Database.DropTable(tableName);
+    }
+
     [SkipWhenNotAstra]
     [Fact(Skip="Generally skipped, this is to demonstrate creation")]
     public async Task CreateTable_WithVectorizeNone_Typed()
