@@ -393,7 +393,7 @@ public class DatabaseTests
     public async Task ListCollectionNamesAsync_WithCommandOptions_ShouldReturnCollectionNames()
     {
         await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
-        var commandOptions = new DatabaseCommandOptions { /* Initialize with necessary options */ };
+        var commandOptions = new ListCollectionNamesOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);

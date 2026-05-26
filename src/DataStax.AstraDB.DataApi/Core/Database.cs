@@ -134,20 +134,11 @@ public class Database
         }
     }
 
-    ///<summary>
-    ///Synchronous version of <see cref="DoesCollectionExistAsync(string)"/>.
-    ///</summary>
-    /// <inheritdoc cref="DoesCollectionExistAsync(string)"/>
-    public bool DoesCollectionExist(string collectionName)
-    {
-        return DoesCollectionExist(collectionName, null);
-    }
-
     /// <summary>
-    /// Synchronous version of <see cref="DoesCollectionExistAsync(string, DatabaseCommandOptions)"/>.
+    /// Synchronous version of <see cref="DoesCollectionExistAsync(string, DoesCollectionExistOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="DoesCollectionExistAsync(string, DatabaseCommandOptions)"/>
-    public bool DoesCollectionExist(string collectionName, DatabaseCommandOptions options)
+    /// <inheritdoc cref="DoesCollectionExistAsync(string, DoesCollectionExistOptions)"/>
+    public bool DoesCollectionExist(string collectionName, DoesCollectionExistOptions options = null)
     {
         return DoesCollectionExistAsync(collectionName, options).ResultSync();
     }
@@ -155,36 +146,20 @@ public class Database
     /// <summary>
     /// Looks to see if a collection exists in the database.
     /// </summary>
-    /// <param name="collectionName">The name of the collection to check.</param>
-    /// <returns>True if the collection exists, false otherwise.</returns>
-    public Task<bool> DoesCollectionExistAsync(string collectionName)
-    {
-        return DoesCollectionExistAsync(collectionName, null);
-    }
-
-    /// <inheritdoc cref="DoesCollectionExistAsync(string)" />
     /// <param name="collectionName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public async Task<bool> DoesCollectionExistAsync(string collectionName, DatabaseCommandOptions options)
+    /// <returns>True if the collection exists, false otherwise.</returns>
+    public async Task<bool> DoesCollectionExistAsync(string collectionName, DoesCollectionExistOptions options = null)
     {
         var collectionNames = await ListCollectionsAsync<ListCollectionNamesResult>(includeDetails: false, options, runSynchronously: false).ConfigureAwait(false);
         return collectionNames.CollectionNames.Count > 0 && collectionNames.CollectionNames.Contains(collectionName);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListCollectionNamesAsync()"/>.
+    /// Synchronous version of <see cref="ListCollectionNamesAsync(ListCollectionNamesOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="ListCollectionNamesAsync()"/>
-    public List<string> ListCollectionNames()
-    {
-        return ListCollectionNames(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListCollectionNamesAsync(DatabaseCommandOptions)"/>.
-    /// </summary>
-    /// <inheritdoc cref="ListCollectionNamesAsync(DatabaseCommandOptions)"/>
-    public List<string> ListCollectionNames(DatabaseCommandOptions options)
+    /// <inheritdoc cref="ListCollectionNamesAsync(ListCollectionNamesOptions)"/>
+    public List<string> ListCollectionNames(ListCollectionNamesOptions options = null)
     {
         return ListCollectionNamesAsync(options).ResultSync();
     }
@@ -192,35 +167,19 @@ public class Database
     /// <summary>
     /// Get a list of all collection names in the current keyspace.
     /// </summary>
-    /// 
-    /// <returns>The list of collection names.</returns>
-    public Task<List<string>> ListCollectionNamesAsync()
-    {
-        return ListCollectionNamesAsync(null);
-    }
-
-    /// <inheritdoc cref="ListCollectionNamesAsync()" />
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public async Task<List<string>> ListCollectionNamesAsync(DatabaseCommandOptions options)
+    /// <returns>The list of collection names.</returns>
+    public async Task<List<string>> ListCollectionNamesAsync(ListCollectionNamesOptions options = null)
     {
         var result = await ListCollectionsAsync<ListCollectionNamesResult>(includeDetails: false, options, runSynchronously: false).ConfigureAwait(false);
         return result.CollectionNames;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListCollectionsAsync()"/>.
+    /// Synchronous version of <see cref="ListCollectionsAsync(ListCollectionsOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="ListCollectionsAsync()"/>
-    public IEnumerable<CollectionInfo> ListCollections()
-    {
-        return ListCollections(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListCollectionsAsync(DatabaseCommandOptions)"/>.
-    /// </summary>
-    /// <inheritdoc cref="ListCollectionsAsync(DatabaseCommandOptions)"/>
-    public IEnumerable<CollectionInfo> ListCollections(DatabaseCommandOptions options)
+    /// <inheritdoc cref="ListCollectionsAsync(ListCollectionsOptions)"/>
+    public IEnumerable<CollectionInfo> ListCollections(ListCollectionsOptions options = null)
     {
         var result = ListCollectionsAsync<ListCollectionsResult>(includeDetails: true, options, runSynchronously: true).ResultSync();
         return result.Collections;
@@ -229,21 +188,15 @@ public class Database
     /// <summary>
     /// Get a list of all collections (name and metadata) in the current keyspace.
     /// </summary>
-    /// <returns>The list of collections.</returns>
-    public Task<IEnumerable<CollectionInfo>> ListCollectionsAsync()
-    {
-        return ListCollectionsAsync(null);
-    }
-
-    /// <inheritdoc cref="ListCollectionsAsync()" />
     /// <param name="options">The options to use for the command, useful for overriding the keyspace.</param>
-    public async Task<IEnumerable<CollectionInfo>> ListCollectionsAsync(DatabaseCommandOptions options)
+    /// <returns>The list of collections.</returns>
+    public async Task<IEnumerable<CollectionInfo>> ListCollectionsAsync(ListCollectionsOptions options = null)
     {
         var result = await ListCollectionsAsync<ListCollectionsResult>(true, options, runSynchronously: false).ConfigureAwait(false);
         return result.Collections;
     }
 
-    private async Task<T> ListCollectionsAsync<T>(bool includeDetails, DatabaseCommandOptions options, bool runSynchronously)
+    private async Task<T> ListCollectionsAsync<T>(bool includeDetails, ListCollectionsOptions options, bool runSynchronously)
     {
         object payload = new
         {
@@ -954,80 +907,11 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListTablesAsync()"/>
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<TableInfo> ListTables()
-    {
-        return ListTables(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListTablesAsync(DatabaseCommandOptions)"/>
+    /// Synchronous version of <see cref="ListTableNamesAsync(ListTableNamesOptions)"/>
     /// </summary>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public IEnumerable<TableInfo> ListTables(DatabaseCommandOptions options)
-    {
-        return ListTablesAsync(options, true, true).ResultSync();
-    }
-
-    /// <summary>
-    /// List the tables in the database.
-    /// </summary>
-    /// <returns></returns>
-    public Task<IEnumerable<TableInfo>> ListTablesAsync()
-    {
-        return ListTablesAsync(null);
-    }
-
-    /// <summary>
-    /// List the tables in the database.
-    /// </summary>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    /// <returns></returns>
-    public Task<IEnumerable<TableInfo>> ListTablesAsync(DatabaseCommandOptions options)
-    {
-        return ListTablesAsync(options, true, false);
-    }
-
-    private async Task<IEnumerable<TableInfo>> ListTablesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
-    {
-        if (options == null)
-        {
-            options = new DatabaseCommandOptions();
-        }
-        options.DeserializeToObjectDictionary = true;
-        var payload = new
-        {
-            options = new
-            {
-                explain = includeDetails
-            }
-        };
-        var command = CreateCommand("listTables")
-            .WithPayload(payload)
-            .WithTimeoutManager(new TableAdminTimeoutManager())
-            .AddCommandOptions(options);
-        var result = await command.RunAsyncReturnStatus<ListTablesResult>(runSynchronously).ConfigureAwait(false);
-        return result.Result.Tables;
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListTableNamesAsync()"/>
-    /// </summary>
-    /// <returns></returns>
-    public List<string> ListTableNames()
-    {
-        return ListTableNames(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListTableNamesAsync(DatabaseCommandOptions)"/>
-    /// </summary>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    /// <returns></returns>
-    public List<string> ListTableNames(DatabaseCommandOptions options)
+    public List<string> ListTableNames(ListTableNamesOptions options = null)
     {
         return ListTableNamesAsync(options, true, true).ResultSync();
     }
@@ -1035,18 +919,9 @@ public class Database
     /// <summary>
     /// List the tables in the database.
     /// </summary>
-    /// <returns></returns>
-    public Task<List<string>> ListTableNamesAsync()
-    {
-        return ListTableNamesAsync(null);
-    }
-
-    /// <summary>
-    /// List the tables in the database.
-    /// </summary>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public Task<List<string>> ListTableNamesAsync(DatabaseCommandOptions options)
+    public Task<List<string>> ListTableNamesAsync(ListTableNamesOptions options = null)
     {
         return ListTableNamesAsync(options, false, false);
     }
@@ -1069,6 +944,48 @@ public class Database
     }
 
     /// <summary>
+    /// Synchronous version of <see cref="ListTablesAsync(ListTablesOptions)"/>
+    /// </summary>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    /// <returns></returns>
+    public IEnumerable<TableInfo> ListTables(ListTablesOptions options = null)
+    {
+        return ListTablesAsync(options, true, true).ResultSync();
+    }
+
+    /// <summary>
+    /// List the tables in the database.
+    /// </summary>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
+    /// <returns></returns>
+    public Task<IEnumerable<TableInfo>> ListTablesAsync(ListTablesOptions options = null)
+    {
+        return ListTablesAsync(options, true, false);
+    }
+
+    private async Task<IEnumerable<TableInfo>> ListTablesAsync(ListTablesOptions options, bool includeDetails, bool runSynchronously)
+    {
+        if (options == null)
+        {
+            options = new ListTablesOptions();
+        }
+        options.DeserializeToObjectDictionary = true;
+        var payload = new
+        {
+            options = new
+            {
+                explain = includeDetails
+            }
+        };
+        var command = CreateCommand("listTables")
+            .WithPayload(payload)
+            .WithTimeoutManager(new TableAdminTimeoutManager())
+            .AddCommandOptions(options);
+        var result = await command.RunAsyncReturnStatus<ListTablesResult>(runSynchronously).ConfigureAwait(false);
+        return result.Result.Tables;
+    }
+
+    /// <summary>
     /// Synchronous version of <see cref="DropTableIndexAsync(string, DropTableIndexOptions)"/>
     /// </summary>
     /// <inheritdoc cref="DropTableIndexAsync(string, DropTableIndexOptions)"/>
@@ -1081,7 +998,7 @@ public class Database
     /// Drops an index on the table.
     /// </summary>
     /// <param name="indexName"></param>
-    /// <param name="options"></param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     public Task DropTableIndexAsync(string indexName, DropTableIndexOptions options = null)
     {
         return DropTableIndexAsync(indexName, options, false);
@@ -1326,57 +1243,30 @@ public class Database
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListTypesAsync()"/> 
+    /// Synchronous version of <see cref="ListTypeNamesAsync(ListTypeNamesOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="ListTypesAsync()"/>
-    public IEnumerable<string> ListTypeNames()
-    {
-        return ListTypeNames(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListTypesAsync(DatabaseCommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="ListTypesAsync(DatabaseCommandOptions)"/>
-    public IEnumerable<string> ListTypeNames(DatabaseCommandOptions options)
+    /// <inheritdoc cref="ListTypeNamesAsync(ListTypeNamesOptions)"/>
+    public IEnumerable<string> ListTypeNames(ListTypeNamesOptions options = null)
     {
         return ListTypeNamesAsync(options).ResultSync();
     }
 
     /// <summary>
-    /// List User Defined Types
-    /// </summary>
-    /// <returns></returns>
-    public Task<IEnumerable<string>> ListTypeNamesAsync()
-    {
-        return ListTypeNamesAsync(null);
-    }
-
-    /// <summary>
     /// List User Defined Type names
     /// </summary>
-    /// <param name="options"></param>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public async Task<IEnumerable<string>> ListTypeNamesAsync(DatabaseCommandOptions options)
+    public async Task<IEnumerable<string>> ListTypeNamesAsync(ListTypeNamesOptions options = null)
     {
         var typeInfos = await ListTypesAsync(options, false, false);
         return typeInfos.Select(x => x.Name);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListTypesAsync()"/> 
+    /// Synchronous version of <see cref="ListTypesAsync(ListTypesOptions)"/> 
     /// </summary>
-    /// <inheritdoc cref="ListTypesAsync()"/>
-    public List<UserDefinedTypeInfo> ListTypes()
-    {
-        return ListTypes(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListTypesAsync(DatabaseCommandOptions)"/> 
-    /// </summary>
-    /// <inheritdoc cref="ListTypesAsync(DatabaseCommandOptions)"/>
-    public List<UserDefinedTypeInfo> ListTypes(DatabaseCommandOptions options)
+    /// <inheritdoc cref="ListTypesAsync(ListTypesOptions)"/>
+    public List<UserDefinedTypeInfo> ListTypes(ListTypesOptions options = null)
     {
         return ListTypesAsync(options, true, true).ResultSync();
     }
@@ -1384,23 +1274,14 @@ public class Database
     /// <summary>
     /// List User Defined Types
     /// </summary>
+    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public Task<List<UserDefinedTypeInfo>> ListTypesAsync()
-    {
-        return ListTypesAsync(null);
-    }
-
-    /// <summary>
-    /// List User Defined Types
-    /// </summary>
-    /// <param name="options"></param>
-    /// <returns></returns>
-    public Task<List<UserDefinedTypeInfo>> ListTypesAsync(DatabaseCommandOptions options)
+    public Task<List<UserDefinedTypeInfo>> ListTypesAsync(ListTypesOptions options = null)
     {
         return ListTypesAsync(options, true, false);
     }
 
-    private async Task<List<UserDefinedTypeInfo>> ListTypesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
+    private async Task<List<UserDefinedTypeInfo>> ListTypesAsync(ListTypesOptions options, bool includeDetails, bool runSynchronously)
     {
         var payload = new
         {
