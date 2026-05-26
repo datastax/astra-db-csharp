@@ -30,7 +30,7 @@ public class DatabaseTests
         var admin = databaseWithKeyspace.GetAdmin();
         try
         {
-            var dbOptions = new DatabaseCollectionCommandOptions
+            var dbOptions = new CreateCollectionOptions
             {
                 Keyspace = keyspaceName
             };
@@ -161,7 +161,7 @@ public class DatabaseTests
         // testing all patterns for GetCollection
         // TODO: improve by testing for the keyspace as well (currently private into Collection)
 
-        var options = new DatabaseCollectionCommandOptions () { Keyspace = "bla" };
+        var options = new CreateCollectionOptions () { Keyspace = "bla" };
 
         Assert.Equal(
             "param_coll_name",
@@ -231,7 +231,7 @@ public class DatabaseTests
     {
         var collectionName = "simpleCollectionCanceled";
         var cts = new CancellationTokenSource();
-        var commandOptions = new DatabaseCollectionCommandOptions
+        var commandOptions = new CreateCollectionOptions
         {
             CancellationToken = cts.Token
         };
@@ -492,7 +492,7 @@ public class DatabaseTests
     public async Task CreateGetCollection_WithVectorizeHeader_Typed()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "coll_SimpleObjectWithVectorizeHeader";
         // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
         var createdCollection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
@@ -585,7 +585,7 @@ public class DatabaseTests
     public async Task CreateGetCollection_WithVectorizeHeader_Untyped()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "collection_WithVectorizeHeader_Untyped";
         var options = new CollectionDefinition
         {
@@ -786,7 +786,7 @@ public class DatabaseTests
     public async Task CreateGetTable_WithVectorizeHeader_Typed()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new GetTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {
@@ -917,7 +917,7 @@ public class DatabaseTests
     {
         var tableName = "bookTestTableVectorizeHeader_Untyped";
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new GetTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {

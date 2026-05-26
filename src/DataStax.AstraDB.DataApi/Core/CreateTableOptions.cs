@@ -19,7 +19,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <summary>
 /// Additional command options for the database CreateTable method.
 /// </summary>
-public class CreateTableOptions : GetTableCommandOptions
+public class CreateTableOptions : GetTableOptions
 {
   /// <summary>
   /// Skip creating the table if it already exists (instead of throwing an error).

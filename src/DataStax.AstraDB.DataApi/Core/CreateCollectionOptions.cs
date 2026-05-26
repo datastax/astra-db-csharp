@@ -17,22 +17,8 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Command options specific to the database GetTable methods.
+/// Command options specific to the CreateCollection database method.
 /// </summary>
-public class GetTableCommandOptions : DatabaseCommandOptions
+public class CreateCollectionOptions : GetCollectionOptions
 {
-    /// <summary>
-    /// When specified, the client will send the x-embedding-api-key header with the specified key to any underlying HTTP request that requires vectorize authentication.
-    /// </summary>
-    public string EmbeddingAPIKey
-    {
-        get
-        {
-            return AdditionalHeaders.TryGetValue("x-embedding-api-key", out var value) ? value : null;
-        }
-        set
-        {
-            AdditionalHeaders["x-embedding-api-key"] = value;
-        }
-    }
 }
