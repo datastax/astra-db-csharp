@@ -262,6 +262,7 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T}(CreateCollectionOptions)"/>
     /// </summary>
+    /// <inheritdoc cref="CreateCollectionAsync{T}(CreateCollectionOptions)"/>
     public Collection<T> CreateCollection<T>(CreateCollectionOptions options = null) where T : class
     {
         return CreateCollection<T>(null, null, options);
@@ -279,6 +280,7 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T}(CollectionDefinition, CreateCollectionOptions)"/>
     /// </summary>
+    /// <inheritdoc cref="CreateCollectionAsync{T}(CollectionDefinition, CreateCollectionOptions)"/>
     public Collection<T> CreateCollection<T>(CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
     {
         return CreateCollection<T>(null, definition, options);
@@ -334,6 +336,7 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CreateCollectionOptions)"/>
     /// </summary>
+    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(CreateCollectionOptions)"/>
     public Collection<T, TId> CreateCollection<T, TId>(CreateCollectionOptions options = null) where T : class
     {
         return CreateCollection<T, TId>(null, null, options);
@@ -342,6 +345,7 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(string, CreateCollectionOptions)"/>
     /// </summary>
+    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(string, CreateCollectionOptions)"/>
     public Collection<T, TId> CreateCollection<T, TId>(string collectionName, CreateCollectionOptions options = null) where T : class
     {
         return CreateCollection<T, TId>(collectionName, null, options);
@@ -350,6 +354,7 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="CreateCollectionAsync{T, TId}(CollectionDefinition, CreateCollectionOptions)"/>
     /// </summary>
+    /// <inheritdoc cref="CreateCollectionAsync{T, TId}(CollectionDefinition, CreateCollectionOptions)"/>
     public Collection<T, TId> CreateCollection<T, TId>(CollectionDefinition definition, CreateCollectionOptions options = null) where T : class
     {
         return CreateCollection<T, TId>(null, definition, options);
@@ -936,7 +941,7 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="ListTableNamesAsync(ListTableNamesOptions)"/>
     /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc cref="ListTableNamesAsync(ListTableNamesOptions)"/>
     public List<string> ListTableNames(ListTableNamesOptions options = null)
     {
         var result = ListTablesAsync<ListTableNamesResult>(includeDetails: false, options, runSynchronously: true).ResultSync();
@@ -957,7 +962,7 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="ListTablesAsync(ListTablesOptions)"/>
     /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc cref="ListTablesAsync(ListTablesOptions)"/>
     public IEnumerable<TableInfo> ListTables(ListTablesOptions options = null)
     {
         var result = ListTablesAsync<ListTablesResult>(includeDetails: true, options, runSynchronously: true).ResultSync();
