@@ -395,6 +395,7 @@ public class DatabaseTests
         await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var commandOptions = new ListCollectionNamesOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
+        var resultSync = fixture.Database.ListCollectionNames(commandOptions);
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);
         await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
@@ -699,6 +700,7 @@ public class DatabaseTests
             };
             await fixture.Database.CreateCollectionAsync(collectionName, options);
             var collections = await fixture.Database.ListCollectionsAsync();
+            var collectionsSync = fixture.Database.ListCollections(); // blocking just to test that call pattern
             var collectionMetadata = collections.FirstOrDefault(c => c.Name == collectionName);
             Assert.NotNull(collectionMetadata);
             Assert.Equal(14, collectionMetadata.Options.Vector.Dimension);
@@ -720,6 +722,7 @@ public class DatabaseTests
             var table = await fixture.Database.CreateTableAsync<SimpleRowObject>();
             Assert.NotNull(table);
             var definitions = await fixture.Database.ListTablesAsync();
+            var definitionsSync = fixture.Database.ListTables(); // blocking just to test that call pattern
             var definition = definitions.FirstOrDefault(d => d.Name == typeof(SimpleRowObject).Name);
             Assert.NotNull(definition);
             Assert.Single(definition.TableDefinition.PrimaryKey.Keys);

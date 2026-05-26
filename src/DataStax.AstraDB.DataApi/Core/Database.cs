@@ -165,7 +165,8 @@ public class Database
     /// <inheritdoc cref="ListCollectionNamesAsync(ListCollectionNamesOptions)"/>
     public List<string> ListCollectionNames(ListCollectionNamesOptions options = null)
     {
-        return ListCollectionNamesAsync(options).ResultSync();
+        var result = ListCollectionsAsync<ListCollectionNamesResult>(includeDetails: false, options, runSynchronously: true).ResultSync();
+        return result.CollectionNames;
     }
 
     /// <summary>
@@ -935,11 +936,11 @@ public class Database
     /// <summary>
     /// Synchronous version of <see cref="ListTableNamesAsync(ListTableNamesOptions)"/>
     /// </summary>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
     public List<string> ListTableNames(ListTableNamesOptions options = null)
     {
-        return ListTableNamesAsync(options, true, true).ResultSync();
+        var result = ListTablesAsync<ListTableNamesResult>(includeDetails: false, options, runSynchronously: true).ResultSync();
+        return result.TableNames;
     }
 
     /// <summary>
@@ -947,36 +948,20 @@ public class Database
     /// </summary>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public Task<List<string>> ListTableNamesAsync(ListTableNamesOptions options = null)
+    public async Task<List<string>> ListTableNamesAsync(ListTableNamesOptions options = null)
     {
-        return ListTableNamesAsync(options, false, false);
-    }
-
-    private async Task<List<string>> ListTableNamesAsync(DatabaseCommandOptions options, bool includeDetails, bool runSynchronously)
-    {
-        var payload = new
-        {
-            options = new
-            {
-                explain = includeDetails
-            }
-        };
-        var command = CreateCommand("listTables")
-            .WithPayload(payload)
-            .WithTimeoutManager(new TableAdminTimeoutManager())
-            .AddCommandOptions(options);
-        var result = await command.RunAsyncReturnStatus<ListTableNamesResult>(runSynchronously).ConfigureAwait(false);
-        return result.Result.Tables;
+        var result = await ListTablesAsync<ListTableNamesResult>(includeDetails: false, options, runSynchronously: false).ConfigureAwait(false);
+        return result.TableNames;
     }
 
     /// <summary>
     /// Synchronous version of <see cref="ListTablesAsync(ListTablesOptions)"/>
     /// </summary>
-    /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
     public IEnumerable<TableInfo> ListTables(ListTablesOptions options = null)
     {
-        return ListTablesAsync(options, true, true).ResultSync();
+        var result = ListTablesAsync<ListTablesResult>(includeDetails: true, options, runSynchronously: true).ResultSync();
+        return result.Tables;
     }
 
     /// <summary>
@@ -984,31 +969,24 @@ public class Database
     /// </summary>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
     /// <returns></returns>
-    public Task<IEnumerable<TableInfo>> ListTablesAsync(ListTablesOptions options = null)
+    public async Task<IEnumerable<TableInfo>> ListTablesAsync(ListTablesOptions options = null)
     {
-        return ListTablesAsync(options, true, false);
+        var result = await ListTablesAsync<ListTablesResult>(true, options, runSynchronously: false).ConfigureAwait(false);
+        return result.Tables;
     }
 
-    private async Task<IEnumerable<TableInfo>> ListTablesAsync(ListTablesOptions options, bool includeDetails, bool runSynchronously)
+    private async Task<T> ListTablesAsync<T>(bool includeDetails, ListTablesOptions options, bool runSynchronously)
     {
-        if (options == null)
+        object payload = new
         {
-            options = new ListTablesOptions();
-        }
-        options.DeserializeToObjectDictionary = true;
-        var payload = new
-        {
-            options = new
-            {
-                explain = includeDetails
-            }
+            options = new { explain = includeDetails }
         };
         var command = CreateCommand("listTables")
             .WithPayload(payload)
             .WithTimeoutManager(new TableAdminTimeoutManager())
             .AddCommandOptions(options);
-        var result = await command.RunAsyncReturnStatus<ListTablesResult>(runSynchronously).ConfigureAwait(false);
-        return result.Result.Tables;
+        var response = await command.RunAsyncReturnStatus<T>(runSynchronously).ConfigureAwait(false);
+        return response.Result;
     }
 
     /// <summary>
