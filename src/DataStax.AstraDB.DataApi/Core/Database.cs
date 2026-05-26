@@ -708,7 +708,7 @@ public class Database
     /// Synchronous version of <see cref="CreateTableAsync{TRow}(string, TableDefinition, CreateTableOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CreateTableAsync{TRow}(string, TableDefinition, CreateTableOptions)" />
-    public Table<TRow> CreateTable<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    public Table<TRow> CreateTable<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class
     {
         return CreateTableAsync<TRow>(tableName, definition, options, true).ResultSync();
     }
@@ -780,7 +780,7 @@ public class Database
     /// <param name="definition">A table definition, replacing that inferred from TRow.</param>
     /// <param name="options">Options for the create table command.</param>
     /// <returns>A <see cref="Table{TRow}"/> instance for the created table.</returns>
-    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class, new()
+    public Task<Table<TRow>> CreateTableAsync<TRow>(string tableName, TableDefinition definition, CreateTableOptions options = null) where TRow : class
     {
         return CreateTableAsync<TRow>(tableName, definition, options, false);
     }
