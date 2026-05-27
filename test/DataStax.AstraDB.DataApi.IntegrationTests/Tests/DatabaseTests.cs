@@ -344,10 +344,10 @@ public class DatabaseTests
     [Fact]
     public async Task DoesCollectionExistAsync_ExistingCollection_ReturnsTrue()
     {
-        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
+        var collection = await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var exists = await fixture.Database.DoesCollectionExistAsync(Constants.DefaultCollection);
         Assert.True(exists);
-        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
+        await collection.DropAsync( new DropCollectionOptions () );
     }
 
     [Fact]
@@ -382,23 +382,28 @@ public class DatabaseTests
     [Fact]
     public async Task ListCollectionNamesAsync_ShouldReturnCollectionNames()
     {
-        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
+        var collection = await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var result = await fixture.Database.ListCollectionNamesAsync();
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);
-        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
+        await Assert.ThrowsAsync<ArgumentException>(
+            async () => await collection.DropAsync(
+                new DropCollectionOptions { Keyspace = "Blasbrusbr" }
+            )
+        );
+        collection.DropAsync(new DropCollectionOptions () );
     }
 
     [Fact]
     public async Task ListCollectionNamesAsync_WithCommandOptions_ShouldReturnCollectionNames()
     {
-        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
+        var collection = await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var commandOptions = new ListCollectionNamesOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
         var resultSync = fixture.Database.ListCollectionNames(commandOptions);
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);
-        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
+        await collection.DropAsync();
     }
 
     [Fact(Skip="Generally skipped, this is to demonstrate creation")]
@@ -1286,10 +1291,11 @@ public class DatabaseTests
             var filter = Builders<RowBook>.TableFilter.Eq(b => b.Title, id);
             var foundRow = await foundTable2.FindOneAsync(filter);
             Assert.Equal(row.Title, foundRow.Title);
+            table.DropAsync();
         }
         finally
         {
-            await fixture.Database.DropTableAsync<RowBook>();
+            await fixture.Database.DropTableAsync<RowBook>( new DropTableOptions { IfExists = true } );
         }
     }
 
@@ -1313,7 +1319,12 @@ public class DatabaseTests
         {
             var table = await fixture.Database.CreateTableAsync<RowBook>(tableName);
             Assert.NotNull(table);
-            await fixture.Database.DropTableAsync(tableName);
+            await Assert.ThrowsAsync<ArgumentException>(
+                async () => await table.DropAsync(
+                    new DropTableOptions { Keyspace = "Blasbrusbr" }
+                )
+            );
+            await table.DropAsync( new DropTableOptions () );
         }
         finally
         {

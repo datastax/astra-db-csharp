@@ -830,20 +830,29 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropAsync()"/>
+    /// Synchronous version of <see cref="DropAsync(DropTableOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DropAsync()"/>
-    public void Drop()
+    /// <inheritdoc cref="DropAsync(DropTableOptions)"/>
+    public void Drop(DropTableOptions options = null)
     {
-        _database.DropTable(TableName);
+        if (options != null && options.Keyspace != null)
+        {
+            throw new ArgumentException("Keyspace overriding is not allowed when invoking Table.Drop.");
+        }
+        _database.DropTable(TableName, options);
     }
 
     /// <summary>
-    /// Drops the table.
+    /// Drops the table from the database.
     /// </summary>
-    public Task DropAsync()
+    /// <param name="options">Additional options for the drop operation. Keyspace overriding is not allowed..</param>
+    public Task DropAsync(DropTableOptions options = null)
     {
-        return _database.DropTableAsync(TableName);
+        if (options != null && options.Keyspace != null)
+        {
+            throw new ArgumentException("Keyspace overriding is not allowed when invoking Table.DropAsync.");
+        }
+        return _database.DropTableAsync(TableName, options);
     }
 
     private static void SetRowSerializationOptions<TResult>(CommandOptions options, bool isInsert) where TResult : class
