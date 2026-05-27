@@ -33,8 +33,8 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// <code>
 /// // Basic usage with foreach
 /// var cursor = collection.Find()
-///     .Filter(Builders&lt;MyDocument&gt;.Filter.Eq(d => d.Status, "active"))
-///     .Sort(Builders&lt;MyDocument&gt;.Sort.Ascending(d => d.Name))
+///     .Filter(Builders&lt;MyDocument&gt;.CollectionFilter.Eq(d => d.Status, "active"))
+///     .Sort(Builders&lt;MyDocument&gt;.CollectionSort.Ascending(d => d.Name))
 ///     .Limit(10);
 /// 
 /// foreach (var doc in cursor)

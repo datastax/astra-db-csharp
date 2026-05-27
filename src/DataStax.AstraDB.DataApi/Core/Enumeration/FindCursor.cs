@@ -134,7 +134,8 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <returns>A new cursor instance with the updated filter.</returns>
     /// <example>
     /// <code>
-    /// var filter = Builders&lt;MyRecord&gt;.Filter.Eq(d => d.Status, "active");
+    /// // When targeting a collection (analogous syntax for tables):
+    /// var filter = Builders&lt;MyRecord&gt;.CollectionFilter.Eq(d => d.Status, "active");
     /// var cursor = collection.Find().Filter(filter);
     /// </code>
     /// </example>
@@ -154,7 +155,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <returns>A new cursor instance with the updated sort.</returns>
     /// <example>
     /// <code>
-    /// var sort = Builders&lt;MyRecord&gt;.Sort.Ascending(d => d.Name);
+    /// var sort = Builders&lt;MyRecord&gt;.CollectionSort.Ascending(d => d.Name);
     /// var cursor = collection.Find().Sort(sort);
     /// </code>
     /// </example>
@@ -218,7 +219,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// }
     /// 
     /// var cursor = collection.Find&lt;MyDocumentWithSimilarity&gt;()
-    ///     .Sort(Builders&lt;MyDocument&gt;.Sort.Vector(vectorQuery))
+    ///     .Sort(Builders&lt;MyDocument&gt;.CollectionSort.Vector(vectorQuery))
     ///     .IncludeSimilarity();
     /// </code>
     /// </example>
@@ -239,7 +240,7 @@ public abstract class FindCursor<T, TResult, TSort, TCursor> : AbstractCursor<TR
     /// <example>
     /// <code>
     /// var cursor = collection.Find()
-    ///     .Sort(Builders&lt;MyRecord&gt;.Sort.Vectorize("search query"))
+    ///     .Sort(Builders&lt;MyRecord&gt;.CollectionSort.Vectorize("search query"))
     ///     .IncludeSortVector();
     /// 
     /// await foreach (var doc in cursor)
