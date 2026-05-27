@@ -72,9 +72,9 @@ internal class Sort
 
     internal static Sort Hybrid(string combinedSearchString) => new(DataAPIKeywords.Hybrid, combinedSearchString);
 
-    internal static Sort Hybrid(string lexical, string vectorize) => new(DataAPIKeywords.Hybrid, new Dictionary<string, object> { { DataAPIKeywords.Lexical, lexical }, { DataAPIKeywords.Vectorize, vectorize } });
+    internal static Sort Hybrid(float[] vector, string lexical) => new(DataAPIKeywords.Hybrid, new Dictionary<string, object> { { DataAPIKeywords.Vector, vector }, { DataAPIKeywords.Lexical, lexical } });
 
-    internal static Sort Hybrid(string lexical, float[] vector) => new(DataAPIKeywords.Hybrid, new Dictionary<string, object> { { DataAPIKeywords.Lexical, lexical }, { DataAPIKeywords.Vector, vector } });
+    internal static Sort Hybrid(string vectorize, string lexical) => new(DataAPIKeywords.Hybrid, new Dictionary<string, object> { {DataAPIKeywords.Vectorize, vectorize }, { DataAPIKeywords.Lexical, lexical } });
 
     internal static Sort Lexical(string value) => new(DataAPIKeywords.Lexical, value);
 

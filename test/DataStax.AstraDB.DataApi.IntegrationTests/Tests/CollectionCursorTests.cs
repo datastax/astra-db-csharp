@@ -34,10 +34,10 @@ public class CollectionCursorTests
         var filledCollection = _fixture.FilledCollection;
 
         var theFilter = Builders<CursorTestDocument>.CollectionFilter.Gt(d => d.PInt, 2);
-        var theGoodFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
+        var theGoodFindOptions = new CollectionFindOptions<CursorTestDocument> {
             Sort = Builders<CursorTestDocument>.CollectionSort.Descending(d => d.PInt)
         };
-        var theBadFindOptions = new CollectionFindManyOptions<CursorTestDocument> {
+        var theBadFindOptions = new CollectionFindOptions<CursorTestDocument> {
             Sort = Builders<CursorTestDocument>.CollectionSort.Descending(d => d.PInt),
             Token = "blibblo"
         };
@@ -322,7 +322,7 @@ public class CollectionCursorTests
 
         var cur2 = filledPagCollection.Find(
             Builders<CursorPaginationTestDocument>.CollectionFilter.Eq(d => d.even, true),
-            new CollectionFindManyOptions<CursorPaginationTestDocument>() { InitialPageState = nps1 }
+            new CollectionFindOptions<CursorPaginationTestDocument>() { InitialPageState = nps1 }
         );
         var page2 = await cur2.FetchNextPageAsync();
         var ids2 = page2.Results.Select(d => d.id).ToList();

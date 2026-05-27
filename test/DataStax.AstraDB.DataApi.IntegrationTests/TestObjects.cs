@@ -719,6 +719,37 @@ public class CursorTestDocument {
     public float[] Vector { get; set; }
 }
 
+[CollectionName("collectionTestVectorFARRCursorFilled")]
+[CollectionVector(
+    SimilarityMetric.Euclidean,
+    2
+)]
+public class FARRCursorTestVectorDocument {
+    [DocumentId]
+    public string Id { get; set; }
+    public string PText { get; set; }
+    public int PInt { get; set; }
+    [DocumentMapping(DocumentMappingField.Vector)]
+    public float[] Vector { get; set; }
+    [DocumentMapping(DocumentMappingField.Lexical)]
+    public string LexicalValue => PText;
+}
+
+[CollectionName("collectionTestVectorizeFARRCursorFilled")]
+[CollectionVectorize(
+    "nvidia",
+    "nvidia/nv-embedqa-e5-v5",
+    SimilarityMetric.Cosine
+)]
+public class FARRCursorTestVectorizeDocument {
+    [DocumentId]
+    public string Id { get; set; }
+    public string PText { get; set; }
+    public int PInt { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string Vectorize => PText;
+}
+
 [CollectionName("testColl_vecEncoding_Typed")]
 [CollectionVector(3)]
 public class VectorObjectAsLst

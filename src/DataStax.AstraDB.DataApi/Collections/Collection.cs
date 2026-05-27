@@ -378,40 +378,40 @@ public class Collection<T, TId> where T : class
     /// </code>
     /// </example>
     /// <remarks>
-    /// Timeouts passed in the <see cref="CollectionFindManyOptions{T}"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// Timeouts passed in the <see cref="CollectionFindOptions{T}"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
     /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public CollectionFindCursor<T> Find(CollectionFindManyOptions<T> options = null)
+    public CollectionFindCursor<T> Find(CollectionFindOptions<T> options = null)
     {
         return Find(null, options);
     }
 
-    /// <inheritdoc cref="Find(CollectionFindManyOptions{T})"/>
+    /// <inheritdoc cref="Find(CollectionFindOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="options"></param>
-    public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindManyOptions<T> options = null)
+    public CollectionFindCursor<T> Find(CollectionFilter<T> filter, CollectionFindOptions<T> options = null)
     {
         return new(filter, options, RunFindManyAsync);
     }
     
-    /// <inheritdoc cref="Find(CollectionFindManyOptions{T})"/>
+    /// <inheritdoc cref="Find(CollectionFindOptions{T})"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFindManyOptions<T> options = null) where TResult : class
+    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFindOptions<T> options = null) where TResult : class
     {
         return Find<TResult>(null, options);
     }
 
-    /// <inheritdoc cref="Find(CollectionFilter{T}, CollectionFindManyOptions{T})"/>
+    /// <inheritdoc cref="Find(CollectionFilter{T}, CollectionFindOptions{T})"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the document as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindManyOptions<T> options = null) where TResult : class
+    public CollectionFindCursor<T, TResult> Find<TResult>(CollectionFilter<T> filter, CollectionFindOptions<T> options = null) where TResult : class
     {
         return new(filter, options, RunFindManyAsync);
     }
@@ -428,6 +428,117 @@ public class Collection<T, TId> where T : class
             response.Data.NextPageState,
             response.Data.Items,
             response.Status?.SortVector
+        );
+    }
+
+    /// <summary>
+    /// Run a find-and-rerank query to find documents in the collection.
+    /// 
+    /// The FindAndRerank() methods return a <see cref="Core.Enumeration.CollectionFindAndRerankCursor{T,TResult}"/> object that can be used to further structure the query
+    /// by specifying detail of the reranking step and adding Sort, Projection, Limit, etc. to affect the final results.
+    /// 
+    /// The <see cref="Core.Enumeration.CollectionFindAndRerankCursor{T,TResult}"/> object can be directly enumerated both synchronously and asynchronously.
+    /// </summary>
+    /// <returns></returns>
+    /// <example>
+    /// Synchronous Enumeration:
+    /// <code>
+    /// var cursor = collection.FindAndRerank()
+    ///     .Sort(
+    ///         Builders&lt;MyDocument&gt;.CollectionFindAndRerankSort.Hybrid(
+    ///             "a tree on a grassy hillside"
+    ///         )
+    ///     );
+    ///
+    /// foreach (var item in cursor)
+    /// {
+    ///     // Process item.Document
+    /// }
+    /// </code>
+    /// </example>
+    /// <example>
+    /// Asynchronous Enumeration:
+    /// <code>
+    /// var cursor = collection.FindAndRerank()
+    ///     .Sort(
+    ///         Builders&lt;MyDocument&gt;.CollectionFindAndRerankSort.Hybrid(
+    ///             "a tree on a grassy hillside"
+    ///         )
+    ///     );
+    /// await foreach (var item in results)
+    /// {
+    ///     // Process item.Document
+    /// }
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
+    /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
+    /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
+    /// </remarks>
+    public CollectionFindAndRerankCursor<T> FindAndRerank(CollectionFindAndRerankOptions<T> options = null)
+    {
+        return FindAndRerank(null, options);
+    }
+
+    /// <inheritdoc cref="FindAndRerank(CollectionFindAndRerankOptions{T})"/>
+    /// <param name="filter"></param>
+    /// <param name="options"></param>
+    public CollectionFindAndRerankCursor<T> FindAndRerank(CollectionFilter<T> filter, CollectionFindAndRerankOptions<T> options = null)
+    {
+        return new(filter, options, RunFindAndRerankAsync);
+    }
+    
+    /// <inheritdoc cref="FindAndRerank(CollectionFindAndRerankOptions{T})"/>
+    /// <remarks>
+    /// The FindAndRerank alternatives that accept a TResult type parameter allow for deserializing the document as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public CollectionFindAndRerankCursor<T, RerankedResult<TResult>> FindAndRerank<TResult>(CollectionFindAndRerankOptions<T> options = null) where TResult : class
+    {
+        return FindAndRerank<TResult>(null, options);
+    }
+
+    /// <inheritdoc cref="FindAndRerank(CollectionFilter{T}, CollectionFindAndRerankOptions{T})"/>
+    /// <remarks>
+    /// The FindAndRerank alternatives that accept a TResult type parameter allow for deserializing the document as a different type
+    /// (most commonly used when using projection to return a subset of fields)
+    /// </remarks>
+    public CollectionFindAndRerankCursor<T, RerankedResult<TResult>> FindAndRerank<TResult>(CollectionFilter<T> filter, CollectionFindAndRerankOptions<T> options = null) where TResult : class
+    {
+        return new(filter, options, RunFindAndRerankAsync);
+    }
+
+    private async Task<FindPage<RerankedResult<TResult>>> RunFindAndRerankAsync<TResult>(CollectionFindAndRerankCursor<T, RerankedResult<TResult>> cursor, string nextPageState, bool runSynchronously) where TResult : class
+    {
+        var response = await CreateCommand("findAndRerank")
+            .WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState))
+            .AddCommandOptions(cursor.FindOptions)
+            .RunAsyncReturnDocumentData<APIFindResult<TResult>, TResult, APIFindAndRerankStatusResults>(runSynchronously)
+            .ConfigureAwait(false);
+        
+        var documents = response.Data.Items; // a list of TResult, to pair with the scores
+        var documentResponses = response.Status?.DocumentResponses; // each of these has a `.Scores` dictionary
+        List<RerankedResult<TResult>> rerankedResults = null;
+
+        if (documentResponses != null) {
+            rerankedResults = documents.Zip(documentResponses, (doc, response) => 
+                new RerankedResult<TResult> { Document = doc, Scores = response.Scores })
+                .ToList();
+        } else {
+            rerankedResults = documents.Select(doc => 
+                new RerankedResult<TResult> { Document = doc, Scores = new Dictionary<string, float?>() })
+                .ToList();
+        }
+
+        var pageState = response.Data.NextPageState;
+        var sortVector = response.Status?.SortVector;
+
+        return new FindPage<RerankedResult<TResult>>(
+            pageState,
+            rerankedResults,
+            sortVector
         );
     }
 
@@ -550,55 +661,6 @@ public class Collection<T, TId> where T : class
         
         return response.Data.Document;
     }
-
-    // /// <summary>
-    // /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
-    // /// </summary>
-    // /// <returns></returns>
-    // public RerankSorter<T, T> FindAndRerank()
-    // {
-    //     return FindAndRerank<T>(null);
-    // }
-    //
-    // /// <inheritdoc cref="FindAndRerank()"/>
-    // /// <param name="filter"></param>
-    // public RerankSorter<T, T> FindAndRerank(CollectionFilter<T> filter)
-    // {
-    //     return FindAndRerank<T>(filter);
-    // }
-    //
-    // /// <inheritdoc cref="FindAndRerank()"/>
-    // /// <param name="filter"></param>
-    // /// <param name="commandOptions"></param>
-    // public RerankSorter<T, T> FindAndRerank(CollectionFilter<T> filter, CommandOptions commandOptions)
-    // {
-    //     return FindAndRerank<T>(filter, commandOptions);
-    // }
-    //
-    // /// <summary>
-    // /// Finds documents in a collection through a retrieval process that uses a reranker model to combine results from a vector search and a lexical search (hybrid search)
-    // /// </summary>
-    // /// <typeparam name="TResult">If you are using projection to return a subset of fields, TResult can be used to receive the projected document.</typeparam>
-    // /// <returns></returns>
-    // public RerankSorter<T, TResult> FindAndRerank<TResult>() where TResult : class
-    // {
-    //     return FindAndRerank<TResult>(null, null);
-    // }
-    //
-    // /// <inheritdoc cref="FindAndRerank{TResult}()"/>
-    // /// <param name="filter"></param>
-    // public RerankSorter<T, TResult> FindAndRerank<TResult>(CollectionFilter<T> filter) where TResult : class
-    // {
-    //     return FindAndRerank<TResult>(filter, null);
-    // }
-    //
-    // /// <inheritdoc cref="FindAndRerank{TResult}()"/>
-    // /// <param name="filter"></param>
-    // /// <param name="commandOptions"></param>
-    // public RerankSorter<T, TResult> FindAndRerank<TResult>(CollectionFilter<T> filter, CommandOptions commandOptions) where TResult : class
-    // {
-    //     return new RerankSorter<T, TResult>(() => CreateCommand("findAndRerank"), filter, commandOptions);
-    // }
 
     /// <summary>
     /// Synchronous version of <see cref="ReplaceOneAsync(CollectionFilter{T}, T, CollectionReplaceOneOptions{T})"/>

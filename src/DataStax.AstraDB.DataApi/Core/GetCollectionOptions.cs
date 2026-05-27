@@ -35,4 +35,19 @@ public class GetCollectionOptions : DatabaseCommandOptions
             AdditionalHeaders["x-embedding-api-key"] = value;
         }
     }
+
+    /// <summary>
+    /// When specified, the client will send the Reranking-Api-Key header with the specified key to any underlying HTTP request that requires reranker authentication.
+    /// </summary>
+    public string RerankingAPIKey
+    {
+        get
+        {
+            return AdditionalHeaders.TryGetValue("Reranking-Api-Key", out var value) ? value : null;
+        }
+        set
+        {
+            AdditionalHeaders["Reranking-Api-Key"] = value;
+        }
+    }
 }

@@ -71,9 +71,7 @@ public class CursorException : Exception
 /// capabilities. Results are fetched in batches from the underlying API and buffered for efficient iteration.
 /// </summary>
 /// <typeparam name="T">The type of the items or rows in the cursor.</typeparam>
-/// <typeparam name="TCursor">The type of the cursor.</typeparam>
-public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, IAsyncEnumerable<T>
-    where TCursor : AbstractCursor<T, TCursor>
+public abstract class AbstractCursor<T> : IDisposable, IEnumerable<T>, IAsyncEnumerable<T>
 {
     /// <summary>
     /// Gets the internal buffer containing fetched results.
@@ -215,12 +213,6 @@ public abstract class AbstractCursor<T, TCursor> : IDisposable, IEnumerable<T>, 
     {
         return GetEnumerator();
     }
-
-    /// <summary>
-    /// Creates a new cursor instance with the same configuration.
-    /// </summary>
-    /// <returns>A new cursor instance.</returns>
-    public abstract TCursor Clone();
 
     /// <summary>
     /// Releases all resources used by the cursor and sets its state to <see cref="CursorState.Closed"/>.

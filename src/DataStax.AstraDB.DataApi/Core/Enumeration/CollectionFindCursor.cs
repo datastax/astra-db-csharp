@@ -25,7 +25,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </summary>
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Collection{T, Tid}.Find(CollectionFilter{T}, CollectionFindManyOptions{T})"/> and provides a fluent API
+/// This cursor is returned by <see cref="Collection{T, Tid}.Find(CollectionFilter{T}, CollectionFindOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting documents. It supports both synchronous
 /// and asynchronous iteration patterns.
 /// </remarks>
@@ -51,7 +51,7 @@ namespace DataStax.AstraDB.DataApi.Core.Enumeration;
 /// </example>
 public class CollectionFindCursor<T> : CollectionFindCursor<T, T> where T : class
 {
-    internal CollectionFindCursor(Filter<T> filter, BaseFindManyOptions<T, CollectionSortBuilder<T>> options, FetchPageFunc<T, CollectionFindCursor<T, T>> fetchPage) 
+    internal CollectionFindCursor(Filter<T> filter, BaseFindOptions<T, CollectionSortBuilder<T>> options, FetchPageFunc<T, CollectionFindCursor<T, T>> fetchPage) 
         : base(filter, options, fetchPage) { }
 }
 
@@ -62,7 +62,7 @@ public class CollectionFindCursor<T> : CollectionFindCursor<T, T> where T : clas
 /// <typeparam name="T">The type of the documents in the collection.</typeparam>
 /// <typeparam name="TResult">The type to deserialize the results to (e.g., when using projections).</typeparam>
 /// <remarks>
-/// This cursor is returned by <see cref="Collection{T, TId}.Find{TResult}(CollectionFilter{T}, CollectionFindManyOptions{T})"/> and provides a fluent API
+/// This cursor is returned by <see cref="Collection{T, TId}.Find{TResult}(CollectionFilter{T}, CollectionFindOptions{T})"/> and provides a fluent API
 /// for filtering, sorting, limiting, and projecting documents into a different result type.
 /// </remarks>
 /// <example>
@@ -95,9 +95,9 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, Collectio
     /// <param name="fetchPage">The function to fetch pages of results.</param>
     internal CollectionFindCursor(
         Filter<T> filter,
-        BaseFindManyOptions<T, CollectionSortBuilder<T>> options,
+        BaseFindOptions<T, CollectionSortBuilder<T>> options,
         FetchPageFunc<TResult, CollectionFindCursor<T, TResult>> fetchPage
-    ) : base(filter, options ?? new CollectionFindManyOptions<T>(), fetchPage) { }
+    ) : base(filter, options ?? new CollectionFindOptions<T>(), fetchPage) { }
 
     /// <summary>
     /// Creates a new cursor instance with the same configuration.
@@ -114,7 +114,7 @@ public class CollectionFindCursor<T, TResult> : FindCursor<T, TResult, Collectio
     /// <param name="filter">The filter to apply.</param>
     /// <param name="options">The find options to use.</param>
     /// <returns>A new cursor instance.</returns>
-    protected override CollectionFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindManyOptions<T, CollectionSortBuilder<T>> options)
+    protected override CollectionFindCursor<T, TResult> CloneWith(Filter<T> filter, BaseFindOptions<T, CollectionSortBuilder<T>> options)
     {
         return new(filter, options, FetchPageFunc);
     }

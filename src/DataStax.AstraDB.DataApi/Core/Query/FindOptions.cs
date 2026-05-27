@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
@@ -21,7 +22,7 @@ namespace DataStax.AstraDB.DataApi.Core.Query;
 /// <summary>
 /// Base class for find-many operation options.
 /// </summary>
-public abstract class BaseFindManyOptions<T, TSort> : CommandOptions 
+public abstract class BaseFindOptions<T, TSort> : BasePaginatedFindOptions<T, BaseFindOptions<T, TSort>>
     where T : class
     where TSort : SortBuilder<T>
 {
@@ -31,69 +32,54 @@ public abstract class BaseFindManyOptions<T, TSort> : CommandOptions
     public TSort Sort { get; set; }
     
     /// <summary>
-    /// Projection to apply to the results.
-    /// </summary>
-    public IProjectionBuilder Projection { get; set; }
-    
-    /// <summary>
     /// Whether to include similarity scores in the results.
     /// </summary>
     public bool? IncludeSimilarity { get; set; }
     
     /// <summary>
-    /// Whether to include the sort vector in the results.
-    /// </summary>
-    public bool? IncludeSortVector { get; set; }
-    
-    /// <summary>
-    /// The initial page state used to resume pagination from a previous find-many operation.
-    /// </summary>
-    public string InitialPageState { get; set; }
-    
-    /// <summary>
     /// The number of documents to skip before starting to return documents.
     /// </summary>
     public int? Skip { get; set; }
-    
-    /// <summary>
-    /// The maximum number of documents to return.
-    /// </summary>
-    public int? Limit { get; set; }
 
-    internal object ToPayload(Filter<T> filter, string pageState = null)
+    internal override object ToPayload(Filter<T> filter, string pageState = null)
     {
+        var options = new Dictionary<string, object>();
+        if (IncludeSimilarity.HasValue)
+            options["includeSimilarity"] = IncludeSimilarity.Value;
+        if (IncludeSortVector.HasValue)
+            options["includeSortVector"] = IncludeSortVector.Value;
+        if (!string.IsNullOrEmpty(pageState ?? InitialPageState))
+            options["pageState"] = pageState ?? InitialPageState;
+        if (Skip.HasValue)
+            options["skip"] = Skip.Value;
+        if (Limit.HasValue)
+            options["limit"] = Limit.Value;
+
         return new
         {
             filter = filter?.Serialize(),
             sort = Sort?.Sorts?.ToDictionary(x => x.Name, x => x.Value),
             projection = Projection?.Projections?.ToDictionary(x => x.FieldName, x => x.Value) ?? new(),
-            options = new
-            {
-                includeSimilarity = IncludeSimilarity,
-                includeSortVector = IncludeSortVector,
-                pageState = pageState ?? InitialPageState,
-                skip = Skip,
-                limit = Limit,
-            },
+            options = options,
         };
     }
     
-    internal BaseFindManyOptions<T, TSort> ShallowClone()
+    internal override BaseFindOptions<T, TSort> ShallowClone()
     {
-        return (BaseFindManyOptions<T, TSort>)MemberwiseClone();
+        return (BaseFindOptions<T, TSort>)MemberwiseClone();
     }
 }
 
 /// <summary>
 /// Options for finding multiple documents in a collection.
 /// </summary>
-public sealed class CollectionFindManyOptions<T> : BaseFindManyOptions<T, CollectionSortBuilder<T>> where T : class
+public sealed class CollectionFindOptions<T> : BaseFindOptions<T, CollectionSortBuilder<T>> where T : class
 {
 }
 
 /// <summary>
 /// Options for finding multiple rows in a table.
 /// </summary>
-public sealed class TableFindManyOptions<T> : BaseFindManyOptions<T, TableSortBuilder<T>> where T : class
+public sealed class TableFindOptions<T> : BaseFindOptions<T, TableSortBuilder<T>> where T : class
 {
 }
