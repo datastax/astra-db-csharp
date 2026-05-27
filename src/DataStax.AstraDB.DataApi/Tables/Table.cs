@@ -835,7 +835,7 @@ public class Table<T> where T : class
     /// <inheritdoc cref="DropAsync()"/>
     public void Drop()
     {
-        DropAsync().ResultSync();
+        _database.DropTable(TableName);
     }
 
     /// <summary>

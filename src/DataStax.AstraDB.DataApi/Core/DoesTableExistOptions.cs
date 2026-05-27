@@ -17,7 +17,7 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Additional command options for the Database.DoesCollectionExist commands.
+/// Additional command options for the Database.DoesTableExist commands.
 /// </summary>
 public class DoesTableExistOptions : ListTableNamesOptions
 {

@@ -927,11 +927,11 @@ public class Database
     }
 
     /// <summary>
-    /// Looks to see if a collection exists in the database.
+    /// Looks to see if a table exists in the database.
     /// </summary>
     /// <param name="tableName"></param>
     /// <param name="options">The options to use for the command, useful for overriding the keyspace, for example.</param>
-    /// <returns>True if the collection exists, false otherwise.</returns>
+    /// <returns>True if the table exists, false otherwise.</returns>
     public async Task<bool> DoesTableExistAsync(string tableName, DoesTableExistOptions options = null)
     {
         var tableNames = await ListTableNamesAsync(options);

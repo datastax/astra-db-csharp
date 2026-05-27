@@ -18,10 +18,9 @@ using DataStax.AstraDB.DataApi.Core;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-
 /// <summary>
-/// Options for the Database.ListIndexNames commamd.
+/// Options for creating a table regular index.
 /// </summary>
-public class ListIndexNamesOptions : CommandOptions
+public class CreateIndexOptions : CreateIndexCommandOptions
 {
 }

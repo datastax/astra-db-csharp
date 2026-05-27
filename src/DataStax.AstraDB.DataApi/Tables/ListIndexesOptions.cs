@@ -20,7 +20,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 
 
 /// <summary>
-/// Options for altering a table.
+/// Options for the Database.ListIndexes commamd.
 /// </summary>
 public class ListIndexesOptions : CommandOptions
 {
