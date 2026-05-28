@@ -731,7 +731,7 @@ public class AdminTests
     [Fact(Skip = AdminCollection.SkipMessage)]
     public void DropDatabaseNonblockingSync()
     {
-        var waitingOptions = new BlockingCommandOptions
+        var waitingOptions = new DropDatabaseOptions
         {
             waitForCompletion = false,
         };
@@ -743,7 +743,7 @@ public class AdminTests
     [Fact(Skip = AdminCollection.SkipMessage)]
     public async Task DropDatabaseNonblockingAsync()
     {
-        var waitingOptions = new BlockingCommandOptions
+        var waitingOptions = new DropDatabaseOptions
         {
             waitForCompletion = false,
         };
@@ -765,7 +765,7 @@ public class AdminTests
     public async Task DropDatabaseBlockingAsync()
     {
         // this one explicitly requires the blocking call:
-        var waitingOptions = new BlockingCommandOptions
+        var waitingOptions = new DropDatabaseOptions
         {
             waitForCompletion = true,
         };

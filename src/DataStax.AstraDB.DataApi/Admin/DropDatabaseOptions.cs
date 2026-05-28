@@ -19,8 +19,8 @@ using DataStax.AstraDB.DataApi.Core;
 namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
-/// Options used for AstraDatabasesAdmin's GetDatabaseInfo methods.
+/// Options used for AstraDatabasesAdmin's DropDatabase methods.
 /// </summary>
-public class GetDatabaseInfoOptions : CommandOptions
+public class DropDatabaseOptions : BlockingCommandOptions
 {
 }

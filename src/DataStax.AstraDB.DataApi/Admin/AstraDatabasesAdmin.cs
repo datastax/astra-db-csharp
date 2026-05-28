@@ -318,61 +318,41 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropDatabaseAsync(string)"/>.
+    /// Synchronous version of <see cref="DropDatabaseAsync(string, DropDatabaseOptions)"/>.
     /// </summary>
-    /// <remarks>
-    /// This method, by default, will wait for the operation to complete on the server side.
-    /// Use the options' waitForCompletion attribute to control this behaviour.
-    /// </remarks>
-    public void DropDatabase(string dbGuid)
-    {
-        DropDatabase(dbGuid, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="DropDatabaseAsync(string, BlockingCommandOptions)"/>.
-    /// </summary>
-    public void DropDatabase(string dbGuid, BlockingCommandOptions commandOptions)
-    {
-        DropDatabaseAsync(dbGuid, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Drops the database with the specified ID.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database to drop.</param>
+    /// <inheritdoc cref="DropDatabaseAsync(string, DropDatabaseOptions)"/>
     /// <example>
     /// <code>
-    /// await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    /// admin.DropDatabase("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
     /// </code>
     /// </example>
-    /// <remarks>
-    /// This method, by default, will wait for the operation to complete on the server side.
-    /// Use the options' waitForCompletion attribute to control this behaviour.
-    /// </remarks>
-    public Task DropDatabaseAsync(string dbGuid)
+    public void DropDatabase(string dbGuid, DropDatabaseOptions options = null)
     {
-        return DropDatabaseAsync(dbGuid, null);
+        DropDatabaseAsync(dbGuid, options, true).ResultSync();
     }
 
     /// <summary>
     /// Drops the database with the specified ID.
     /// </summary>
     /// <param name="dbGuid">The ID of the database to drop.</param>
-    /// <param name="commandOptions">The command options to use.</param>
+    /// <param name="options">The command options to use, including the waitForCompletion flag.</param>
     /// <example>
     /// <code>
     /// await admin.DropDatabaseAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
     /// </code>
     /// </example>
-    public Task DropDatabaseAsync(string dbGuid, BlockingCommandOptions commandOptions)
+    /// <remarks>
+    /// This method, by default, will wait for the operation to complete on the server side.
+    /// Use the options' waitForCompletion attribute to control this behaviour.
+    /// </remarks>
+    public Task DropDatabaseAsync(string dbGuid, DropDatabaseOptions options = null)
     {
-        return DropDatabaseAsync(dbGuid, commandOptions, false);
+        return DropDatabaseAsync(dbGuid, options, false);
     }
 
-    internal async Task DropDatabaseAsync(string dbGuid, BlockingCommandOptions options, bool runSynchronously)
+    internal async Task DropDatabaseAsync(string dbGuid, DropDatabaseOptions options, bool runSynchronously)
     {
-        options ??= new BlockingCommandOptions();
+        options ??= new DropDatabaseOptions();
         Guard.NotNullOrEmpty(dbGuid, nameof(dbGuid));
         Command command = CreateCommand()
             .AddUrlPath("databases")
