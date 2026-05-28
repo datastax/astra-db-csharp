@@ -17,37 +17,13 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Filter Available Regions by type.
+/// Options for AstraDatabasesAdmin's FindAvailableRegions command.
 /// </summary>
-internal enum RegionTypeFilter
-{
-  /// <summary>
-  /// All region types
-  /// </summary>
-  All,
-  /// <summary>
-  /// Only Vector regions
-  /// </summary>
-  Vector,
-  /// <summary>
-  /// Only Serverless regions
-  /// </summary>
-  Serverless
-}
-
-/// <summary>
-/// Options for Find Available Regions command.
-/// </summary>
-public class FindAvailableRegionsCommandOptions : CommandOptions
+public class FindAvailableRegionsOptions : CommandOptions
 {
   /// <summary>
   /// If true, only return regions that can be used by the calling organization.
+  /// If false, all regions are requested.
   /// </summary>
-  public bool OnlyOrgEnabledRegions { get; set; } = true;
-
-  /// <summary>
-  /// Currently clients only support returning Vector regions.
-  /// </summary>
-  internal RegionTypeFilter RegionType { get; set; } = RegionTypeFilter.Vector;
-
+  public bool? OnlyOrgEnabledRegions { get; set; }
 }

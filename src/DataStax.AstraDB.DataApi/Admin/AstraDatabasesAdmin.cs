@@ -452,19 +452,10 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="FindAvailableRegionsAsync()"/>
+    /// Synchronous version of <see cref="FindAvailableRegionsAsync(FindAvailableRegionsOptions)"/>
     /// </summary>
-    /// <returns></returns>
-    public List<RegionInfo> FindAvailableRegions()
-    {
-        return FindAvailableRegions(new FindAvailableRegionsCommandOptions());
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="FindAvailableRegionsAsync(FindAvailableRegionsCommandOptions)"/>
-    /// </summary>
-    /// <returns></returns>
-    public List<RegionInfo> FindAvailableRegions(FindAvailableRegionsCommandOptions options)
+    /// <inheritdoc cref="FindAvailableRegionsAsync(FindAvailableRegionsOptions)"/>
+    public List<RegionInfo> FindAvailableRegions(FindAvailableRegionsOptions options = null)
     {
         return FindAvailableRegionsAsync(options, true).ResultSync();
     }
@@ -472,40 +463,20 @@ public class AstraDatabasesAdmin
     /// <summary>
     /// Gets a list of available regions for database creation.
     /// </summary>
-    /// <returns></returns>
-    public Task<List<RegionInfo>> FindAvailableRegionsAsync()
-    {
-        return FindAvailableRegionsAsync(new FindAvailableRegionsCommandOptions());
-    }
-
-    /// <summary>
-    /// Gets a list of available regions for database creation.
-    /// </summary>
-    /// <param name="options"></param>
-    /// <returns></returns>
-    public Task<List<RegionInfo>> FindAvailableRegionsAsync(FindAvailableRegionsCommandOptions options)
+    /// <param name="options">Additional options to the DevOps API query, such as region filters and general request execution parameters.</param>
+    /// <returns>A list of region information matching the provided filters</returns>
+    public Task<List<RegionInfo>> FindAvailableRegionsAsync(FindAvailableRegionsOptions options = null)
     {
         return FindAvailableRegionsAsync(options, false);
     }
 
-    internal async Task<List<RegionInfo>> FindAvailableRegionsAsync(FindAvailableRegionsCommandOptions options, bool runSynchronously)
+    internal async Task<List<RegionInfo>> FindAvailableRegionsAsync(FindAvailableRegionsOptions options, bool runSynchronously)
     {
         Dictionary<string, string> parms = new Dictionary<string, string>();
-        string regionType = "";
-        switch (options.RegionType)
+        if (options != null && options.OnlyOrgEnabledRegions.HasValue)
         {
-            case RegionTypeFilter.All:
-                regionType = "all";
-                break;
-            case RegionTypeFilter.Serverless:
-                regionType = "";
-                break;
-            case RegionTypeFilter.Vector:
-                regionType = "vector";
-                break;
+            parms.Add("filter-by-org", options.OnlyOrgEnabledRegions.Value ? "enabled" : "disabled");
         }
-        parms.Add("region-type", regionType);
-        parms.Add("filter-by-org", options.OnlyOrgEnabledRegions ? "enabled" : "disabled");
         var command = CreateCommand()
             .AddUrlPath("regions/serverless")
             .WithTimeoutManager(new DatabaseAdminTimeoutManager())

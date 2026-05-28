@@ -568,9 +568,23 @@ public class AdminTests
     {
         var admin = fixture.Client.GetAstraDatabasesAdmin();
 
-        var regions = await admin.FindAvailableRegionsAsync();
-        Assert.NotNull(regions);
-        Assert.NotEmpty(regions);
+        var regionsDefault = await admin.FindAvailableRegionsAsync();
+        Assert.NotNull(regionsDefault);
+        Assert.NotEmpty(regionsDefault);
+
+        var regionsOnly = await admin.FindAvailableRegionsAsync(new FindAvailableRegionsOptions {
+            OnlyOrgEnabledRegions = true
+        });
+        Assert.NotNull(regionsOnly);
+        Assert.NotEmpty(regionsOnly);
+
+        var regionsAll = await admin.FindAvailableRegionsAsync(new FindAvailableRegionsOptions {
+            OnlyOrgEnabledRegions = false
+        });
+        Assert.NotNull(regionsAll);
+        Assert.NotEmpty(regionsAll);
+
+        Assert.True(regionsAll.Count >= regionsOnly.Count);
     }
 
     [SkipWhenNotAstra]
