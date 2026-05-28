@@ -171,71 +171,48 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateDatabaseAsync(DatabaseCreationOptions)"/>
+    /// Synchronous version of <see cref="CreateDatabaseAsync(CreateDatabaseOptions)"/>
     /// </summary>
-    /// <remarks>
-    /// This method, by default, will wait for the operation to complete on the server side.
-    /// Use the options' waitForCompletion attribute to control this behaviour.
-    /// </remarks>
-    public DatabaseAdminAstra CreateDatabase(DatabaseCreationOptions creationOptions)
-    {
-        return CreateDatabase(creationOptions, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateDatabaseAsync(DatabaseCreationOptions, BlockingCommandOptions)"/>
-    /// </summary>
-    public DatabaseAdminAstra CreateDatabase(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
-    {
-        return CreateDatabaseAsync(creationOptions, commandOptions, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Creates a new database with the specified creation options.
-    /// </summary>
-    /// <param name="creationOptions">The database creation options.</param>
-    /// <returns>A task that resolves to a DatabaseAdminAstra instance for the created database.</returns>
+    /// <inheritdoc cref="CreateDatabaseAsync(CreateDatabaseOptions)"/>
     /// <example>
     /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"});
+    /// var adminDb = admin.CreateDatabase(new (){Name = "MyDB", CloudProvider = CloudProviderType.AWS, Region = "us-east-2", waitForCompletion = true});
+    /// </code>
+    /// </example>
+    public DatabaseAdminAstra CreateDatabase(CreateDatabaseOptions options)
+    {
+        return CreateDatabaseAsync(options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// Creates a new database according to the provided options.
+    /// </summary>
+    /// <param name="options">Options for database creation, such as its name, and other settings such as: whether to wait for the DB to become active, timeout settings.</param>
+    /// <returns>A DatabaseAdminAstra instance for the created database.</returns>
+    /// <example>
+    /// <code>
+    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name = "MyDB", CloudProvider = CloudProviderType.AWS, Region = "us-east-2", waitForCompletion = true});
     /// </code>
     /// </example>
     /// <remarks>
     /// This method, by default, will wait for the operation to complete on the server side.
     /// Use the options' waitForCompletion attribute to control this behaviour.
     /// </remarks>
-    public Task<DatabaseAdminAstra> CreateDatabaseAsync(DatabaseCreationOptions creationOptions)
+    public Task<DatabaseAdminAstra> CreateDatabaseAsync(CreateDatabaseOptions options)
     {
-        return CreateDatabaseAsync(creationOptions, null);
+        return CreateDatabaseAsync(options, false);
     }
 
-    /// <summary>
-    /// Creates a new database with the specified creation and command options.
-    /// </summary>
-    /// <param name="creationOptions">The database creation options.</param>
-    /// <param name="commandOptions">Optional settings that influence request execution.</param>
-    /// <returns>A task that resolves to a DatabaseAdminAstra instance for the created database.</returns>
-    /// <example>
-    /// <code>
-    /// var adminDb = await admin.CreateDatabaseAsync(new (){Name="MyDB", CloudProvider=CloudProviderType.AWS, Region="us-east-2"}, commandOptions);
-    /// </code>
-    /// </example>
-    public Task<DatabaseAdminAstra> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions)
+    internal async Task<DatabaseAdminAstra> CreateDatabaseAsync(CreateDatabaseOptions options, bool runSynchronously)
     {
-        return CreateDatabaseAsync(creationOptions, commandOptions, false);
-    }
-
-    internal async Task<DatabaseAdminAstra> CreateDatabaseAsync(DatabaseCreationOptions creationOptions, BlockingCommandOptions commandOptions, bool runSynchronously)
-    {
-        commandOptions ??= new BlockingCommandOptions();
-        Guard.NotNullOrEmpty(creationOptions.Name, nameof(creationOptions.Name));
-        Guard.NotNull(creationOptions.CloudProvider, nameof(creationOptions.CloudProvider));
-        Guard.NotNullOrEmpty(creationOptions.Region, nameof(creationOptions.Region));
+        Guard.NotNullOrEmpty(options.Name, nameof(options.Name));
+        Guard.NotNull(options.CloudProvider, nameof(options.CloudProvider));
+        Guard.NotNullOrEmpty(options.Region, nameof(options.Region));
         Command command = CreateCommand()
             .AddUrlPath("databases")
-            .WithPayload(creationOptions)
+            .WithPayload(options.ToPayload())
             .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-            .AddCommandOptions(commandOptions);
+            .AddCommandOptions(options);
 
         var newDbId = "";
         command.ResponseHandler = response =>
@@ -248,7 +225,7 @@ public class AstraDatabasesAdmin
         };
         await command.RunAsyncRaw<Command.EmptyResult>(runSynchronously).ConfigureAwait(false);
 
-        if (commandOptions.waitForCompletion)
+        if (options.waitForCompletion)
         {
             if (runSynchronously)
             {
@@ -260,7 +237,8 @@ public class AstraDatabasesAdmin
             }
         }
 
-        return GetDatabaseAdmin(newDbId, creationOptions.Region);
+        // TODO: extract the proper options from 'options' and pass it here once ready
+        return GetDatabaseAdmin(newDbId, options.Region);
     }
 
     private void WaitForDatabase(string dbGuid, HashSet<AstraDatabaseStatus> waitingStatuses, AstraDatabaseStatus targetStatus)

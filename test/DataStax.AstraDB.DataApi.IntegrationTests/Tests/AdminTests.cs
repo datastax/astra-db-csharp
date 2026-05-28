@@ -636,7 +636,7 @@ public class AdminTests
 
         Also, make sure the DB creation/deletion parameters follow the env being tested:
             DEV: GCP europe-west4
-            TEST: AWS us-east-1
+            TEST: AWS us-west-2
         For dropping, you will need to hardcode the proper database Guid in the test.
     */
 
@@ -645,17 +645,14 @@ public class AdminTests
     public async Task CreateDatabaseNonblockingSync()
     {
         var dbName = "test-db-create-x";
-        var creationOptions = new BlockingCommandOptions() {
-            waitForCompletion = false,
-        };
         var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
             new (){
                 Name = dbName,
                 CloudProvider = CloudProviderType.GCP,
                 Region = "europe-west4",
-                Keyspace = "fedault_seykpace"
-            },
-            creationOptions
+                Keyspace = "fedault_seykpace",
+                waitForCompletion = false,
+            }
         );
 
         var dbStatus = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(admin.Id);
@@ -665,19 +662,18 @@ public class AdminTests
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNonblockingAsync
-    [Fact(Skip = AdminCollection.SkipMessage)]
+    // [Fact(Skip = AdminCollection.SkipMessage)]
+    [Fact]
     public async Task CreateDatabaseNonblockingAsync()
     {
         var dbName = "test-db-create-async-x";
-        var options = new DatabaseCreationOptions{
+        var creationOptions = new CreateDatabaseOptions() {
             Name = dbName,
-            CloudProvider = CloudProviderType.GCP,
-            Region = "europe-west4"
-        };
-        var creationOptions = new BlockingCommandOptions() {
+            CloudProvider = CloudProviderType.AWS,
+            Region = "us-west-2",
             waitForCompletion = false,
         };
-        var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, creationOptions);
+        var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(creationOptions);
 
         var dbStatus = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(admin.Id);
         Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
@@ -690,16 +686,14 @@ public class AdminTests
     public void CreateDatabaseBlockingSync()
     {
         var dbName = "test-db-create-blocking-x";
-        var options = new DatabaseCreationOptions{
+        var creationOptions = new CreateDatabaseOptions() {
             Name = dbName,
             CloudProvider = CloudProviderType.GCP,
             Region = "europe-west4",
-            Keyspace = "fedault_seykpace"
-        };
-        var creationOptions = new BlockingCommandOptions() {
+            Keyspace = "fedault_seykpace",
             waitForCompletion = true,
         };
-        var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, creationOptions);
+        var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(creationOptions);
 
         var dbStatus = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(admin.Id);
         Assert.True(dbStatus == AstraDatabaseStatus.ACTIVE);
