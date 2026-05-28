@@ -662,8 +662,7 @@ public class AdminTests
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNonblockingAsync
-    // [Fact(Skip = AdminCollection.SkipMessage)]
-    [Fact]
+    [Fact(Skip = AdminCollection.SkipMessage)]
     public async Task CreateDatabaseNonblockingAsync()
     {
         var dbName = "test-db-create-async-x";
@@ -673,12 +672,21 @@ public class AdminTests
             Region = "us-west-2",
             waitForCompletion = false,
         };
-        var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(creationOptions);
 
-        var dbStatus = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(admin.Id);
+        var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
+
+        var dbAdmin = await astraAdmin.CreateDatabaseAsync(creationOptions);
+
+        var dbStatus = await astraAdmin.GetDatabaseStatusAsync(dbAdmin.Id);
         Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
             || dbStatus == AstraDatabaseStatus.INITIALIZING
             || dbStatus == AstraDatabaseStatus.PENDING);
+
+        var dbAdmin2 = astraAdmin.GetDatabaseAdmin(dbAdmin.GetAPIEndpoint());
+        var dbStatus2 = await astraAdmin.GetDatabaseStatusAsync(dbAdmin2.Id);
+        Assert.True(dbStatus2 == AstraDatabaseStatus.ASSOCIATING
+            || dbStatus2 == AstraDatabaseStatus.INITIALIZING
+            || dbStatus2 == AstraDatabaseStatus.PENDING);
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingSync
