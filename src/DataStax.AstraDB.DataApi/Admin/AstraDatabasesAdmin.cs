@@ -448,15 +448,13 @@ public class AstraDatabasesAdmin
     private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
     {
         var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.{DevOpsAPISuffix(_adminOptions.Environment)}";
-        var database = _client.GetDatabase(apiEndpoint);
-        return new DatabaseAdminAstra(database, _client, _adminOptions);
+        return GetDatabaseAdmin(apiEndpoint);
     }
 
     private DatabaseAdminAstra GetDatabaseAdmin(string dbGuid, string region)
     {
         var apiEndpoint = $"https://{dbGuid}-{region}.{DevOpsAPISuffix(_adminOptions.Environment)}";
-        var database = _client.GetDatabase(apiEndpoint);
-        return new DatabaseAdminAstra(database, _client, _adminOptions);
+        return GetDatabaseAdmin(apiEndpoint);
     }
 
     private static readonly CommandOptions _devOpsAPIOptions = new CommandOptions { SerializeDateAsDollarDate = false };
