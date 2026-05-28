@@ -20,7 +20,7 @@ namespace DataStax.AstraDB.DataApi.Tables;
 
 
 /// <summary>
-/// Options for the Database.ListIndexNames commamd.
+/// Options for the Database.ListIndexNames command.
 /// </summary>
 public class ListIndexNamesOptions : CommandOptions
 {
