@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core;
+
+namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
 /// Command options specific to the database admin's GetDatabase methods.

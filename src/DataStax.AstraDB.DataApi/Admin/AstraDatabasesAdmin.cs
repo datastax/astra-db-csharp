@@ -362,7 +362,10 @@ public class AstraDatabasesAdmin
     public DatabaseAdminAstra GetDatabaseAdmin(string apiEndpoint, GetDatabaseAdminOptions options = null)
     {
         var commandOptions = CommandOptions.Merge(new CommandOptions[] {_adminOptions, options});
-        var database = _client.GetDatabase(apiEndpoint);
+        var database = _client.GetDatabase(
+            apiEndpoint,
+            DatabaseCommandOptions.FromCommandOptions(commandOptions)
+        );
         return new DatabaseAdminAstra(database, _client, commandOptions);
     }
 
