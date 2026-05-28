@@ -65,11 +65,11 @@ public class DatabaseTests
 
         try
         {
-            var waitingOptions = new BlockingCommandOptions
+            var waitingOptions = new DropKeyspaceOptions
             {
                 waitForCompletion = false,
             };
-            var ckWaitingOptions = new CreateKeyspaceCommandOptions
+            var ckWaitingOptions = new CreateKeyspaceOptions
             {
                 waitForCompletion = false,
                 updateDBKeyspace = true,
@@ -109,11 +109,11 @@ public class DatabaseTests
 
         try
         {
-            var waitingOptions = new BlockingCommandOptions
+            var waitingOptions = new DropKeyspaceOptions
             {
                 waitForCompletion = true,
             };
-            var ckWaitingOptions = new CreateKeyspaceCommandOptions
+            var ckWaitingOptions = new CreateKeyspaceOptions
             {
                 waitForCompletion = true,
                 updateDBKeyspace = true,

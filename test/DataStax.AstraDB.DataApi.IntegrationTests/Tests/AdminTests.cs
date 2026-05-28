@@ -154,7 +154,7 @@ public class AdminTests
         var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid);
         Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 
-        status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid);
+        status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid, new GetDatabaseStatusOptions());
         Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
     }
 
@@ -304,20 +304,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -338,20 +338,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -372,20 +372,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -406,20 +406,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -440,20 +440,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -474,20 +474,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -508,20 +508,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -542,20 +542,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -830,7 +830,7 @@ public class AdminTests
         {
             Token = fixture.Client.ClientOptions.Token,
         };
-        var ckOptions = new CreateKeyspaceCommandOptions
+        var ckOptions = new CreateKeyspaceOptions
         {
             updateDBKeyspace = true,
         };
@@ -890,14 +890,14 @@ public class AdminTests
         {
             Token = fixture.Client.ClientOptions.Token,
         };
-        var ckOptions = new CreateKeyspaceCommandOptions
+        var ckOptions = new CreateKeyspaceOptions
         {
             Token = fixture.Client.ClientOptions.Token,
         };
         var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client, adminOptions);
 
         var replicationOptions = new Dictionary<string, object> { ["class"] = "SimpleStrategy", ["replication_factor"] = 1 };
-        await daa.CreateKeyspaceAsync(keyspaceName, ckOptions, replicationOptions);
+        await daa.CreateKeyspaceAsync(keyspaceName, replicationOptions, ckOptions);
 
         Assert.Contains(keyspaceName, daa.ListKeyspaces());
     }
@@ -908,7 +908,7 @@ public class AdminTests
     public async Task DatabaseAdminAstra_DropKeyspaceAsync()
     {
         var keyspaceName = "drop_this_keyspace_x";
-        var adminOptions = new BlockingCommandOptions
+        var adminOptions = new DropKeyspaceOptions
         {
             Token = fixture.Client.ClientOptions.Token,
         };
@@ -925,7 +925,7 @@ public class AdminTests
     public async Task DatabaseAdminDataAPI_DropKeyspaceAsync()
     {
         var keyspaceName = "drop_this_keyspace_x";
-        var adminOptions = new BlockingCommandOptions
+        var adminOptions = new DropKeyspaceOptions
         {
             Token = fixture.Client.ClientOptions.Token,
         };

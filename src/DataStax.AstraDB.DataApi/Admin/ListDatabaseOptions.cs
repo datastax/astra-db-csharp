@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
-/// Options used for ListDatabasesAsync.
+/// Options used for AstraDatabasesAdmin's ListDatabases methods.
 /// </summary>
-public class ListDatabaseOptions
+public class ListDatabaseOptions : CommandOptions
 {
     /// <summary>
     /// Filter databases based on specific states.
@@ -50,6 +52,21 @@ public class ListDatabaseOptions
     [JsonPropertyName("limit")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? PageSizeLimit { get; set; } = null;
+
+    internal object ToPayload()
+    {
+        var payload = new Dictionary<string, object>();
+        if (StatesToInclude.HasValue)
+            payload["include"] = StatesToInclude.Value;
+        if (Provider.HasValue)
+            payload["provider"] = Provider.Value;
+        if (StartingAfter != null)
+            payload["starting_after"] = StartingAfter;
+        if (PageSizeLimit.HasValue)
+            payload["limit"] = PageSizeLimit.Value;
+
+        return payload;
+    }
 }
 
 /// <summary>

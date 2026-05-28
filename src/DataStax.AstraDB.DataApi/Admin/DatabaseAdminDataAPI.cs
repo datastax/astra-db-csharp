@@ -50,102 +50,37 @@ namespace DataStax.AstraDB.DataApi.Admin
             _database = database;
         }
 
-        /// <summary>
-        /// Gets the <see cref="Database"/> instance associated with this admin context.
-        /// </summary>
-        /// <returns>The connected <see cref="Database"/> instance.</returns>
-        /// <example>
-        /// <code>
-        /// var database = admin.GetDatabase();
-        /// </code>
-        /// </example>
-        public Database GetDatabase()
+        /// <inheritdoc/>
+        public Database GetDatabase(GetDatabaseOptions options = null)
         {
-            return _database;
+            return GetDatabase(null, options);
         }
 
-        /// <summary>
-        /// Gets a <see cref="Database"/> instance scoped to the specified keyspace.
-        /// </summary>
-        /// <param name="keyspace">The keyspace to use.</param>
-        /// <returns>A <see cref="Database"/> instance using the specified keyspace.</returns>
-        /// <example>
-        /// <code>
-        /// var database = admin.GetDatabase("myKeyspace");
-        /// </code>
-        /// </example>
-        public Database GetDatabase(string keyspace)
+        /// <inheritdoc/>
+        public Database GetDatabase(string token, GetDatabaseOptions options = null)
         {
-            Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
-            return _client.GetDatabase(_database.APIEndpoint, new DatabaseCommandOptions { Keyspace = keyspace });
+            var baseCommandOptions = CommandOptions.Merge(_optionsTree);
+            var newCommandOptions = DatabaseCommandOptions.BinaryMerge(
+                DatabaseCommandOptions.FromCommandOptions(baseCommandOptions),
+                options
+            );
+            newCommandOptions.Token = token;
+            return _client.GetDatabase(_database.APIEndpoint, newCommandOptions);
         }
 
-        /// <summary>
-        /// Gets a <see cref="Database"/> instance scoped to the specified keyspace and authenticated with the given token.
-        /// </summary>
-        /// <param name="keyspace">The keyspace to use.</param>
-        /// <param name="userToken">The token to use for authentication.</param>
-        /// <returns>A <see cref="Database"/> instance using the specified keyspace and token.</returns>
-        /// <example>
-        /// <code>
-        /// var database = admin.GetDatabase("myKeyspace", "myToken");
-        /// </code>
-        /// </example>
-        public Database GetDatabase(string keyspace, string userToken)
-        {
-            Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
-            return _client.GetDatabase(_database.APIEndpoint, new DatabaseCommandOptions { Keyspace = keyspace, Token = userToken });
-        }
-
-        /// <summary>
-        /// Lists the names of all keyspaces in the database.
-        /// </summary>
-        /// <returns>A collection of keyspace names.</returns>
-        /// <example>
-        /// <code>
-        /// IEnumerable&lt;string&gt; keyspaces = admin.ListKeyspaces();
-        /// </code>
-        /// </example>
-        public IEnumerable<string> ListKeyspaces()
-        {
-            return ListKeyspacesAsync(true, null).ResultSync();
-        }
-
-        /// <summary>
-        /// Lists the names of all keyspaces using the specified command options.
-        /// </summary>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <returns>A collection of keyspace names.</returns>
-        public IEnumerable<string> ListKeyspaces(CommandOptions options)
+        /// <inheritdoc/>
+        public IEnumerable<string> ListKeyspaces(ListKeyspacesOptions options = null)
         {
             return ListKeyspacesAsync(true, options).ResultSync();
         }
 
-        /// <summary>
-        /// Asynchronously lists the names of all keyspaces in the database.
-        /// </summary>
-        /// <returns>A task that resolves to a collection of keyspace names.</returns>
-        /// <example>
-        /// <code>
-        /// var keyspaces = await admin.ListKeyspacesAsync();
-        /// </code>
-        /// </example>
-        public Task<IEnumerable<string>> ListKeyspacesAsync()
-        {
-            return ListKeyspacesAsync(false, null);
-        }
-
-        /// <summary>
-        /// Asynchronously lists the names of all keyspaces using the specified command options.
-        /// </summary>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <returns>A task that resolves to a collection of keyspace names.</returns>
-        public Task<IEnumerable<string>> ListKeyspacesAsync(CommandOptions options)
+        /// <inheritdoc/>
+        public Task<IEnumerable<string>> ListKeyspacesAsync(ListKeyspacesOptions options = null)
         {
             return ListKeyspacesAsync(false, options);
         }
 
-        internal async Task<IEnumerable<string>> ListKeyspacesAsync(bool runSynchronously, CommandOptions options)
+        internal async Task<IEnumerable<string>> ListKeyspacesAsync(bool runSynchronously, ListKeyspacesOptions options)
         {
             var command = CreateCommand()
                 .AddCommandOptions(options)
@@ -159,86 +94,45 @@ namespace DataStax.AstraDB.DataApi.Admin
             return response.Result?.Keyspaces ?? new List<string>();
         }
 
-        /// <summary>
-        /// Synchronous version of <see cref="CreateKeyspaceAsync(string)"/>.
-        /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
-        /// <remarks>
-        /// This method, by default, will wait for the operation to complete on the server side.
-        /// Use the options' waitForCompletion attribute to control this behaviour.
-        /// </remarks>
-        public void CreateKeyspace(string keyspace)
+        /// <inheritdoc/>
+        public void CreateKeyspace(string keyspace, CreateKeyspaceOptions options = null)
         {
-            CreateKeyspace(keyspace, null, null);
+            CreateKeyspace(keyspace, null, options);
         }
 
         /// <summary>
-        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions)"/>.
+        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, IDictionary{string,object}, CreateKeyspaceOptions)"/>.
         /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions)"/>
-        public void CreateKeyspace(string keyspace, CreateKeyspaceCommandOptions options)
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, IDictionary{string,object}, CreateKeyspaceOptions)"/>
+        public void CreateKeyspace(string keyspace, IDictionary<string,object> replicationOptions, CreateKeyspaceOptions options = null)
         {
-            CreateKeyspace(keyspace, options, null);
+            CreateKeyspaceAsync(keyspace, replicationOptions, options, true).ResultSync();
         }
 
-        /// <summary>
-        /// Synchronous version of <see cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions, IDictionary{string,object})"/>.
-        /// </summary>
-        /// <inheritdoc cref="CreateKeyspaceAsync(string, CreateKeyspaceCommandOptions, IDictionary{string,object})"/>
-        public void CreateKeyspace(string keyspace, CreateKeyspaceCommandOptions options, IDictionary<string,object> replicationOptions)
+        /// <inheritdoc/>
+        public Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceOptions options = null)
         {
-            CreateKeyspaceAsync(keyspace, options, replicationOptions, true).ResultSync();
+            return CreateKeyspaceAsync(keyspace, null, options);
         }
 
-        /// <summary>
-        /// Creates a new keyspace with the specified name.
-        /// </summary>
+        /// <inheritdoc cref="CreateKeyspaceAsync(string, CreateKeyspaceOptions)"/>
         /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <example>
-        /// <code>
-        /// await admin.CreateKeyspaceAsync("myKeyspace");
-        /// </code>
-        /// </example>
-        /// <remarks>
-        /// This method, by default, will wait for the operation to complete on the server side.
-        /// Use the options' waitForCompletion attribute to control this behaviour.
-        /// </remarks>
-        public Task CreateKeyspaceAsync(string keyspace)
-        {
-            return CreateKeyspaceAsync(keyspace, null, null);
-        }
-
-        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
-        /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <example>
-        /// <code>
-        /// await admin.CreateKeyspaceAsync("myKeyspace", options);
-        /// </code>
-        /// </example>
-        public Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceCommandOptions options)
-        {
-            return CreateKeyspaceAsync(keyspace, options, null);
-        }
-
-        /// <inheritdoc cref="CreateKeyspaceAsync(string)"/>
-        /// <param name="keyspace">The name of the keyspace to create.</param>
-        /// <param name="options">Optional settings that influence request execution.</param>
         /// <param name="replicationOptions">Optional replication settings for the keyspace, e.g. {"class": "SimpleStrategy", "replication_factor": 3}.</param>
+        /// <param name="options">Optional settings that influence request execution.</param>
         /// <example>
         /// <code>
-        /// var replicationSettings = new Dictionary&lt;string, object&gt; { ["class"] = "SimpleStrategy", ["replication_factor"] = 3 };
-        /// await admin.CreateKeyspaceAsync("myKeyspace", options, replicationSettings);
+        /// var replicationOptions = new Dictionary&lt;string, object&gt; { ["class"] = "SimpleStrategy", ["replication_factor"] = 3 };
+        /// await admin.CreateKeyspaceAsync("myKeyspace", replicationOptions, options);
         /// </code>
         /// </example>
-        public Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceCommandOptions options, IDictionary<string,object> replicationOptions)
+        public Task CreateKeyspaceAsync(string keyspace, IDictionary<string,object> replicationOptions, CreateKeyspaceOptions options = null)
         {
-            return CreateKeyspaceAsync(keyspace, options, replicationOptions, false);
+            return CreateKeyspaceAsync(keyspace, replicationOptions, options, false);
         }
 
-        internal async Task CreateKeyspaceAsync(string keyspace, CreateKeyspaceCommandOptions options, IDictionary<string,object> replicationOptions, bool runSynchronously)
+        internal async Task CreateKeyspaceAsync(string keyspace, IDictionary<string,object> replicationOptions, CreateKeyspaceOptions options, bool runSynchronously)
         {
-            options ??= new CreateKeyspaceCommandOptions();
+            options ??= new CreateKeyspaceOptions();
             options.IncludeKeyspaceInUrl = false;
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
 
@@ -275,7 +169,13 @@ namespace DataStax.AstraDB.DataApi.Admin
             {
                 try
                 {
-                    await Wait.WaitForProcess(() => DoesKeyspaceExistAsync(keyspace, options, runSynchronously)).ConfigureAwait(false);
+                    await Wait.WaitForProcess(
+                        () => DoesKeyspaceExistAsync(
+                            keyspace,
+                            DoesKeyspaceExistOptions.FromCommandOptions(options),
+                            runSynchronously
+                        )
+                    ).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -284,62 +184,21 @@ namespace DataStax.AstraDB.DataApi.Admin
             }
         }
 
-        /// <summary>
-        /// Synchronous version of <see cref="DropKeyspaceAsync(string)"/>.
-        /// </summary>
-        /// <inheritdoc cref="DropKeyspaceAsync(string)"/>
-        /// <remarks>
-        /// This method, by default, will wait for the operation to complete on the server side.
-        /// Use the options' waitForCompletion attribute to control this behaviour.
-        /// </remarks>
-        public void DropKeyspace(string keyspace)
-        {
-            DropKeyspace(keyspace, null);
-        }
-
-        /// <summary>
-        /// Synchronous version of <see cref="DropKeyspaceAsync(string, BlockingCommandOptions)"/>.
-        /// </summary>
-        /// <inheritdoc cref="DropKeyspaceAsync(string, BlockingCommandOptions)"/>
-        public void DropKeyspace(string keyspace, BlockingCommandOptions options)
+        /// <inheritdoc/>
+        public void DropKeyspace(string keyspace, DropKeyspaceOptions options = null)
         {
             DropKeyspaceAsync(keyspace, options, true).ResultSync();
         }
 
-        /// <summary>
-        /// Drops the keyspace with the specified name.
-        /// </summary>
-        /// <param name="keyspace">The name of the keyspace to drop.</param>
-        /// <example>
-        /// <code>
-        /// await admin.DropKeyspaceAsync("myKeyspace");
-        /// </code>
-        /// </example>
-        /// <remarks>
-        /// This method, by default, will wait for the operation to complete on the server side.
-        /// Use the options' waitForCompletion attribute to control this behaviour.
-        /// </remarks>
-        public Task DropKeyspaceAsync(string keyspace)
-        {
-            return DropKeyspaceAsync(keyspace, null, false);
-        }
-
-        /// <inheritdoc cref="DropKeyspaceAsync(string)"/>
-        /// <param name="keyspace">The name of the keyspace to drop.</param>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <example>
-        /// <code>
-        /// await admin.DropKeyspaceAsync("myKeyspace", options);
-        /// </code>
-        /// </example>
-        public Task DropKeyspaceAsync(string keyspace, BlockingCommandOptions options)
+        /// <inheritdoc/>
+        public Task DropKeyspaceAsync(string keyspace, DropKeyspaceOptions options = null)
         {
             return DropKeyspaceAsync(keyspace, options, false);
         }
 
-        internal async Task DropKeyspaceAsync(string keyspace, BlockingCommandOptions options, bool runSynchronously)
+        internal async Task DropKeyspaceAsync(string keyspace, DropKeyspaceOptions options, bool runSynchronously)
         {
-            options ??= new BlockingCommandOptions();
+            options ??= new DropKeyspaceOptions();
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
 
             var command = CreateCommand()
@@ -361,7 +220,13 @@ namespace DataStax.AstraDB.DataApi.Admin
             {
                 try
                 {
-                    await Wait.WaitForProcess(async () => !await DoesKeyspaceExistAsync(keyspace, options, runSynchronously).ConfigureAwait(false)).ConfigureAwait(false);
+                    await Wait.WaitForProcess(
+                        async () => !await DoesKeyspaceExistAsync(
+                            keyspace,
+                            DoesKeyspaceExistOptions.FromCommandOptions(options),
+                            runSynchronously
+                        ).ConfigureAwait(false)
+                    ).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -370,100 +235,42 @@ namespace DataStax.AstraDB.DataApi.Admin
             }
         }
 
-        /// <summary>
-        /// Checks whether a keyspace with the specified name exists.
-        /// </summary>
-        /// <param name="keyspace">The name of the keyspace to check.</param>
-        /// <returns><c>true</c> if the keyspace exists; otherwise, <c>false</c>.</returns>
-        /// <example>
-        /// <code>
-        /// bool exists = admin.DoesKeyspaceExist("myKeyspace");
-        /// </code>
-        /// </example>
-        public bool DoesKeyspaceExist(string keyspace)
+        /// <inheritdoc/>
+        public bool DoesKeyspaceExist(string keyspace, DoesKeyspaceExistOptions options = null)
         {
-            return DoesKeyspaceExistAsync(keyspace, null, true).ResultSync();
+            return DoesKeyspaceExistAsync(keyspace, options, true).ResultSync();
         }
 
-        /// <summary>
-        /// Asynchronously checks whether a keyspace with the specified name exists.
-        /// </summary>
-        /// <param name="keyspace">The name of the keyspace to check.</param>
-        /// <returns>A task that resolves to <c>true</c> if the keyspace exists; otherwise, <c>false</c>.</returns>
-        /// <example>
-        /// <code>
-        /// bool exists = await admin.DoesKeyspaceExistAsync("myKeyspace");
-        /// </code>
-        /// </example>
-        public Task<bool> DoesKeyspaceExistAsync(string keyspace)
+        /// <inheritdoc/>
+        public Task<bool> DoesKeyspaceExistAsync(string keyspace, DoesKeyspaceExistOptions options = null)
         {
-            return DoesKeyspaceExistAsync(keyspace, null, false);
+            return DoesKeyspaceExistAsync(keyspace, options, false);
         }
 
-        internal async Task<bool> DoesKeyspaceExistAsync(string keyspace, CommandOptions options, bool runSynchronously)
+        internal async Task<bool> DoesKeyspaceExistAsync(string keyspace, DoesKeyspaceExistOptions options, bool runSynchronously)
         {
             Guard.NotNullOrEmpty(keyspace, nameof(keyspace));
             var keyspaces = await ListKeyspacesAsync(runSynchronously, options).ConfigureAwait(false);
             return new System.Collections.Generic.HashSet<string>(keyspaces).Contains(keyspace);
         }
 
-        /// <summary>
-        /// Finds and returns available embedding providers for the current database.
-        /// </summary>
-        /// <returns>A <see cref="FindEmbeddingProvidersResult"/> containing the discovered providers.</returns>
-        /// <example>
-        /// <code>
-        /// var providers = admin.FindEmbeddingProviders();
-        /// </code>
-        /// </example>
-        public FindEmbeddingProvidersResult FindEmbeddingProviders()
-        {
-            return FindEmbeddingProvidersAsync(null, true).ResultSync();
-        }
-
-        /// <summary>
-        /// Finds and returns available embedding providers using the specified command options.
-        /// </summary>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <returns>A <see cref="FindEmbeddingProvidersResult"/> containing the discovered providers.</returns>
-        public FindEmbeddingProvidersResult FindEmbeddingProviders(FindEmbeddingProvidersCommandOptions options)
+        /// <inheritdoc/>
+        public FindEmbeddingProvidersResult FindEmbeddingProviders(FindEmbeddingProvidersOptions options = null)
         {
             return FindEmbeddingProvidersAsync(options, true).ResultSync();
         }
 
-        /// <summary>
-        /// Asynchronously finds and returns available embedding providers for the current database.
-        /// </summary>
-        /// <returns>
-        /// A task that resolves to a <see cref="FindEmbeddingProvidersResult"/> containing the discovered providers.
-        /// </returns>
-        /// <example>
-        /// <code>
-        /// var providers = await admin.FindEmbeddingProvidersAsync();
-        /// </code>
-        /// </example>
-        public Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync()
-        {
-            return FindEmbeddingProvidersAsync(null, false);
-        }
-
-        /// <summary>
-        /// Asynchronously finds and returns available embedding providers using the specified command options.
-        /// </summary>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <returns>
-        /// A task that resolves to a <see cref="FindEmbeddingProvidersResult"/> containing the discovered providers.
-        /// </returns>
-        public Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersCommandOptions options)
+        /// <inheritdoc/>
+        public Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersOptions options = null)
         {
             return FindEmbeddingProvidersAsync(options, false);
         }
 
-        internal async Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersCommandOptions options, bool runSynchronously)
+        internal async Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersOptions options, bool runSynchronously)
         {
 
             if (options == null){
-                options = new FindEmbeddingProvidersCommandOptions {};
+                options = new FindEmbeddingProvidersOptions {};
             }
 
             object epPayload = options.FilterModelStatus == null
@@ -487,75 +294,24 @@ namespace DataStax.AstraDB.DataApi.Admin
 
             return response.Result;
         }
-
-        /// <summary>
-        /// Finds and returns available reranking providers for the current database.
-        /// </summary>
-        /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
-        /// <example>
-        /// <code>
-        /// var providers = admin.FindRerankingProviders();
-        /// </code>
-        /// </example>
-        public FindRerankingProvidersResult FindRerankingProviders()
-        {
-            return FindRerankingProvidersAsync(null, true).ResultSync();
-        }
         
-        /// <summary>
-        /// Asynchronously finds and returns available reranking providers for the current database.
-        /// </summary>
-        /// <returns>
-        /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
-        /// </returns>
-        /// <example>
-        /// <code>
-        /// var providers = await admin.FindRerankingProvidersAsync();
-        /// </code>
-        /// </example>
-        public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync()
-        {
-            return FindRerankingProvidersAsync(null, false);
-        }
-        
-        /// <summary>
-        /// Finds and returns available reranking providers for the current database using the specified command options.
-        /// </summary>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <returns>A <see cref="FindRerankingProvidersResult"/> containing the discovered providers.</returns>
-        /// <example>
-        /// <code>
-        /// var providers = admin.FindRerankingProviders(options);
-        /// </code>
-        /// </example>
-        public FindRerankingProvidersResult FindRerankingProviders(FindRerankingProvidersCommandOptions options)
+        /// <inheritdoc/>
+        public FindRerankingProvidersResult FindRerankingProviders(FindRerankingProvidersOptions options = null)
         {
             return FindRerankingProvidersAsync(options, true).ResultSync();
         }
         
-        /// <summary>
-        /// Asynchronously finds and returns available reranking providers for the current database
-        /// using the specified command options.
-        /// </summary>
-        /// <param name="options">Optional settings that influence request execution.</param>
-        /// <returns>
-        /// A task that resolves to a <see cref="FindRerankingProvidersResult"/> containing the discovered providers.
-        /// </returns>
-        /// <example>
-        /// <code>
-        /// var providers = await admin.FindRerankingProvidersAsync(options);
-        /// </code>
-        /// </example>
-        public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options)
+        /// <inheritdoc/>
+        public Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersOptions options = null)
         {
             return FindRerankingProvidersAsync(options, false);
         }
         
-        internal async Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersCommandOptions options, bool runSynchronously)
+        internal async Task<FindRerankingProvidersResult> FindRerankingProvidersAsync(FindRerankingProvidersOptions options, bool runSynchronously)
         {
 
             if (options == null){
-                options = new FindRerankingProvidersCommandOptions {};
+                options = new FindRerankingProvidersOptions {};
             }
 
             object epPayload = options.FilterModelStatus == null

@@ -68,161 +68,60 @@ public class AstraDatabasesAdmin
     };
 
     /// <summary>
-    /// Returns a list of database names.
+    /// Synchronous version of <see cref="ListDatabaseNamesAsync(ListDatabaseNamesOptions)"/>.
     /// </summary>
-    /// <returns>A list of database names.</returns>
-    /// <example>
-    /// <code>
-    /// var names = admin.ListDatabaseNames();
-    /// </code>
-    /// </example>
-    public List<string> ListDatabaseNames()
-    {
-        return ListDatabases().Select(db => db.Name).ToList();
-    }
-
-    /// <summary>
-    /// Asynchronously returns a list of database names.
-    /// </summary>
-    /// <returns>A task that resolves to a list of database names.</returns>
-    /// <example>
-    /// <code>
-    /// var names = await admin.ListDatabaseNamesAsync();
-    /// </code>
-    /// </example>
-    public Task<List<string>> ListDatabaseNamesAsync()
-    {
-        return ListDatabaseNamesAsync(null);
-    }
-
-    /// <summary>
-    /// Returns a list of database names using specified command options.
-    /// </summary>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>A list of database names.</returns>
-    /// <example>
-    /// <code>
-    /// var names = admin.ListDatabaseNames(options);
-    /// </code>
-    /// </example>
-    public List<string> ListDatabaseNames(CommandOptions options)
+    /// <inheritdoc cref="ListDatabaseNamesAsync(ListDatabaseNamesOptions)"/>
+    public List<string> ListDatabaseNames(ListDatabaseNamesOptions options = null)
     {
         return ListDatabases(options).Select(db => db.Name).ToList();
     }
 
     /// <summary>
-    /// Asynchronously returns a list of database names using specified command options.
+    /// Returns a list of database names.
     /// </summary>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>A task that resolves to a list of database names.</returns>
+    /// <param name="options">Options to run the query for databases, including filters.</param>
+    /// <returns>A list of the database names.</returns>
     /// <example>
     /// <code>
     /// var names = await admin.ListDatabaseNamesAsync(options);
     /// </code>
     /// </example>
-    public async Task<List<string>> ListDatabaseNamesAsync(CommandOptions options)
+    public async Task<List<string>> ListDatabaseNamesAsync(ListDatabaseNamesOptions options = null)
     {
         var databases = await ListDatabasesAsync(options).ConfigureAwait(false);
         return databases.Select(db => db.Name).ToList();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListDatabasesAsync()"/>
-    /// </summary>
-    /// <inheritdoc cref="ListDatabasesAsync()"/>
-    public List<DatabaseInfo> ListDatabases()
-    {
-        return ListDatabases(null, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListDatabasesAsync(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="ListDatabasesAsync(CommandOptions)"/>
-    public List<DatabaseInfo> ListDatabases(CommandOptions options)
-    {
-        return ListDatabases(null, options);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="ListDatabasesAsync(ListDatabaseOptions)"/>
     /// </summary>
     /// <inheritdoc cref="ListDatabasesAsync(ListDatabaseOptions)"/>
-    public List<DatabaseInfo> ListDatabases(ListDatabaseOptions listOptions)
+    public List<DatabaseInfo> ListDatabases(ListDatabaseOptions options = null)
     {
-        return ListDatabases(listOptions, null);
+        return ListDatabasesAsync(options, true).ResultSync();
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListDatabasesAsync(ListDatabaseOptions, CommandOptions)"/>
+    ///  Returns a list of database info objects according to the provided query options.
     /// </summary>
-    /// <inheritdoc cref="ListDatabasesAsync(ListDatabaseOptions, CommandOptions)"/>
-    public List<DatabaseInfo> ListDatabases(ListDatabaseOptions listOptions, CommandOptions options)
-    {
-        return ListDatabasesAsync(null, options, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Asynchronously returns a list of database info objects.
-    /// </summary>
-    /// <returns>A task that resolves to a list of DatabaseInfo objects.</returns>
-    /// <example>   
-    /// <code>
-    /// var databases = await admin.ListDatabasesAsync();
-    /// </code>
-    /// </example>
-    public Task<List<DatabaseInfo>> ListDatabasesAsync()
-    {
-        return ListDatabasesAsync(null, null);
-    }
-
-    /// <summary>
-    /// Asynchronously returns a list of database info objects using specified command options.
-    /// </summary>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>A task that resolves to a list of DatabaseInfo objects.</returns>
-    /// <example>
-    /// <code>
-    /// var databases = await admin.ListDatabasesAsync(options);
-    /// </code>
-    /// </example>
-    public Task<List<DatabaseInfo>> ListDatabasesAsync(CommandOptions options)
-    {
-        return ListDatabasesAsync(null, options, false);
-    }
-
-    /// <summary>
-    ///  Asynchronously returns a list of database info objects using specified filtering options
-    /// </summary>
-    /// <param name="listOptions"></param>
+    /// <param name="options">Options to run the query for databases, including filters.</param>
     /// <returns></returns>
-    public Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions listOptions)
+    public Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions options = null)
     {
-        return ListDatabasesAsync(listOptions, null, false);
+        return ListDatabasesAsync(options, false);
     }
 
-    /// <summary>
-    ///  Asynchronously returns a list of database info objects using specified command options and filtering options
-    /// </summary>
-    /// <param name="options"></param>
-    /// <param name="listOptions"></param>
-    /// <returns></returns>
-    public Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions listOptions, CommandOptions options)
+    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions options, bool runSynchronously)
     {
-        return ListDatabasesAsync(listOptions, options, false);
-    }
-
-    internal async Task<List<DatabaseInfo>> ListDatabasesAsync(ListDatabaseOptions listOptions, CommandOptions options, bool runSynchronously)
-    {
-        if (listOptions == null)
+        if (options == null)
         {
-            listOptions = new ListDatabaseOptions();
+            options = new ListDatabaseOptions();
         }
 
         var command = CreateCommand()
             .AddUrlPath("databases")
             .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-            .WithPayload(listOptions)
+            .WithPayload(options.ToPayload())
             .AddCommandOptions(options);
 
         var rawResults = await command.RunAsyncRaw<List<RawDatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);
@@ -230,42 +129,44 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Checks if a database with the specified name or ID exists.
+    /// Synchronous version of <see cref="DoesDatabaseExistAsync(string, DoesDatabaseExistOptions)"/>.
     /// </summary>
-    /// <param name="databaseNameOrId">The database name or ID to check. If the string matches either a database's name or ID, it will be considered a match.</param>
-    /// <returns>True if the database exists (by ID or name); otherwise, false.</returns>
+    /// <inheritdoc cref="DoesDatabaseExistAsync(string, DoesDatabaseExistOptions)"/>
     /// <example>
     /// <code>
+    /// // check by database name:
     /// bool exists = admin.DoesDatabaseExist("myDatabase");
-    /// // or by ID
+    /// // check by database ID:
     /// bool exists = admin.DoesDatabaseExist("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
     /// </code>
     /// </example>
-    public bool DoesDatabaseExist(string databaseNameOrId)
+    public bool DoesDatabaseExist(string databaseNameOrId, DoesDatabaseExistOptions options = null)
     {
         Guard.NotNullOrEmpty(databaseNameOrId, nameof(databaseNameOrId));
 
-        var databases = ListDatabases();
+        var databases = ListDatabases(options);
         return databases.Any(item => item.Id == databaseNameOrId || item.Name == databaseNameOrId);
     }
 
     /// <summary>
-    /// Asynchronously checks if a database with the specified name or ID exists.
+    /// Checks if a database with the specified name or ID exists.
     /// </summary>
     /// <param name="databaseNameOrId">The database name or ID to check. If the string matches either a database's name or ID, it will be considered a match.</param>
-    /// <returns>A task that resolves to true if the database exists (by ID or name); otherwise, false.</returns>
+    /// <param name="options">Options to run the query for databases, including filters.</param>
+    /// <returns>True if the database exists (by ID or name); otherwise, false.</returns>
     /// <example>
     /// <code>
+    /// // check by database name:
     /// bool exists = await admin.DoesDatabaseExistAsync("myDatabase");
-    /// // or by ID
+    /// // check by database ID:
     /// bool exists = await admin.DoesDatabaseExistAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
     /// </code>
     /// </example>
-    public async Task<bool> DoesDatabaseExistAsync(string databaseNameOrId)
+    public async Task<bool> DoesDatabaseExistAsync(string databaseNameOrId, DoesDatabaseExistOptions options = null)
     {
         Guard.NotNullOrEmpty(databaseNameOrId, nameof(databaseNameOrId));
 
-        var databases = await ListDatabasesAsync().ConfigureAwait(false);
+        var databases = await ListDatabasesAsync(options).ConfigureAwait(false);
         return databases.Any(item => item.Id == databaseNameOrId || item.Name == databaseNameOrId);
     }
 
@@ -394,25 +295,25 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="GetDatabaseStatusAsync(string)"/>.
+    /// Synchronous version of <see cref="GetDatabaseStatusAsync(string, GetDatabaseStatusOptions)"/>.
     /// </summary>
-    /// <param name="dbGuid">The ID of the target database.</param>
-    /// <returns>A <see cref="AstraDatabaseStatus"/> value.</returns>
-    public AstraDatabaseStatus GetDatabaseStatus(string dbGuid)
+    /// <inheritdoc cref="GetDatabaseStatusAsync(string, GetDatabaseStatusOptions)"/>
+    public AstraDatabaseStatus GetDatabaseStatus(string dbGuid, GetDatabaseStatusOptions options = null)
     {
-        return GetDatabaseStatusAsync(dbGuid).ResultSync();
+        return GetDatabaseStatusAsync(dbGuid, options).ResultSync();
     }
 
     /// <summary>
-    /// Query the Data API for the status of a database.
+    /// Get the status of the database from the DevOps API.
     /// </summary>
     /// <param name="dbGuid">The ID of the target database.</param>
-    /// <returns>A task that resolves to a <see cref="AstraDatabaseStatus"/>.</returns>
-    public async Task<AstraDatabaseStatus> GetDatabaseStatusAsync(string dbGuid)
+    /// <param name="options">The command options to use.</param>
+    /// <returns>A <see cref="AstraDatabaseStatus"/> value.</returns>
+    public async Task<AstraDatabaseStatus> GetDatabaseStatusAsync(string dbGuid, GetDatabaseStatusOptions options = null)
     {
         Guard.NotNullOrEmpty(dbGuid, nameof(dbGuid));
 
-        var dbInfo = await GetDatabaseInfoAsync(dbGuid);
+        var dbInfo = await GetDatabaseInfoAsync(dbGuid, options);
         return dbInfo.Status;
     }
 
@@ -507,73 +408,36 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Retrieves database information for the specified ID.
+    /// Synchronous version of <see cref="GetDatabaseInfoAsync(string, GetDatabaseInfoOptions)"/>.
     /// </summary>
-    /// <param name="dbGuid">The ID of the database.</param>
-    /// <returns>A DatabaseInfo object.</returns>
-    /// <example>
-    /// <code>
-    /// var info = admin.GetDatabaseInfo("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    /// </code>
-    /// </example>
-    public DatabaseInfo GetDatabaseInfo(string dbGuid)
-    {
-        return GetDatabaseInfoAsync(dbGuid, null, true).ResultSync();
-    }
-
-    /// <summary>
-    /// Asynchronously retrieves database information for the specified ID.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database.</param>
-    /// <returns>A task that resolves to a DatabaseInfo object.</returns>
-    /// <example>
-    /// <code>
-    /// var info = await admin.GetDatabaseInfoAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    /// </code>
-    /// </example>
-    public Task<DatabaseInfo> GetDatabaseInfoAsync(string dbGuid)
-    {
-        return GetDatabaseInfoAsync(dbGuid, null, true);
-    }
-
-    /// <summary>
-    /// Retrieves database information for the specified ID using provided command options.
-    /// </summary>
-    /// <param name="dbGuid">The ID of the database.</param>
-    /// <param name="options">The command options to use.</param>
-    /// <returns>A DatabaseInfo object.</returns>
+    /// <inheritdoc cref="GetDatabaseInfoAsync(string, GetDatabaseInfoOptions)"/>
     /// <example>
     /// <code>
     /// var info = admin.GetDatabaseInfo("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
     /// </code>
     /// </example>
-    public DatabaseInfo GetDatabaseInfo(string dbGuid, CommandOptions options)
+    public DatabaseInfo GetDatabaseInfo(string dbGuid, GetDatabaseInfoOptions options = null)
     {
         return GetDatabaseInfoAsync(dbGuid, options, true).ResultSync();
     }
 
     /// <summary>
-    /// Asynchronously retrieves database information for the specified ID using provided command options.
+    /// Retrieves database information for the specified ID
     /// </summary>
     /// <param name="dbGuid">The ID of the database.</param>
     /// <param name="options">The command options to use.</param>
-    /// <returns>A task that resolves to a DatabaseInfo object.</returns>
+    /// <returns>A DatabaseInfo object.</returns>
     /// <example>
     /// <code>
     /// var info = await admin.GetDatabaseInfoAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890", options);
     /// </code>
     /// </example>
-    public Task<DatabaseInfo> GetDatabaseInfoAsync(string dbGuid, CommandOptions options)
+    public Task<DatabaseInfo> GetDatabaseInfoAsync(string dbGuid, GetDatabaseInfoOptions options = null)
     {
         return GetDatabaseInfoAsync(dbGuid, options, false);
     }
 
-    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(string dbGuid, bool runSynchronously)
-    {
-        return await GetDatabaseInfoAsync(dbGuid, null, runSynchronously).ConfigureAwait(false);
-    }
-
-    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(string dbGuid, CommandOptions options, bool runSynchronously)
+    internal async Task<DatabaseInfo> GetDatabaseInfoAsync(string dbGuid, GetDatabaseInfoOptions options, bool runSynchronously)
     {
         Guard.NotNullOrEmpty(dbGuid, nameof(dbGuid));
         var command = CreateCommand()

@@ -17,35 +17,17 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Command options specific to the database level.
+/// Command options specific to the database admin's DoesKeyspaceExist methods.
 /// </summary>
-public class DatabaseCommandOptions : CommandOptions
+public class DoesKeyspaceExistOptions : ListKeyspacesOptions
 {
-    /// <summary>
-    /// The current keyspace to use for commands run against the database.
-    /// 
-    /// Defaults to the default keyspace for the database.
-    /// </summary>
-    public new string Keyspace
-    {
-        get => base.Keyspace;
-        set => base.Keyspace = value;
-    }
-
-    static internal DatabaseCommandOptions BinaryMerge(DatabaseCommandOptions options1, DatabaseCommandOptions options2)
+    internal static DoesKeyspaceExistOptions FromCommandOptions(CommandOptions options)
     {
         // Until actual new fields are added w.r.t. CommandOptions, this is it:
-        var options = CommandOptions.Merge(new CommandOptions[] {options1, options2});
-        return FromCommandOptions(options);
-    }
-
-    static internal DatabaseCommandOptions FromCommandOptions(CommandOptions options)
-    {
         if (options == null) {
             return null;
         }
-        // Until actual new fields are added w.r.t. CommandOptions, this is it:
-        return new DatabaseCommandOptions
+        return new DoesKeyspaceExistOptions
         {
             Environment = options.Environment,
             Keyspace = options.Keyspace,

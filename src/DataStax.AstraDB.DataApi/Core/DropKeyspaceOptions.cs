@@ -17,12 +17,8 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options specific to the database admin command to create a keyspace.
+/// Options specific to the database admin command to drop a keyspace.
 /// </summary>
-public class CreateKeyspaceCommandOptions : BlockingCommandOptions
+public class DropKeyspaceOptions : BlockingCommandOptions
 {
-  /// <summary>
-  /// Whether to set the new keyspace as the active keyspace for the associated Database.
-  /// </summary>
-  public bool updateDBKeyspace { get; set; } = false;
 }
