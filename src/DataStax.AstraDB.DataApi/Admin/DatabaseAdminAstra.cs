@@ -108,7 +108,9 @@ namespace DataStax.AstraDB.DataApi.Admin
 
         internal async Task<IEnumerable<string>> ListKeyspacesAsync(bool runSynchronously, ListKeyspacesOptions options)
         {
-            var databaseInfo = await _client.GetAstraDatabasesAdmin(_adminOptions).GetDatabaseInfoAsync(_id.ToString(), options, runSynchronously);
+            var databaseInfo = await _client.GetAstraDatabasesAdmin(
+                GetAstraDatabasesAdminOptions.FromCommandOptions(_adminOptions)
+            ).GetDatabaseInfoAsync(_id.ToString(), options, runSynchronously);
             return databaseInfo.Keyspaces;
         }
 

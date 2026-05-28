@@ -367,8 +367,11 @@ internal class Command
         fullCallers.Add(ClientAPICaller);
         request.Headers.Add("User-Agent", APICaller.ToHeaderString(fullCallers));
 
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commandOptions.Token);
-        request.Headers.Add("Token", commandOptions.Token);
+        if (commandOptions.Token != null)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", commandOptions.Token);
+            request.Headers.Add("Token", commandOptions.Token);
+        }
         if (commandOptions.AdditionalHeaders != null)
         {
             foreach (var kvp in commandOptions.AdditionalHeaders)

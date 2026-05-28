@@ -38,6 +38,29 @@ public class AdminTests
 
     [SkipWhenNotAstra]
     [Fact]
+    public async Task GetAstraDatabasesAdmin_Test()
+    {
+        var dbAdminBase = fixture.Client.GetAstraDatabasesAdmin();
+        var listBase = await dbAdminBase.ListDatabasesAsync();
+        Assert.NotNull(listBase);
+
+        var dbAdminBadToken = fixture.Client.GetAstraDatabasesAdmin("not-a-good-token");
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+        {
+            await dbAdminBadToken.ListDatabasesAsync();
+        });
+
+        var dbAdminOptions1 = fixture.Client.GetAstraDatabasesAdmin(new GetAstraDatabasesAdminOptions());
+        var listOptions1 = await dbAdminBase.ListDatabasesAsync();
+        Assert.NotNull(listOptions1);
+
+        var dbAdminOptions2 = fixture.Client.GetAstraDatabasesAdmin(null as string, new GetAstraDatabasesAdminOptions());
+        var listOptions2 = await dbAdminBase.ListDatabasesAsync();
+        Assert.NotNull(listOptions2);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact]
     public async Task GetDatabasesListPartialOptions()
     {
         var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync(new ListDatabaseOptions {

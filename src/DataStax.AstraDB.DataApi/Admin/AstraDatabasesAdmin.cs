@@ -237,8 +237,7 @@ public class AstraDatabasesAdmin
             }
         }
 
-        // TODO: extract the proper options from 'options' and pass it here once ready
-        return GetDatabaseAdmin(newDbId, options.Region);
+        return GetDatabaseAdmin(newDbId, options.Region, GetDatabaseAdminOptions.FromCommandOptions(options));
     }
 
     private void WaitForDatabase(string dbGuid, HashSet<AstraDatabaseStatus> waitingStatuses, AstraDatabaseStatus targetStatus)
@@ -357,12 +356,14 @@ public class AstraDatabasesAdmin
     /// <summary>
     /// Returns a DatabaseAdminAstra instance for the database at the specified URL.
     /// </summary>
-    /// <param name="dbUrl"></param>
+    /// <param name="apiEndpoint">The API Endpoint for the database, e.g. "01234567-89ab-cdef-0123-456789abcdef".</param>
+    /// <param name="options">Options for the database admin instance.</param>
     /// <returns></returns>
-    public DatabaseAdminAstra GetDatabaseAdmin(string dbUrl)
+    public DatabaseAdminAstra GetDatabaseAdmin(string apiEndpoint, GetDatabaseAdminOptions options = null)
     {
-        var database = _client.GetDatabase(dbUrl);
-        return new DatabaseAdminAstra(database, _client, _adminOptions);
+        var commandOptions = CommandOptions.Merge(new CommandOptions[] {_adminOptions, options});
+        var database = _client.GetDatabase(apiEndpoint);
+        return new DatabaseAdminAstra(database, _client, commandOptions);
     }
 
     /// <summary>
@@ -445,16 +446,24 @@ public class AstraDatabasesAdmin
         return response;
     }
 
-    private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo)
+    private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo, GetDatabaseAdminOptions options = null)
     {
-        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.{DevOpsAPISuffix(_adminOptions.Environment)}";
-        return GetDatabaseAdmin(apiEndpoint);
+        var commandOptions = CommandOptions.Merge(new CommandOptions[] {_adminOptions, options});
+        var apiEndpoint = $"https://{dbInfo.Id}-{dbInfo.Region}.{DevOpsAPISuffix(commandOptions.Environment)}";
+        return GetDatabaseAdmin(
+            apiEndpoint,
+            GetDatabaseAdminOptions.FromCommandOptions(commandOptions)
+        );
     }
 
-    private DatabaseAdminAstra GetDatabaseAdmin(string dbGuid, string region)
+    private DatabaseAdminAstra GetDatabaseAdmin(string dbGuid, string region, GetDatabaseAdminOptions options = null)
     {
-        var apiEndpoint = $"https://{dbGuid}-{region}.{DevOpsAPISuffix(_adminOptions.Environment)}";
-        return GetDatabaseAdmin(apiEndpoint);
+        var commandOptions = CommandOptions.Merge(new CommandOptions[] {_adminOptions, options});
+        var apiEndpoint = $"https://{dbGuid}-{region}.{DevOpsAPISuffix(commandOptions.Environment)}";
+        return GetDatabaseAdmin(
+            apiEndpoint,
+            GetDatabaseAdminOptions.FromCommandOptions(commandOptions)
+        );
     }
 
     private static readonly CommandOptions _devOpsAPIOptions = new CommandOptions { SerializeDateAsDollarDate = false };
