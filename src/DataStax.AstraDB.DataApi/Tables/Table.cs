@@ -56,44 +56,25 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListIndexesAsync()"/>
+    /// Synchronous version of <see cref="ListIndexesAsync(ListIndexesOptions)"/>
     /// </summary>
-    /// <returns></returns>
-    public List<TableIndexMetadata> ListIndexes()
+    /// <inheritdoc cref="ListIndexesAsync(ListIndexesOptions)"/>
+    public List<TableIndexMetadata> ListIndexes(ListIndexesOptions options = null)
     {
-        return ListIndexes(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListIndexesAsync(CommandOptions)"/>
-    /// </summary>
-    /// <param name="commandOptions"></param>
-    /// <returns></returns>
-    public List<TableIndexMetadata> ListIndexes(CommandOptions commandOptions)
-    {
-        return ListIndexesAsync(commandOptions, true).ResultSync();
+        return ListIndexesAsync(options, true).ResultSync();
     }
 
     /// <summary>
     /// Get a list of indexes for the table.
     /// </summary>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task<List<TableIndexMetadata>> ListIndexesAsync()
+    public Task<List<TableIndexMetadata>> ListIndexesAsync(ListIndexesOptions options = null)
     {
-        return ListIndexesAsync(null);
+        return ListIndexesAsync(options, false);
     }
 
-    /// <summary>
-    /// Get a list of indexes for the table.
-    /// </summary>
-    /// <param name="commandOptions"></param>
-    /// <returns></returns>
-    public Task<List<TableIndexMetadata>> ListIndexesAsync(CommandOptions commandOptions)
-    {
-        return ListIndexesAsync(commandOptions, false);
-    }
-
-    private async Task<List<TableIndexMetadata>> ListIndexesAsync(CommandOptions commandOptions, bool runSynchronously)
+    private async Task<List<TableIndexMetadata>> ListIndexesAsync(ListIndexesOptions options, bool runSynchronously)
     {
         var payload = new
         {
@@ -102,49 +83,31 @@ public class Table<T> where T : class
                 explain = true,
             }
         };
-        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
+        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<ListTableIndexMetadataResult>(runSynchronously).ConfigureAwait(false);
         return response.Result.Indexes;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="ListIndexNamesAsync()"/>
+    /// Synchronous version of <see cref="ListIndexNamesAsync(ListIndexNamesOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="ListIndexNamesAsync()"/>
-    public List<string> ListIndexNames()
+    /// <inheritdoc cref="ListIndexNamesAsync(ListIndexNamesOptions)"/>
+    public List<string> ListIndexNames(ListIndexNamesOptions options = null)
     {
-        return ListIndexNames(null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="ListIndexNamesAsync(CommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="ListIndexNamesAsync(CommandOptions)"/>
-    public List<string> ListIndexNames(CommandOptions commandOptions)
-    {
-        return ListIndexNamesAsync(commandOptions, true).ResultSync();
+        return ListIndexNamesAsync(options, true).ResultSync();
     }
 
     /// <summary>
     /// Get a list of index names for the table.
     /// </summary>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task<List<string>> ListIndexNamesAsync()
+    public Task<List<string>> ListIndexNamesAsync(ListIndexNamesOptions options = null)
     {
-        return ListIndexNamesAsync(null);
+        return ListIndexNamesAsync(options, false);
     }
 
-    /// <summary>
-    /// Get a list of index names for the table.
-    /// </summary>
-    /// <param name="commandOptions"></param>
-    /// <returns></returns>
-    public Task<List<string>> ListIndexNamesAsync(CommandOptions commandOptions)
-    {
-        return ListIndexNamesAsync(commandOptions, false);
-    }
-
-    private async Task<List<string>> ListIndexNamesAsync(CommandOptions commandOptions, bool runSynchronously)
+    private async Task<List<string>> ListIndexNamesAsync(ListIndexNamesOptions options, bool runSynchronously)
     {
         var payload = new
         {
@@ -153,97 +116,60 @@ public class Table<T> where T : class
                 explain = false,
             }
         };
-        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(commandOptions);
+        var command = CreateCommand("listIndexes").WithPayload(payload).AddCommandOptions(options);
         var response = await command.RunAsyncReturnStatus<ListTableIndexNamesResult>(runSynchronously).ConfigureAwait(false);
         return response.Result.IndexNames;
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync(string, string)"/>
+    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync(string, string)"/>
-    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column)
+    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexOptions)"/>
+    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexOptions options = null)
     {
-        CreateIndex(indexName, column.GetMemberNameTree(), null, null);
+        CreateIndex(indexName, column.GetMemberNameTree(), null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
+    /// Synchronous version of <see cref="CreateIndexAsync(string, string, CreateIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
-    public void CreateIndex(string indexName, string columnName)
+    /// <inheritdoc cref="CreateIndexAsync(string, string, CreateIndexOptions)"/>
+    public void CreateIndex(string indexName, string columnName, CreateIndexOptions options = null)
     {
-        CreateIndex(indexName, columnName, null, null);
+        CreateIndex(indexName, columnName, null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition, CreateIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
-    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition, CreateIndexOptions)"/>
+    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition, CreateIndexOptions options = null)
     {
-        CreateIndex(indexName, column.GetMemberNameTree(), null, commandOptions);
+        CreateIndex(indexName, column.GetMemberNameTree(), indexDefinition, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync(string, string, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateIndexAsync(string, string, TableIndexDefinition, CreateIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync(string, string, CreateIndexCommandOptions)"/>
-    public void CreateIndex(string indexName, string columnName, CreateIndexCommandOptions commandOptions)
-    {
-        CreateIndex(indexName, columnName, null, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition)"/>
-    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition)
-    {
-        CreateIndex(indexName, column.GetMemberNameTree(), indexDefinition, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync(string, string, TableIndexDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync(string, string, TableIndexDefinition)"/>
-    public void CreateIndex(string indexName, string columnName, TableIndexDefinition indexDefinition)
-    {
-        CreateIndex(indexName, columnName, indexDefinition, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition, CreateIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
-    {
-        CreateIndex(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateIndexAsync(string, string, TableIndexDefinition, CreateIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateIndexAsync(string, string, TableIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateIndex(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateIndexAsync(string, string, TableIndexDefinition, CreateIndexOptions)"/>
+    public void CreateIndex(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexOptions options = null)
     {
         if (indexDefinition == null)
         {
             indexDefinition = new TableIndexDefinition();
         }
-        CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, false).ResultSync();
+        CreateGenericIndexAsync(indexName, columnName, indexDefinition, options, false).ResultSync();
     }
 
     /// <summary>
     /// Create an index on the specified column
     /// </summary>
-    /// <typeparam name="TColumn">The type of the column to index</typeparam>
     /// <param name="indexName">The index name</param>
     /// <param name="column">The column to index</param>
-    /// <returns></returns>
-    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column)
+    /// <param name="options"></param>
+    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexOptions options = null)
     {
-        return CreateIndexAsync(indexName, column.GetMemberNameTree(), null, null);
+        return CreateIndexAsync(indexName, column.GetMemberNameTree(), null, options);
     }
 
     /// <summary>
@@ -251,146 +177,74 @@ public class Table<T> where T : class
     /// </summary>
     /// <param name="indexName">The index name</param>
     /// <param name="columnName">The name of the column to index</param>
-    /// <returns></returns>
-    public Task CreateIndexAsync(string indexName, string columnName)
+    /// <param name="options"></param>
+    public Task CreateIndexAsync(string indexName, string columnName, CreateIndexOptions options = null)
     {
-        return CreateIndexAsync(indexName, columnName, null, null);
+        return CreateIndexAsync(indexName, columnName, null, options);
     }
 
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="column">The column to index</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateIndexAsync(indexName, column.GetMemberNameTree(), null, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateIndexAsync(string, string)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the column to index</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateIndexAsync(string indexName, string columnName, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateIndexAsync(indexName, columnName, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
+    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexOptions)"/>
     /// <param name="indexName">The index name</param>
     /// <param name="column">The column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition)
+    /// <param name="options"></param>
+    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition, CreateIndexOptions options = null)
     {
-        return CreateIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, null);
+        return CreateIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, options);
     }
 
-    /// <inheritdoc cref="CreateIndexAsync(string, string)"/>
+    /// <inheritdoc cref="CreateIndexAsync(string, string, CreateIndexOptions)"/>
     /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the column to index</param>
+    /// <param name="columnName">The column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition)
-    {
-        return CreateIndexAsync(indexName, columnName, indexDefinition, null);
-    }
-
-    /// <inheritdoc cref="CreateIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="column">The column to index</param>
-    /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateIndexAsync(string, string, CreateIndexCommandOptions)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the column to index</param>
-    /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <param name="options"></param>
+    public Task CreateIndexAsync(string indexName, string columnName, TableIndexDefinition indexDefinition, CreateIndexOptions options = null)
     {
         if (indexDefinition == null)
         {
             indexDefinition = new TableIndexDefinition();
         }
-        return CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, true);
+        return CreateGenericIndexAsync(indexName, columnName, indexDefinition, options, true);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync(string, string)"/>
+    /// Synchronous version of <see cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateVectorIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync(string, string)"/>
-    public void CreateVectorIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column)
+    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateVectorIndexOptions)"/>
+    public void CreateVectorIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateVectorIndexOptions options = null)
     {
-        CreateVectorIndex(indexName, column.GetMemberNameTree(), null, null);
+        CreateVectorIndex(indexName, column.GetMemberNameTree(), null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
+    /// Synchronous version of <see cref="CreateVectorIndexAsync(string, string, CreateVectorIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
-    public void CreateVectorIndex(string indexName, string columnName)
+    /// <inheritdoc cref="CreateVectorIndexAsync(string, string, CreateVectorIndexOptions)"/>
+    public void CreateVectorIndex(string indexName, string columnName, CreateVectorIndexOptions options = null)
     {
-        CreateVectorIndex(indexName, columnName, null, null);
+        CreateVectorIndex(indexName, columnName, null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableVectorIndexDefinition, CreateVectorIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
-    public void CreateVectorIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableVectorIndexDefinition, CreateVectorIndexOptions)"/>
+    public void CreateVectorIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableVectorIndexDefinition indexDefinition, CreateVectorIndexOptions options = null)
     {
-        CreateVectorIndex(indexName, column.GetMemberNameTree(), null, commandOptions);
+        CreateVectorIndex(indexName, column.GetMemberNameTree(), indexDefinition, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync(string, string, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateVectorIndexAsync(string, string, TableVectorIndexDefinition, CreateVectorIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync(string, string, CreateIndexCommandOptions)"/>
-    public void CreateVectorIndex(string indexName, string columnName, CreateIndexCommandOptions commandOptions)
-    {
-        CreateVectorIndex(indexName, columnName, null, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableVectorIndexDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableVectorIndexDefinition)"/>
-    public void CreateVectorIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableVectorIndexDefinition indexDefinition)
-    {
-        CreateVectorIndex(indexName, column.GetMemberNameTree(), indexDefinition, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync(string, string, TableVectorIndexDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync(string, string, TableVectorIndexDefinition)"/>
-    public void CreateVectorIndex(string indexName, string columnName, TableVectorIndexDefinition indexDefinition)
-    {
-        CreateVectorIndex(indexName, columnName, indexDefinition, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableVectorIndexDefinition, CreateIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableVectorIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateVectorIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableVectorIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
-    {
-        CreateVectorIndex(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateVectorIndexAsync(string, string, TableVectorIndexDefinition, CreateIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateVectorIndexAsync(string, string, TableVectorIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateVectorIndex(string indexName, string columnName, TableVectorIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateVectorIndexAsync(string, string, TableVectorIndexDefinition, CreateVectorIndexOptions)"/>
+    public void CreateVectorIndex(string indexName, string columnName, TableVectorIndexDefinition indexDefinition, CreateVectorIndexOptions options = null)
     {
         if (indexDefinition == null)
         {
             indexDefinition = new TableVectorIndexDefinition();
         }
-        CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, false).ResultSync();
+        CreateGenericIndexAsync(indexName, columnName, indexDefinition, options, false).ResultSync();
     }
 
     /// <summary>
@@ -399,157 +253,87 @@ public class Table<T> where T : class
     /// <typeparam name="TColumn">The type of the column to index</typeparam>
     /// <param name="indexName">The index name</param>
     /// <param name="column">The vector column to index</param>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task CreateVectorIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column)
+    public Task CreateVectorIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateVectorIndexOptions options = null)
     {
-        return CreateVectorIndexAsync(indexName, column.GetMemberNameTree(), null, null);
+        return CreateVectorIndexAsync(indexName, column.GetMemberNameTree(), null, options);
     }
 
     /// <summary>
     /// Create a vector index on the specified column
     /// </summary>
     /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the vector column to index</param>
+    /// <param name="columnName">The vector column to index</param>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task CreateVectorIndexAsync(string indexName, string columnName)
+    public Task CreateVectorIndexAsync(string indexName, string columnName, CreateVectorIndexOptions options = null)
     {
-        return CreateVectorIndexAsync(indexName, columnName, null, null);
+        return CreateVectorIndexAsync(indexName, columnName, null, options);
     }
 
-    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="column">The vector column to index</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateVectorIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateVectorIndexAsync(indexName, column.GetMemberNameTree(), null, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateVectorIndexAsync(string, string)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the vector column to index</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateVectorIndexAsync(string indexName, string columnName, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateVectorIndexAsync(indexName, columnName, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
+    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateVectorIndexOptions)"/>
     /// <param name="indexName">The index name</param>
     /// <param name="column">The vector column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateVectorIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableVectorIndexDefinition indexDefinition)
+    /// <param name="options"></param>
+    public Task CreateVectorIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableVectorIndexDefinition indexDefinition, CreateVectorIndexOptions options = null)
     {
-        return CreateVectorIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, null);
+        return CreateVectorIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, options);
     }
 
-    /// <inheritdoc cref="CreateVectorIndexAsync(string, string)"/>
+    /// <inheritdoc cref="CreateVectorIndexAsync(string, string, CreateVectorIndexOptions)"/>
     /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the vector column to index</param>
+    /// <param name="columnName">The vector column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateVectorIndexAsync(string indexName, string columnName, TableVectorIndexDefinition indexDefinition)
-    {
-        return CreateVectorIndexAsync(indexName, columnName, indexDefinition, null);
-    }
-
-    /// <inheritdoc cref="CreateVectorIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="column">The vector column to index</param>
-    /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateVectorIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableVectorIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateVectorIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateVectorIndexAsync(string, string, CreateIndexCommandOptions)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the vector column to index</param>
-    /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateVectorIndexAsync(string indexName, string columnName, TableVectorIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <param name="options"></param>
+    public Task CreateVectorIndexAsync(string indexName, string columnName, TableVectorIndexDefinition indexDefinition, CreateVectorIndexOptions options = null)
     {
         if (indexDefinition == null)
         {
             indexDefinition = new TableVectorIndexDefinition();
         }
-        return CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, true);
+        return CreateGenericIndexAsync(indexName, columnName, indexDefinition, options, true);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync(string, string)"/>
+    /// Synchronous version of <see cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateTextIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync(string, string)"/>
-    public void CreateTextIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column)
+    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateTextIndexOptions)"/>
+    public void CreateTextIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateTextIndexOptions options = null)
     {
-        CreateTextIndex(indexName, column.GetMemberNameTree(), null, null);
+        CreateTextIndex(indexName, column.GetMemberNameTree(), null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
+    /// Synchronous version of <see cref="CreateTextIndexAsync(string, string, CreateTextIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
-    public void CreateTextIndex(string indexName, string columnName)
+    /// <inheritdoc cref="CreateTextIndexAsync(string, string, CreateTextIndexOptions)"/>
+    public void CreateTextIndex(string indexName, string columnName, CreateTextIndexOptions options = null)
     {
-        CreateTextIndex(indexName, columnName, null, null);
+        CreateTextIndex(indexName, columnName, null, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableTextIndexDefinition, CreateTextIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
-    public void CreateTextIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableTextIndexDefinition, CreateTextIndexOptions)"/>
+    public void CreateTextIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableTextIndexDefinition indexDefinition, CreateTextIndexOptions options = null)
     {
-        CreateTextIndex(indexName, column.GetMemberNameTree(), null, commandOptions);
+        CreateTextIndex(indexName, column.GetMemberNameTree(), indexDefinition, options);
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync(string, string, CreateIndexCommandOptions)"/>
+    /// Synchronous version of <see cref="CreateTextIndexAsync(string, string, TableTextIndexDefinition, CreateTextIndexOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync(string, string, CreateIndexCommandOptions)"/>
-    public void CreateTextIndex(string indexName, string columnName, CreateIndexCommandOptions commandOptions)
-    {
-        CreateTextIndex(indexName, columnName, null, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableTextIndexDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableTextIndexDefinition)"/>
-    public void CreateTextIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableTextIndexDefinition indexDefinition)
-    {
-        CreateTextIndex(indexName, column.GetMemberNameTree(), indexDefinition, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync(string, string, TableTextIndexDefinition)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync(string, string, TableTextIndexDefinition)"/>
-    public void CreateTextIndex(string indexName, string columnName, TableTextIndexDefinition indexDefinition)
-    {
-        CreateTextIndex(indexName, columnName, indexDefinition, null);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableTextIndexDefinition, CreateIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, TableTextIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateTextIndex<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableTextIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
-    {
-        CreateTextIndex(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
-    }
-
-    /// <summary>
-    /// Synchronous version of <see cref="CreateTextIndexAsync(string, string, TableTextIndexDefinition, CreateIndexCommandOptions)"/>
-    /// </summary>
-    /// <inheritdoc cref="CreateTextIndexAsync(string, string, TableTextIndexDefinition, CreateIndexCommandOptions)"/>
-    public void CreateTextIndex(string indexName, string columnName, TableTextIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <inheritdoc cref="CreateTextIndexAsync(string, string, TableTextIndexDefinition, CreateTextIndexOptions)"/>
+    public void CreateTextIndex(string indexName, string columnName, TableTextIndexDefinition indexDefinition, CreateTextIndexOptions options = null)
     {
         if (indexDefinition == null)
         {
             indexDefinition = new TableTextIndexDefinition();
         }
-        CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, false).ResultSync();
+        CreateGenericIndexAsync(indexName, columnName, indexDefinition, options, false).ResultSync();
     }
 
     /// <summary>
@@ -558,81 +342,47 @@ public class Table<T> where T : class
     /// <typeparam name="TColumn">The type of the column to index</typeparam>
     /// <param name="indexName">The index name</param>
     /// <param name="column">The text column to index</param>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task CreateTextIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column)
+    public Task CreateTextIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateTextIndexOptions options = null)
     {
-        return CreateTextIndexAsync(indexName, column.GetMemberNameTree(), null, null);
+        return CreateTextIndexAsync(indexName, column.GetMemberNameTree(), null, options);
     }
 
     /// <summary>
     /// Create a text index on the specified column
     /// </summary>
     /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the text column to index</param>
+    /// <param name="columnName">The text column to index</param>
+    /// <param name="options"></param>
     /// <returns></returns>
-    public Task CreateTextIndexAsync(string indexName, string columnName)
+    public Task CreateTextIndexAsync(string indexName, string columnName, CreateTextIndexOptions options = null)
     {
-        return CreateTextIndexAsync(indexName, columnName, null, null);
+        return CreateTextIndexAsync(indexName, columnName, null, options);
     }
 
-    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="column">The text column to index</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateTextIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateTextIndexAsync(indexName, column.GetMemberNameTree(), null, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateTextIndexAsync(string, string)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the text column to index</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateTextIndexAsync(string indexName, string columnName, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateTextIndexAsync(indexName, columnName, null, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}})"/>
+    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateTextIndexOptions)"/>
     /// <param name="indexName">The index name</param>
     /// <param name="column">The text column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateTextIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableTextIndexDefinition indexDefinition)
+    /// <param name="options"></param>
+    public Task CreateTextIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableTextIndexDefinition indexDefinition, CreateTextIndexOptions options = null)
     {
-        return CreateTextIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, null);
+        return CreateTextIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, options);
     }
 
-    /// <inheritdoc cref="CreateTextIndexAsync(string, string)"/>
+    /// <inheritdoc cref="CreateTextIndexAsync(string, string, CreateTextIndexOptions)"/>
     /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the text column to index</param>
+    /// <param name="columnName">The text column to index</param>
     /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    public Task CreateTextIndexAsync(string indexName, string columnName, TableTextIndexDefinition indexDefinition)
-    {
-        return CreateTextIndexAsync(indexName, columnName, indexDefinition, null);
-    }
-
-    /// <inheritdoc cref="CreateTextIndexAsync{TColumn}(string, Expression{Func{T, TColumn}}, CreateIndexCommandOptions)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="column">The text column to index</param>
-    /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateTextIndexAsync<TColumn>(string indexName, Expression<Func<T, TColumn>> column, TableTextIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
-    {
-        return CreateTextIndexAsync(indexName, column.GetMemberNameTree(), indexDefinition, commandOptions);
-    }
-
-    /// <inheritdoc cref="CreateTextIndexAsync(string, string, CreateIndexCommandOptions)"/>
-    /// <param name="indexName">The index name</param>
-    /// <param name="columnName">The name of the text column to index</param>
-    /// <param name="indexDefinition">Use <see cref="Builders.TableIndex"/> to create the appropriate index definition.</param>
-    /// <param name="commandOptions"></param>
-    public Task CreateTextIndexAsync(string indexName, string columnName, TableTextIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions)
+    /// <param name="options"></param>
+    public Task CreateTextIndexAsync(string indexName, string columnName, TableTextIndexDefinition indexDefinition, CreateTextIndexOptions options = null)
     {
         if (indexDefinition == null)
         {
             indexDefinition = new TableTextIndexDefinition();
         }
-        return CreateGenericIndexAsync(indexName, columnName, indexDefinition, commandOptions, true);
+        return CreateGenericIndexAsync(indexName, columnName, indexDefinition, options, true);
     }
 
     private async Task CreateGenericIndexAsync(string indexName, string columnName, TableBaseIndexDefinition indexDefinition, CreateIndexCommandOptions commandOptions, bool runSynchronously)
@@ -760,7 +510,7 @@ public class Table<T> where T : class
             }
             catch (OperationCanceledException)
             {
-                var innerException = new TimeoutException($"InsertMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the CommandOptions.TimeoutOptions.BulkOperationTimeout parameter.");
+                var innerException = new TimeoutException($"InsertMany operation timed out after {timeout.TotalSeconds} seconds. Consider increasing the timeout using the TableInsertManyOptions.TimeoutOptions.BulkOperationTimeout parameter.");
                 throw new BulkOperationException<TableInsertManyResult>(innerException, result);
             }
             catch (Exception ex)
@@ -899,7 +649,7 @@ public class Table<T> where T : class
     /// </code>
     /// </example>
     /// <remarks>
-    /// Timeouts passed in the <see cref="CommandOptions"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// Timeouts passed in the <see cref="TableFindManyOptions{T}"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
     /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
@@ -1080,20 +830,29 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DropAsync()"/>
+    /// Synchronous version of <see cref="DropAsync(DropTableOptions)"/>
     /// </summary>
-    /// <inheritdoc cref="DropAsync()"/>
-    public void Drop()
+    /// <inheritdoc cref="DropAsync(DropTableOptions)"/>
+    public void Drop(DropTableOptions options = null)
     {
-        DropAsync().ResultSync();
+        if (options != null && options.Keyspace != null)
+        {
+            throw new ArgumentException("Keyspace overriding is not allowed when invoking Table.Drop.");
+        }
+        _database.DropTable(TableName, options);
     }
 
     /// <summary>
-    /// Drops the table.
+    /// Drops the table from the database.
     /// </summary>
-    public Task DropAsync()
+    /// <param name="options">Additional options for the drop operation. Keyspace overriding is not allowed..</param>
+    public Task DropAsync(DropTableOptions options = null)
     {
-        return _database.DropTableAsync(TableName);
+        if (options != null && options.Keyspace != null)
+        {
+            throw new ArgumentException("Keyspace overriding is not allowed when invoking Table.DropAsync.");
+        }
+        return _database.DropTableAsync(TableName, options);
     }
 
     private static void SetRowSerializationOptions<TResult>(CommandOptions options, bool isInsert) where TResult : class
@@ -1220,21 +979,12 @@ public class Table<T> where T : class
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
+    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, AlterTableOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    public Table<T> Alter(IAlterTableOperation operation)
+    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, AlterTableOptions)"/>
+    public Table<T> Alter(IAlterTableOperation operation, AlterTableOptions options = null)
     {
-        return Alter(operation, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>.
-    /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>
-    public Table<T> Alter(IAlterTableOperation operation, CommandOptions commandOptions)
-    {
-        var response = AlterAsync<T>(operation, commandOptions, true).ResultSync();
+        var response = AlterAsync<T>(operation, options, true).ResultSync();
         return response;
     }
 
@@ -1242,62 +992,41 @@ public class Table<T> where T : class
     /// Alters a table using the specified operation.
     /// </summary>
     /// <param name="operation">The alteration operation to apply.</param>
-    /// <returns>The status result of the alterTable command.</returns>
-    public Task<Table<T>> AlterAsync(IAlterTableOperation operation)
+    /// <param name="options">Options to customize the command execution.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance representing the table.</returns>
+    /// <remarks>
+    /// The type-parameterized form of this method, <see cref="AlterAsync{TRowAfterAlter}(IAlterTableOperation, AlterTableOptions)"/>, is recommended for type safety.
+    /// </remarks>
+    public Task<Table<T>> AlterAsync(IAlterTableOperation operation, AlterTableOptions options = null)
     {
-        return AlterAsync<T>(operation, null, false);
-    }
-
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    /// <param name="operation">The alteration operation to apply.</param>
-    /// <param name="commandOptions">Options to customize the command execution.</param>
-    public Task<Table<T>> AlterAsync(IAlterTableOperation operation, CommandOptions commandOptions)
-    {
-        return AlterAsync<T>(operation, commandOptions, false);
+        return AlterAsync<T>(operation, options, false);
     }
 
     /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation)"/>.
+    /// This is a synchronous version of <see cref="AlterAsync{TRowAfterAlter}(IAlterTableOperation, AlterTableOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation)
+    /// <inheritdoc cref="AlterAsync{TRowAfterAlter}(IAlterTableOperation, AlterTableOptions)"/>
+    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation, AlterTableOptions options = null)
         where TRowAfterAlter : class
     {
-        return Alter<TRowAfterAlter>(operation, null);
-    }
-
-    /// <summary>
-    /// This is a synchronous version of <see cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>.
-    /// </summary>
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation, CommandOptions)"/>
-    public Table<TRowAfterAlter> Alter<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions)
-        where TRowAfterAlter : class
-    {
-        var response = AlterAsync<TRowAfterAlter>(operation, commandOptions, true).ResultSync();
+        var response = AlterAsync<TRowAfterAlter>(operation, options, true).ResultSync();
         return response;
     }
 
     /// <summary>
     /// Alters a table using the specified operation.
     /// </summary>
+    /// <typeparam name="TRowAfterAlter">The type representing the row after the table is altered.</typeparam>
     /// <param name="operation">The alteration operation to apply.</param>
-    /// <returns>The status result of the alterTable command.</returns>
-    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation)
+    /// <param name="options">Options to customize the command execution.</param>
+    /// <returns>A <see cref="Table{TRow}"/> instance with the new row type.</returns>
+    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, AlterTableOptions options = null)
         where TRowAfterAlter : class
     {
-        return AlterAsync<TRowAfterAlter>(operation, null, false);
+        return AlterAsync<TRowAfterAlter>(operation, options, false);
     }
 
-    /// <inheritdoc cref="AlterAsync(IAlterTableOperation)"/>
-    /// <param name="operation">The alteration operation to apply.</param>
-    /// <param name="commandOptions">Options to customize the command execution.</param>
-    public Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions)
-        where TRowAfterAlter : class
-    {
-        return AlterAsync<TRowAfterAlter>(operation, commandOptions, false);
-    }
-
-    internal async Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, CommandOptions commandOptions, bool runSynchronously)
+    internal async Task<Table<TRowAfterAlter>> AlterAsync<TRowAfterAlter>(IAlterTableOperation operation, AlterTableOptions options, bool runSynchronously)
         where TRowAfterAlter : class
     {
         var payload = new
@@ -1307,7 +1036,7 @@ public class Table<T> where T : class
 
         var command = CreateCommand("alterTable")
             .WithPayload(payload)
-            .AddCommandOptions(commandOptions);
+            .AddCommandOptions(options);
 
         await command.RunAsyncReturnStatus<Dictionary<string, int>>(runSynchronously).ConfigureAwait(false);
 

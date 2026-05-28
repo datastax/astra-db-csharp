@@ -17,12 +17,8 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Additional command options for the Database.DropTable commands.
+/// Additional command options for the Database.ListTypes commands.
 /// </summary>
-public class DropTableCommandOptions : DatabaseCommandOptions
+public class ListTypesOptions : DatabaseCommandOptions
 {
-  /// <summary>
-  /// Skip dropping the table if it does not exist (instead of throwing an error).
-  /// </summary>
-  public bool IfExists { get; set; } = false;
 }

@@ -14,32 +14,13 @@
  * limitations under the License.
  */
 
-using System.Text.Json.Serialization;
+using DataStax.AstraDB.DataApi.Core;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
-
-internal class TableCommandPayload
+/// <summary>
+/// Options for creating a table vector index.
+/// </summary>
+public class CreateVectorIndexOptions : CreateIndexCommandOptions
 {
-    /*
-     * "createTable": {
-            "name": "TABLE_NAME",
-            "definition": {
-                "columns": {
-                    "COLUMN_NAME": "DATA_TYPE",
-                    "COLUMN_NAME": "DATA_TYPE"
-                },
-                "primaryKey": "PRIMARY_KEY_DEFINITION"
-            }
-        }
-     */
-    [JsonPropertyName("name")]
-    [JsonInclude]
-    internal string Name { get; set; }
-
-    [JsonPropertyName("definition")]
-    [JsonInclude]
-    internal TableDefinition Definition { get; set; }
-
-
 }

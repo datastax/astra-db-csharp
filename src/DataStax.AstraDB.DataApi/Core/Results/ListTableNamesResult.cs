@@ -28,5 +28,5 @@ public class ListTableNamesResult
     /// The list of table names.
     /// </summary>
     [JsonPropertyName("tables")]
-    public List<string> Tables { get; set; }
+    public List<string> TableNames { get; set; }
 }

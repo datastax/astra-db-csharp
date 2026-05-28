@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core;
+
+namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
-/// Additional command options for the Database.CreateType commands.
+/// Options for creating a table regular index.
 /// </summary>
-public class CreateTypeCommandOptions : CommandOptions
+public class CreateIndexOptions : CreateIndexCommandOptions
 {
-  /// <summary>
-  /// Skip creating the type if one with the same name already exists
-  /// </summary>
-  public bool IfNotExists { get; set; } = false;
 }

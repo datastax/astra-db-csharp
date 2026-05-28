@@ -17,12 +17,8 @@
 namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Additional command options when a command can be skipped if the target resource already exists.
+/// Additional command options for the Database.DoesCollectionExist commands.
 /// </summary>
-public class CreateTableCommandOptions : DatabaseTableCommandOptions
+public class DoesCollectionExistOptions : ListCollectionNamesOptions
 {
-  /// <summary>
-  /// Skip creating the resource if it already exists (instead of throwing an error).
-  /// </summary>
-  public bool IfNotExists { get; set; } = false;
 }

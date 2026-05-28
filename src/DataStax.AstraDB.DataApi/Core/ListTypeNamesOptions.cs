@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
-
-namespace DataStax.AstraDB.DataApi.Tables;
-
+namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options for dropping a table index.
+/// Additional command options for the Database.ListTypeNames commands.
 /// </summary>
-public class DropIndexCommandOptions : CommandOptions
+public class ListTypeNamesOptions : ListTypesOptions
 {
-    /// <summary>
-    /// A value indicating whether to skip the drop operation if the index does not exist,
-    /// avoiding an error.
-    /// </summary>
-    public bool IfExists { get; set; } = false;
 }

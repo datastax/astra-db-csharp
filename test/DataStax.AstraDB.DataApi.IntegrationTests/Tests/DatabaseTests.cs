@@ -30,7 +30,7 @@ public class DatabaseTests
         var admin = databaseWithKeyspace.GetAdmin();
         try
         {
-            var dbOptions = new DatabaseCollectionCommandOptions
+            var dbOptions = new CreateCollectionOptions
             {
                 Keyspace = keyspaceName
             };
@@ -161,7 +161,7 @@ public class DatabaseTests
         // testing all patterns for GetCollection
         // TODO: improve by testing for the keyspace as well (currently private into Collection)
 
-        var options = new DatabaseCollectionCommandOptions () { Keyspace = "bla" };
+        var options = new CreateCollectionOptions () { Keyspace = "bla" };
 
         Assert.Equal(
             "param_coll_name",
@@ -231,7 +231,7 @@ public class DatabaseTests
     {
         var collectionName = "simpleCollectionCanceled";
         var cts = new CancellationTokenSource();
-        var commandOptions = new DatabaseCollectionCommandOptions
+        var commandOptions = new CreateCollectionOptions
         {
             CancellationToken = cts.Token
         };
@@ -344,10 +344,10 @@ public class DatabaseTests
     [Fact]
     public async Task DoesCollectionExistAsync_ExistingCollection_ReturnsTrue()
     {
-        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
+        var collection = await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var exists = await fixture.Database.DoesCollectionExistAsync(Constants.DefaultCollection);
         Assert.True(exists);
-        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
+        await collection.DropAsync( new DropCollectionOptions () );
     }
 
     [Fact]
@@ -382,22 +382,28 @@ public class DatabaseTests
     [Fact]
     public async Task ListCollectionNamesAsync_ShouldReturnCollectionNames()
     {
-        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
+        var collection = await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
         var result = await fixture.Database.ListCollectionNamesAsync();
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);
-        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
+        await Assert.ThrowsAsync<ArgumentException>(
+            async () => await collection.DropAsync(
+                new DropCollectionOptions { Keyspace = "Blasbrusbr" }
+            )
+        );
+        collection.DropAsync(new DropCollectionOptions () );
     }
 
     [Fact]
     public async Task ListCollectionNamesAsync_WithCommandOptions_ShouldReturnCollectionNames()
     {
-        await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
-        var commandOptions = new DatabaseCommandOptions { /* Initialize with necessary options */ };
+        var collection = await fixture.Database.CreateCollectionAsync(Constants.DefaultCollection);
+        var commandOptions = new ListCollectionNamesOptions { /* Initialize with necessary options */ };
         var result = await fixture.Database.ListCollectionNamesAsync(commandOptions);
+        var resultSync = fixture.Database.ListCollectionNames(commandOptions);
         Assert.NotNull(result);
         Assert.Contains(Constants.DefaultCollection, result);
-        await fixture.Database.DropCollectionAsync(Constants.DefaultCollection);
+        await collection.DropAsync();
     }
 
     [Fact(Skip="Generally skipped, this is to demonstrate creation")]
@@ -492,7 +498,7 @@ public class DatabaseTests
     public async Task CreateGetCollection_WithVectorizeHeader_Typed()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "coll_SimpleObjectWithVectorizeHeader";
         // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
         var createdCollection = await fixture.Database.CreateCollectionAsync<SimpleObjectWithVectorizeAttributeHeader>(collectionName, headerOptions);
@@ -585,7 +591,7 @@ public class DatabaseTests
     public async Task CreateGetCollection_WithVectorizeHeader_Untyped()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var headerOptions = new DatabaseCollectionCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "collection_WithVectorizeHeader_Untyped";
         var options = new CollectionDefinition
         {
@@ -699,6 +705,7 @@ public class DatabaseTests
             };
             await fixture.Database.CreateCollectionAsync(collectionName, options);
             var collections = await fixture.Database.ListCollectionsAsync();
+            var collectionsSync = fixture.Database.ListCollections(); // blocking just to test that call pattern
             var collectionMetadata = collections.FirstOrDefault(c => c.Name == collectionName);
             Assert.NotNull(collectionMetadata);
             Assert.Equal(14, collectionMetadata.Options.Vector.Dimension);
@@ -720,6 +727,7 @@ public class DatabaseTests
             var table = await fixture.Database.CreateTableAsync<SimpleRowObject>();
             Assert.NotNull(table);
             var definitions = await fixture.Database.ListTablesAsync();
+            var definitionsSync = fixture.Database.ListTables(); // blocking just to test that call pattern
             var definition = definitions.FirstOrDefault(d => d.Name == typeof(SimpleRowObject).Name);
             Assert.NotNull(definition);
             Assert.Single(definition.TableDefinition.PrimaryKey.Keys);
@@ -729,6 +737,40 @@ public class DatabaseTests
         {
             await fixture.Database.DropTableAsync<SimpleRowObject>();
         }
+    }
+
+    [Fact]
+    public async Task DoesTableExistAsync_Test()
+    {
+        const string tableName = "testDTETable_async";
+        const string wrongTableName = "table_blirippi_999_async";
+        var table = await fixture.Database.CreateTableAsync<SimpleRowObject>(tableName);
+        var exists = await fixture.Database.DoesTableExistAsync(tableName);
+        Assert.True(exists);
+        var missed1 = await fixture.Database.DoesTableExistAsync(wrongTableName);
+        Assert.False(missed1);
+        var missed2 = await fixture.Database.DoesTableExistAsync("");
+        Assert.False(missed2);
+        var missed3 = await fixture.Database.DoesTableExistAsync(null);
+        Assert.False(missed3);
+        await fixture.Database.DropTableAsync(tableName);
+    }
+
+    [Fact]
+    public void DoesTableExistSync_Test()
+    {
+        const string tableName = "testDTETable_sync";
+        const string wrongTableName = "table_blirippi_999_sync";
+        var table = fixture.Database.CreateTable<SimpleRowObject>(tableName);
+        var exists = fixture.Database.DoesTableExist(tableName);
+        Assert.True(exists);
+        var missed1 = fixture.Database.DoesTableExist(wrongTableName);
+        Assert.False(missed1);
+        var missed2 = fixture.Database.DoesTableExist("");
+        Assert.False(missed2);
+        var missed3 = fixture.Database.DoesTableExist(null);
+        Assert.False(missed3);
+        fixture.Database.DropTable(tableName);
     }
 
     [SkipWhenNotAstra]
@@ -786,8 +828,8 @@ public class DatabaseTests
     public async Task CreateGetTable_WithVectorizeHeader_Typed()
     {
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
-        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {
             var createdTable = await fixture.Database.CreateTableAsync<RowBookVectorizeHeaderBased>(ctHeaderOptions);
@@ -917,8 +959,8 @@ public class DatabaseTests
     {
         var tableName = "bookTestTableVectorizeHeader_Untyped";
         var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
-        var gtHeaderOptions = new DatabaseTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
-        var ctHeaderOptions = new CreateTableCommandOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
+        var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
         {
             var createDefinition = new TableDefinition()
@@ -1249,10 +1291,11 @@ public class DatabaseTests
             var filter = Builders<RowBook>.TableFilter.Eq(b => b.Title, id);
             var foundRow = await foundTable2.FindOneAsync(filter);
             Assert.Equal(row.Title, foundRow.Title);
+            table.DropAsync();
         }
         finally
         {
-            await fixture.Database.DropTableAsync<RowBook>();
+            await fixture.Database.DropTableAsync<RowBook>( new DropTableOptions { IfExists = true } );
         }
     }
 
@@ -1276,7 +1319,12 @@ public class DatabaseTests
         {
             var table = await fixture.Database.CreateTableAsync<RowBook>(tableName);
             Assert.NotNull(table);
-            await fixture.Database.DropTableAsync(tableName);
+            await Assert.ThrowsAsync<ArgumentException>(
+                async () => await table.DropAsync(
+                    new DropTableOptions { Keyspace = "Blasbrusbr" }
+                )
+            );
+            await table.DropAsync( new DropTableOptions () );
         }
         finally
         {

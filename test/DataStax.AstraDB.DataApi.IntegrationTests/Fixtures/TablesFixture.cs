@@ -45,7 +45,7 @@ public class TablesFixture : BaseFixture, IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        var dropOptions = new DropTableCommandOptions { IfExists = true };
+        var dropOptions = new DropTableOptions { IfExists = true };
         await Database.DropTableAsync(_queryTableName, dropOptions);
         await Database.DropTableAsync(_queryTableNameWithVector4, dropOptions);
         await Database.DropTableAsync(_queryTableNameVectorize, dropOptions);

@@ -18,14 +18,15 @@ using DataStax.AstraDB.DataApi.Core;
 
 namespace DataStax.AstraDB.DataApi.Tables;
 
+
 /// <summary>
-/// Options for creating a generic table index.
+/// Options for dropping a table index.
 /// </summary>
-public class CreateIndexCommandOptions : CommandOptions
+public class DropTableIndexOptions : DatabaseCommandOptions
 {
     /// <summary>
-    /// A value indicating whether to skip index creation if an index with the same name already exists,
+    /// A value indicating whether to skip the drop operation if the index does not exist,
     /// avoiding an error.
     /// </summary>
-    public bool IfNotExists { get; set; } = false;
+    public bool IfExists { get; set; } = false;
 }

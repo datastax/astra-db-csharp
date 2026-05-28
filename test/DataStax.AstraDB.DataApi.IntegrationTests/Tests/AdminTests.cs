@@ -216,7 +216,7 @@ public class AdminTests
     public async Task DatabaseAdmin_GetAdmin_TypedPatterns_Astra()
     {
         var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
-        var options = new CommandOptions();
+        var options = new GetAdminOptions();
 
         var genAdmin = database.GetAdmin();
         var astraAdmin = database.GetAdmin<DatabaseAdminAstra>();
@@ -238,7 +238,7 @@ public class AdminTests
     public async Task DatabaseAdmin_GetAdmin_TypedPatterns_NonAstra()
     {
         var database = fixture.Client.GetDatabase(fixture.DatabaseUrl, fixture.Token);
-        var options = new CommandOptions();
+        var options = new GetAdminOptions();
 
         var genAdmin = database.GetAdmin();
         var hcdAdmin = database.GetAdmin<DatabaseAdminDataAPI>();

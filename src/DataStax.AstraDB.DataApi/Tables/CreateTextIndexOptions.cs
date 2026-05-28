@@ -19,13 +19,8 @@ using DataStax.AstraDB.DataApi.Core;
 namespace DataStax.AstraDB.DataApi.Tables;
 
 /// <summary>
-/// Options for creating a generic table index.
+/// Options for creating a table text index.
 /// </summary>
-public class CreateIndexCommandOptions : CommandOptions
+public class CreateTextIndexOptions : CreateIndexCommandOptions
 {
-    /// <summary>
-    /// A value indicating whether to skip index creation if an index with the same name already exists,
-    /// avoiding an error.
-    /// </summary>
-    public bool IfNotExists { get; set; } = false;
 }

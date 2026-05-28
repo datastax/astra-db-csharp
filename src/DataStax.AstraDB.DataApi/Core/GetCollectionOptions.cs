@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
-
-namespace DataStax.AstraDB.DataApi.Tables;
+namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options for creating a generic table index.
+/// Command options specific to collections.
 /// </summary>
-public class CreateIndexCommandOptions : CommandOptions
+public class GetCollectionOptions : DatabaseCommandOptions
 {
     /// <summary>
-    /// A value indicating whether to skip index creation if an index with the same name already exists,
-    /// avoiding an error.
+    /// When specified, the client will send the x-embedding-api-key header with the specified key to any underlying HTTP request that requires vectorize authentication.
     /// </summary>
-    public bool IfNotExists { get; set; } = false;
+    public string EmbeddingAPIKey
+    {
+        get
+        {
+            return AdditionalHeaders.TryGetValue("x-embedding-api-key", out var value) ? value : null;
+        }
+        set
+        {
+            AdditionalHeaders["x-embedding-api-key"] = value;
+        }
+    }
 }

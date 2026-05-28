@@ -29,12 +29,19 @@ public class TableAlterTests
                 ["is_archived"] = new AlterTableColumnDefinition { Type = "boolean" },
                 ["review_notes"] = new AlterTableColumnDefinition { Type = "text" }
             };
+            // passing-options pattern
+            await table.AlterAsync(new AlterTableAddColumns(newColumns), new AlterTableOptions());
 
-            await table.AlterAsync(new AlterTableAddColumns(newColumns), null);
+            var newColumns2 = new Dictionary<string, AlterTableColumnDefinition>
+            {
+                ["color"] = new AlterTableColumnDefinition { Type = "text" }
+            };
+            // without-options pattern
+            await table.AlterAsync(new AlterTableAddColumns(newColumns2));
 
             //throws error on dupe
             var ex = await Assert.ThrowsAsync<DataStax.AstraDB.DataApi.Core.Commands.CommandException>(() =>
-                     table.AlterAsync(new AlterTableAddColumns(newColumns), null));
+                     table.AlterAsync(new AlterTableAddColumns(newColumns)));
 
             Assert.Contains("unique", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
@@ -163,10 +170,10 @@ public class TableAlterTests
                 {
                     VectorDimension = 2
                 }
-            }), null);
+            }));
 
             var dropColumn = new AlterTableDropColumns(new[] { "plot_synopsis_drop" });
-            await table.AlterAsync(dropColumn, null);
+            await table.AlterAsync(dropColumn);
         }
         finally
         {
@@ -189,7 +196,7 @@ public class TableAlterTests
                 {
                     VectorDimension = 1024
                 }
-            }), null);
+            }));
 
             await table.AlterAsync(new AlterTableAddVectorize(new Dictionary<string, VectorServiceOptions>
             {

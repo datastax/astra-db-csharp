@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
-
-namespace DataStax.AstraDB.DataApi.Tables;
+namespace DataStax.AstraDB.DataApi.Core;
 
 /// <summary>
-/// Options for creating a generic table index.
+/// Additional command options for the Database.CreateType commands.
 /// </summary>
-public class CreateIndexCommandOptions : CommandOptions
+public class CreateTypeOptions : DatabaseCommandOptions
 {
-    /// <summary>
-    /// A value indicating whether to skip index creation if an index with the same name already exists,
-    /// avoiding an error.
-    /// </summary>
-    public bool IfNotExists { get; set; } = false;
+  /// <summary>
+  /// Skip creating the type if one with the same name already exists
+  /// </summary>
+  public bool IfNotExists { get; set; } = false;
 }
