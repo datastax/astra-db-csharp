@@ -129,48 +129,6 @@ public class AstraDatabasesAdmin
     }
 
     /// <summary>
-    /// Synchronous version of <see cref="DoesDatabaseExistAsync(string, DoesDatabaseExistOptions)"/>.
-    /// </summary>
-    /// <inheritdoc cref="DoesDatabaseExistAsync(string, DoesDatabaseExistOptions)"/>
-    /// <example>
-    /// <code>
-    /// // check by database name:
-    /// bool exists = admin.DoesDatabaseExist("myDatabase");
-    /// // check by database ID:
-    /// bool exists = admin.DoesDatabaseExist("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    /// </code>
-    /// </example>
-    public bool DoesDatabaseExist(string databaseNameOrId, DoesDatabaseExistOptions options = null)
-    {
-        Guard.NotNullOrEmpty(databaseNameOrId, nameof(databaseNameOrId));
-
-        var databases = ListDatabases(options);
-        return databases.Any(item => item.Id == databaseNameOrId || item.Name == databaseNameOrId);
-    }
-
-    /// <summary>
-    /// Checks if a database with the specified name or ID exists.
-    /// </summary>
-    /// <param name="databaseNameOrId">The database name or ID to check. If the string matches either a database's name or ID, it will be considered a match.</param>
-    /// <param name="options">Options to run the query for databases, including filters.</param>
-    /// <returns>True if the database exists (by ID or name); otherwise, false.</returns>
-    /// <example>
-    /// <code>
-    /// // check by database name:
-    /// bool exists = await admin.DoesDatabaseExistAsync("myDatabase");
-    /// // check by database ID:
-    /// bool exists = await admin.DoesDatabaseExistAsync("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
-    /// </code>
-    /// </example>
-    public async Task<bool> DoesDatabaseExistAsync(string databaseNameOrId, DoesDatabaseExistOptions options = null)
-    {
-        Guard.NotNullOrEmpty(databaseNameOrId, nameof(databaseNameOrId));
-
-        var databases = await ListDatabasesAsync(options).ConfigureAwait(false);
-        return databases.Any(item => item.Id == databaseNameOrId || item.Name == databaseNameOrId);
-    }
-
-    /// <summary>
     /// Synchronous version of <see cref="CreateDatabaseAsync(CreateDatabaseOptions)"/>
     /// </summary>
     /// <inheritdoc cref="CreateDatabaseAsync(CreateDatabaseOptions)"/>
