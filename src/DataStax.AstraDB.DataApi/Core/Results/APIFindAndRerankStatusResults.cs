@@ -29,7 +29,7 @@ internal class DocumentResponse
 /// <summary>
 /// The 'status' portion of a find-and-rerank query response.
 /// </summary>
-public class APIFindAndRerankStatusResults
+internal class APIFindAndRerankStatusResults
 {
     /// <summary>
     /// The side information returned by the query along with the documents
