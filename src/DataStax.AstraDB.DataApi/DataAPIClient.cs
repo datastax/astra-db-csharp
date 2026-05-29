@@ -26,10 +26,12 @@ namespace DataStax.AstraDB.DataApi;
 
 /// <summary>
 /// The main entrypoint into working with the Data API. It sits at the top of the conceptual hierarchy of the SDK.
-/// The client can be passed a default token, which can be overridden by a stronger/weaker token when connectiong to a Database or Admin instance.
+/// The client can be passed a default token, which can be overridden by a stronger/weaker token when
+/// connecting to a Database or Admin instance.
 /// 
-/// The DataAPIClient, and the related methods for interacting with the database, accepts a set of options that can be used to affect the 
-/// command execution. These options can be specified at any level in the call hierarchy (Client, Database, Collection, Command, etc.) 
+/// The DataAPIClient, and the related methods for interacting with the database, accepts a set of options
+/// that can be used to affect the command execution. These options can be specified at any level in the
+/// call hierarchy (Client, Database, Collection, Command, etc.) 
 /// The most specific defined option (or its default) will be used for each request.
 /// 
 ///
@@ -53,9 +55,9 @@ public class DataAPIClient
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class.
     /// 
-    /// When using this constructor, the token must be provided to the <see cref="GetDatabase(string)"/> or 
-    /// <see cref="GetAstraDatabasesAdmin()"/> methods,
-    /// or to the eventual end commands via a <see cref="CommandOptions"/> parameter.
+    /// When using this constructor, generally a token is provided later, to the <see cref="GetDatabase(string)"/> or 
+    /// <see cref="GetAstraDatabasesAdmin(string, GetAstraDatabasesAdminOptions)"/> methods; or to the eventual
+    /// end commands via a <see cref="CommandOptions"/> parameter.
     /// </summary>
     public DataAPIClient() : this(null, null)
     {
@@ -63,7 +65,8 @@ public class DataAPIClient
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class with a default authentication token. 
-    /// This token can be overridden when getting a database <see cref="GetDatabase(string)"/> or admin instance <see cref="GetAstraDatabasesAdmin()"/>
+    /// This token can be overridden when getting a database <see cref="GetDatabase(string)"/>
+    /// or admin instance <see cref="GetAstraDatabasesAdmin(string, GetAstraDatabasesAdminOptions)"/>
     /// as well as in the <see cref="CommandOptions"/> parameter of the commands.
     /// </summary>
     /// <param name="token">The token to use for authentication.</param>
@@ -74,9 +77,10 @@ public class DataAPIClient
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class with a default set of options
-    /// When using this constructor, the token must be provided in the <see cref="CommandOptions"/> parameter,
-    /// to the <see cref="GetDatabase(string)"/> or <see cref="GetAstraDatabasesAdmin()"/> methods,
-    /// or the eventual end commands via a <see cref="CommandOptions"/> parameter.
+    ///
+    /// When using this constructor, if not passing a token within the options, generally it is provided later,
+    /// to the <see cref="GetDatabase(string)"/> or <see cref="GetAstraDatabasesAdmin(string, GetAstraDatabasesAdminOptions)"/>
+    /// methods; or to the eventual end commands via a <see cref="CommandOptions"/> parameter.
     /// </summary>
     /// <param name="options">The default options to use for commands executed by this client.</param>
     public DataAPIClient(CommandOptions options)
@@ -86,7 +90,8 @@ public class DataAPIClient
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAPIClient"/> class with a default authentication token.
-    /// When using the default constructor, the token must be provided to the <see cref="GetDatabase(string)"/> or <see cref="GetAstraDatabasesAdmin()"/> methods
+    /// When using the default constructor, the token must be provided to the <see cref="GetDatabase(string)"/>
+    /// or <see cref="GetAstraDatabasesAdmin(string, GetAstraDatabasesAdminOptions)"/> methods
     /// or the eventual end commands via a <see cref="CommandOptions"/> parameter.
     /// </summary>
     /// <param name="token">The token to use for authentication.</param>
@@ -105,45 +110,26 @@ public class DataAPIClient
         _httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>()!;
     }
 
-    /// <summary>
-    /// Gets an instance of the <see cref="AstraDatabasesAdmin"/> class for administration of Astra databases.
-    /// Options (including token) from the <see cref="DataAPIClient"/> will be passed to the <see cref="AstraDatabasesAdmin"/>
-    /// and can be overridden by the <see cref="CommandOptions"/> parameter of the commands.
-    /// </summary>
-    /// <returns>An admin instance of the <see cref="AstraDatabasesAdmin"/> class.</returns>
-    public AstraDatabasesAdmin GetAstraDatabasesAdmin()
+    /// <inheritdoc cref="GetAstraDatabasesAdmin(string, GetAstraDatabasesAdminOptions)"/>
+    /// <param name="options">The options to use for the resulting databases admin.</param>
+    public AstraDatabasesAdmin GetAstraDatabasesAdmin(GetAstraDatabasesAdminOptions options = null)
     {
-        return GetAstraDatabasesAdmin(null as CommandOptions);
-    }
-
-    /// <summary>
-    /// Gets an instance of the <see cref="AstraDatabasesAdmin"/> class for administration of Astra databases.
-    /// Options from the <see cref="DataAPIClient"/> will be passed to the <see cref="AstraDatabasesAdmin"/>
-    /// and can be overridden by the <see cref="CommandOptions"/> parameter of the commands.
-    /// The <paramref name="superAdminToken"/> parameter is used to override the token from the <see cref="DataAPIClient"/>
-    /// with a more specific token as needed for security purposes.
-    /// </summary>
-    /// <param name="superAdminToken">The super admin token to use for authentication.</param>
-    /// <returns>An admin instance of the <see cref="AstraDatabasesAdmin"/> class.</returns>
-    public AstraDatabasesAdmin GetAstraDatabasesAdmin(string superAdminToken)
-    {
-        return GetAstraDatabasesAdmin(new CommandOptions() { Token = superAdminToken });
+        return GetAstraDatabasesAdmin(null, options);
     }
 
     /// <summary>
     /// Gets an instance of the <see cref="AstraDatabasesAdmin"/> class.
     /// 
-    /// Any options provided in the <paramref name="adminOptions"/> parameter will take precedence over the options from the <see cref="DataAPIClient"/>.
+    /// Any options explicitly provided will override those on this <see cref="DataAPIClient"/>.
     /// </summary>
-    /// <param name="adminOptions">The options to use for the admin instance.</param>
-    /// <returns>An admin instance of the <see cref="AstraDatabasesAdmin"/> class.</returns>
-    public AstraDatabasesAdmin GetAstraDatabasesAdmin(CommandOptions adminOptions)
+    /// <param name="token">A token with administrative powers, to use for authentication if required. When passed, overrides any token in the 'options' parameter.</param>
+    /// <param name="options">The options to use for the resulting databases admin.</param>
+    /// <returns>An instance of <see cref="AstraDatabasesAdmin"/>.</returns>
+    public AstraDatabasesAdmin GetAstraDatabasesAdmin(string token, GetAstraDatabasesAdminOptions options = null)
     {
-        var applicableOptions = CommandOptions.Merge(_options, adminOptions);
+        var applicableOptions = CommandOptions.Merge(_options, options, new GetAstraDatabasesAdminOptions() { Token = token });
         var applicableDestination = applicableOptions.Destination;
-        Guard.Equals(applicableDestination, DataAPIDestination.ASTRA, "Destinations other than ASTRA cannot be used with GetAstraAdmin. Please check your Destination settings for the DataAPIClient or the overload with adminOptions");
-        var applicableToken = applicableOptions.Token;
-        Guard.NotNullOrEmpty(applicableToken, nameof(adminOptions.Token), "Token must be provided to the DataAPIClient constructor or to a GetAstraAdmin() overload.");
+        Guard.Equals(applicableDestination, DataAPIDestination.ASTRA, "Destinations other than ASTRA cannot be used with GetAstraDatabasesAdmin. Please check the requested Destination.");
         return new AstraDatabasesAdmin(this, applicableOptions);
     }
 
@@ -158,7 +144,7 @@ public class DataAPIClient
     /// <example>
     /// <code>
     /// var client = new DataAPIClient("token");
-    /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com");
+    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com");
     /// </code>
     /// </example>
     public Database GetDatabase(string apiEndpoint)
@@ -177,7 +163,7 @@ public class DataAPIClient
     /// <example>
     /// <code>
     /// var client = new DataAPIClient("token");
-    /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com", "myKeyspace");
+    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", "myKeyspace");
     /// </code>
     /// </example>
     public Database GetDatabase(string apiEndpoint, string token, string keyspace = null)
@@ -197,7 +183,7 @@ public class DataAPIClient
     /// <example>
     /// <code>
     /// var client = new DataAPIClient("token");
-    /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com", new DatabaseCommandOptions() { Keyspace = "myKeyspace" });
+    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", new DatabaseCommandOptions() { Keyspace = "myKeyspace" });
     /// </code>
     /// </example>
     public Database GetDatabase(string apiEndpoint, DatabaseCommandOptions dbOptions)
@@ -206,7 +192,7 @@ public class DataAPIClient
     }
 
     /// <summary>
-    /// Generate a db token given a username and password (used for non-Astra instances only)
+    /// Generate a db token given a username and password (generally needed for instances other than Astra DB)
     /// </summary>
     /// <param name="username"></param>
     /// <param name="password"></param>

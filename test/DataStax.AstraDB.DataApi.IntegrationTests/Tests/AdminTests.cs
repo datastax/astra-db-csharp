@@ -38,10 +38,33 @@ public class AdminTests
 
     [SkipWhenNotAstra]
     [Fact]
+    public async Task GetAstraDatabasesAdmin_Test()
+    {
+        var dbAdminBase = fixture.Client.GetAstraDatabasesAdmin();
+        var listBase = await dbAdminBase.ListDatabasesAsync();
+        Assert.NotNull(listBase);
+
+        var dbAdminBadToken = fixture.Client.GetAstraDatabasesAdmin("not-a-good-token");
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(async () =>
+        {
+            await dbAdminBadToken.ListDatabasesAsync();
+        });
+
+        var dbAdminOptions1 = fixture.Client.GetAstraDatabasesAdmin(new GetAstraDatabasesAdminOptions());
+        var listOptions1 = await dbAdminOptions1.ListDatabasesAsync();
+        Assert.NotNull(listOptions1);
+
+        var dbAdminOptions2 = fixture.Client.GetAstraDatabasesAdmin(null as string, new GetAstraDatabasesAdminOptions());
+        var listOptions2 = await dbAdminOptions2.ListDatabasesAsync();
+        Assert.NotNull(listOptions2);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact]
     public async Task GetDatabasesListPartialOptions()
     {
         var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync(new ListDatabaseOptions {
-            StatesToInclude = QueryDatabaseStates.pending, PageSizeLimit = 41 });
+            Include = QueryDatabaseStates.pending, Limit = 41 });
         Assert.NotNull(list);
 
         list = fixture.Client.GetAstraDatabasesAdmin().ListDatabases();
@@ -54,14 +77,18 @@ public class AdminTests
     [Fact]
     public async Task GetDatabasesListWithOptions()
     {
-        var list = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync(new ListDatabaseOptions {
-            StatesToInclude = QueryDatabaseStates.pending, Provider = QueryCloudProvider.AZURE, PageSizeLimit = 41, StartingAfter = "a" });
-        Assert.NotNull(list);
+        var listSome = await fixture.Client.GetAstraDatabasesAdmin().ListDatabasesAsync(new ListDatabaseOptions {
+            Provider = QueryCloudProvider.AZURE
+        });
+        Assert.NotNull(listSome);
 
-        list = fixture.Client.GetAstraDatabasesAdmin().ListDatabases();
-        Assert.NotNull(list);
+        var listDefault = fixture.Client.GetAstraDatabasesAdmin().ListDatabases();
+        Assert.NotNull(listDefault);
 
-        Console.WriteLine($"GetDatabasesList: {list.Count} items");
+        Assert.True(listSome.Count <= listDefault.Count);
+
+        Console.WriteLine($"GetDatabasesList[some]: {listSome.Count} items");
+        Console.WriteLine($"GetDatabasesList[default]: {listDefault.Count} items");
     }
 
     [SkipWhenNotAstra]
@@ -80,72 +107,6 @@ public class AdminTests
 
     [SkipWhenNotAstra]
     [Fact]
-    public async Task CheckDatabaseExistsByName()
-    {
-        var dbName = fixture.DatabaseName;
-        if (string.IsNullOrEmpty(dbName))
-        {
-            Console.WriteLine("Skipping CheckDatabaseExistsByName due to missing DATABASE_NAME param");
-        }
-
-        var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbName);
-        Assert.True(found);
-
-        found = fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(dbName);
-        Assert.True(found);
-    }
-
-    [SkipWhenNotAstra]
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void CheckDatabaseExistsByName_ExpectedError(string invalidName)
-    {
-        var ex = Assert.Throws<ArgumentNullException>(() => fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(invalidName));
-        Assert.Contains("Value cannot be null or empty", ex.Message);
-    }
-
-    [SkipWhenNotAstra]
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public async Task CheckDatabaseExistsByNameAsync_ExpectedError(string invalidName)
-    {
-        var ex = await Assert.ThrowsAsync<ArgumentNullException>(
-            () => fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(invalidName)
-        );
-        Assert.Contains("Value cannot be null or empty", ex.Message);
-    }
-
-    [SkipWhenNotAstra]
-    [Fact]
-    public async Task CheckDatabaseExistsByName_ExpectedFalse()
-    {
-        var dbName = "this-is-not-the-greatest-db-in-the-world-this-is-a-tribute";
-
-        var databasesAdmin = fixture.Client.GetAstraDatabasesAdmin();
-        var doesExist = await databasesAdmin.DoesDatabaseExistAsync(dbName);
-        Assert.False(doesExist);
-
-        doesExist = databasesAdmin.DoesDatabaseExist(dbName);
-        Assert.False(doesExist);
-    }
-
-    [SkipWhenNotAstra]
-    [Fact]
-    public async Task CheckDatabaseExistsById()
-    {
-        var dbId = fixture.DatabaseId.ToString();
-
-        var found = await fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExistAsync(dbId);
-        Assert.True(found);
-
-        found = fixture.Client.GetAstraDatabasesAdmin().DoesDatabaseExist(dbId);
-        Assert.True(found);
-    }
-
-    [SkipWhenNotAstra]
-    [Fact]
     public async Task CheckDatabaseStatus()
     {
         var dbGuid = Database.GetDatabaseIdFromUrl(fixture.DatabaseUrl).Value.ToString();
@@ -154,7 +115,7 @@ public class AdminTests
         var status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid);
         Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
 
-        status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid);
+        status = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(dbGuid, new GetDatabaseStatusOptions());
         Assert.Equal(AstraDatabaseStatus.ACTIVE, status);
     }
 
@@ -304,20 +265,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -338,20 +299,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -372,20 +333,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -406,20 +367,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -440,20 +401,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = await daa.FindEmbeddingProvidersAsync( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -474,20 +435,20 @@ public class AdminTests
         Assert.NotNull(result_no.EmbeddingProviders);
 
         // options with token
-        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tk = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.EmbeddingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_tf = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.EmbeddingProviders);
 
         // options with filter
-        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersCommandOptions {
+        var result_fi = daa.FindEmbeddingProviders( new FindEmbeddingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.EmbeddingProviders);
@@ -508,20 +469,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tk = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_tf = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersCommandOptions {
+        var result_fi = await daa.FindRerankingProvidersAsync( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -542,20 +503,20 @@ public class AdminTests
         Assert.NotNull(result_no.RerankingProviders);
 
         // options with token
-        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tk = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token });
         Assert.NotNull(result_tk);
         Assert.NotNull(result_tk.RerankingProviders);
 
         // options with token and filter
-        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_tf = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             Token = fixture.Client.ClientOptions.Token,
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_tf);
         Assert.NotNull(result_tf.RerankingProviders);
 
         // options with filter
-        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersCommandOptions {
+        var result_fi = daa.FindRerankingProviders( new FindRerankingProvidersOptions {
             FilterModelStatus = ModelLifecycleStatus.EndOfLife });
         Assert.NotNull(result_fi);
         Assert.NotNull(result_fi.RerankingProviders);
@@ -568,9 +529,23 @@ public class AdminTests
     {
         var admin = fixture.Client.GetAstraDatabasesAdmin();
 
-        var regions = await admin.FindAvailableRegionsAsync();
-        Assert.NotNull(regions);
-        Assert.NotEmpty(regions);
+        var regionsDefault = await admin.FindAvailableRegionsAsync();
+        Assert.NotNull(regionsDefault);
+        Assert.NotEmpty(regionsDefault);
+
+        var regionsOnly = await admin.FindAvailableRegionsAsync(new FindAvailableRegionsOptions {
+            OnlyOrgEnabledRegions = true
+        });
+        Assert.NotNull(regionsOnly);
+        Assert.NotEmpty(regionsOnly);
+
+        var regionsAll = await admin.FindAvailableRegionsAsync(new FindAvailableRegionsOptions {
+            OnlyOrgEnabledRegions = false
+        });
+        Assert.NotNull(regionsAll);
+        Assert.NotEmpty(regionsAll);
+
+        Assert.True(regionsAll.Count >= regionsOnly.Count);
     }
 
     [SkipWhenNotAstra]
@@ -622,7 +597,7 @@ public class AdminTests
 
         Also, make sure the DB creation/deletion parameters follow the env being tested:
             DEV: GCP europe-west4
-            TEST: AWS us-east-1
+            TEST: AWS us-west-2
         For dropping, you will need to hardcode the proper database Guid in the test.
     */
 
@@ -631,17 +606,14 @@ public class AdminTests
     public async Task CreateDatabaseNonblockingSync()
     {
         var dbName = "test-db-create-x";
-        var creationOptions = new BlockingCommandOptions() {
-            waitForCompletion = false,
-        };
         var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
             new (){
                 Name = dbName,
                 CloudProvider = CloudProviderType.GCP,
                 Region = "europe-west4",
-                Keyspace = "fedault_seykpace"
-            },
-            creationOptions
+                Keyspace = "fedault_seykpace",
+                waitForCompletion = false,
+            }
         );
 
         var dbStatus = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(admin.Id);
@@ -655,20 +627,27 @@ public class AdminTests
     public async Task CreateDatabaseNonblockingAsync()
     {
         var dbName = "test-db-create-async-x";
-        var options = new DatabaseCreationOptions{
+        var creationOptions = new CreateDatabaseOptions() {
             Name = dbName,
-            CloudProvider = CloudProviderType.GCP,
-            Region = "europe-west4"
-        };
-        var creationOptions = new BlockingCommandOptions() {
+            CloudProvider = CloudProviderType.AWS,
+            Region = "us-west-2",
             waitForCompletion = false,
         };
-        var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(options, creationOptions);
 
-        var dbStatus = await fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatusAsync(admin.Id);
+        var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
+
+        var dbAdmin = await astraAdmin.CreateDatabaseAsync(creationOptions);
+
+        var dbStatus = await astraAdmin.GetDatabaseStatusAsync(dbAdmin.Id);
         Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
             || dbStatus == AstraDatabaseStatus.INITIALIZING
             || dbStatus == AstraDatabaseStatus.PENDING);
+
+        var dbAdmin2 = astraAdmin.GetDatabaseAdmin(dbAdmin.GetAPIEndpoint());
+        var dbStatus2 = await astraAdmin.GetDatabaseStatusAsync(dbAdmin2.Id);
+        Assert.True(dbStatus2 == AstraDatabaseStatus.ASSOCIATING
+            || dbStatus2 == AstraDatabaseStatus.INITIALIZING
+            || dbStatus2 == AstraDatabaseStatus.PENDING);
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingSync
@@ -676,16 +655,14 @@ public class AdminTests
     public void CreateDatabaseBlockingSync()
     {
         var dbName = "test-db-create-blocking-x";
-        var options = new DatabaseCreationOptions{
+        var creationOptions = new CreateDatabaseOptions() {
             Name = dbName,
             CloudProvider = CloudProviderType.GCP,
             Region = "europe-west4",
-            Keyspace = "fedault_seykpace"
-        };
-        var creationOptions = new BlockingCommandOptions() {
+            Keyspace = "fedault_seykpace",
             waitForCompletion = true,
         };
-        var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(options, creationOptions);
+        var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(creationOptions);
 
         var dbStatus = fixture.Client.GetAstraDatabasesAdmin().GetDatabaseStatus(admin.Id);
         Assert.True(dbStatus == AstraDatabaseStatus.ACTIVE);
@@ -700,8 +677,8 @@ public class AdminTests
         var admin = await fixture.Client.GetAstraDatabasesAdmin().CreateDatabaseAsync(
             new (){
                 Name = dbName,
-                CloudProvider = CloudProviderType.GCP,
-                Region = "europe-west4"
+                CloudProvider = CloudProviderType.AWS,
+                Region = "us-west-2",
             }
         );
 
@@ -717,7 +694,7 @@ public class AdminTests
     [Fact(Skip = AdminCollection.SkipMessage)]
     public void DropDatabaseNonblockingSync()
     {
-        var waitingOptions = new BlockingCommandOptions
+        var waitingOptions = new DropDatabaseOptions
         {
             waitForCompletion = false,
         };
@@ -729,7 +706,7 @@ public class AdminTests
     [Fact(Skip = AdminCollection.SkipMessage)]
     public async Task DropDatabaseNonblockingAsync()
     {
-        var waitingOptions = new BlockingCommandOptions
+        var waitingOptions = new DropDatabaseOptions
         {
             waitForCompletion = false,
         };
@@ -751,7 +728,7 @@ public class AdminTests
     public async Task DropDatabaseBlockingAsync()
     {
         // this one explicitly requires the blocking call:
-        var waitingOptions = new BlockingCommandOptions
+        var waitingOptions = new DropDatabaseOptions
         {
             waitForCompletion = true,
         };
@@ -830,7 +807,7 @@ public class AdminTests
         {
             Token = fixture.Client.ClientOptions.Token,
         };
-        var ckOptions = new CreateKeyspaceCommandOptions
+        var ckOptions = new CreateKeyspaceOptions
         {
             updateDBKeyspace = true,
         };
@@ -890,14 +867,14 @@ public class AdminTests
         {
             Token = fixture.Client.ClientOptions.Token,
         };
-        var ckOptions = new CreateKeyspaceCommandOptions
+        var ckOptions = new CreateKeyspaceOptions
         {
             Token = fixture.Client.ClientOptions.Token,
         };
         var daa = new DatabaseAdminDataAPI(fixture.Database, fixture.Client, adminOptions);
 
         var replicationOptions = new Dictionary<string, object> { ["class"] = "SimpleStrategy", ["replication_factor"] = 1 };
-        await daa.CreateKeyspaceAsync(keyspaceName, ckOptions, replicationOptions);
+        await daa.CreateKeyspaceAsync(keyspaceName, replicationOptions, ckOptions);
 
         Assert.Contains(keyspaceName, daa.ListKeyspaces());
     }
@@ -908,7 +885,7 @@ public class AdminTests
     public async Task DatabaseAdminAstra_DropKeyspaceAsync()
     {
         var keyspaceName = "drop_this_keyspace_x";
-        var adminOptions = new BlockingCommandOptions
+        var adminOptions = new DropKeyspaceOptions
         {
             Token = fixture.Client.ClientOptions.Token,
         };
@@ -925,7 +902,7 @@ public class AdminTests
     public async Task DatabaseAdminDataAPI_DropKeyspaceAsync()
     {
         var keyspaceName = "drop_this_keyspace_x";
-        var adminOptions = new BlockingCommandOptions
+        var adminOptions = new DropKeyspaceOptions
         {
             Token = fixture.Client.ClientOptions.Token,
         };

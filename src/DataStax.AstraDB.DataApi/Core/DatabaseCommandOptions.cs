@@ -31,4 +31,27 @@ public class DatabaseCommandOptions : CommandOptions
         get => base.Keyspace;
         set => base.Keyspace = value;
     }
+
+    static internal DatabaseCommandOptions BinaryMerge(DatabaseCommandOptions options1, DatabaseCommandOptions options2)
+    {
+        var options = CommandOptions.Merge(new CommandOptions[] {options1, options2});
+        return FromCommandOptions(options);
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="DatabaseCommandOptions"/> with default values.
+    /// </summary>
+    public DatabaseCommandOptions()
+    {
+    }
+
+    private DatabaseCommandOptions(CommandOptions source) : base(source)
+    {
+    }
+
+    static internal DatabaseCommandOptions FromCommandOptions(CommandOptions options)
+    {
+        return options == null ? null : new DatabaseCommandOptions(options);
+    }
+
 }

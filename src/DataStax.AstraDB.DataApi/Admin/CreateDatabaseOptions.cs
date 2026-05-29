@@ -14,58 +14,67 @@
  * limitations under the License.
  */
 
+using DataStax.AstraDB.DataApi.Core;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
 /// Options to use when creating a new database.
 /// </summary>
-public class DatabaseCreationOptions
+public class CreateDatabaseOptions : BlockingCommandOptions
 {
     /// <summary>
     /// Name of the database to be created.
     /// </summary>
-    [JsonPropertyName("name")]
     public string Name { get; set; }
 
     /// <summary>
     /// Which cloud provider should host the database?
     /// </summary>
-    [JsonPropertyName("cloudProvider")]
     public CloudProviderType? CloudProvider { get; set; } = null;
 
     /// <summary>
     /// Database region.
     /// </summary>
-    [JsonPropertyName("region")]
     public string Region { get; set; }
 
     /// <summary>
     /// Name of the initial keyspace (defaults to "default_keyspace")
     /// </summary>
-    [JsonPropertyName("keyspace")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Keyspace { get; set; } = null;
+    public new string Keyspace
+    {
+        get => base.Keyspace;
+        set => base.Keyspace = value;
+    }
 
-    /// <summary>
-    /// Capacity units to use, defaults to 1.
-    /// </summary>
-    [JsonPropertyName("capacityUnits")]
-    [JsonInclude]
-    internal int CapacityUnits { get; set; } = 1;
+    internal object ToPayload()
+    {
+        var payload = new Dictionary<string, object>();
 
-    /// <summary>
-    /// Tier to use, defaults to "serverless".
-    /// </summary>
-    [JsonPropertyName("tier")]
-    [JsonInclude]
-    internal string Tier { get; set; } = "serverless";
+        // hardcoded properties
+        payload["tier"] = "serverless";
+        payload["capacityUnits"] = 1;
+        payload["dbType"] = "vector";
+        // specified properties
+        if ( Name != null )
+        {
+            payload["name"] = Name;
+        }
+        if ( CloudProvider != null )
+        {
+            payload["cloudProvider"] = CloudProvider;
+        }
+        if ( Region != null )
+        {
+            payload["region"] = Region;
+        }
+        if ( Keyspace != null )
+        {
+            payload["keyspace"] = Keyspace;
+        }
 
-    /// <summary>
-    /// Type of database, defaults to "vector".
-    /// </summary>
-    [JsonPropertyName("dbType")]
-    [JsonInclude]
-    internal string DatabaseType { get; set; } = "vector";
+        return payload;
+    }
 }

@@ -49,7 +49,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// Using the default keyspace for all operations
 /// <code>
 /// var client = new DataAPIClient("token");
-/// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com");
+/// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com");
 /// // Check to see if a collection exists in the default keyspace
 /// var doesCollectionExist = database.DoesCollectionExist("myCollection");
 /// </code>
@@ -59,7 +59,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <code>
 /// var client = new DataAPIClient("token");
 /// var dbOptions = new DatabaseCommandOptions() { Keyspace = "myKeyspace" };
-/// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com", dbOptions);
+/// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", dbOptions);
 /// // Check to see if a collection exists in the custom keyspace
 /// var doesCollectionExist = database.DoesCollectionExist("myCollectionInMyKeyspace");
 /// </code>
@@ -68,7 +68,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// Setting a custom keyspace for a single operation
 /// <code>
 /// var client = new DataAPIClient("token");
-/// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com");
+/// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com");
 /// // Check to see if a collection exists in the custom keyspace
 /// var dbOptions = new DatabaseCommandOptions() { Keyspace = "myKeyspace" };
 /// var doesCollectionExist = database.DoesCollectionExist("myCollectionInMyKeyspace", dbOptions);

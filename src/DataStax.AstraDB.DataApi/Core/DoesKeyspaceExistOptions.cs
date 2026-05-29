@@ -1,0 +1,41 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace DataStax.AstraDB.DataApi.Core;
+
+/// <summary>
+/// Command options specific to the database admin's DoesKeyspaceExist methods.
+/// </summary>
+public class DoesKeyspaceExistOptions : ListKeyspacesOptions
+{
+
+    /// <summary>
+    /// Creates a new instance of <see cref="DoesKeyspaceExistOptions"/> with default values.
+    /// </summary>
+    public DoesKeyspaceExistOptions()
+    {
+    }
+
+    private DoesKeyspaceExistOptions(CommandOptions source) : base(source)
+    {
+    }
+
+    static internal DoesKeyspaceExistOptions FromCommandOptions(CommandOptions options)
+    {
+        return options == null ? null : new DoesKeyspaceExistOptions(options);
+    }
+
+}
