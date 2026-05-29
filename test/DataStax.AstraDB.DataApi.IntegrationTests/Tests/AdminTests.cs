@@ -623,8 +623,7 @@ public class AdminTests
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNonblockingAsync
-    // [Fact(Skip = AdminCollection.SkipMessage)]
-    [Fact]
+    [Fact(Skip = AdminCollection.SkipMessage)]
     public async Task CreateDatabaseNonblockingAsync()
     {
         var dbName = "test-db-create-async-x";
@@ -670,8 +669,7 @@ public class AdminTests
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingAsync
-    // [Fact(Skip = AdminCollection.SkipMessage)]
-    [Fact]
+    [Fact(Skip = AdminCollection.SkipMessage)]
     public async Task CreateDatabaseBlockingAsync()
     {
         var dbName = "test-db-create-blocking-async-x";
