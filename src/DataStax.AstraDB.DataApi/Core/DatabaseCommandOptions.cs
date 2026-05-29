@@ -34,38 +34,24 @@ public class DatabaseCommandOptions : CommandOptions
 
     static internal DatabaseCommandOptions BinaryMerge(DatabaseCommandOptions options1, DatabaseCommandOptions options2)
     {
-        // Until actual new fields are added w.r.t. CommandOptions, this is it:
         var options = CommandOptions.Merge(new CommandOptions[] {options1, options2});
         return FromCommandOptions(options);
     }
 
+    /// <summary>
+    /// Creates a new instance of <see cref="DatabaseCommandOptions"/> with default values.
+    /// </summary>
+    public DatabaseCommandOptions()
+    {
+    }
+
+    private DatabaseCommandOptions(CommandOptions source) : base(source)
+    {
+    }
+
     static internal DatabaseCommandOptions FromCommandOptions(CommandOptions options)
     {
-        if (options == null) {
-            return null;
-        }
-        // Until actual new fields are added w.r.t. CommandOptions, this is it:
-        return new DatabaseCommandOptions
-        {
-            Environment = options.Environment,
-            Keyspace = options.Keyspace,
-            InputConverter = options.InputConverter,
-            OutputConverter = options.OutputConverter,
-            SerializeGuidAsDollarUuid = options.SerializeGuidAsDollarUuid,
-            SerializeDateAsDollarDate = options.SerializeDateAsDollarDate,
-            SerializeIEEE754SpecialValues = options.SerializeIEEE754SpecialValues,
-            DeserializeToObjectDictionary = options.DeserializeToObjectDictionary,
-            Token = options.Token,
-            RunMode = options.RunMode,
-            Destination = options.Destination,
-            HttpClientOptions = options.HttpClientOptions,
-            APICallers = options.APICallers,
-            TimeoutOptions = options.TimeoutOptions,
-            APIVersion = options.APIVersion,
-            CancellationToken = options.CancellationToken,
-            BulkOperationCancellationToken = options.BulkOperationCancellationToken,
-            IncludeKeyspaceInUrl = options.IncludeKeyspaceInUrl,
-            AdditionalHeaders = options.AdditionalHeaders
-        };
+        return options == null ? null : new DatabaseCommandOptions(options);
     }
+
 }

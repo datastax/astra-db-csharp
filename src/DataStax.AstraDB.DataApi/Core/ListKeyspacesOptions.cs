@@ -23,4 +23,19 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// </summary>
 public class ListKeyspacesOptions : GetDatabaseInfoOptions
 {
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ListKeyspacesOptions"/> with default values.
+    /// </summary>
+    public ListKeyspacesOptions()
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="ListKeyspacesOptions"/> with the settings of a provided <see cref="CommandOptions"/>.
+    /// </summary>
+    protected ListKeyspacesOptions(CommandOptions source) : base(source)
+    {
+    }
+
 }

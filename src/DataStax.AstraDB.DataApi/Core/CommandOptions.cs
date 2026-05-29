@@ -117,6 +117,42 @@ public class CommandOptions
     [JsonIgnore]
     public CancellationToken? CancellationToken { get; set; }
 
+    /// <summary>
+    /// Creates a new instance of <see cref="CommandOptions"/> with default values.
+    /// </summary>
+    public CommandOptions()
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="CommandOptions"/> with the same values as a provided instance.
+    /// Useful for subclasses that may implement a .FromCommandOptions method.
+    /// </summary>
+    protected CommandOptions(CommandOptions source)
+    {
+        if (source == null) return;
+        
+        Environment = source.Environment;
+        Keyspace = source.Keyspace;
+        InputConverter = source.InputConverter;
+        OutputConverter = source.OutputConverter;
+        SerializeGuidAsDollarUuid = source.SerializeGuidAsDollarUuid;
+        SerializeDateAsDollarDate = source.SerializeDateAsDollarDate;
+        SerializeIEEE754SpecialValues = source.SerializeIEEE754SpecialValues;
+        DeserializeToObjectDictionary = source.DeserializeToObjectDictionary;
+        Token = source.Token;
+        RunMode = source.RunMode;
+        Destination = source.Destination;
+        HttpClientOptions = source.HttpClientOptions;
+        APICallers = source.APICallers;
+        TimeoutOptions = source.TimeoutOptions;
+        APIVersion = source.APIVersion;
+        CancellationToken = source.CancellationToken;
+        BulkOperationCancellationToken = source.BulkOperationCancellationToken;
+        IncludeKeyspaceInUrl = source.IncludeKeyspaceInUrl;
+        AdditionalHeaders = source.AdditionalHeaders;
+    }
+
     internal CancellationToken? BulkOperationCancellationToken { get; set; }
 
     internal void SetConvertersIfNull(JsonConverter inputConverter, JsonConverter outputConverter)

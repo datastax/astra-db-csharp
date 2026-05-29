@@ -21,33 +21,21 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// </summary>
 public class DoesKeyspaceExistOptions : ListKeyspacesOptions
 {
-    internal static DoesKeyspaceExistOptions FromCommandOptions(CommandOptions options)
+
+    /// <summary>
+    /// Creates a new instance of <see cref="DoesKeyspaceExistOptions"/> with default values.
+    /// </summary>
+    public DoesKeyspaceExistOptions()
     {
-        // Until actual new fields are added w.r.t. CommandOptions, this is it:
-        if (options == null) {
-            return null;
-        }
-        return new DoesKeyspaceExistOptions
-        {
-            Environment = options.Environment,
-            Keyspace = options.Keyspace,
-            InputConverter = options.InputConverter,
-            OutputConverter = options.OutputConverter,
-            SerializeGuidAsDollarUuid = options.SerializeGuidAsDollarUuid,
-            SerializeDateAsDollarDate = options.SerializeDateAsDollarDate,
-            SerializeIEEE754SpecialValues = options.SerializeIEEE754SpecialValues,
-            DeserializeToObjectDictionary = options.DeserializeToObjectDictionary,
-            Token = options.Token,
-            RunMode = options.RunMode,
-            Destination = options.Destination,
-            HttpClientOptions = options.HttpClientOptions,
-            APICallers = options.APICallers,
-            TimeoutOptions = options.TimeoutOptions,
-            APIVersion = options.APIVersion,
-            CancellationToken = options.CancellationToken,
-            BulkOperationCancellationToken = options.BulkOperationCancellationToken,
-            IncludeKeyspaceInUrl = options.IncludeKeyspaceInUrl,
-            AdditionalHeaders = options.AdditionalHeaders
-        };
     }
+
+    private DoesKeyspaceExistOptions(CommandOptions source) : base(source)
+    {
+    }
+
+    static internal DoesKeyspaceExistOptions FromCommandOptions(CommandOptions options)
+    {
+        return options == null ? null : new DoesKeyspaceExistOptions(options);
+    }
+
 }

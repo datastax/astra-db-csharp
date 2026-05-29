@@ -23,4 +23,19 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// </summary>
 public class GetDatabaseInfoOptions : CommandOptions
 {
+
+    /// <summary>
+    /// Creates a new instance of <see cref="GetDatabaseInfoOptions"/> with default values.
+    /// </summary>
+    public GetDatabaseInfoOptions()
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="GetDatabaseInfoOptions"/> with the settings of a provided <see cref="CommandOptions"/>.
+    /// </summary>
+    protected GetDatabaseInfoOptions(CommandOptions source) : base(source)
+    {
+    }
+
 }

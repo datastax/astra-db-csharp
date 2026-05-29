@@ -23,35 +23,20 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// </summary>
 public class GetAstraDatabasesAdminOptions : CommandOptions
 {
+    /// <summary>
+    /// Creates a new instance of <see cref="GetAstraDatabasesAdminOptions"/> with default values.
+    /// </summary>
+    public GetAstraDatabasesAdminOptions()
+    {
+    }
+
+    private GetAstraDatabasesAdminOptions(CommandOptions source) : base(source)
+    {
+    }
 
     static internal GetAstraDatabasesAdminOptions FromCommandOptions(CommandOptions options)
     {
-        if (options == null) {
-            return null;
-        }
-        // Until actual new fields are added w.r.t. CommandOptions, this is it:
-        return new GetAstraDatabasesAdminOptions
-        {
-            Environment = options.Environment,
-            Keyspace = options.Keyspace,
-            InputConverter = options.InputConverter,
-            OutputConverter = options.OutputConverter,
-            SerializeGuidAsDollarUuid = options.SerializeGuidAsDollarUuid,
-            SerializeDateAsDollarDate = options.SerializeDateAsDollarDate,
-            SerializeIEEE754SpecialValues = options.SerializeIEEE754SpecialValues,
-            DeserializeToObjectDictionary = options.DeserializeToObjectDictionary,
-            Token = options.Token,
-            RunMode = options.RunMode,
-            Destination = options.Destination,
-            HttpClientOptions = options.HttpClientOptions,
-            APICallers = options.APICallers,
-            TimeoutOptions = options.TimeoutOptions,
-            APIVersion = options.APIVersion,
-            CancellationToken = options.CancellationToken,
-            BulkOperationCancellationToken = options.BulkOperationCancellationToken,
-            IncludeKeyspaceInUrl = options.IncludeKeyspaceInUrl,
-            AdditionalHeaders = options.AdditionalHeaders
-        };
+        return options == null ? null : new GetAstraDatabasesAdminOptions(options);
     }
 
 }
