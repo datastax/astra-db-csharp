@@ -64,6 +64,16 @@ public class Builders<T>
     /// </example>
     public static CollectionSortBuilder<T> CollectionSort => new();
     /// <summary>
+    /// A builder for creating sort definitions for the FindAndRerank collection operation
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var sort = Builders&lt;DocumentType&gt;.CollectionFindAndRerankSort;
+    /// sort = sort.Hybrid("A tree in the woods");
+    /// </code>
+    /// </example>
+    public static CollectionFindAndRerankSortBuilder<T> CollectionFindAndRerankSort => new();
+    /// <summary>
     /// A builder for creating sort definitions for tables
     /// </summary>
     /// <example>

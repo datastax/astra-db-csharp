@@ -606,7 +606,7 @@ public class Table<T> where T : class
         var response = await CreateCommand("findOne")
             .WithPayload(options.ToPayload(filter))
             .AddCommandOptions(options)
-            .RunAsyncReturnData<DocumentResult<TResult>, TableFindStatusResult>(runSynchronously)
+            .RunAsyncReturnData<DocumentResult<TResult>, TResult, TableFindStatusResult>(runSynchronously)
             .ConfigureAwait(false);
         
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))
@@ -649,40 +649,40 @@ public class Table<T> where T : class
     /// </code>
     /// </example>
     /// <remarks>
-    /// Timeouts passed in the <see cref="TableFindManyOptions{T}"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
+    /// Timeouts passed in the <see cref="TableFindOptions{T}"/> (<see cref="TimeoutOptions.ConnectionTimeout"/>
     /// and <see cref="TimeoutOptions.RequestTimeout"/>) will be used for each batched request to the API,
     /// however <c>BulkOperationCancellationToken</c> settings are ignored due to the nature of Enumeration.
     /// If you need to enforce a timeout for the entire operation, you can pass a <see cref="CancellationToken"/> to GetAsyncEnumerator.
     /// </remarks>
-    public TableFindCursor<T> Find(TableFindManyOptions<T> options = null)
+    public TableFindCursor<T> Find(TableFindOptions<T> options = null)
     {
         return Find(null, options);
     }
 
-    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
+    /// <inheritdoc cref="Find(TableFindOptions{T})"/>
     /// <param name="filter"></param>
     /// <param name="options"></param>
-    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindManyOptions<T> options = null)
+    public TableFindCursor<T> Find(TableFilter<T> filter, TableFindOptions<T> options = null)
     {
         return new(filter, options, RunFindManyAsync);
     }
     
-    /// <inheritdoc cref="Find(TableFindManyOptions{T})"/>
+    /// <inheritdoc cref="Find(TableFindOptions{T})"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFindManyOptions<T> options = null) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFindOptions<T> options = null) where TResult : class
     {
         return Find<TResult>(null, options);
     }
 
-    /// <inheritdoc cref="Find(TableFilter{T}, TableFindManyOptions{T})"/>
+    /// <inheritdoc cref="Find(TableFilter{T}, TableFindOptions{T})"/>
     /// <remarks>
     /// The Find alternatives that accept a TResult type parameter allow for deserializing the row as a different type
     /// (most commonly used when using projection to return a subset of fields)
     /// </remarks>
-    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindManyOptions<T> options = null) where TResult : class
+    public TableFindCursor<T, TResult> Find<TResult>(TableFilter<T> filter, TableFindOptions<T> options = null) where TResult : class
     {
         return new(filter, options, RunFindManyAsync);
     }
@@ -694,7 +694,7 @@ public class Table<T> where T : class
         var response = await CreateCommand("find")
             .WithPayload(cursor.FindOptions.ToPayload(cursor.CurrentFilter, nextPageState))
             .AddCommandOptions(cursor.FindOptions)
-            .RunAsyncReturnData<APIFindResult<TResult>, TableFindStatusResult>(runSynchronously)
+            .RunAsyncReturnData<APIFindResult<TResult>, TResult, TableFindStatusResult>(runSynchronously)
             .ConfigureAwait(false);
 
         if (typeof(Row).IsAssignableFrom(typeof(TResult)))

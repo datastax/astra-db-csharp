@@ -183,7 +183,7 @@ internal class Command
         return response;
     }
 
-    internal async Task<APIResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TStatus>(bool runSynchronously)
+    internal async Task<APIResponseWithData<TData, TStatus>> RunAsyncReturnData<TData, TDocument, TStatus>(bool runSynchronously)
     {
         var response = await RunCommandAsync<APIResponseWithData<TData, TStatus>>(HttpMethod.Post, runSynchronously).ConfigureAwait(false);
         if (response.Errors != null && response.Errors.Count > 0)

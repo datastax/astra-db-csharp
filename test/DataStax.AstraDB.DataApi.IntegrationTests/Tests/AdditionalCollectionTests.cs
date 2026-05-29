@@ -394,13 +394,10 @@ public class AdditionalCollectionTests
                 TheBlob = Encoding.ASCII.GetBytes("a doc with a BIN vector")
             };
 
-            // TODO: logs show that this payload looks like: `{"_id":"as_lst","$vector":{"$binary":"PpmZmr5MzM09zMzN"},"TheBlob":{"$binary":"YSBkb2Mgd2l0aCBhIExTVCB2ZWN0b3I="}}`
-            //  Expectation: `{..., "$vector": [0.3, -0.2, 0.1], ...}
             await vecLstEncColl.InsertOneAsync(lstDocument);
             // all good with the payload for this write.
             await vecBinEncColl.InsertOneAsync(binDocument);
 
-            // TODO the following will need to be re-run once the above is understood and the payloads are $binary vs [floats].
             // Reads:
             var lstReadAsLst = await vecLstEncColl.FindOneAsync(
                 Builders<VectorObjectAsLst>.CollectionFilter.Eq(d => d._id, "as_lst"));

@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using System.Linq.Expressions;
 
 namespace DataStax.AstraDB.DataApi.Core.Query;
 
 /// <summary>
-/// A result document returned from a reranked (hybrid search) query, including its reranking scores.
+/// A utility for building sorting specifications for a FindAndRerank operation.
 /// </summary>
-/// <typeparam name="T">The type of the result document.</typeparam>
-public class RerankedResult<T>
+/// <typeparam name="T">The type of the document</typeparam>
+public class FindAndRerankSortBuilder<T>
 {
-    /// <summary>The result document.</summary>
-    [JsonIgnore]
-    public T Document { get; set; }
+    internal Sort _Sort { get; set; }
 
-    /// <summary>The reranking scores associated with this result, keyed by score name.</summary>
-    [JsonPropertyName("scores")]
-    public Dictionary<string, object> Scores { get; set; }
+    internal virtual FindAndRerankSortBuilder<T> Clone()
+    {
+        var clone = new FindAndRerankSortBuilder<T>(){ _Sort = _Sort.Clone() };
+        return clone;
+    }
 }

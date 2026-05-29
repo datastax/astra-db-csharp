@@ -1,6 +1,7 @@
 using DataStax.AstraDB.DataApi.Collections;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
+using DataStax.AstraDB.DataApi.Core.Enumeration;
 using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
@@ -151,16 +152,16 @@ public class SerializationTests
     [Fact]
     public void HybridSearchResponseDeserializationTest()
     {
-        var serializationTestString = "{\"data\":{\"documents\":[{\"_id\":\"f9bf6e20-6efd-421d-bf6e-206efdb21d49\",\"Name\":\"Cat\"},{\"_id\":\"a02bb811-98e6-416f-abb8-1198e6816fa5\",\"Name\":\"Cat\"},{\"_id\":\"03479720-4ba5-4928-8797-204ba5392893\",\"Name\":\"NotCat\"},{\"_id\":\"54726b36-8202-4f72-b26b-368202ef7209\",\"Name\":\"NotCat\"},{\"_id\":\"6d8ea948-7ac1-49f6-8ea9-487ac149f6d7\",\"Name\":\"Cow\"},{\"_id\":\"aeee0998-9941-4015-ae09-989941e0158d\",\"Name\":\"Cow\"},{\"_id\":\"817fbc98-13d0-4aca-bfbc-9813d0dacae9\",\"Name\":\"Horse\"},{\"_id\":\"8be82ac3-ff2c-4f2b-a82a-c3ff2cbf2bd7\",\"Name\":\"Horse\"}],\"nextPageState\":null},\"status\":{\"documentResponses\":[{\"scores\":{\"$rerank\":1.7070312,\"$vector\":0.75348675,\"$vectorRank\":1,\"$bm25Rank\":1,\"$rrf\":0.032786883}},{\"scores\":{\"$rerank\":1.7070312,\"$vector\":0.75348675,\"$vectorRank\":2,\"$bm25Rank\":2,\"$rrf\":0.032258064}},{\"scores\":{\"$rerank\":1.2802734,\"$vector\":0.71900904,\"$vectorRank\":5,\"$bm25Rank\":3,\"$rrf\":0.031257633}},{\"scores\":{\"$rerank\":1.2802734,\"$vector\":0.71900904,\"$vectorRank\":6,\"$bm25Rank\":4,\"$rrf\":0.030776516}},{\"scores\":{\"$rerank\":-3.4140625,\"$vector\":0.741625,\"$vectorRank\":3,\"$bm25Rank\":5,\"$rrf\":0.031257633}},{\"scores\":{\"$rerank\":-3.4140625,\"$vector\":0.741625,\"$vectorRank\":4,\"$bm25Rank\":6,\"$rrf\":0.030776516}},{\"scores\":{\"$rerank\":-9.1015625,\"$vector\":0.69422597,\"$vectorRank\":7,\"$bm25Rank\":null,\"$rrf\":0.014925373}},{\"scores\":{\"$rerank\":-9.1015625,\"$vector\":0.69422597,\"$vectorRank\":8,\"$bm25Rank\":null,\"$rrf\":0.014705882}}]}}";
+        var serializationTestString = "{\"data\":{\"documents\":[{\"_id\":111,\"Name\":\"One\"},{\"_id\":222,\"Name\":\"Two\"}],\"nextPageState\":null},\"status\":{\"documentResponses\":[{\"scores\":{\"$rerank\":1.0,\"$vector\":1.0,\"$vectorRank\":1,\"$bm25Rank\":1,\"$rrf\":1.0}},{\"scores\":{\"$rerank\":2.0,\"$vector\":2.0,\"$vectorRank\":2,\"$bm25Rank\":2,\"$rrf\":null}}]}}";
         var commandOptions = new List<CommandOptions>
         {
             new CommandOptions()
             {
-                OutputConverter = new DocumentConverter<HybridSearchTestObject>()
+                OutputConverter = new DocumentConverter<SimpleObjectWithVector>()
             }
         };
         var command = new Command("deserializationTest", new DataAPIClient(), commandOptions.ToArray(), null);
-        var deserialized = command.Deserialize<APIResponseWithData<APIFindResult<HybridSearchTestObject>, FindStatusResult<RerankedResult<HybridSearchTestObject>>>>(serializationTestString);
+        var deserialized = command.Deserialize<APIResponseWithData<APIFindResult<SimpleObjectWithVector>, APIFindAndRerankStatusResults>>(serializationTestString);
         Assert.NotNull(deserialized);
         Assert.NotNull(deserialized.Data);
         Assert.NotNull(deserialized.Status);

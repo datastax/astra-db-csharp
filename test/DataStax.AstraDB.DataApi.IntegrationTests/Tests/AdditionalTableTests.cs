@@ -1096,9 +1096,6 @@ public class AdditionalTableTests
                 TheBlob = Encoding.ASCII.GetBytes("a nice typed row")
             };
 
-            // TODO manual inspection shows that both vector columns serialize as binary-encoded.
-            //      That is, column `TheLstVec` appears as `"TheLstVec":{"$binary":"PpmZmr5MzM09zMzN"}` in the payload,
-            //      despite being annotated as `FloatArrayWriter`.
             await createdTable.InsertOneAsync(theRow);
 
             // Reads:
@@ -1144,7 +1141,6 @@ public class AdditionalTableTests
             };
 
             // All vectors and lists serialize as JSON lists in this untyped scenario.
-            // TODO confirm there's no other choice available
             await createdTable.InsertOneAsync(theRow);
 
             // Reads:
