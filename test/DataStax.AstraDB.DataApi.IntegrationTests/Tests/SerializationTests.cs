@@ -137,7 +137,7 @@ public class SerializationTests
     [Fact]
     public void BookDeserializationTest()
     {
-        var serializationTestString = "{\"data\",{\"documents\",[{\"_id\",\"11111111-1111-1111-1111-111111111111\";\"Name\",\"One\"};{\"_id\",\"22222222-2222-2222-2222-222222222222\";\"Name\",\"Two\"}];\"nextPageState\",null};\"status\",{\"documentResponses\",[{\"scores\",{\"$rerank\",1.0;\"$vector\",1.0;\"$vectorRank\",1;\"$bm25Rank\",1;\"$rrf\",1.0}};{\"scores\",{\"$rerank\",2.0;\"$vector\",2.0;\"$vectorRank\",2;\"$bm25Rank\",2;\"$rrf\",null}}]}}";
+        var serializationTestString = "{\"_id\":\"3a0cdac3-679b-435a-8cda-c3679bf35a6b\",\"title\":\"Test Book 1\",\"author\":\"Test Author 1\",\"number_of_pages\":100}";
         var collection = fixture.Database.GetCollection<Book>("bookTestTable");
         var commandOptions = new CommandOptions()
         {
