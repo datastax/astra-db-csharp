@@ -121,7 +121,7 @@ public class AstraDatabasesAdmin
         var command = CreateCommand()
             .AddUrlPath("databases")
             .WithTimeoutManager(new DatabaseAdminTimeoutManager())
-            .WithPayload(options.ToPayload())
+            .AddQueryParameters(options.ToQueryParameters())
             .AddCommandOptions(options);
 
         var rawResults = await command.RunAsyncRaw<List<RawDatabaseInfo>>(HttpMethod.Get, runSynchronously).ConfigureAwait(false);

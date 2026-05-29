@@ -30,7 +30,7 @@ public class ListDatabaseOptions : CommandOptions
     /// </summary>
     [JsonPropertyName("include")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public QueryDatabaseStates? StatesToInclude { get; set; } = null;
+    public QueryDatabaseStates? Include { get; set; } = null;
 
     /// <summary>
     /// Filter databases based on cloud provider.
@@ -40,33 +40,33 @@ public class ListDatabaseOptions : CommandOptions
     public QueryCloudProvider? Provider { get; set; } = null;
 
     /// <summary>
-    /// See <see cref="PageSizeLimit"/>. If getting an additional page of data, pass in the id of the last database in the previous page. 
+    /// Number of items to return "per page".
+    /// </summary>
+    [JsonPropertyName("limit")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Limit { get; set; } = 50;
+
+    /// <summary>
+    /// See <see cref="Limit"/>. If getting an additional page of data, pass in the id of the last database in the previous page. 
     /// </summary>
     [JsonPropertyName("starting_after")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string StartingAfter { get; set; } = null;
 
-    /// <summary>
-    /// Number of items to return "per page".
-    /// </summary>
-    [JsonPropertyName("limit")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? PageSizeLimit { get; set; } = null;
-
-    internal object ToPayload()
+    internal Dictionary<string, string> ToQueryParameters()
     {
-        var payload = new Dictionary<string, object>();
-        if (StatesToInclude.HasValue)
-            payload["include"] = StatesToInclude.Value;
+        Dictionary<string, string> queryParameters = new();
+        if (Include.HasValue)
+            queryParameters["include"] = Include.Value.ToString();
         if (Provider.HasValue)
-            payload["provider"] = Provider.Value;
+            queryParameters["provider"] = Provider.Value.ToString();
         if (StartingAfter != null)
-            payload["starting_after"] = StartingAfter;
-        if (PageSizeLimit.HasValue)
-            payload["limit"] = PageSizeLimit.Value;
-
-        return payload;
+            queryParameters["starting_after"] = StartingAfter;
+        if (Limit.HasValue)
+            queryParameters["limit"] = Limit.Value.ToString();
+        return queryParameters;
     }
+
 }
 
 /// <summary>
