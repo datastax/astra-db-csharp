@@ -64,7 +64,10 @@ namespace DataStax.AstraDB.DataApi.Admin
                 DatabaseCommandOptions.FromCommandOptions(baseCommandOptions),
                 options
             );
-            newCommandOptions.Token = token;
+            if (token != null)
+            {
+                newCommandOptions.Token = token;
+            }
             return _client.GetDatabase(_database.APIEndpoint, newCommandOptions);
         }
 

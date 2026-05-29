@@ -129,7 +129,7 @@ public class DataAPIClient
     {
         var applicableOptions = CommandOptions.Merge(_options, options, new GetAstraDatabasesAdminOptions() { Token = token });
         var applicableDestination = applicableOptions.Destination;
-        Guard.Equals(applicableDestination, DataAPIDestination.ASTRA, "Destinations other than ASTRA cannot be used with GetAstraAdmin. Please check your Destination settings for the DataAPIClient or the overload with adminOptions");
+        Guard.Equals(applicableDestination, DataAPIDestination.ASTRA, "Destinations other than ASTRA cannot be used with GetAstraDatabasesAdmin. Please check the requested Destination.");
         return new AstraDatabasesAdmin(this, applicableOptions);
     }
 
@@ -144,7 +144,7 @@ public class DataAPIClient
     /// <example>
     /// <code>
     /// var client = new DataAPIClient("token");
-    /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com");
+    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com");
     /// </code>
     /// </example>
     public Database GetDatabase(string apiEndpoint)
@@ -163,7 +163,7 @@ public class DataAPIClient
     /// <example>
     /// <code>
     /// var client = new DataAPIClient("token");
-    /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com", "myKeyspace");
+    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", "myKeyspace");
     /// </code>
     /// </example>
     public Database GetDatabase(string apiEndpoint, string token, string keyspace = null)
@@ -183,7 +183,7 @@ public class DataAPIClient
     /// <example>
     /// <code>
     /// var client = new DataAPIClient("token");
-    /// var database = client.GetDatabase("https://1ae8dd5d-19ce-452d-9df8-6e5b78b82ca7-us-east1.apps.astra.datastax.com", new DatabaseCommandOptions() { Keyspace = "myKeyspace" });
+    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", new DatabaseCommandOptions() { Keyspace = "myKeyspace" });
     /// </code>
     /// </example>
     public Database GetDatabase(string apiEndpoint, DatabaseCommandOptions dbOptions)

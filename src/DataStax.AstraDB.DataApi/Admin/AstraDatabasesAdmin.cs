@@ -314,7 +314,7 @@ public class AstraDatabasesAdmin
     /// <summary>
     /// Returns a DatabaseAdminAstra instance for the database at the specified URL.
     /// </summary>
-    /// <param name="apiEndpoint">The API Endpoint for the database, e.g. "01234567-89ab-cdef-0123-456789abcdef".</param>
+    /// <param name="apiEndpoint">The API Endpoint for the database, e.g. "https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com".</param>
     /// <param name="options">Options for the database admin instance.</param>
     /// <returns></returns>
     public DatabaseAdminAstra GetDatabaseAdmin(string apiEndpoint, GetDatabaseAdminOptions options = null)

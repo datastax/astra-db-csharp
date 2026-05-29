@@ -51,11 +51,11 @@ public class AdminTests
         });
 
         var dbAdminOptions1 = fixture.Client.GetAstraDatabasesAdmin(new GetAstraDatabasesAdminOptions());
-        var listOptions1 = await dbAdminBase.ListDatabasesAsync();
+        var listOptions1 = await dbAdminOptions1.ListDatabasesAsync();
         Assert.NotNull(listOptions1);
 
         var dbAdminOptions2 = fixture.Client.GetAstraDatabasesAdmin(null as string, new GetAstraDatabasesAdminOptions());
-        var listOptions2 = await dbAdminBase.ListDatabasesAsync();
+        var listOptions2 = await dbAdminOptions2.ListDatabasesAsync();
         Assert.NotNull(listOptions2);
     }
 

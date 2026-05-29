@@ -91,9 +91,9 @@ public interface IDatabaseAdmin
     Task<FindEmbeddingProvidersResult> FindEmbeddingProvidersAsync(FindEmbeddingProvidersOptions options = null);
 
     /// <summary>
-    /// Synchronous version of <see cref="FindRerankingProviders(FindRerankingProvidersOptions)"/>.
+    /// Synchronous version of <see cref="FindRerankingProvidersAsync(FindRerankingProvidersOptions)"/>.
     /// </summary>
-    /// <inheritdoc cref="FindRerankingProviders(FindRerankingProvidersOptions)"/>
+    /// <inheritdoc cref="FindRerankingProvidersAsync(FindRerankingProvidersOptions)"/>
     /// <example>
     /// <code>
     /// var providers = admin.FindRerankingProviders();
