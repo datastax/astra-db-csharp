@@ -75,8 +75,8 @@ public class SimpleObjectWithVectorizeAttribute
 
 [CollectionName("coll_SimpleObjectWithVectorizeShSecret")]
 [CollectionVectorize(
-    Provider = "openai", ModelName = "text-embedding-3-small",
-    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+    Provider = "voyageAI", ModelName = "voyage-2",
+    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI"}
 )]
 public class SimpleObjectWithVectorizeAttributeShSecret
 {
@@ -90,12 +90,12 @@ public class SimpleObjectWithVectorizeAttributeShSecret
 [CollectionName("coll_SimpleObjectWithVectorizeShSecret2A")]
 [CollectionVector(
     SimilarityMetric.Euclidean,
-    123,
+    1024,
     SourceModel="bert"
 )]
 [CollectionVectorize(
-    Provider = "openai", ModelName = "text-embedding-3-small",
-    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+    Provider = "voyageAI", ModelName = "voyage-2",
+    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI"}
 )]
 public class SimpleObjectWithVectorizeAttributeShSecret2A
 {
@@ -107,7 +107,7 @@ public class SimpleObjectWithVectorizeAttributeShSecret2A
 }
 
 [CollectionName("coll_SimpleObjectWithVectorizeHeader")]
-[CollectionVectorize(Provider = "openai", ModelName = "text-embedding-3-small")]
+[CollectionVectorize(Provider = "voyageAI", ModelName = "voyage-2")]
 public class SimpleObjectWithVectorizeAttributeHeader
 {
     [DocumentId]
@@ -263,7 +263,7 @@ public class RowBookVectorizeHeaderBased
 {
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
-    [ColumnVectorize("openai", "text-embedding-3-small", dimension: 1536)]
+    [ColumnVectorize("voyageAI", "voyage-2", dimension: 1024)]
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
     public int NumberOfPages { get; set; }
@@ -278,8 +278,8 @@ public class RowBookVectorizeSharedSecret
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
     [ColumnVectorize(
-        "openai", "text-embedding-3-small", dimension: 1536,
-        authenticationPairs: new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI"}
+        "voyageAI", "voyage-2", dimension: 1024,
+        authenticationPairs: new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI"}
     )]
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
