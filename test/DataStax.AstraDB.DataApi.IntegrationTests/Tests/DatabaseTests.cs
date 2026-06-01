@@ -514,7 +514,7 @@ public class DatabaseTests
     [Fact(Skip="Should be run after exporting the environment variable quoted below")]
     public async Task CreateGetCollection_WithVectorizeHeader_Typed()
     {
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
         var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "coll_SimpleObjectWithVectorizeHeader";
         // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
@@ -579,15 +579,15 @@ public class DatabaseTests
         {
             Vector = new VectorOptions
             {
-                Dimension = 1536,
+                Dimension = 1024,
                 Metric = SimilarityMetric.DotProduct,
                 Service = new VectorServiceOptions()
                 {
-                    Provider = "openai",
-                    ModelName = "text-embedding-3-small",
+                    Provider = "voyageAI",
+                    ModelName = "voyage-2",
                     Authentication = new Dictionary<string, string>
                     {
-                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI" }
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" }
                     }
                 }
             }
@@ -607,19 +607,19 @@ public class DatabaseTests
     [Fact(Skip="Should be run after exporting the environment variable quoted below")]
     public async Task CreateGetCollection_WithVectorizeHeader_Untyped()
     {
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
         var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "collection_WithVectorizeHeader_Untyped";
         var options = new CollectionDefinition
         {
             Vector = new VectorOptions
             {
-                Dimension = 1536,
+                Dimension = 1024,
                 Metric = SimilarityMetric.DotProduct,
                 Service = new VectorServiceOptions()
                 {
-                    Provider = "openai",
-                    ModelName = "text-embedding-3-small",
+                    Provider = "voyageAI",
+                    ModelName = "voyage-2",
                 }
             }
         };
@@ -844,7 +844,7 @@ public class DatabaseTests
     [Fact(Skip="Should be run after exporting the environment variable quoted below")]
     public async Task CreateGetTable_WithVectorizeHeader_Typed()
     {
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
         var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
@@ -904,13 +904,13 @@ public class DatabaseTests
             var createDefinition = new TableDefinition()
                 .AddColumn("Title", DataAPIType.Text())
                 .AddColumn("NumberOfPages", DataAPIType.Int())
-                .AddColumn("Author", DataAPIType.Vectorize(1536, new VectorServiceOptions
+                .AddColumn("Author", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
-                    Provider = "openai",
-                    ModelName = "text-embedding-3-small",
+                    Provider = "voyageAI",
+                    ModelName = "voyage-2",
                     Authentication = new Dictionary<string, string>
                     {
-                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_OPENAI" }
+                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" }
                     }
                 }))
                 .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
@@ -975,7 +975,7 @@ public class DatabaseTests
     public async Task CreateGetTable_WithVectorizeHeader_Untyped()
     {
         var tableName = "bookTestTableVectorizeHeader_Untyped";
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_OPENAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
         var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
@@ -983,10 +983,10 @@ public class DatabaseTests
             var createDefinition = new TableDefinition()
                 .AddColumn("Title", DataAPIType.Text())
                 .AddColumn("NumberOfPages", DataAPIType.Int())
-                .AddColumn("Author", DataAPIType.Vectorize(1536, new VectorServiceOptions
+                .AddColumn("Author", DataAPIType.Vectorize(1024, new VectorServiceOptions
                 {
-                    Provider = "openai",
-                    ModelName = "text-embedding-3-small",
+                    Provider = "voyageAI",
+                    ModelName = "voyage-2",
                 }))
                 .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
 
@@ -1007,7 +1007,7 @@ public class DatabaseTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync<RowBookVectorizeHeaderBased>();
+            await fixture.Database.DropTableAsync<RowBookVectorizeHeaderBased>(tableName);
         }
     }
 
