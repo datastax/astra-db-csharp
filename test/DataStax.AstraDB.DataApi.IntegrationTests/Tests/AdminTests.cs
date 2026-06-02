@@ -763,7 +763,7 @@ public class AdminTests
         await fixture.Database.ListCollectionNamesAsync();
 
         var theDatabase = fixture.Client.GetDatabase(fixture.DatabaseUrl,
-            new DatabaseCommandOptions() { Keyspace = "some_throwaway_keyspace_name" });
+            new GetDatabaseOptions() { Keyspace = "some_throwaway_keyspace_name" });
         Assert.Equal("some_throwaway_keyspace_name", theDatabase.Keyspace);
         theDatabase.UseKeyspace("another_silly_puppet_keyspace");
         Assert.Equal("another_silly_puppet_keyspace", theDatabase.Keyspace);
@@ -815,7 +815,7 @@ public class AdminTests
         await fixture.Database.ListCollectionNamesAsync();
 
         var theDatabase = fixture.Client.GetDatabase(fixture.DatabaseUrl,
-            new DatabaseCommandOptions() { Keyspace = "some_throwaway_keyspace_name" });
+            new GetDatabaseOptions() { Keyspace = "some_throwaway_keyspace_name" });
         Assert.Equal("some_throwaway_keyspace_name", theDatabase.Keyspace);
         theDatabase.UseKeyspace("another_silly_puppet_keyspace");
         Assert.Equal("another_silly_puppet_keyspace", theDatabase.Keyspace);
@@ -850,7 +850,7 @@ public class AdminTests
 
         // HCD-specific one-liner idiom
         var swiftDatabase = fixture.Client.GetDatabase(fixture.DatabaseUrl,
-            new DatabaseCommandOptions() { Keyspace = "some_throwaway_keyspace_name" });
+            new GetDatabaseOptions() { Keyspace = "some_throwaway_keyspace_name" });
         Assert.NotEqual(keyspaceName, swiftDatabase.Keyspace);
         await swiftDatabase.GetAdmin().CreateKeyspaceAsync(keyspaceName, ckOptions);
         Assert.Equal(keyspaceName, swiftDatabase.Keyspace);

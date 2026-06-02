@@ -45,7 +45,11 @@ public class DatabaseCommandOptions : CommandOptions
     {
     }
 
-    private DatabaseCommandOptions(CommandOptions source) : base(source)
+    /// <summary>
+    /// Creates a new instance of <see cref="DatabaseCommandOptions"/> from a <see cref="CommandOptions"/> object.
+    /// </summary>
+    /// <param name="source">The source object from which draw values.</param>
+    protected DatabaseCommandOptions(CommandOptions source) : base(source)
     {
     }
 

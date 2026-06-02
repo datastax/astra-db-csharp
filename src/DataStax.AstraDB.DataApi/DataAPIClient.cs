@@ -137,7 +137,7 @@ public class DataAPIClient
     /// Gets an instance of the <see cref="Database"/> class given the API Endpoint for the database.
     /// 
     /// The default keyspace will be used. If you need to connect to a different keyspace, use the <see cref="GetDatabase(string, string, string)"/> overload
-    /// or set the keyspace on the <see cref="DatabaseCommandOptions"/> parameter and use the <see cref="GetDatabase(string, DatabaseCommandOptions)"/> overload.
+    /// or set the keyspace on the <see cref="GetDatabaseOptions"/> parameter and use the <see cref="GetDatabase(string, GetDatabaseOptions)"/> overload.
     /// </summary>
     /// <param name="apiEndpoint">The API endpoint of the database.</param>
     /// <returns>An instance of the <see cref="Database"/> class.</returns>
@@ -149,7 +149,7 @@ public class DataAPIClient
     /// </example>
     public Database GetDatabase(string apiEndpoint)
     {
-        return GetDatabase(apiEndpoint, null as DatabaseCommandOptions);
+        return GetDatabase(apiEndpoint, null as GetDatabaseOptions);
     }
 
     /// <summary>
@@ -162,23 +162,23 @@ public class DataAPIClient
     /// <returns>An instance of the <see cref="Database"/> class.</returns>
     /// <example>
     /// <code>
-    /// var client = new DataAPIClient("token");
-    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", "myKeyspace");
+    /// var client = new DataAPIClient();
+    /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", "token", "myKeyspace");
     /// </code>
     /// </example>
     public Database GetDatabase(string apiEndpoint, string token, string keyspace = null)
     {
-        var dbOptions = new DatabaseCommandOptions() { Token = token, Keyspace = keyspace };
-        return GetDatabase(apiEndpoint, dbOptions);
+        var options = new GetDatabaseOptions() { Token = token, Keyspace = keyspace };
+        return GetDatabase(apiEndpoint, options);
     }
 
     /// <summary>
     /// Gets an instance of a <see cref="Database"/> given the API Endpoint and a set of options.
     /// 
-    /// Any options provided in the <paramref name="dbOptions"/> parameter will take precedence over the options from the <see cref="DataAPIClient"/>.
+    /// Any options provided in the <paramref name="options"/> parameter will take precedence over the options from the <see cref="DataAPIClient"/>.
     /// </summary>
     /// <param name="apiEndpoint">The API endpoint of the database.</param>
-    /// <param name="dbOptions">The options to use for the database.</param>
+    /// <param name="options">The options to use for the database, optionally including token or keyspace.</param>
     /// <returns>An instance of the <see cref="Database"/> class.</returns>
     /// <example>
     /// <code>
@@ -186,9 +186,9 @@ public class DataAPIClient
     /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", new DatabaseCommandOptions() { Keyspace = "myKeyspace" });
     /// </code>
     /// </example>
-    public Database GetDatabase(string apiEndpoint, DatabaseCommandOptions dbOptions)
+    public Database GetDatabase(string apiEndpoint, GetDatabaseOptions options)
     {
-        return new Database(apiEndpoint, this, dbOptions);
+        return new Database(apiEndpoint, this, options);
     }
 
     /// <summary>
