@@ -32,7 +32,8 @@ jobs:
 
       - name: Validate git tag version equals csproj version
         run: |
-          CSPROJ_VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" src/DataStax.AstraDB.DataApi/DataStax.AstraDB.DataApi.csproj)
+          # extract the version attribute with lookbehind and trimming spaces around:
+          CSPROJ_VERSION=$(grep -oPm1 "(?<=<Version>)\s*\K[^<]*?\S(?=\s*</Version>)" src/DataStax.AstraDB.DataApi/DataStax.AstraDB.DataApi.csproj)
 
           if [ "$CSPROJ_VERSION" != "$PACKAGE_VERSION" ]; then
             echo "Version mismatch: csproj=$CSPROJ_VERSION tag=$PACKAGE_VERSION"
