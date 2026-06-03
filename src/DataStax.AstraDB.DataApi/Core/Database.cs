@@ -42,7 +42,7 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// <remarks>
 /// The Database class has a concept of a "current keyspace", which is the keyspace used for all operations.
 /// This can be overridden in each method call by passing the adequate 'options' parameter,
-/// or when creating the <see cref="Database"/> instance (see <see cref="DataAPIClient.GetDatabase(string, DatabaseCommandOptions)"/>).
+/// or when creating the <see cref="Database"/> instance (see <see cref="DataAPIClient.GetDatabase(string, GetDatabaseOptions)"/>).
 /// If unset, the default keyspace will be used.
 /// </remarks>
 /// <example>
@@ -58,8 +58,8 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// Setting a custom keyspace for all operations
 /// <code>
 /// var client = new DataAPIClient("token");
-/// var dbOptions = new DatabaseCommandOptions() { Keyspace = "myKeyspace" };
-/// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", dbOptions);
+/// var options = new GetDatabaseOptions() { Keyspace = "myKeyspace" };
+/// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com", options);
 /// // Check to see if a collection exists in the custom keyspace
 /// var doesCollectionExist = database.DoesCollectionExist("myCollectionInMyKeyspace");
 /// </code>
@@ -70,8 +70,8 @@ namespace DataStax.AstraDB.DataApi.Core;
 /// var client = new DataAPIClient("token");
 /// var database = client.GetDatabase("https://01234567-89ab-cdef-0123-456789abcdef-us-east1.apps.astra.datastax.com");
 /// // Check to see if a collection exists in the custom keyspace
-/// var dbOptions = new DatabaseCommandOptions() { Keyspace = "myKeyspace" };
-/// var doesCollectionExist = database.DoesCollectionExist("myCollectionInMyKeyspace", dbOptions);
+/// var options = new DoesCollectionExistOptions() { Keyspace = "myKeyspace" };
+/// var doesCollectionExist = database.DoesCollectionExist("myCollectionInMyKeyspace", options);
 /// </code>
 /// </example>
 public class Database

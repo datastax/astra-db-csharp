@@ -19,8 +19,31 @@ using DataStax.AstraDB.DataApi.Core;
 namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
-/// Command options specific to the database admin's GetDatabase methods.
+/// Command options specific to the database admin's and DataAPIClient's GetDatabase methods.
 /// </summary>
 public class GetDatabaseOptions : DatabaseCommandOptions
 {
+
+    static internal GetDatabaseOptions BinaryMerge(GetDatabaseOptions options1, GetDatabaseOptions options2)
+    {
+        var options = CommandOptions.Merge(new CommandOptions[] {options1, options2});
+        return FromCommandOptions(options);
+    }
+
+    internal GetDatabaseOptions(CommandOptions source) : base(source)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="GetDatabaseOptions"/> with default values.
+    /// </summary>
+    public GetDatabaseOptions() : base()
+    {
+    }
+
+    static internal new GetDatabaseOptions FromCommandOptions(CommandOptions options)
+    {
+        return options == null ? null : new GetDatabaseOptions(options);
+    }
+
 }

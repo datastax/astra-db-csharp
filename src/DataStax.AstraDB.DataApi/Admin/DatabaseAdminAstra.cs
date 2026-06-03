@@ -72,8 +72,8 @@ namespace DataStax.AstraDB.DataApi.Admin
         public Database GetDatabase(string token, GetDatabaseOptions options = null)
         {
             var baseCommandOptions = CommandOptions.Merge(_optionsTree);
-            var newCommandOptions = DatabaseCommandOptions.BinaryMerge(
-                DatabaseCommandOptions.FromCommandOptions(baseCommandOptions),
+            var newCommandOptions = GetDatabaseOptions.BinaryMerge(
+                GetDatabaseOptions.FromCommandOptions(baseCommandOptions),
                 options
             );
             if (token != null)
