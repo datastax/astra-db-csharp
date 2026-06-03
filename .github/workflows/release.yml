@@ -1,3 +1,8 @@
+# This workflow publishes the client as a NuGet package
+# It is triggered by tag pushes matching vX.Y.Z or vX.Y.Z-beta or vX.Y.Z-rc.3 ...
+# It assumes the tag version matches the csproj version (modulo the leading "v" in the git tag)
+
+
 name: Release to NuGet
 
 on:
@@ -5,7 +10,6 @@ on:
     tags:
       - "v*.*.*" # Matches stable versions like v1.2.3
       - "v*.*.*-*" # Matches pre-release versions like v2.0.1-beta
-  workflow_dispatch:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -25,6 +29,16 @@ jobs:
           TAG=${{ github.ref_name }}
           VERSION=${TAG#v} # Removes 'v' prefix
           echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Validate git tag version equals csproj version
+        run: |
+          # extract the version attribute with lookbehind and trimming spaces around:
+          CSPROJ_VERSION=$(grep -oPm1 "(?<=<Version>)\s*\K[^<]*?\S(?=\s*</Version>)" src/DataStax.AstraDB.DataApi/DataStax.AstraDB.DataApi.csproj)
+
+          if [ "$CSPROJ_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Version mismatch: csproj=$CSPROJ_VERSION tag=$PACKAGE_VERSION"
+            exit 1
+          fi
 
       - name: Restore dependencies
         run: dotnet restore ./src/DataStax.AstraDB.DataApi/
