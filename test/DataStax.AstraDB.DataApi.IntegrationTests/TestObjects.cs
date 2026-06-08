@@ -823,3 +823,33 @@ public class FakeDocument
     public int Id { get; set; }
     public string Name { get; set; }
 }
+
+[CollectionName("coll_one_embedding_header_test")]
+[CollectionVectorize(
+    "voyageAI",
+    "voyage-2",
+    parameterPairs: new object[] { "autoTruncate", false }
+)]
+public class DocumentForEmbeddingHeaderTest
+{
+    [DocumentId]
+    public string Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}
+
+[CollectionName("coll_aws_embedding_headers_test")]
+[CollectionVectorize(
+    "bedrock",
+    "amazon.titan-embed-text-v2:0",
+    parameterPairs: new object[] { "region", "us-east-1" }  // Note: edit to match the service being used!
+)]
+public class DocumentForAWSEmbeddingHeaderTest
+{
+    [DocumentId]
+    public string Id { get; set; }
+    public string Name { get; set; }
+    [DocumentMapping(DocumentMappingField.Vectorize)]
+    public string StringToVectorize => Name;
+}

@@ -536,6 +536,70 @@ public class AdditionalCollectionTests
         }
     }
 
+    // Requires VOYAGE embedding provider
+    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    public async Task Test_CollectionEmbeddingHeaders()
+    {
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        try
+        {
+            var collectionCr = await fixture.Database.CreateCollectionAsync<DocumentForEmbeddingHeaderTest>(
+                new CreateCollectionOptions() {EmbeddingAPIKey = embeddingAPIKey}
+            );
+            await collectionCr.InsertOneAsync(new DocumentForEmbeddingHeaderTest() { Id = "a", Name = "Text for the a" });
+
+            var collectionGe = fixture.Database.GetCollection<DocumentForEmbeddingHeaderTest>(
+                new GetCollectionOptions() {EmbeddingAPIKey = embeddingAPIKey}
+            );
+            await collectionGe.InsertOneAsync(new DocumentForEmbeddingHeaderTest() { Id = "b", Name = "Text for the b" });
+
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync<DocumentForEmbeddingHeaderTest>();
+        }
+    }
+
+    // Requires AWS (Bedrock) embedding provider
+    [Fact(Skip="Should be run after exporting the environment variables quoted below")]
+    public async Task Test_CollectionEmbeddingAWSHeaders()
+    {
+        // NOTE: make sure the region attribute in class DocumentForAWSEmbeddingHeaderTest matches the actual service being used.
+        var embeddingAccessID = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_ACCESS_ID_BEDROCK") ?? "kaboom";
+        var embeddingSecretID = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_SECRET_ID_BEDROCK") ?? "kaboom";
+        try
+        {
+            var collectionCr = await fixture.Database.CreateCollectionAsync<DocumentForAWSEmbeddingHeaderTest>(
+                new CreateCollectionOptions() {
+                    AWSEmbeddingAPIKey = new () { AccessId = embeddingAccessID , SecretId = embeddingSecretID }
+                }
+            );
+            await collectionCr.InsertOneAsync(new DocumentForAWSEmbeddingHeaderTest() { Id = "a", Name = "Text for the a" });
+
+            var collectionGe = fixture.Database.GetCollection<DocumentForAWSEmbeddingHeaderTest>(
+                new GetCollectionOptions() {
+                    AWSEmbeddingAPIKey = new () { AccessId = embeddingAccessID , SecretId = embeddingSecretID }
+                }
+            );
+            await collectionGe.InsertOneAsync(new DocumentForAWSEmbeddingHeaderTest() { Id = "b", Name = "Text for the b" });
+
+            // ASIDE: test of getting the attribute:
+            var nakedOptions = new CreateCollectionOptions() {};
+            var richOptions = new CreateCollectionOptions() {
+                AWSEmbeddingAPIKey = new () { AccessId = embeddingAccessID , SecretId = embeddingSecretID }
+            };
+            var awsKeyFromOptions = richOptions.AWSEmbeddingAPIKey;
+            Assert.Null(nakedOptions.AWSEmbeddingAPIKey);
+            Assert.IsType<AWSEmbeddingAPIKeyDescriptor>(awsKeyFromOptions);
+            Assert.Equal(embeddingAccessID, awsKeyFromOptions.AccessId);
+            Assert.Equal(embeddingSecretID, awsKeyFromOptions.SecretId);
+        }
+        finally
+        {
+            await fixture.Database.DropCollectionAsync<DocumentForAWSEmbeddingHeaderTest>();
+        }
+    }
+
 }
 
 [CollectionName("testCollectionNameViaAttribute")]

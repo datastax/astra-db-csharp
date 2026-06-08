@@ -22,19 +22,67 @@ namespace DataStax.AstraDB.DataApi.Core;
 public class GetCollectionOptions : DatabaseCommandOptions
 {
     /// <summary>
-    /// When specified, the client will send the x-embedding-api-key header with the specified key to any underlying HTTP request that requires vectorize authentication.
+    /// When specified, the client will send the X-Embedding-Api-Key header with the specified key to any underlying HTTP request that requires vectorize authentication.
     /// </summary>
     public string EmbeddingAPIKey
     {
         get
         {
-            return AdditionalHeaders.TryGetValue("x-embedding-api-key", out var value) ? value : null;
+            return AdditionalHeaders.TryGetValue("X-Embedding-Api-Key", out var value) ? value : null;
         }
         set
         {
-            AdditionalHeaders["x-embedding-api-key"] = value;
+            AdditionalHeaders["X-Embedding-Api-Key"] = value;
         }
     }
+
+    /// <summary>
+    /// When specified, the client will send the authentication parameters required for AWS embedding providers (Access ID and Secret ID)
+    /// with each collection request, via HTTP headers.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// // When creating a collection:
+    /// var collection = await Database.CreateCollectionAsync&lt;MyDocumentClass&gt;(
+    ///     new CreateCollectionOptions() {
+    ///         AWSEmbeddingAPIKey = new () { AccessId = "..." , SecretId = "..." }
+    ///     }
+    /// );
+    /// // Similarly for getting a collection:
+    /// var collection = Database.GetCollection&lt;MyDocumentClass&gt;(
+    ///     new GetCollectionOptions() {
+    ///         AWSEmbeddingAPIKey = new () { AccessId = "..." , SecretId = "..." }
+    ///     }
+    /// );
+    /// </code>
+    /// </example>
+    public AWSEmbeddingAPIKeyDescriptor AWSEmbeddingAPIKey
+    {
+        get
+        {
+            var accessId = AdditionalHeaders.TryGetValue("X-Embedding-Access-Id", out var result_access) ? result_access : null;
+            var secretId = AdditionalHeaders.TryGetValue("X-Embedding-Secret-Id", out var result_secret) ? result_secret : null;
+            if (accessId != null && secretId != null){
+                return new () {
+                    AccessId = accessId,
+                    SecretId = secretId
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+        set
+        {
+            if ( value != null )
+            {
+                AdditionalHeaders["X-Embedding-Access-Id"] = value.AccessId;
+                AdditionalHeaders["X-Embedding-Secret-Id"] = value.SecretId;
+            }
+        }
+    }
+
 
     /// <summary>
     /// When specified, the client will send the Reranking-Api-Key header with the specified key to any underlying HTTP request that requires reranker authentication.
@@ -50,4 +98,18 @@ public class GetCollectionOptions : DatabaseCommandOptions
             AdditionalHeaders["Reranking-Api-Key"] = value;
         }
     }
+}
+
+/// <summary>
+/// Specification for the authentication secrets required for AWS embedding providers.
+/// </summary>
+public class AWSEmbeddingAPIKeyDescriptor {
+    /// <summary>
+    /// The Access ID for the embedding service being accessed.
+    /// </summary>
+    public string AccessId { get; set; }
+    /// <summary>
+    /// The Secret ID for the embedding service being accessed.
+    /// </summary>
+    public string SecretId { get; set; }
 }
