@@ -561,7 +561,8 @@ public class AdditionalCollectionTests
     }
 
     // Requires AWS (Bedrock) embedding provider
-    [Fact(Skip="Should be run after exporting the environment variables quoted below")]
+    // [Fact(Skip="Should be run after exporting the environment variables quoted below")]
+    [Fact]
     public async Task Test_CollectionEmbeddingAWSHeaders()
     {
         // NOTE: make sure the region attribute in class DocumentForAWSEmbeddingHeaderTest matches the actual service being used.
@@ -571,14 +572,14 @@ public class AdditionalCollectionTests
         {
             var collectionCr = await fixture.Database.CreateCollectionAsync<DocumentForAWSEmbeddingHeaderTest>(
                 new CreateCollectionOptions() {
-                    AWSEmbeddingAPIKey = new () { AccessId = embeddingAccessID , SecretId = embeddingSecretID }
+                    AWSEmbeddingAPIKey = new () { EmbeddingAccessId = embeddingAccessID , EmbeddingSecretId = embeddingSecretID }
                 }
             );
             await collectionCr.InsertOneAsync(new DocumentForAWSEmbeddingHeaderTest() { Id = "a", Name = "Text for the a" });
 
             var collectionGe = fixture.Database.GetCollection<DocumentForAWSEmbeddingHeaderTest>(
                 new GetCollectionOptions() {
-                    AWSEmbeddingAPIKey = new () { AccessId = embeddingAccessID , SecretId = embeddingSecretID }
+                    AWSEmbeddingAPIKey = new () { EmbeddingAccessId = embeddingAccessID , EmbeddingSecretId = embeddingSecretID }
                 }
             );
             await collectionGe.InsertOneAsync(new DocumentForAWSEmbeddingHeaderTest() { Id = "b", Name = "Text for the b" });
@@ -586,13 +587,13 @@ public class AdditionalCollectionTests
             // ASIDE: test of getting the attribute:
             var nakedOptions = new CreateCollectionOptions() {};
             var richOptions = new CreateCollectionOptions() {
-                AWSEmbeddingAPIKey = new () { AccessId = embeddingAccessID , SecretId = embeddingSecretID }
+                AWSEmbeddingAPIKey = new () { EmbeddingAccessId = embeddingAccessID , EmbeddingSecretId = embeddingSecretID }
             };
             var awsKeyFromOptions = richOptions.AWSEmbeddingAPIKey;
             Assert.Null(nakedOptions.AWSEmbeddingAPIKey);
             Assert.IsType<AWSEmbeddingAPIKeyDescriptor>(awsKeyFromOptions);
-            Assert.Equal(embeddingAccessID, awsKeyFromOptions.AccessId);
-            Assert.Equal(embeddingSecretID, awsKeyFromOptions.SecretId);
+            Assert.Equal(embeddingAccessID, awsKeyFromOptions.EmbeddingAccessId);
+            Assert.Equal(embeddingSecretID, awsKeyFromOptions.EmbeddingSecretId);
         }
         finally
         {

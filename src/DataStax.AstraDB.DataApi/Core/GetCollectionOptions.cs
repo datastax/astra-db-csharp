@@ -45,13 +45,13 @@ public class GetCollectionOptions : DatabaseCommandOptions
     /// // When creating a collection:
     /// var collection = await Database.CreateCollectionAsync&lt;MyDocumentClass&gt;(
     ///     new CreateCollectionOptions() {
-    ///         AWSEmbeddingAPIKey = new () { AccessId = "..." , SecretId = "..." }
+    ///         AWSEmbeddingAPIKey = new () { EmbeddingAccessId = "..." , EmbeddingSecretId = "..." }
     ///     }
     /// );
     /// // Similarly for getting a collection:
     /// var collection = Database.GetCollection&lt;MyDocumentClass&gt;(
     ///     new GetCollectionOptions() {
-    ///         AWSEmbeddingAPIKey = new () { AccessId = "..." , SecretId = "..." }
+    ///         AWSEmbeddingAPIKey = new () { EmbeddingAccessId = "..." , EmbeddingSecretId = "..." }
     ///     }
     /// );
     /// </code>
@@ -64,8 +64,8 @@ public class GetCollectionOptions : DatabaseCommandOptions
             var secretId = AdditionalHeaders.TryGetValue("X-Embedding-Secret-Id", out var result_secret) ? result_secret : null;
             if (accessId != null && secretId != null){
                 return new () {
-                    AccessId = accessId,
-                    SecretId = secretId
+                    EmbeddingAccessId = accessId,
+                    EmbeddingSecretId = secretId
                 };
             }
             else
@@ -77,8 +77,8 @@ public class GetCollectionOptions : DatabaseCommandOptions
         {
             if ( value != null )
             {
-                AdditionalHeaders["X-Embedding-Access-Id"] = value.AccessId;
-                AdditionalHeaders["X-Embedding-Secret-Id"] = value.SecretId;
+                AdditionalHeaders["X-Embedding-Access-Id"] = value.EmbeddingAccessId;
+                AdditionalHeaders["X-Embedding-Secret-Id"] = value.EmbeddingSecretId;
             }
         }
     }
@@ -107,9 +107,9 @@ public class AWSEmbeddingAPIKeyDescriptor {
     /// <summary>
     /// The Access ID for the embedding service being accessed.
     /// </summary>
-    public string AccessId { get; set; }
+    public string EmbeddingAccessId { get; set; }
     /// <summary>
     /// The Secret ID for the embedding service being accessed.
     /// </summary>
-    public string SecretId { get; set; }
+    public string EmbeddingSecretId { get; set; }
 }
