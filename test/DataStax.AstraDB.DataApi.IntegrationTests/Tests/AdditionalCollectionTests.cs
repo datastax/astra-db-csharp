@@ -561,8 +561,7 @@ public class AdditionalCollectionTests
     }
 
     // Requires AWS (Bedrock) embedding provider
-    // [Fact(Skip="Should be run after exporting the environment variables quoted below")]
-    [Fact]
+    [Fact(Skip="Should be run after exporting the environment variables quoted below")]
     public async Task Test_CollectionEmbeddingAWSHeaders()
     {
         // NOTE: make sure the region attribute in class DocumentForAWSEmbeddingHeaderTest matches the actual service being used.

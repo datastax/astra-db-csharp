@@ -853,3 +853,28 @@ public class DocumentForAWSEmbeddingHeaderTest
     [DocumentMapping(DocumentMappingField.Vectorize)]
     public string StringToVectorize => Name;
 }
+
+[TableName("table_one_embedding_header_test")]
+public class RowForEmbeddingHeaderTest
+{
+    [ColumnPrimaryKey(1)]
+    public string Id { get; set; }
+    [ColumnVectorize(
+        "voyageAI", "voyage-2", dimension: 1024,
+        parameterPairs: new object[] { "autoTruncate", false }
+    )]
+    public object Name { get; set; }
+}
+
+[TableName("table_aws_embedding_headers_test")]
+public class RowForAWSEmbeddingHeaderTest
+{
+    [ColumnPrimaryKey(1)]
+    public string Id { get; set; }
+    [ColumnVectorize(
+        "bedrock",
+        "amazon.titan-embed-text-v2:0",
+        parameterPairs: new object[] { "region", "us-east-1" }  // Note: edit to match the service being used!
+    )]
+    public object Name { get; set; }
+}

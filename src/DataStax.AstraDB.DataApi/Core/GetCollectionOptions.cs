@@ -99,17 +99,3 @@ public class GetCollectionOptions : DatabaseCommandOptions
         }
     }
 }
-
-/// <summary>
-/// Specification for the authentication secrets required for AWS embedding providers.
-/// </summary>
-public class AWSEmbeddingAPIKeyDescriptor {
-    /// <summary>
-    /// The Access ID for the embedding service being accessed.
-    /// </summary>
-    public string EmbeddingAccessId { get; set; }
-    /// <summary>
-    /// The Secret ID for the embedding service being accessed.
-    /// </summary>
-    public string EmbeddingSecretId { get; set; }
-}

@@ -35,4 +35,51 @@ public class GetTableOptions : DatabaseCommandOptions
             AdditionalHeaders["x-embedding-api-key"] = value;
         }
     }
+
+    /// <summary>
+    /// When specified, the client will send the authentication parameters required for AWS embedding providers (Access ID and Secret ID)
+    /// with each table request, via HTTP headers.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// // When creating a table:
+    /// var table = await Database.CreateTableAsync&lt;MyRowClass&gt;(
+    ///     new CreateTableOptions() {
+    ///         AWSEmbeddingAPIKey = new () { EmbeddingAccessId = "..." , EmbeddingSecretId = "..." }
+    ///     }
+    /// );
+    /// // Similarly for getting a table:
+    /// var table = Database.GetTable&lt;MyRowClass&gt;(
+    ///     new GetTableOptions() {
+    ///         AWSEmbeddingAPIKey = new () { EmbeddingAccessId = "..." , EmbeddingSecretId = "..." }
+    ///     }
+    /// );
+    /// </code>
+    /// </example>
+    public AWSEmbeddingAPIKeyDescriptor AWSEmbeddingAPIKey
+    {
+        get
+        {
+            var accessId = AdditionalHeaders.TryGetValue("X-Embedding-Access-Id", out var result_access) ? result_access : null;
+            var secretId = AdditionalHeaders.TryGetValue("X-Embedding-Secret-Id", out var result_secret) ? result_secret : null;
+            if (accessId != null && secretId != null){
+                return new () {
+                    EmbeddingAccessId = accessId,
+                    EmbeddingSecretId = secretId
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+        set
+        {
+            if ( value != null )
+            {
+                AdditionalHeaders["X-Embedding-Access-Id"] = value.EmbeddingAccessId;
+                AdditionalHeaders["X-Embedding-Secret-Id"] = value.EmbeddingSecretId;
+            }
+        }
+    }
 }
