@@ -1236,4 +1236,68 @@ public class AdditionalTableTests
         }
     }
 
+    // Requires VOYAGE embedding provider
+    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    public async Task Test_TableEmbeddingHeaders()
+    {
+        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        try
+        {
+            var tableCr = await fixture.Database.CreateTableAsync<RowForEmbeddingHeaderTest>(
+                new CreateTableOptions() {EmbeddingAPIKey = embeddingAPIKey}
+            );
+            await tableCr.InsertOneAsync(new RowForEmbeddingHeaderTest() { Id = "a", Name = "Text for the a" });
+
+            var tableGe = fixture.Database.GetTable<RowForEmbeddingHeaderTest>(
+                new GetTableOptions() {EmbeddingAPIKey = embeddingAPIKey}
+            );
+            await tableGe.InsertOneAsync(new RowForEmbeddingHeaderTest() { Id = "b", Name = "Text for the b" });
+
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowForEmbeddingHeaderTest>();
+        }
+    }
+
+    // Requires AWS (Bedrock) embedding provider
+    [Fact(Skip="Should be run after exporting the environment variables quoted below")]
+    public async Task Test_TableEmbeddingAWSHeaders()
+    {
+        // NOTE: make sure the region attribute in class RowForAWSEmbeddingHeaderTest matches the actual service being used.
+        var embeddingAccessID = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_ACCESS_ID_BEDROCK") ?? "kaboom";
+        var embeddingSecretID = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_SECRET_ID_BEDROCK") ?? "kaboom";
+        try
+        {
+            var tableCr = await fixture.Database.CreateTableAsync<RowForAWSEmbeddingHeaderTest>(
+                new CreateTableOptions() {
+                    AWSEmbeddingAPIKey = new () { EmbeddingAccessId = embeddingAccessID , EmbeddingSecretId = embeddingSecretID }
+                }
+            );
+            await tableCr.InsertOneAsync(new RowForAWSEmbeddingHeaderTest() { Id = "a", Name = "Text for the a" });
+
+            var tableGe = fixture.Database.GetTable<RowForAWSEmbeddingHeaderTest>(
+                new GetTableOptions() {
+                    AWSEmbeddingAPIKey = new () { EmbeddingAccessId = embeddingAccessID , EmbeddingSecretId = embeddingSecretID }
+                }
+            );
+            await tableGe.InsertOneAsync(new RowForAWSEmbeddingHeaderTest() { Id = "b", Name = "Text for the b" });
+
+            // ASIDE: test of getting the attribute:
+            var nakedOptions = new CreateTableOptions() {};
+            var richOptions = new CreateTableOptions() {
+                AWSEmbeddingAPIKey = new () { EmbeddingAccessId = embeddingAccessID , EmbeddingSecretId = embeddingSecretID }
+            };
+            var awsKeyFromOptions = richOptions.AWSEmbeddingAPIKey;
+            Assert.Null(nakedOptions.AWSEmbeddingAPIKey);
+            Assert.IsType<AWSEmbeddingAPIKeyDescriptor>(awsKeyFromOptions);
+            Assert.Equal(embeddingAccessID, awsKeyFromOptions.EmbeddingAccessId);
+            Assert.Equal(embeddingSecretID, awsKeyFromOptions.EmbeddingSecretId);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowForAWSEmbeddingHeaderTest>();
+        }
+    }
+
 }
