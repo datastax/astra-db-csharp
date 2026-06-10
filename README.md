@@ -2,6 +2,24 @@
 
 `astra-db-csharp` is a C# client for interacting with [DataStax Astra DB](https://astra.datastax.com/) and Hyper-Converged Database.
 
+## Setup & requirements
+
+Update to one of the following:
+
+- .NET version 8 or later
+- .NET Framework 4.6.2 or later
+- .NET Standard 2.1 or later
+
+Install the client:
+
+```
+dotnet add package DataStax.AstraDB.DataApi
+```
+
+A database is needed for the client to connect to.
+The database can be either an Astra DB instance or a Hyper-Converged Database (HCD) instance:
+follow the appropriate documentation links to get the connection parameters for your database.
+
 ## Documentation 
 
 For Astra DB Serverless:
