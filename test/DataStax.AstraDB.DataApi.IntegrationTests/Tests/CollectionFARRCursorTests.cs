@@ -308,4 +308,98 @@ public class CollectionFARRCursorTests
         await Assert.ThrowsAsync<CommandException>(async () => await cur.ToListAsync());
     }
 
+    [Fact]
+    public async Task Test_CollectionVectorFARRRerankOverride()
+    {
+        var filledCollection = _fixture.FilledVectorCollection;
+        var minValue = 3;
+
+        var theFilter = Builders<FARRCursorTestVectorDocument>.CollectionFilter.Gt(d => d.PInt, minValue - 1);
+
+        var findOptionsOvrNo = new CollectionFindAndRerankOptions<FARRCursorTestVectorDocument> {
+            Sort = Builders<FARRCursorTestVectorDocument>.CollectionFindAndRerankSort.Hybrid(new float[] {1.0f, 0.0f}, "blabla"),
+            RerankOn = "$lexical",
+            RerankQuery = "blibli",
+        };
+        var findOptionsOvrOk = new CollectionFindAndRerankOptions<FARRCursorTestVectorDocument> {
+            Sort = Builders<FARRCursorTestVectorDocument>.CollectionFindAndRerankSort.Hybrid(new float[] {1.0f, 0.0f}, "blabla"),
+            RerankOn = "$lexical",
+            RerankQuery = "blibli",
+            Service = new () {
+                ModelName = "nvidia/llama-3.2-nv-rerankqa-1b-v2",
+                Provider = "nvidia"
+            }
+        };
+        var findOptionsOvrBad = new CollectionFindAndRerankOptions<FARRCursorTestVectorDocument> {
+            Sort = Builders<FARRCursorTestVectorDocument>.CollectionFindAndRerankSort.Hybrid(new float[] {1.0f, 0.0f}, "blabla"),
+            RerankOn = "$lexical",
+            RerankQuery = "blibli",
+            Service = new () {
+                ModelName = "xyz",
+                Provider = "abc"
+            }
+        };
+
+        var resultsNo = await filledCollection.FindAndRerank(theFilter, findOptionsOvrNo).ToListAsync();
+        var resultsOk = await filledCollection.FindAndRerank(theFilter, findOptionsOvrOk).ToListAsync();
+        await Assert.ThrowsAsync<CommandException>(async () =>
+        {
+            await filledCollection.FindAndRerank(theFilter, findOptionsOvrBad).ToListAsync();
+        });
+
+        Assert.NotNull(resultsNo);
+        Assert.NotNull(resultsOk);
+        Assert.Equal(resultsNo.Count, resultsOk.Count);
+        Assert.True(resultsNo.Count > 0);
+        Assert.True(resultsOk.Count > 0);
+        Assert.Equal(
+            resultsNo.Select(x => x.Document.Id).ToArray(),
+            resultsOk.Select(x => x.Document.Id).ToArray()
+        );
+    }
+
+    [Fact]
+    public async Task Test_CollectionVectorizeFARRRerankOverride()
+    {
+        var filledCollection = _fixture.FilledVectorizeCollection;
+        var minValue = 3;
+
+        var theFilter = Builders<FARRCursorTestVectorizeDocument>.CollectionFilter.Gt(d => d.PInt, minValue - 1);
+
+        var findOptionsOvrNo = new CollectionFindAndRerankOptions<FARRCursorTestVectorizeDocument> {
+             Sort = Builders<FARRCursorTestVectorizeDocument>.CollectionFindAndRerankSort.Hybrid("blabla"),
+       };
+        var findOptionsOvrOk = new CollectionFindAndRerankOptions<FARRCursorTestVectorizeDocument> {
+            Sort = Builders<FARRCursorTestVectorizeDocument>.CollectionFindAndRerankSort.Hybrid("blabla"),
+            Service = new () {
+                ModelName = "nvidia/llama-3.2-nv-rerankqa-1b-v2",
+                Provider = "nvidia"
+            }
+        };
+        var findOptionsOvrBad = new CollectionFindAndRerankOptions<FARRCursorTestVectorizeDocument> {
+            Sort = Builders<FARRCursorTestVectorizeDocument>.CollectionFindAndRerankSort.Hybrid("blabla"),
+            Service = new () {
+                ModelName = "xyz",
+                Provider = "abc"
+            }
+        };
+
+        var resultsNo = await filledCollection.FindAndRerank(theFilter, findOptionsOvrNo).ToListAsync();
+        var resultsOk = await filledCollection.FindAndRerank(theFilter, findOptionsOvrOk).ToListAsync();
+        await Assert.ThrowsAsync<CommandException>(async () =>
+        {
+            await filledCollection.FindAndRerank(theFilter, findOptionsOvrBad).ToListAsync();
+        });
+
+        Assert.NotNull(resultsNo);
+        Assert.NotNull(resultsOk);
+        Assert.Equal(resultsNo.Count, resultsOk.Count);
+        Assert.True(resultsNo.Count > 0);
+        Assert.True(resultsOk.Count > 0);
+        Assert.Equal(
+            resultsNo.Select(x => x.Document.Id).ToArray(),
+            resultsOk.Select(x => x.Document.Id).ToArray()
+        );
+    }
+
 }

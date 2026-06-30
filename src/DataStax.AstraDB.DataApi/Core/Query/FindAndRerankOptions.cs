@@ -118,7 +118,7 @@ public abstract class BaseFindAndRerankOptions<T, TSort> : BasePaginatedFindOpti
         if (hybridLimits != null)
             options["hybridLimits"] = hybridLimits;
         if (Service != null)
-            options["rerankServiceOptions"] = Service;
+            options["rerank"] = Service;
 
         return new
         {
