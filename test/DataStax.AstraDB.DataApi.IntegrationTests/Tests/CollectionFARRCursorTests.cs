@@ -41,7 +41,6 @@ public class CollectionFARRCursorTests
         _fixture = fixture;
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorFARRCursor()
     {
@@ -67,7 +66,6 @@ public class CollectionFARRCursorTests
         Assert.Empty(results[0].Scores);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorizeFARRCursor()
     {
@@ -110,7 +108,6 @@ public class CollectionFARRCursorTests
         Assert.Empty(resultsEX[0].Scores);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorFARR_IncludeSortVector()
     {
@@ -133,7 +130,6 @@ public class CollectionFARRCursorTests
         Assert.IsType<float[]>(vpage0.SortVector);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorFARR_IncludeScores()
     {
@@ -156,7 +152,6 @@ public class CollectionFARRCursorTests
         Assert.NotNull(results[0].Scores["$vector"]);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorFARR_HybridLimits()
     {
@@ -190,7 +185,6 @@ public class CollectionFARRCursorTests
         Assert.Equal(limitedCount, resultsVLL.Count);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorFARR_Projection()
     {
@@ -217,7 +211,6 @@ public class CollectionFARRCursorTests
         Assert.IsType<float[]>(doc0.Vector);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorizeFARR_Projection()
     {
@@ -242,7 +235,6 @@ public class CollectionFARRCursorTests
         Assert.IsType<string>(doc0.Vectorize);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorFARR_FluentInterface()
     {
@@ -265,14 +257,16 @@ public class CollectionFARRCursorTests
         Assert.Equal(docCount - minValue + 1, results.Count);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorUntypedFARRCursor()
     {
         var filledCollection = _fixture.FilledVectorCollection;
         var docCount = _fixture.FilledVectorCollectionCount;
 
-        var untypedCollection = _fixture.Database.GetCollection(filledCollection.CollectionName);
+        var untypedCollection = _fixture.Database.GetCollection(
+            filledCollection.CollectionName,
+            _fixture.GetCollectionVectorOptions
+        );
 
         var theFilter = Builders<Document>.CollectionFilter.Eq("PInt", 2);
         var findOptions = new CollectionFindAndRerankOptions<Document> {
@@ -291,7 +285,6 @@ public class CollectionFARRCursorTests
         Assert.Equal("doc_2", document["_id"]);
     }
 
-    [SkipWhenNotAstra]
     [Fact]
     public async Task Test_CollectionVectorFARRCursor_RerankingHeader()
     {
