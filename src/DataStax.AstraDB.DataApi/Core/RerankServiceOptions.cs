@@ -34,4 +34,7 @@ public class RerankServiceOptions
     /// </summary>
     [JsonPropertyName("provider")]
     public string Provider { get; set; }
+
+    internal RerankServiceOptions ShallowClone() =>
+        new RerankServiceOptions { ModelName = ModelName, Provider = Provider };
 }
