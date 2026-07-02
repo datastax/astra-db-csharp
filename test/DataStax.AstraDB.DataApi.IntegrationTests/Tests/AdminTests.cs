@@ -647,8 +647,8 @@ public class AdminTests
         var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
             new (){
                 Name = dbName,
-                CloudProvider = CloudProviderType.GCP,
-                Region = "europe-west4",
+                CloudProvider = CloudProviderType.AWS,
+                Region = "us-west-2",
                 Keyspace = "fedault_seykpace",
                 waitForCompletion = false,
             }

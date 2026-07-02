@@ -25,6 +25,10 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// </summary>
 public class CreateDatabaseOptions : BlockingCommandOptions
 {
+    private const string DefaultTier = "serverless";
+    private const int DefaultCapacityUnits = 1;
+    private const string DefaultDbType = "vector";
+
     /// <summary>
     /// Name of the database to be created.
     /// </summary>
@@ -49,15 +53,33 @@ public class CreateDatabaseOptions : BlockingCommandOptions
         set => base.Keyspace = value;
     }
 
+    /// <summary>
+    /// Database tier (defaults to "serverless").
+    /// </summary>
+    public string Tier { get; set; } = DefaultTier;
+
+    /// <summary>
+    /// Capacity units for the database (defaults to 1).
+    /// </summary>
+    public int CapacityUnits { get; set; } = DefaultCapacityUnits;
+
+    /// <summary>
+    /// Database type (defaults to "vector").
+    /// </summary>
+    public string DBType { get; set; } = DefaultDbType;
+
+    /// <summary>
+    /// PCU group ID to use for provisioning the database. Optional.
+    /// </summary>
+    public string PCUGroupId { get; set; } = null;
+
     internal object ToPayload()
     {
         var payload = new Dictionary<string, object>();
 
-        // hardcoded properties
-        payload["tier"] = "serverless";
-        payload["capacityUnits"] = 1;
-        payload["dbType"] = "vector";
-        // specified properties
+        payload["tier"] = Tier;
+        payload["capacityUnits"] = CapacityUnits;
+        payload["dbType"] = DBType;
         if ( Name != null )
         {
             payload["name"] = Name;
@@ -73,6 +95,10 @@ public class CreateDatabaseOptions : BlockingCommandOptions
         if ( Keyspace != null )
         {
             payload["keyspace"] = Keyspace;
+        }
+        if ( PCUGroupId != null )
+        {
+            payload["pcuGroupUUID"] = PCUGroupId;
         }
 
         return payload;
