@@ -407,6 +407,49 @@ public class AstraDatabasesAdmin
         return response;
     }
 
+    /// <summary>
+    /// Synchronous version of <see cref="ListPCUGroupsAsync(ListPCUGroupsOptions)"/>
+    /// </summary>
+    /// <inheritdoc cref="ListPCUGroupsAsync(ListPCUGroupsOptions)"/>
+    public List<PCUGroup> ListPCUGroups(ListPCUGroupsOptions options = null)
+    {
+        return ListPCUGroupsAsync(options, true).ResultSync();
+    }
+
+    /// <summary>
+    /// List the PCU (Provisioned Capacity Units) Groups pertaining to the current org.
+    /// </summary>
+    /// <param name="options">Additional options to the DevOps API query, such as cloud provider/region filters and general request execution parameters.</param>
+    /// <returns>A list of the PCU Groups according to the requested filtering.</returns>
+    public Task<List<PCUGroup>> ListPCUGroupsAsync(ListPCUGroupsOptions options = null)
+    {
+        return ListPCUGroupsAsync(options, false);
+    }
+
+    internal async Task<List<PCUGroup>> ListPCUGroupsAsync(ListPCUGroupsOptions options, bool runSynchronously)
+    {
+        if (options != null && (options.CloudProvider == null) != (options.Region == null))
+            throw new ArgumentException(
+                "Either both or none of CloudProvider and Region must be set for filtering PCU Groups.",
+                nameof(options));
+
+        var command = CreateCommand()
+            .AddUrlPath("pcus/actions/get")
+            .WithPayload(new Dictionary<string, string>())
+            .WithTimeoutManager(new DatabaseAdminTimeoutManager())
+            .AddCommandOptions(options);
+
+        var response = await command.RunAsyncRaw<List<PCUGroup>>(HttpMethod.Post, runSynchronously);
+        // apply cloud/region filter if required:
+        if (options?.CloudProvider == null)
+        {
+            return response;
+        }
+        return response
+            .Where(group => group.CloudProvider == options.CloudProvider && group.Region == options.Region)
+            .ToList();
+    }
+
     private DatabaseAdminAstra GetDatabaseAdmin(DatabaseInfo dbInfo, GetDatabaseAdminOptions options = null)
     {
         var commandOptions = CommandOptions.Merge(new CommandOptions[] {_adminOptions, options});

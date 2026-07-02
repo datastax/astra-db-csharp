@@ -556,6 +556,37 @@ public class AdminTests
     }
 
     [SkipWhenNotAstra]
+    [Fact(Skip="Run manually when an ORG ADMIN token is used, or this endpoint will error")]
+    public async Task DatabaseAdminAstra_GetPCUGroups()
+    {
+        var admin = fixture.Client.GetAstraDatabasesAdmin();
+
+        var pcuGroupsFull = await admin.ListPCUGroupsAsync();
+        Assert.NotNull(pcuGroupsFull);
+
+        var pcuGroupsFiltered = await admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
+            CloudProvider = AstraDatabaseCloudProvider.AWS,
+            Region = "us-west-1"
+        });
+        Assert.NotNull(pcuGroupsFiltered);
+
+        Assert.True(pcuGroupsFull.Count >= pcuGroupsFiltered.Count);
+
+        // bad filtering patterns
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
+                Region = "us-west-1"
+            })
+        );
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
+                CloudProvider = AstraDatabaseCloudProvider.GCP
+            })
+        );
+
+    }
+
+    [SkipWhenNotAstra]
     [Fact()]
     public void CreateDatabaseMissingParameters()
     {
