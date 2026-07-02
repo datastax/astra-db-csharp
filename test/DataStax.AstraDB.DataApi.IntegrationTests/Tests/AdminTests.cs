@@ -546,6 +546,13 @@ public class AdminTests
         Assert.NotEmpty(regionsAll);
 
         Assert.True(regionsAll.Count >= regionsOnly.Count);
+
+        // region PCU information checks
+        Assert.NotEmpty(regionsDefault[0].PCUTypes);
+        var pcu_type = regionsDefault[0].PCUTypes[0];
+        Assert.IsType<PCUType>(pcu_type);
+        Assert.IsType<string>(pcu_type.Type);
+        Assert.IsType<PCUTypeDetails>(pcu_type.Details);
     }
 
     [SkipWhenNotAstra]
