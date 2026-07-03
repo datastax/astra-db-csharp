@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Commands;
 using DataStax.AstraDB.DataApi.Utils;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,7 @@ public class AstraDatabasesAdmin
 {
     private readonly CommandOptions _adminOptions;
     private readonly DataAPIClient _client;
+    private readonly ILogger _logger;
 
     private CommandOptions[] OptionsTree => new CommandOptions[] { _client.ClientOptions, _adminOptions };
 
@@ -57,6 +59,7 @@ public class AstraDatabasesAdmin
         Guard.NotNull(client, nameof(client));
         _client = client;
         _adminOptions = adminOptions;
+        _logger = client.Logger;
     }
 
     internal string DevOpsAPISuffix(DBEnvironment? environment) => environment switch
@@ -166,6 +169,49 @@ public class AstraDatabasesAdmin
         Guard.NotNullOrEmpty(options.Name, nameof(options.Name));
         Guard.NotNull(options.CloudProvider, nameof(options.CloudProvider));
         Guard.NotNullOrEmpty(options.Region, nameof(options.Region));
+
+        if (options.PCUGroupId != null)
+        {
+            _logger.LogDebug("PCUGroupId specified ({PCUGroupId}): validating against available PCU groups.", options.PCUGroupId);
+            var listPCUOptions = ListPCUGroupsOptions.FromCommandOptions(options);
+            List<PCUGroup> pcuGroups = null;
+            try
+            {
+                pcuGroups = await ListPCUGroupsAsync(listPCUOptions, runSynchronously).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to retrieve PCU groups; skipping PCU group validation.");
+            }
+
+            if (pcuGroups != null)
+            {
+                _logger.LogDebug("Retrieved {Count} PCU group(s); searching for id={PCUGroupId}.", pcuGroups.Count, options.PCUGroupId);
+                var matchedGroup = pcuGroups.FirstOrDefault(g =>
+                    string.Equals(g.Id, options.PCUGroupId, StringComparison.OrdinalIgnoreCase));
+
+                if (matchedGroup == null)
+                {
+                    throw new InvalidOperationException(
+                        $"No PCU group with id '{options.PCUGroupId}' was found.");
+                }
+
+                _logger.LogDebug("Found PCU group '{PCUGroupId}': cloudProvider={CloudProvider}, region={Region}.", matchedGroup.Id, matchedGroup.CloudProvider, matchedGroup.Region);
+
+                bool cloudProviderMatches = matchedGroup.CloudProvider == options.CloudProvider;
+                bool regionMatches = string.Equals(matchedGroup.Region, options.Region, StringComparison.OrdinalIgnoreCase);
+
+                if (!cloudProviderMatches || !regionMatches)
+                {
+                    throw new InvalidOperationException(
+                        $"PCU group '{options.PCUGroupId}' is in cloudProvider={matchedGroup.CloudProvider}, region={matchedGroup.Region}, " +
+                        $"which does not match the requested cloudProvider={options.CloudProvider}, region={options.Region}.");
+                }
+
+                _logger.LogDebug("PCU group '{PCUGroupId}' validated successfully; proceeding with database creation.", options.PCUGroupId);
+            }
+        }
+
         Command command = CreateCommand()
             .AddUrlPath("databases")
             .WithPayload(options.ToPayload())

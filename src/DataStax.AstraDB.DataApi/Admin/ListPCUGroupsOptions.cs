@@ -36,4 +36,25 @@ public class ListPCUGroupsOptions : CommandOptions
     /// </summary>
     public string Region { get; set; }
 
+    internal ListPCUGroupsOptions(CommandOptions source) : base(source)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ListPCUGroupsOptions"/> with default values.
+    /// </summary>
+    public ListPCUGroupsOptions() : base()
+    {
+    }
+
+    static internal ListPCUGroupsOptions FromCommandOptions(
+        CommandOptions options, AstraDatabaseCloudProvider? cloudProvider = null, string region = null
+    )
+    {
+        if (options == null) return null;
+        return new ListPCUGroupsOptions(options) {
+            CloudProvider = cloudProvider, Region = region
+        };
+    }
+
 }
