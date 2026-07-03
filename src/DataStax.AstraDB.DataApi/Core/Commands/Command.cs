@@ -294,6 +294,8 @@ internal class Command
         {
             deserializeOptions.Converters.Add(new SimpleDictionaryConverter());
         }
+        deserializeOptions.Converters.Add(new CloudProviderTypeConverter());
+        deserializeOptions.Converters.Add(new CloudProviderTypeNullableConverter());
         deserializeOptions.Converters.Add(new IpAddressConverter());
         deserializeOptions.Converters.Add(new AnalyzerOptionsConverter());
 

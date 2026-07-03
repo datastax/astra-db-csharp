@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// using System;
-// using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Admin;
@@ -23,7 +21,6 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// <summary>
 /// Specifies the cloud provider on which an Astra DB database is deployed.
 /// </summary>
-// [JsonConverter(typeof(CloudProviderTypeConverter))]
 public enum CloudProviderType
 {
     /// <summary>Amazon Web Services.</summary>
@@ -36,27 +33,3 @@ public enum CloudProviderType
     [JsonStringEnumMemberName("azure")]
     AZURE
 }
-
-// internal sealed class CloudProviderTypeConverter : JsonConverter<CloudProviderType>
-// {
-//     public override CloudProviderType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-//     {
-//         var value = reader.GetString();
-//         if (string.Equals(value, "aws", StringComparison.OrdinalIgnoreCase)) return CloudProviderType.AWS;
-//         if (string.Equals(value, "gcp", StringComparison.OrdinalIgnoreCase)) return CloudProviderType.GCP;
-//         if (string.Equals(value, "azure", StringComparison.OrdinalIgnoreCase)) return CloudProviderType.AZURE;
-//         throw new JsonException($"Unknown CloudProviderType value: '{value}'");
-//     }
-
-//     public override void Write(Utf8JsonWriter writer, CloudProviderType value, JsonSerializerOptions options)
-//     {
-//         var serialized = value switch
-//         {
-//             CloudProviderType.AWS => "aws",
-//             CloudProviderType.GCP => "gcp",
-//             CloudProviderType.AZURE => "azure",
-//             _ => throw new JsonException($"Unknown CloudProviderType value: '{value}'")
-//         };
-//         writer.WriteStringValue(serialized);
-//     }
-// }
