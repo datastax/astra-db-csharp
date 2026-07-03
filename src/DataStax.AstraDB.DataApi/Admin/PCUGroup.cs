@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Core;
 using System;
 using System.Text.Json.Serialization;
 
@@ -51,7 +50,7 @@ public class PCUGroup
     /// </summary>
     [JsonPropertyName("cloudProvider")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AstraDatabaseCloudProvider? CloudProvider { get; set; }
+    public CloudProviderType? CloudProvider { get; set; }
 
     /// <summary>
     /// The region this PCU group is ascribed to.
@@ -166,7 +165,7 @@ public class PCUType
     [JsonPropertyName("provider")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public AstraDatabaseCloudProvider? CloudProvider { get; set; }
+    public CloudProviderType? CloudProvider { get; set; }
 
     /// <summary>
     /// Hardware specifications for this PCU type.

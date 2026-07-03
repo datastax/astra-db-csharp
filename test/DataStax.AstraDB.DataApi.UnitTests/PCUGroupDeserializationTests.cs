@@ -72,12 +72,12 @@ public class PCUGroupDeserializationTests
         Assert.Equal("org-id", group.OrgId);
         Assert.Equal(1, group.Min);
         Assert.Equal(new DateTime(2021, 6, 1, 12, 0, 0, DateTimeKind.Utc), group.CreatedAt);
-        Assert.Equal(AstraDatabaseCloudProvider.AWS, group.CloudProvider);
+        Assert.Equal(CloudProviderType.AWS, group.CloudProvider);
 
         var pcutype = group.PCUType;
         Assert.IsType<PCUType>(pcutype);
         Assert.Equal("eu-west-1", pcutype.Region);
-        Assert.Equal(AstraDatabaseCloudProvider.AWS, pcutype.CloudProvider);
+        Assert.Equal(CloudProviderType.AWS, pcutype.CloudProvider);
 
         var details = pcutype.Details;
         Assert.IsType<PCUTypeDetails>(details);

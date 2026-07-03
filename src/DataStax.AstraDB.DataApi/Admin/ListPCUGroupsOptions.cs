@@ -28,7 +28,7 @@ public class ListPCUGroupsOptions : CommandOptions
     /// If set, filters results to this cloud provider only.
     /// Either both or none of CloudProvider and Region must be set
     /// </summary>
-    public AstraDatabaseCloudProvider? CloudProvider { get; set; }
+    public CloudProviderType? CloudProvider { get; set; }
 
     /// <summary>
     /// If set, filters results to this region only.
@@ -48,7 +48,7 @@ public class ListPCUGroupsOptions : CommandOptions
     }
 
     static internal ListPCUGroupsOptions FromCommandOptions(
-        CommandOptions options, AstraDatabaseCloudProvider? cloudProvider = null, string region = null
+        CommandOptions options, CloudProviderType? cloudProvider = null, string region = null
     )
     {
         if (options == null) return null;

@@ -565,7 +565,7 @@ public class AdminTests
         Assert.NotNull(pcuGroupsFull);
 
         var pcuGroupsFiltered = await admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
-            CloudProvider = AstraDatabaseCloudProvider.AWS,
+            CloudProvider = CloudProviderType.AWS,
             Region = "us-west-1"
         });
         Assert.NotNull(pcuGroupsFiltered);
@@ -580,7 +580,7 @@ public class AdminTests
         );
         await Assert.ThrowsAsync<ArgumentException>(
             () => admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
-                CloudProvider = AstraDatabaseCloudProvider.GCP
+                CloudProvider = CloudProviderType.GCP
             })
         );
 

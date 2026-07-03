@@ -32,7 +32,7 @@ public class DatabaseInfo
         OrgId = rawInfo.OrgId;
         OwnerId = rawInfo.OwnerId;
         Status = Enum.TryParse<AstraDatabaseStatus>(rawInfo.Status, true, out var status) ? status : AstraDatabaseStatus.UNKNOWN;
-        CloudProvider = Enum.TryParse<AstraDatabaseCloudProvider>(rawInfo.Info.CloudProvider, true, out var cloudProvider) ? cloudProvider : AstraDatabaseCloudProvider.AWS;
+        CloudProvider = Enum.TryParse<CloudProviderType>(rawInfo.Info.CloudProvider, true, out var cloudProvider) ? cloudProvider : CloudProviderType.AWS;
         CreatedAt = rawInfo.CreationTime;
         LastUsed = rawInfo.LastUsageTime;
         Keyspaces = rawInfo.Info.Keyspaces;
@@ -51,7 +51,7 @@ public class DatabaseInfo
     /// <summary>The current lifecycle status of the database.</summary>
     public AstraDatabaseStatus Status { get; set; }
     /// <summary>The cloud provider where the database is deployed.</summary>
-    public AstraDatabaseCloudProvider CloudProvider { get; set; }
+    public CloudProviderType CloudProvider { get; set; }
     /// <summary>The date and time when the database was created.</summary>
     public DateTime CreatedAt { get; set; }
     /// <summary>The date and time when the database was last used.</summary>
@@ -77,19 +77,6 @@ public class AstraDatabaseRegionInfo
     public DateTime CreatedAt { get; set; }
     /// <summary>The name of the region.</summary>
     public string Name { get; set; }
-}
-
-/// <summary>
-/// The cloud provider where an Astra database is deployed.
-/// </summary>
-public enum AstraDatabaseCloudProvider
-{
-    /// <summary>Amazon Web Services.</summary>
-    AWS,
-    /// <summary>Google Cloud Platform.</summary>
-    GCP,
-    /// <summary>Microsoft Azure.</summary>
-    AZURE
 }
 
 /// <summary>
