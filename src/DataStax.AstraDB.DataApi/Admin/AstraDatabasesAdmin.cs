@@ -172,7 +172,7 @@ public class AstraDatabasesAdmin
 
         if (options.PCUGroupId != null)
         {
-            _logger.LogDebug("PCUGroupId specified ({PCUGroupId}): validating against available PCU groups.", options.PCUGroupId);
+            _logger.LogInformation("PCUGroupId specified ({PCUGroupId}): validating against available PCU groups.", options.PCUGroupId);
             var listPCUOptions = ListPCUGroupsOptions.FromCommandOptions(options);
             List<PCUGroup> pcuGroups = null;
             try
@@ -186,29 +186,31 @@ public class AstraDatabasesAdmin
 
             if (pcuGroups != null)
             {
-                _logger.LogDebug("Retrieved {Count} PCU group(s); searching for id={PCUGroupId}.", pcuGroups.Count, options.PCUGroupId);
+                _logger.LogInformation("Retrieved {Count} PCU group(s); searching for id={PCUGroupId}.", pcuGroups.Count, options.PCUGroupId);
                 var matchedGroup = pcuGroups.FirstOrDefault(g =>
                     string.Equals(g.Id, options.PCUGroupId, StringComparison.OrdinalIgnoreCase));
 
                 if (matchedGroup == null)
                 {
+                    _logger.LogInformation("PCU group '{PCUGroupId}' was not found: aborting database creation.", options.PCUGroupId);
                     throw new InvalidOperationException(
                         $"No PCU group with id '{options.PCUGroupId}' was found.");
                 }
 
-                _logger.LogDebug("Found PCU group '{PCUGroupId}': cloudProvider={CloudProvider}, region={Region}.", matchedGroup.Id, matchedGroup.CloudProvider, matchedGroup.Region);
+                _logger.LogInformation("Found PCU group '{PCUGroupId}': cloudProvider={CloudProvider}, region={Region}.", matchedGroup.Id, matchedGroup.CloudProvider, matchedGroup.Region);
 
                 bool cloudProviderMatches = matchedGroup.CloudProvider == options.CloudProvider;
                 bool regionMatches = string.Equals(matchedGroup.Region, options.Region, StringComparison.OrdinalIgnoreCase);
 
                 if (!cloudProviderMatches || !regionMatches)
                 {
+                    _logger.LogInformation("PCU group '{PCUGroupId}' was found in a different region: aborting database creation.", matchedGroup.Id);
                     throw new InvalidOperationException(
                         $"PCU group '{options.PCUGroupId}' is in cloudProvider={matchedGroup.CloudProvider}, region={matchedGroup.Region}, " +
                         $"which does not match the requested cloudProvider={options.CloudProvider}, region={options.Region}.");
                 }
 
-                _logger.LogDebug("PCU group '{PCUGroupId}' validated successfully; proceeding with database creation.", options.PCUGroupId);
+                _logger.LogInformation("PCU group '{PCUGroupId}' validated successfully; proceeding with database creation.", options.PCUGroupId);
             }
         }
 
