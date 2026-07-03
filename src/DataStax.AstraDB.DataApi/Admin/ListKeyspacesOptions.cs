@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Admin;
+using DataStax.AstraDB.DataApi.Core;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
 /// Command options specific to the database admin's ListKeyspaces methods.
