@@ -16,7 +16,6 @@
 
 using System;
 using System.Text.Json.Serialization;
-using DataStax.AstraDB.DataApi.SerDes;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
@@ -50,7 +49,6 @@ public class PCUGroup
     /// The cloud provider for this PCU group (e.g. 'AWS').
     /// </summary>
     [JsonPropertyName("cloudProvider")]
-    [JsonConverter(typeof(CloudProviderTypeConverter))]
     public CloudProviderType? CloudProvider { get; set; }
 
     /// <summary>
@@ -165,7 +163,6 @@ public class PCUType
     /// </summary>
     [JsonPropertyName("provider")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonConverter(typeof(CloudProviderTypeConverter))]
     public CloudProviderType? CloudProvider { get; set; }
 
     /// <summary>
