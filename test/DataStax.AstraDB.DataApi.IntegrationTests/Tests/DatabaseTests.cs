@@ -476,7 +476,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the document class")]
     public async Task CreateCollection_WithVectorizeSharedSecret_Typed()
     {
         var collectionName = "coll_SimpleObjectWithVectorizeShSecret";
@@ -494,7 +494,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the document class")]
     public async Task CreateCollection_WithVectorizeSharedSecretDoubleAttribute_Typed()
     {
         var collectionName = "coll_SimpleObjectWithVectorizeShSecret2A";
@@ -571,7 +571,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name quoted below")]
     public async Task CreateCollection_WithVectorizeSharedSecret_Untyped()
     {
         var collectionName = "collectionVectorizesharedSecret_Untyped";
@@ -808,7 +808,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted in RowBookVectorizeSharedSecret")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the row class")]
     public async Task CreateTable_WithVectorizeSharedSecret_Typed()
     {
         try
@@ -825,7 +825,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted in RowBookVectorizeSharedSecretWithParameters")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the row class")]
     public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Typed()
     {
         try
@@ -895,7 +895,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name quoted below")]
     public async Task CreateTable_WithVectorizeSharedSecret_Untyped()
     {
         var tableName = "bookTestTableVectorizeSharedSecret_Untyped";
@@ -932,7 +932,7 @@ public class DatabaseTests
 
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain OpenAI key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name quoted below")]
     public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Untyped()
     {
         var tableName = "bookTestTableVeczeShdSecretWParams_Untyped";
