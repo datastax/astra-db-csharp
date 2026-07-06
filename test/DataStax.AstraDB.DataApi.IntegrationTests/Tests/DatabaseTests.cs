@@ -476,7 +476,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the document class")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database, see EmbeddingProviderSwitcher")]
     public async Task CreateCollection_WithVectorizeSharedSecret_Typed()
     {
         var collectionName = "coll_SimpleObjectWithVectorizeShSecret";
@@ -494,7 +494,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the document class")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database, see EmbeddingProviderSwitcher")]
     public async Task CreateCollection_WithVectorizeSharedSecretDoubleAttribute_Typed()
     {
         var collectionName = "coll_SimpleObjectWithVectorizeShSecret2A";
@@ -511,10 +511,10 @@ public class DatabaseTests
         await fixture.Database.DropCollectionAsync(collectionName);
     }
 
-    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    [Fact(Skip="Should be run after exporting the environment variable quoted in EmbeddingProviderSwitcher")]
     public async Task CreateGetCollection_WithVectorizeHeader_Typed()
     {
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable(EmbeddingProviderSwitcher.SecretEnvironmentVariableName) ?? "kaboom";
         var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "coll_SimpleObjectWithVectorizeHeader";
         // Signature of overloads mandates that we supply the collection name here. Eeh, I think we can live with that.
@@ -571,7 +571,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database, see EmbeddingProviderSwitcher")]
     public async Task CreateCollection_WithVectorizeSharedSecret_Untyped()
     {
         var collectionName = "collectionVectorizesharedSecret_Untyped";
@@ -579,15 +579,15 @@ public class DatabaseTests
         {
             Vector = new VectorOptions
             {
-                Dimension = 1024,
+                Dimension = EmbeddingProviderSwitcher.Dimension,
                 Metric = SimilarityMetric.DotProduct,
                 Service = new VectorServiceOptions()
                 {
-                    Provider = "voyageAI",
-                    ModelName = "voyage-2",
+                    Provider = EmbeddingProviderSwitcher.Provider,
+                    ModelName = EmbeddingProviderSwitcher.ModelName,
                     Authentication = new Dictionary<string, string>
                     {
-                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" }
+                        { "providerKey", EmbeddingProviderSwitcher.KMSSecretName }
                     }
                 }
             }
@@ -604,22 +604,22 @@ public class DatabaseTests
         await fixture.Database.DropCollectionAsync(collectionName);
     }
 
-    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    [Fact(Skip="Should be run after exporting the environment variable quoted in EmbeddingProviderSwitcher")]
     public async Task CreateGetCollection_WithVectorizeHeader_Untyped()
     {
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable(EmbeddingProviderSwitcher.SecretEnvironmentVariableName) ?? "kaboom";
         var headerOptions = new CreateCollectionOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var collectionName = "collection_WithVectorizeHeader_Untyped";
         var options = new CollectionDefinition
         {
             Vector = new VectorOptions
             {
-                Dimension = 1024,
+                Dimension = EmbeddingProviderSwitcher.Dimension,
                 Metric = SimilarityMetric.DotProduct,
                 Service = new VectorServiceOptions()
                 {
-                    Provider = "voyageAI",
-                    ModelName = "voyage-2",
+                    Provider = EmbeddingProviderSwitcher.Provider,
+                    ModelName = EmbeddingProviderSwitcher.ModelName,
                 }
             }
         };
@@ -808,7 +808,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the row class")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database, see EmbeddingProviderSwitcher")]
     public async Task CreateTable_WithVectorizeSharedSecret_Typed()
     {
         try
@@ -825,7 +825,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name in the row class")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database, see EmbeddingProviderSwitcher")]
     public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Typed()
     {
         try
@@ -841,10 +841,10 @@ public class DatabaseTests
         }
     }
 
-    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    [Fact(Skip="Should be run after exporting the environment variable quoted in EmbeddingProviderSwitcher")]
     public async Task CreateGetTable_WithVectorizeHeader_Typed()
     {
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable(EmbeddingProviderSwitcher.SecretEnvironmentVariableName) ?? "kaboom";
         var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
@@ -895,7 +895,7 @@ public class DatabaseTests
     }
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database, see EmbeddingProviderSwitcher")]
     public async Task CreateTable_WithVectorizeSharedSecret_Untyped()
     {
         var tableName = "bookTestTableVectorizeSharedSecret_Untyped";
@@ -904,13 +904,13 @@ public class DatabaseTests
             var createDefinition = new TableDefinition()
                 .AddColumn("Title", DataAPIType.Text())
                 .AddColumn("NumberOfPages", DataAPIType.Int())
-                .AddColumn("Author", DataAPIType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Author", DataAPIType.Vectorize(EmbeddingProviderSwitcher.Dimension, new VectorServiceOptions
                 {
-                    Provider = "voyageAI",
-                    ModelName = "voyage-2",
+                    Provider = EmbeddingProviderSwitcher.Provider,
+                    ModelName = EmbeddingProviderSwitcher.ModelName,
                     Authentication = new Dictionary<string, string>
                     {
-                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" }
+                        { "providerKey", EmbeddingProviderSwitcher.KMSSecretName }
                     }
                 }))
                 .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
@@ -932,7 +932,7 @@ public class DatabaseTests
 
 
     [SkipWhenNotAstra]
-    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database with the name quoted below")]
+    [Fact(Skip="Should be run manually after scoping a certain embedding key to the database, see EmbeddingProviderSwitcher")]
     public async Task CreateTable_WithVectorizeSharedSecretWithParameters_Untyped()
     {
         var tableName = "bookTestTableVeczeShdSecretWParams_Untyped";
@@ -941,13 +941,13 @@ public class DatabaseTests
             var createDefinition = new TableDefinition()
                 .AddColumn("Title", DataAPIType.Text())
                 .AddColumn("NumberOfPages", DataAPIType.Int())
-                .AddColumn("Author", DataAPIType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Author", DataAPIType.Vectorize(EmbeddingProviderSwitcher.Dimension, new VectorServiceOptions
                 {
-                    Provider = "voyageAI",
-                    ModelName = "voyage-2",
+                    Provider = EmbeddingProviderSwitcher.Provider,
+                    ModelName = EmbeddingProviderSwitcher.ModelName,
                     Authentication = new Dictionary<string, string>
                     {
-                        { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" }
+                        { "providerKey", EmbeddingProviderSwitcher.KMSSecretName }
                     },
                     Parameters = new Dictionary<string, object>
                     {
@@ -971,11 +971,11 @@ public class DatabaseTests
         }
     }
 
-    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    [Fact(Skip="Should be run after exporting the environment variable quoted in EmbeddingProviderSwitcher")]
     public async Task CreateGetTable_WithVectorizeHeader_Untyped()
     {
         var tableName = "bookTestTableVectorizeHeader_Untyped";
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable(EmbeddingProviderSwitcher.SecretEnvironmentVariableName) ?? "kaboom";
         var gtHeaderOptions = new GetTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         var ctHeaderOptions = new CreateTableOptions() { EmbeddingAPIKey = embeddingAPIKey };
         try
@@ -983,10 +983,10 @@ public class DatabaseTests
             var createDefinition = new TableDefinition()
                 .AddColumn("Title", DataAPIType.Text())
                 .AddColumn("NumberOfPages", DataAPIType.Int())
-                .AddColumn("Author", DataAPIType.Vectorize(1024, new VectorServiceOptions
+                .AddColumn("Author", DataAPIType.Vectorize(EmbeddingProviderSwitcher.Dimension, new VectorServiceOptions
                 {
-                    Provider = "voyageAI",
-                    ModelName = "voyage-2",
+                    Provider = EmbeddingProviderSwitcher.Provider,
+                    ModelName = EmbeddingProviderSwitcher.ModelName,
                 }))
                 .AddCompositePrimaryKey(new [] {"Title", "NumberOfPages"});
 
@@ -1007,7 +1007,7 @@ public class DatabaseTests
         }
         finally
         {
-            await fixture.Database.DropTableAsync<RowBookVectorizeHeaderBased>(tableName);
+            await fixture.Database.DropTableAsync(tableName);
         }
     }
 

@@ -91,8 +91,8 @@ public class SimpleObjectWithVectorizeAttribute
 
 [CollectionName("coll_SimpleObjectWithVectorizeShSecret")]
 [CollectionVectorize(
-    Provider = "voyageAI", ModelName = "voyage-2",
-    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI"}
+    Provider = EmbeddingProviderSwitcher.Provider, ModelName = EmbeddingProviderSwitcher.ModelName,
+    AuthenticationPairs = new string[] {"providerKey", EmbeddingProviderSwitcher.KMSSecretName}
 )]
 public class SimpleObjectWithVectorizeAttributeShSecret
 {
@@ -106,12 +106,12 @@ public class SimpleObjectWithVectorizeAttributeShSecret
 [CollectionName("coll_SimpleObjectWithVectorizeShSecret2A")]
 [CollectionVector(
     SimilarityMetric.Euclidean,
-    1024,
+    EmbeddingProviderSwitcher.Dimension,
     SourceModel="bert"
 )]
 [CollectionVectorize(
-    Provider = "voyageAI", ModelName = "voyage-2",
-    AuthenticationPairs = new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI"}
+    Provider = EmbeddingProviderSwitcher.Provider, ModelName = EmbeddingProviderSwitcher.ModelName,
+    AuthenticationPairs = new string[] {"providerKey", EmbeddingProviderSwitcher.KMSSecretName}
 )]
 public class SimpleObjectWithVectorizeAttributeShSecret2A
 {
@@ -123,7 +123,7 @@ public class SimpleObjectWithVectorizeAttributeShSecret2A
 }
 
 [CollectionName("coll_SimpleObjectWithVectorizeHeader")]
-[CollectionVectorize(Provider = "voyageAI", ModelName = "voyage-2")]
+[CollectionVectorize(Provider = EmbeddingProviderSwitcher.Provider, ModelName = EmbeddingProviderSwitcher.ModelName)]
 public class SimpleObjectWithVectorizeAttributeHeader
 {
     [DocumentId]
@@ -279,7 +279,7 @@ public class RowBookVectorizeHeaderBased
 {
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
-    [ColumnVectorize("voyageAI", "voyage-2", dimension: 1024)]
+    [ColumnVectorize(EmbeddingProviderSwitcher.Provider, EmbeddingProviderSwitcher.ModelName, dimension: EmbeddingProviderSwitcher.Dimension)]
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
     public int NumberOfPages { get; set; }
@@ -294,8 +294,8 @@ public class RowBookVectorizeSharedSecret
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
     [ColumnVectorize(
-        "voyageAI", "voyage-2", dimension: 1024,
-        authenticationPairs: new string[] {"providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI"}
+        EmbeddingProviderSwitcher.Provider, EmbeddingProviderSwitcher.ModelName, dimension: EmbeddingProviderSwitcher.Dimension,
+        authenticationPairs: new string[] {"providerKey", EmbeddingProviderSwitcher.KMSSecretName}
     )]
     public object Author { get; set; }
     [ColumnPrimaryKey(2)]
@@ -311,8 +311,8 @@ public class RowBookVectorizeSharedSecretWithParameters
     [ColumnPrimaryKey(1)]
     public string Title { get; set; }
     [ColumnVectorize(
-        "voyageAI", "voyage-2",
-        authenticationPairs: new string[] { "providerKey", "SHARED_SECRET_EMBEDDING_API_KEY_VOYAGEAI" },
+        EmbeddingProviderSwitcher.Provider, EmbeddingProviderSwitcher.ModelName,
+        authenticationPairs: new string[] { "providerKey", EmbeddingProviderSwitcher.KMSSecretName },
         parameterPairs: new object[] { "autoTruncate", false }
     )]
     public object Author { get; set; }
@@ -842,8 +842,8 @@ public class FakeDocument
 
 [CollectionName("coll_one_embedding_header_test")]
 [CollectionVectorize(
-    "voyageAI",
-    "voyage-2",
+    EmbeddingProviderSwitcher.Provider,
+    EmbeddingProviderSwitcher.ModelName,
     parameterPairs: new object[] { "autoTruncate", false }
 )]
 public class DocumentForEmbeddingHeaderTest
@@ -876,7 +876,7 @@ public class RowForEmbeddingHeaderTest
     [ColumnPrimaryKey(1)]
     public string Id { get; set; }
     [ColumnVectorize(
-        "voyageAI", "voyage-2", dimension: 1024,
+        EmbeddingProviderSwitcher.Provider, EmbeddingProviderSwitcher.ModelName, dimension: EmbeddingProviderSwitcher.Dimension,
         parameterPairs: new object[] { "autoTruncate", false }
     )]
     public object Name { get; set; }
