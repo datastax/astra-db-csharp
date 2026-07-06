@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-using DataStax.AstraDB.DataApi.Admin;
+using DataStax.AstraDB.DataApi.Core;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace DataStax.AstraDB.DataApi.Core;
+namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
 /// The metadata information for a region.
@@ -73,4 +73,10 @@ public class RegionInfo
     /// </summary>
     [JsonPropertyName("zone")]
     public string Zone { get; set; }
+
+    /// <summary>
+    /// The types of PCU (Provisioned Capacity Units) available for this region.
+    /// </summary>
+    [JsonPropertyName("pcu_types")]
+    public List<PCUType> PCUTypes { get; set; }
 }

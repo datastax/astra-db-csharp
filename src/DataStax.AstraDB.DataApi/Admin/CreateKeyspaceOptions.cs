@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-namespace DataStax.AstraDB.DataApi.Core;
+using DataStax.AstraDB.DataApi.Core;
+
+namespace DataStax.AstraDB.DataApi.Admin;
 
 /// <summary>
-/// Options specific to the database admin command to drop a keyspace.
+/// Options specific to the database admin command to create a keyspace.
 /// </summary>
-public class DropKeyspaceOptions : BlockingCommandOptions
+public class CreateKeyspaceOptions : BlockingCommandOptions
 {
+  /// <summary>
+  /// Whether to set the new keyspace as the active keyspace for the associated Database.
+  /// </summary>
+  public bool updateDBKeyspace { get; set; } = false;
 }

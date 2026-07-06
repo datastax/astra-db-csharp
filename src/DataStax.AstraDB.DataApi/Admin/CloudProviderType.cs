@@ -21,7 +21,6 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// <summary>
 /// Specifies the cloud provider on which an Astra DB database is deployed.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter<CloudProviderType>))]
 public enum CloudProviderType
 {
     /// <summary>Amazon Web Services.</summary>
@@ -32,5 +31,5 @@ public enum CloudProviderType
     GCP,
     /// <summary>Microsoft Azure.</summary>
     [JsonStringEnumMemberName("azure")]
-    Azure
+    AZURE
 }

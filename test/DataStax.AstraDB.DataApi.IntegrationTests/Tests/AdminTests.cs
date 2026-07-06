@@ -1,3 +1,19 @@
+/*
+ * Copyright DataStax, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Results;
@@ -546,6 +562,44 @@ public class AdminTests
         Assert.NotEmpty(regionsAll);
 
         Assert.True(regionsAll.Count >= regionsOnly.Count);
+
+        // region PCU information checks
+        Assert.NotEmpty(regionsDefault[0].PCUTypes);
+        var pcu_type = regionsDefault[0].PCUTypes[0];
+        Assert.IsType<PCUType>(pcu_type);
+        Assert.IsType<string>(pcu_type.Type);
+        Assert.IsType<PCUTypeDetails>(pcu_type.Details);
+    }
+
+    [SkipWhenNotAstra]
+    [Fact(Skip="Run manually when an ORG ADMIN token is used, or this endpoint will error")]
+    public async Task DatabaseAdminAstra_GetPCUGroups()
+    {
+        var admin = fixture.Client.GetAstraDatabasesAdmin();
+
+        var pcuGroupsFull = await admin.ListPCUGroupsAsync();
+        Assert.NotNull(pcuGroupsFull);
+
+        var pcuGroupsFiltered = await admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
+            CloudProvider = CloudProviderType.AWS,
+            Region = "us-west-1"
+        });
+        Assert.NotNull(pcuGroupsFiltered);
+
+        Assert.True(pcuGroupsFull.Count >= pcuGroupsFiltered.Count);
+
+        // bad filtering patterns
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
+                Region = "us-west-1"
+            })
+        );
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => admin.ListPCUGroupsAsync(new ListPCUGroupsOptions {
+                CloudProvider = CloudProviderType.GCP
+            })
+        );
+
     }
 
     [SkipWhenNotAstra]
@@ -609,8 +663,8 @@ public class AdminTests
         var admin = fixture.Client.GetAstraDatabasesAdmin().CreateDatabase(
             new (){
                 Name = dbName,
-                CloudProvider = CloudProviderType.GCP,
-                Region = "europe-west4",
+                CloudProvider = CloudProviderType.AWS,
+                Region = "us-west-2",
                 Keyspace = "fedault_seykpace",
                 waitForCompletion = false,
             }
@@ -688,6 +742,82 @@ public class AdminTests
         var database = admin.GetDatabase();
         var tableNames = await database.ListTableNamesAsync();
         Assert.NotNull(tableNames);
+    }
+
+    // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBadPCUGroupNonblockingAsync
+    // ENSURE THE TOKEN CAN READ PCU GROUPS FOR THIS TEST (else you'll get another failure and test will fail)
+    [Fact(Skip = AdminCollection.SkipMessage)]
+    public async Task CreateDatabaseBadPCUGroupNonblockingAsync()
+    {
+        var dbName = "test-db-badpcugroup-create-async-x";
+        var creationOptions = new CreateDatabaseOptions() {
+            Name = dbName,
+            CloudProvider = CloudProviderType.AWS,
+            Region = "us-west-2",
+            waitForCompletion = false,
+            PCUGroupId = "bad_group_id",
+        };
+
+        var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await astraAdmin.CreateDatabaseAsync(creationOptions);
+        });
+    }
+
+    // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseMisplacedPCUGroupNonblockingAsync
+    // ENSURE THE TOKEN CAN READ PCU GROUPS FOR THIS TEST (else you'll get another failure and test will fail)
+    [Fact(Skip = AdminCollection.SkipMessage)]
+    public async Task CreateDatabaseMisplacedPCUGroupNonblockingAsync()
+    {
+        var dbName = "test-db-misplacedpcugroup-create-async-x";
+        // Manually ensure the PCU Group ID exists, but for another provider/region!
+        var creationOptions = new CreateDatabaseOptions() {
+            Name = dbName,
+            CloudProvider = CloudProviderType.GCP,
+            Region = "us-east1",
+            waitForCompletion = false,
+            PCUGroupId = "8424aa7c-a26b-44cc-8ae3-c65aec7a184f",
+        };
+
+        var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await astraAdmin.CreateDatabaseAsync(creationOptions);
+        });
+    }
+
+    // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseCorrectPCUGroupNonblockingAsync
+    // ENSURE THE TOKEN CAN READ PCU GROUPS FOR THIS TEST (else you'll get another failure and test will fail)
+    [Fact(Skip = AdminCollection.SkipMessage)]
+    public async Task CreateDatabaseCorrectPCUGroupNonblockingAsync()
+    {
+        var dbName = "test-db-correctpcugroup-create-async-x";
+        // Manually ensure the PCU Group ID exists, but for another provider/region!
+        var creationOptions = new CreateDatabaseOptions() {
+            Name = dbName,
+            CloudProvider = CloudProviderType.AWS,
+            Region = "us-west-2",
+            waitForCompletion = false,
+            PCUGroupId = "8424aa7c-a26b-44cc-8ae3-c65aec7a184f",
+        };
+
+        var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
+
+        var dbAdmin = await astraAdmin.CreateDatabaseAsync(creationOptions);
+
+        var dbStatus = await astraAdmin.GetDatabaseStatusAsync(dbAdmin.Id);
+        Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
+            || dbStatus == AstraDatabaseStatus.INITIALIZING
+            || dbStatus == AstraDatabaseStatus.PENDING);
+
+        var dbAdmin2 = astraAdmin.GetDatabaseAdmin(dbAdmin.GetAPIEndpoint());
+        var dbStatus2 = await astraAdmin.GetDatabaseStatusAsync(dbAdmin2.Id);
+        Assert.True(dbStatus2 == AstraDatabaseStatus.ASSOCIATING
+            || dbStatus2 == AstraDatabaseStatus.INITIALIZING
+            || dbStatus2 == AstraDatabaseStatus.PENDING);
     }
 
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.DropDatabaseNonblockingSync
