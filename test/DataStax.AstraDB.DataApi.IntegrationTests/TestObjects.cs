@@ -753,8 +753,8 @@ public class FARRCursorTestVectorDocument {
 
 [CollectionName("collectionTestVectorizeFARRCursorFilled")]
 [CollectionVectorize(
-    "nvidia",
-    "nvidia/nv-embedqa-e5-v5",
+    "voyageAI",
+    "voyage-2",
     SimilarityMetric.Cosine
 )]
 public class FARRCursorTestVectorizeDocument {

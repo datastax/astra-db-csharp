@@ -65,6 +65,12 @@ public abstract class BaseFindAndRerankOptions<T, TSort> : BasePaginatedFindOpti
     /// </summary>
     public int? LexicalLimit { get; set; }
 
+    /// <summary>
+    /// Optional override for the reranking service to use in this operation.
+    /// When null, the collection's default reranking service is used.
+    /// </summary>
+    public RerankServiceOptions Service { get; set; }
+
     internal override object ToPayload(Filter<T> filter, string pageState = null)
     {
         // enforce the constraints between HybridLimits, VectorLimit/LexicalLimit
@@ -111,6 +117,8 @@ public abstract class BaseFindAndRerankOptions<T, TSort> : BasePaginatedFindOpti
             options["rerankQuery"] = RerankQuery;
         if (hybridLimits != null)
             options["hybridLimits"] = hybridLimits;
+        if (Service != null)
+            options["rerank"] = Service;
 
         return new
         {
@@ -123,7 +131,10 @@ public abstract class BaseFindAndRerankOptions<T, TSort> : BasePaginatedFindOpti
 
     internal override BaseFindAndRerankOptions<T, TSort> ShallowClone()
     {
-        return (BaseFindAndRerankOptions<T, TSort>)MemberwiseClone();
+        var clone = (BaseFindAndRerankOptions<T, TSort>)MemberwiseClone();
+        if (Service != null)
+            clone.Service = Service.ShallowClone();
+        return clone;
     }
 }
 

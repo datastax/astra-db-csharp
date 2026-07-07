@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataStax.AstraDB.DataApi.Core;
@@ -34,4 +35,20 @@ public class RerankServiceOptions
     /// </summary>
     [JsonPropertyName("provider")]
     public string Provider { get; set; }
+
+    /// <summary>
+    /// Authentication details for the reranking provider
+    /// </summary>
+    [JsonPropertyName("authentication")]
+    public Dictionary<string, string> Authentication { get; set; }
+
+    /// <summary>
+    /// Additional parameters for the reranking provider
+    /// </summary>
+    [JsonPropertyName("parameters")]
+    public Dictionary<string, object> Parameters { get; set; }
+
+    internal RerankServiceOptions ShallowClone() => new RerankServiceOptions {
+        ModelName = ModelName, Provider = Provider, Authentication = Authentication, Parameters = Parameters
+    };
 }

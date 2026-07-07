@@ -21,6 +21,8 @@ jobs:
       ASTRA_DB_TOKEN: "Cassandra:Y2Fzc2FuZHJh:Y2Fzc2FuZHJh"
       ASTRA_DB_URL: "http://localhost:8181"
       ASTRA_DB_DESTINATION: "hcd"
+      HEADER_RERANKING_API_KEY_NVIDIA: ${{ secrets.HEADER_RERANKING_API_KEY_NVIDIA }}
+      HEADER_EMBEDDING_API_KEY_VOYAGEAI: ${{ secrets.HEADER_EMBEDDING_API_KEY_VOYAGEAI }}
 
     runs-on: ubuntu-latest
 

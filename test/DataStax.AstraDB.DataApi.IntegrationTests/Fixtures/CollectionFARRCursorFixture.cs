@@ -29,6 +29,12 @@ public class CollectionFARRCursorCollection : ICollectionFixture<AssemblyFixture
 
 public class CollectionFARRCursorFixture : BaseFixture, IAsyncLifetime
 {
+    private string headerRerankingAPIKey;
+    private string headerEmbeddingAPIKey;
+
+    // used by a test that does a untyped GetCollection
+    public CreateCollectionOptions GetCollectionVectorOptions { get; private set; }
+
     public CollectionFARRCursorFixture(AssemblyFixture assemblyFixture) : base(assemblyFixture, "collectionFARRCursor")
     {
     }
@@ -46,18 +52,17 @@ public class CollectionFARRCursorFixture : BaseFixture, IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
-        if (IsAstra()) {
-            await CreateFilledVectorCollection();
-            await CreateFilledVectorizeCollection();
-        }
+        headerRerankingAPIKey = Environment.GetEnvironmentVariable("HEADER_RERANKING_API_KEY_NVIDIA") ?? "kaboom";
+        headerEmbeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        GetCollectionVectorOptions = IsAstra() ? new () : new () { RerankingAPIKey = headerRerankingAPIKey };
+        await CreateFilledVectorCollection();
+        await CreateFilledVectorizeCollection();
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (IsAstra()) {
-            await Database.DropCollectionAsync<FARRCursorTestVectorDocument>();
-            await Database.DropCollectionAsync<FARRCursorTestVectorizeDocument>();
-        }
+        await Database.DropCollectionAsync<FARRCursorTestVectorDocument>();
+        await Database.DropCollectionAsync<FARRCursorTestVectorizeDocument>();
     }
 
     private const int NUM_DOCS = 5;
@@ -87,7 +92,12 @@ public class CollectionFARRCursorFixture : BaseFixture, IAsyncLifetime
                 }
             }
         };
-        var collection = await Database.CreateCollectionAsync<FARRCursorTestVectorDocument>(collectionDefinition);
+        var collection = IsAstra() ?
+            (await Database.CreateCollectionAsync<FARRCursorTestVectorDocument>(collectionDefinition)) :
+            (await Database.CreateCollectionAsync<FARRCursorTestVectorDocument>(
+                collectionDefinition,
+                new () { RerankingAPIKey = headerRerankingAPIKey }
+            )) ;
 
         await collection.DeleteManyAsync(Builders<FARRCursorTestVectorDocument>.CollectionFilter.Empty());
 
@@ -134,7 +144,15 @@ public class CollectionFARRCursorFixture : BaseFixture, IAsyncLifetime
                 }
             }
         };
-        var collection = await Database.CreateCollectionAsync<FARRCursorTestVectorizeDocument>(collectionDefinition);
+        var collection = IsAstra() ?
+            ( await Database.CreateCollectionAsync<FARRCursorTestVectorizeDocument>(
+                collectionDefinition,
+                new () { EmbeddingAPIKey = headerEmbeddingAPIKey }
+            ) ) :
+            ( await Database.CreateCollectionAsync<FARRCursorTestVectorizeDocument>(
+                collectionDefinition,
+                new () { EmbeddingAPIKey = headerEmbeddingAPIKey, RerankingAPIKey = headerRerankingAPIKey }
+            ) ) ;
 
         await collection.DeleteManyAsync(Builders<FARRCursorTestVectorizeDocument>.CollectionFilter.Empty());
 
