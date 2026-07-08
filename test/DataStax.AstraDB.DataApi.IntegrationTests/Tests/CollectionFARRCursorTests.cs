@@ -308,7 +308,8 @@ public class CollectionFARRCursorTests
         await Assert.ThrowsAsync<CommandException>(async () => await cur.ToListAsync());
     }
 
-    [Fact]
+    // TODO: re-enable this test when rerank-override is available in the target Data API version
+    [Fact(Skip="This test is disabled until Rerak-Override is released.")]
     public async Task Test_CollectionVectorFARRRerankOverride()
     {
         var filledCollection = _fixture.FilledVectorCollection;
@@ -358,7 +359,8 @@ public class CollectionFARRCursorTests
         );
     }
 
-    [Fact]
+    // TODO: re-enable this test when rerank-override is available in the target Data API version
+    [Fact(Skip="This test is disabled until Rerak-Override is released.")]
     public async Task Test_CollectionVectorizeFARRRerankOverride()
     {
         var filledCollection = _fixture.FilledVectorizeCollection;

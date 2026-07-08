@@ -552,11 +552,11 @@ public class AdditionalCollectionTests
         }
     }
 
-    // Requires VOYAGE embedding provider
-    [Fact(Skip="Should be run after exporting the environment variable quoted below")]
+    // Requires a certain embedding provider (see EmbeddingProviderSwitcher)
+    [Fact(Skip="Should be run after exporting the environment variable quoted in EmbeddingProviderSwitcher")]
     public async Task Test_CollectionEmbeddingHeaders()
     {
-        var embeddingAPIKey = Environment.GetEnvironmentVariable("HEADER_EMBEDDING_API_KEY_VOYAGEAI") ?? "kaboom";
+        var embeddingAPIKey = Environment.GetEnvironmentVariable(EmbeddingProviderSwitcher.SecretEnvironmentVariableName) ?? "kaboom";
         try
         {
             var collectionCr = await fixture.Database.CreateCollectionAsync<DocumentForEmbeddingHeaderTest>(
