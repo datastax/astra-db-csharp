@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Core;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataStax.AstraDB.DataApi.Admin;
 
@@ -25,9 +26,10 @@ namespace DataStax.AstraDB.DataApi.Admin;
 /// </summary>
 public class CreateDatabaseOptions : BlockingCommandOptions
 {
+    private static readonly string[] NonVectorDBTypeStrings = { "nonvector", "non-vector", "non vector", "non_vector" };
     private const string DefaultTier = "serverless";
     private const int DefaultCapacityUnits = 1;
-    private const string DefaultDbType = "vector";
+    private const string DefaultDBType = "vector";
 
     /// <summary>
     /// Name of the database to be created.
@@ -64,9 +66,9 @@ public class CreateDatabaseOptions : BlockingCommandOptions
     public int CapacityUnits { get; set; } = DefaultCapacityUnits;
 
     /// <summary>
-    /// Database type (defaults to "vector").
+    /// Database type: "vector" (default) / "nonvector".
     /// </summary>
-    public string DBType { get; set; } = DefaultDbType;
+    public string DBType { get; set; } = DefaultDBType;
 
     /// <summary>
     /// PCU group ID to use for provisioning the database. Optional.
@@ -79,7 +81,10 @@ public class CreateDatabaseOptions : BlockingCommandOptions
 
         payload["tier"] = Tier;
         payload["capacityUnits"] = CapacityUnits;
-        payload["dbType"] = DBType;
+        // explicit null DBType is passed into the payload (the DevOps API will error at that)
+        if (DBType == null || !NonVectorDBTypeStrings.Contains(DBType.ToLower())) {
+            payload["dbType"] = DBType;
+        }
         if ( Name != null )
         {
             payload["name"] = Name;

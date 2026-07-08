@@ -18,6 +18,7 @@ using DataStax.AstraDB.DataApi.Admin;
 using DataStax.AstraDB.DataApi.Core;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
+using System.Net.Http;
 using Xunit;
 
 namespace DataStax.AstraDB.DataApi.IntegrationTests;
@@ -704,6 +705,27 @@ public class AdminTests
             || dbStatus2 == AstraDatabaseStatus.PENDING);
     }
 
+    // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseNullDBTypeAsync
+    [Fact(Skip = AdminCollection.SkipMessage)]
+    public async Task CreateDatabaseNullDBTypeAsync()
+    {
+        var dbName = "test-db-create-nulldbtype-async-x";
+        var creationOptions = new CreateDatabaseOptions() {
+            Name = dbName,
+            CloudProvider = CloudProviderType.AWS,
+            Region = "us-west-2",
+            waitForCompletion = false,
+            DBType = null,
+        };
+
+        var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
+
+        await Assert.ThrowsAsync<HttpRequestException>(async () =>
+        {
+            await astraAdmin.CreateDatabaseAsync(creationOptions);
+        });
+    }
+
     // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateDatabaseBlockingSync
     [Fact(Skip = AdminCollection.SkipMessage)]
     public void CreateDatabaseBlockingSync()
@@ -802,6 +824,35 @@ public class AdminTests
             Region = "us-west-2",
             waitForCompletion = false,
             PCUGroupId = "8424aa7c-a26b-44cc-8ae3-c65aec7a184f",
+        };
+
+        var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
+
+        var dbAdmin = await astraAdmin.CreateDatabaseAsync(creationOptions);
+
+        var dbStatus = await astraAdmin.GetDatabaseStatusAsync(dbAdmin.Id);
+        Assert.True(dbStatus == AstraDatabaseStatus.ASSOCIATING
+            || dbStatus == AstraDatabaseStatus.INITIALIZING
+            || dbStatus == AstraDatabaseStatus.PENDING);
+
+        var dbAdmin2 = astraAdmin.GetDatabaseAdmin(dbAdmin.GetAPIEndpoint());
+        var dbStatus2 = await astraAdmin.GetDatabaseStatusAsync(dbAdmin2.Id);
+        Assert.True(dbStatus2 == AstraDatabaseStatus.ASSOCIATING
+            || dbStatus2 == AstraDatabaseStatus.INITIALIZING
+            || dbStatus2 == AstraDatabaseStatus.PENDING);
+    }
+
+    // dotnet test --filter FullyQualifiedName=DataStax.AstraDB.DataApi.IntegrationTests.AdminTests.CreateNonvectorDatabaseNonblockingAsync
+    [Fact(Skip = AdminCollection.SkipMessage)]
+    public async Task CreateNonvectorDatabaseNonblockingAsync()
+    {
+        var dbName = "test-nonvector-db-create-async-x";
+        var creationOptions = new CreateDatabaseOptions() {
+            Name = dbName,
+            CloudProvider = CloudProviderType.AWS,
+            Region = "us-west-2",
+            waitForCompletion = false,
+            DBType = "NonVector",
         };
 
         var astraAdmin = fixture.Client.GetAstraDatabasesAdmin();
