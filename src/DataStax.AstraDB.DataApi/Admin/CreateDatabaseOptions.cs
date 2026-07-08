@@ -66,7 +66,7 @@ public class CreateDatabaseOptions : BlockingCommandOptions
     public int CapacityUnits { get; set; } = DefaultCapacityUnits;
 
     /// <summary>
-    /// Database type (defaults to "vector").
+    /// Database type: "vector" (default) / "nonvector".
     /// </summary>
     public string DBType { get; set; } = DefaultDBType;
 
