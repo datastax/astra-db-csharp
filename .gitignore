@@ -1,3 +1,4 @@
+*.env
 .vscode
 .idea
 src/DataStax.AstraDB.DataApi/bin
