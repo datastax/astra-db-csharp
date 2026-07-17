@@ -263,9 +263,45 @@ public class RowBook
 [TableName("insertAllTypesInPKRowsTest")]
 public class RowWithAllTypesInPK
 {
-    [ColumnPrimaryKey]
+    [ColumnPrimaryKey(1)]
+    public string TheAscii { get; set; }
+    [ColumnPrimaryKey(2)]
+    public long TheBigInt { get; set; }
+    [ColumnPrimaryKey(3)]
     public DateOnly TheDateOnly { get; set; }
+    [ColumnPrimaryKey(4)]
+    public bool TheBoolean { get; set; }
+    [ColumnPrimaryKey(5)]
+    public byte[] TheBlob { get; set; }
+    [ColumnPrimaryKey(6)]
+    public decimal TheDecimal { get; set; }
+    [ColumnPrimaryKey(7)]
+    public double TheDouble { get; set; }
+    [ColumnPrimaryKey(8)]
+    public float TheFloat { get; set; }
+    [ColumnPrimaryKey(9)]
+    public System.Net.IPAddress TheInet { get; set; }
+
+    [ColumnPrimaryKey(10)]
+    public int TheInt { get; set; }
+    [ColumnPrimaryKey(11)]
+    public short TheSmallint { get; set; }
+    [ColumnPrimaryKey(12)]
     public string TheText { get; set; }
+    [ColumnPrimaryKey(13)]
+    public TimeOnly TheTime { get; set; }
+    [ColumnPrimaryKey(14)]
+    public DateTime TheTimestamp { get; set; }
+    [ColumnPrimaryKey(15)]
+    public byte TheTinyint { get; set; }
+    [ColumnPrimaryKey(16)]
+    public Guid TheUuid { get; set; }
+    [ColumnPrimaryKey(17)]
+    public long TheVarint { get; set; }
+    [ColumnPrimaryKey(18)]
+    public float[] TheVector { get; set; }
+    //
+    public string TheNonPKValue { get; set; }
 }
 
 [TableName("bookTestTableVectorize")]

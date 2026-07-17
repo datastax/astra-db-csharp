@@ -19,6 +19,7 @@ using DataStax.AstraDB.DataApi.Core.Query;
 using DataStax.AstraDB.DataApi.Core.Results;
 using DataStax.AstraDB.DataApi.IntegrationTests.Fixtures;
 using DataStax.AstraDB.DataApi.Tables;
+using DataStax.AstraDB.DataApi.Utils;
 using Microsoft.VisualBasic;
 using System.Net;
 using System.Text;
@@ -78,17 +79,116 @@ public class TableTests
     {
         try
         {
-            var table = await fixture.Database.CreateTableAsync<RowWithAllTypesInPK>();
-            var theDateOnly = DateOnly.Parse("2026-07-16");;
+            var tableDefinition = new TableDefinition()
+                // ALL PK COLUMNS HERE
+                .AddColumn("TheAscii", DataAPIType.Ascii())
+                .AddColumn("TheBigInt", DataAPIType.BigInt())
+                .AddColumn("TheDateOnly", DataAPIType.Date())
+                .AddColumn("TheBoolean", DataAPIType.Boolean())
+                .AddColumn("TheBlob", DataAPIType.Blob())
+                .AddColumn("TheDecimal", DataAPIType.Decimal())
+                .AddColumn("TheDouble", DataAPIType.Double())
+                .AddColumn("TheFloat", DataAPIType.Float())
+                .AddColumn("TheInet", DataAPIType.Inet())
+                .AddColumn("TheInt", DataAPIType.Int())
+                .AddColumn("TheSmallint", DataAPIType.SmallInt())
+                .AddColumn("TheText", DataAPIType.Text())
+                .AddColumn("TheTime", DataAPIType.Time())
+                .AddColumn("TheTimestamp", DataAPIType.Timestamp())
+                .AddColumn("TheTinyint", DataAPIType.TinyInt())
+                .AddColumn("TheUuid", DataAPIType.Uuid())
+                .AddColumn("TheVarint", DataAPIType.VarInt())
+                .AddColumn("TheVector", DataAPIType.Vector(2))
+                .AddColumn("TheNonPKValue", DataAPIType.Text())
+                .AddCompositePrimaryKey(new string[] {
+                    // ALL PK COLUMN NAMES HERE
+                    "TheAscii",
+                    "TheBigInt",
+                    "TheDateOnly",
+                    "TheBoolean",
+                    "TheBlob",
+                    "TheDecimal",
+                    "TheDouble",
+                    "TheFloat",
+                    "TheInet",
+                    "TheInt",
+                    "TheSmallint",
+                    "TheText",
+                    "TheTime",
+                    "TheTimestamp",
+                    "TheTinyint",
+                    "TheUuid",
+                    "TheVarint",
+                    "TheVector",
+                });
+            var table = await fixture.Database.CreateTableAsync<RowWithAllTypesInPK>(tableDefinition);
+
+            // ALL PK VALUE VAR NAMES HERE
+            var theAscii = "my ascii";
+            var theBigInt = 123456789L;
+            var theDateOnly = DateOnly.Parse("2026-07-16");
+            var theBoolean = true;
+            var theBlob = Encoding.ASCII.GetBytes("my blob.");
+            var theDecimal = 12.3456m;
+            var theDouble = 12.3456d;
+            var theFloat = 12.34f;
+            var theInet = IPAddress.Parse("10.1.1.10");
+            var theInt = 4096;
+            var theSmallint = (short)(12);
+            var theText = "my text";
+            var theTime = TimeOnly.Parse("11:22:33.456");
+            var theTimestamp = new DateTime(
+                2026, 7, 17, 12, 34, 56, 789,
+                DateTimeKind.Utc
+            );
+            var theTinyint = (byte)(16);
+            var theUuid = Guid.Parse("63f4f459-1bba-48ee-9151-197cd545a911");
+            var theVarint = 8192;
+            var theVector = new float[] { 0.01f, -0.02f };
             var row1 = new RowWithAllTypesInPK()
             {
+                // ALL PK COLUMN VALUE SETTINGS TO ROW HERE
+                TheAscii = theAscii,
+                TheBigInt = theBigInt,
                 TheDateOnly = theDateOnly,
-                TheText = "Test Row",
+                TheBoolean = theBoolean,
+                TheBlob = theBlob,
+                TheDecimal = theDecimal,
+                TheDouble = theDouble,
+                TheFloat = theFloat,
+                TheInet = theInet,
+                TheInt = theInt,
+                TheSmallint = theSmallint,
+                TheText = theText,
+                TheTime = theTime,
+                TheTimestamp = theTimestamp,
+                TheTinyint = theTinyint,
+                TheUuid = theUuid,
+                TheVarint = theVarint,
+                TheVector = theVector,
+                TheNonPKValue = "Test Row",
             };
             var rows = new List<RowWithAllTypesInPK> { row1 };
             var result = await table.InsertManyAsync(rows);
             Assert.Equal(rows.Count, result.InsertedCount);
-            Assert.Equal(rows[0].TheDateOnly, result.InsertedIdTuples[0][0]);
+            Assert.Equal(rows[0].TheAscii, result.InsertedIdTuples[0][0]);
+            Assert.Equal(rows[0].TheBigInt, result.InsertedIdTuples[0][1]);
+            Assert.Equal(rows[0].TheDateOnly, result.InsertedIdTuples[0][2]);
+            Assert.Equal(rows[0].TheBoolean, result.InsertedIdTuples[0][3]);
+            Assert.Equal(rows[0].TheBlob, result.InsertedIdTuples[0][4]);
+            Assert.Equal(rows[0].TheDecimal, result.InsertedIdTuples[0][5]);
+            Assert.Equal(rows[0].TheDouble, result.InsertedIdTuples[0][6]);
+            Assert.Equal(rows[0].TheFloat, result.InsertedIdTuples[0][7]);
+            Assert.Equal(rows[0].TheInet, result.InsertedIdTuples[0][8]);
+            Assert.Equal(rows[0].TheInt, result.InsertedIdTuples[0][9]);
+            Assert.Equal(rows[0].TheSmallint, result.InsertedIdTuples[0][10]);
+            Assert.Equal(rows[0].TheText, result.InsertedIdTuples[0][11]);
+            Assert.Equal(rows[0].TheTime, result.InsertedIdTuples[0][12]);
+            Assert.Equal(rows[0].TheTimestamp, result.InsertedIdTuples[0][13]);
+            Assert.Equal(rows[0].TheTinyint, result.InsertedIdTuples[0][14]);
+            Assert.Equal(rows[0].TheUuid, result.InsertedIdTuples[0][15]);
+            Assert.Equal(rows[0].TheVarint, result.InsertedIdTuples[0][16]);
+            Assert.Equal(rows[0].TheVector, result.InsertedIdTuples[0][17]);
         }
         finally
         {
