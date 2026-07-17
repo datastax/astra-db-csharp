@@ -153,6 +153,12 @@ internal class TableInsertManyResultConverter : JsonConverter<TableInsertManyRes
                     return element.GetBoolean();
                 case "timestamp":
                     return DateTime.Parse(element.GetString()!);
+                case "date":
+#if NET6_0_OR_GREATER
+                    return DateOnly.Parse(element.GetString()!);
+#else
+                    return DateTime.Parse(element.GetString()!).Date;
+#endif
                 case "uuid":
                     return Guid.Parse(element.GetString()!);
                 default:

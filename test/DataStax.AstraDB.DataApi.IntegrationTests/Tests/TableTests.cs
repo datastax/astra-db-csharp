@@ -74,6 +74,29 @@ public class TableTests
     }
 
     [Fact]
+    public async Task InsertAllTypesInPKRows()
+    {
+        try
+        {
+            var table = await fixture.Database.CreateTableAsync<RowWithAllTypesInPK>();
+            var theDateOnly = DateOnly.Parse("2026-07-16");;
+            var row1 = new RowWithAllTypesInPK()
+            {
+                TheDateOnly = theDateOnly,
+                TheText = "Test Row",
+            };
+            var rows = new List<RowWithAllTypesInPK> { row1 };
+            var result = await table.InsertManyAsync(rows);
+            Assert.Equal(rows.Count, result.InsertedCount);
+            Assert.Equal(rows[0].TheDateOnly, result.InsertedIdTuples[0][0]);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync<RowWithAllTypesInPK>();
+        }
+    }
+
+    [Fact]
     [SkipWhenNotAstra] // TODO why is this not throwing on HCD in CI? It throws just fine when running on HCD locally
     public async Task InsertManyCommandOptions()
     {

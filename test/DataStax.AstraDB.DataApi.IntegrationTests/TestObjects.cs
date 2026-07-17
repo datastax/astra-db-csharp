@@ -260,6 +260,14 @@ public class RowBook
     public float Rating { get; set; }
 }
 
+[TableName("insertAllTypesInPKRowsTest")]
+public class RowWithAllTypesInPK
+{
+    [ColumnPrimaryKey]
+    public DateOnly TheDateOnly { get; set; }
+    public string TheText { get; set; }
+}
+
 [TableName("bookTestTableVectorize")]
 public class RowBookVectorize
 {
