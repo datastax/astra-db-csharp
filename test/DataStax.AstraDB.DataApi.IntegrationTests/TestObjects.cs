@@ -281,7 +281,6 @@ public class RowWithAllTypesInPK
     public float TheFloat { get; set; }
     [ColumnPrimaryKey(9)]
     public System.Net.IPAddress TheInet { get; set; }
-
     [ColumnPrimaryKey(10)]
     public int TheInt { get; set; }
     [ColumnPrimaryKey(11)]
@@ -302,6 +301,32 @@ public class RowWithAllTypesInPK
     public float[] TheVector { get; set; }
     //
     public string TheNonPKValue { get; set; }
+}
+
+[TableName("insertAllTypesOutsidePKRowsTest")]
+public class RowWithAllTypesOutsidePK
+{
+    [ColumnPrimaryKey]
+    public string ThePK { get; set; }
+    // non-PK values
+    public string? TheAscii { get; set; }
+    public long? TheBigInt { get; set; }
+    public DateOnly? TheDateOnly { get; set; }
+    public bool? TheBoolean { get; set; }
+    public byte[]? TheBlob { get; set; }
+    public decimal? TheDecimal { get; set; }
+    public double? TheDouble { get; set; }
+    public float? TheFloat { get; set; }
+    public System.Net.IPAddress? TheInet { get; set; }
+    public int? TheInt { get; set; }
+    public short? TheSmallint { get; set; }
+    public string? TheText { get; set; }
+    public TimeOnly? TheTime { get; set; }
+    public DateTime? TheTimestamp { get; set; }
+    public byte? TheTinyint { get; set; }
+    public Guid? TheUuid { get; set; }
+    public long? TheVarint { get; set; }
+    public float[]? TheVector { get; set; }
 }
 
 [TableName("bookTestTableVectorize")]
