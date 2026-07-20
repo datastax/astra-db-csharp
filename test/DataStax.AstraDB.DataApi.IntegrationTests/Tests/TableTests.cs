@@ -141,9 +141,9 @@ public class TableTests
                 2026, 7, 17, 12, 34, 56, 789,
                 DateTimeKind.Utc
             );
-            var theTinyint = (byte)(16);
+            var theTinyint = (sbyte)(16);
             var theUuid = Guid.Parse("63f4f459-1bba-48ee-9151-197cd545a911");
-            var theVarint = 8192;
+            var theVarint = 81928192m;
             var theVector = new float[] { 0.01f, -0.02f };
             var row1 = new RowWithAllTypesInPK()
             {
@@ -244,9 +244,9 @@ public class TableTests
                 2026, 7, 17, 12, 34, 56, 789,
                 DateTimeKind.Utc
             );
-            var theTinyint = (byte)(16);
+            var theTinyint = (sbyte)(16);
             var theUuid = Guid.Parse("63f4f459-1bba-48ee-9151-197cd545a911");
-            var theVarint = 8192;
+            var theVarint = 81928192m;
             var theVector = new float[] { 0.01f, -0.02f };
             var row1 = new RowWithAllTypesOutsidePK()
             {
@@ -355,6 +355,173 @@ public class TableTests
         }
     }
 
+    [Fact]
+    public async Task InsertAllTypesOutsidePKRowsUntyped()
+    {
+        try
+        {
+            var tableDefinition = new TableDefinition()
+                .AddColumn("ThePK", DataAPIType.Text())
+                // ALL NON-PK COLUMNS HERE
+                .AddColumn("TheAscii", DataAPIType.Ascii())
+                .AddColumn("TheBigInt", DataAPIType.BigInt())
+                .AddColumn("TheDateOnly", DataAPIType.Date())
+                .AddColumn("TheBoolean", DataAPIType.Boolean())
+                .AddColumn("TheBlob", DataAPIType.Blob())
+                .AddColumn("TheDecimal", DataAPIType.Decimal())
+                .AddColumn("TheDouble", DataAPIType.Double())
+                .AddColumn("TheFloat", DataAPIType.Float())
+                .AddColumn("TheInet", DataAPIType.Inet())
+                .AddColumn("TheInt", DataAPIType.Int())
+                .AddColumn("TheSmallint", DataAPIType.SmallInt())
+                .AddColumn("TheText", DataAPIType.Text())
+                .AddColumn("TheTime", DataAPIType.Time())
+                .AddColumn("TheTimestamp", DataAPIType.Timestamp())
+                .AddColumn("TheTinyint", DataAPIType.TinyInt())
+                .AddColumn("TheUuid", DataAPIType.Uuid())
+                .AddColumn("TheVarint", DataAPIType.VarInt())
+                .AddColumn("TheVector", DataAPIType.Vector(2))
+                .AddCompositePrimaryKey(new string[] { "ThePK" }
+            );
+            var table = await fixture.Database.CreateTableAsync(
+                "insertAllTypesOutsidePKRowsUntypedTest",
+                tableDefinition
+            );
+
+            // ALL NON-PK VALUE VAR NAMES HERE
+            var theAscii = "my ascii";
+            var theBigInt = 123456789L;
+            var theDateOnly = DateOnly.Parse("2026-07-16");
+            var theBoolean = true;
+            var theBlob = Encoding.ASCII.GetBytes("my blob.");
+            var theDecimal = 12.3456m;
+            var theDouble = 12.3456d;
+            var theFloat = 12.34f;
+            var theInet = IPAddress.Parse("10.1.1.10");
+            var theInt = 4096;
+            var theSmallint = (short)(12);
+            var theText = "my text";
+            var theTime = TimeOnly.Parse("11:22:33.456");
+            var theTimestamp = new DateTime(
+                2026, 7, 17, 12, 34, 56, 789,
+                DateTimeKind.Utc
+            );
+            var theTinyint = (sbyte)(16);
+            var theUuid = Guid.Parse("63f4f459-1bba-48ee-9151-197cd545a911");
+            var theVarint = 81928192m;
+            var theVector = new float[] { 0.01f, -0.02f };
+            var row1 = new Row()
+            {
+                { "ThePK", "row with values" },
+                { "TheAscii", theAscii },
+                { "TheBigInt", theBigInt },
+                { "TheDateOnly", theDateOnly },
+                { "TheBoolean", theBoolean },
+                { "TheBlob", theBlob },
+                { "TheDecimal", theDecimal },
+                { "TheDouble", theDouble },
+                { "TheFloat", theFloat },
+                { "TheInet", theInet },
+                { "TheInt", theInt },
+                { "TheSmallint", theSmallint },
+                { "TheText", theText },
+                { "TheTime", theTime },
+                { "TheTimestamp", theTimestamp },
+                { "TheTinyint", theTinyint },
+                { "TheUuid", theUuid },
+                { "TheVarint", theVarint },
+                { "TheVector", theVector },
+            };
+            var rowN = new Row()
+            {
+                { "ThePK", "row with nulls" },
+                { "TheAscii", null },
+                { "TheBigInt", null },
+                { "TheDateOnly", null },
+                { "TheBoolean", null },
+                { "TheBlob", null },
+                { "TheDecimal", null },
+                { "TheDouble", null },
+                { "TheFloat", null },
+                { "TheInet", null },
+                { "TheInt", null },
+                { "TheSmallint", null },
+                { "TheText", null },
+                { "TheTime", null },
+                { "TheTimestamp", null },
+                { "TheTinyint", null },
+                { "TheUuid", null },
+                { "TheVarint", null },
+                { "TheVector", null },
+            };
+            var rows = new List<Row> { row1, rowN };
+            var result = await table.InsertManyAsync(rows);
+            Assert.Equal(rows.Count, result.InsertedCount);
+            Assert.Equal(rows[0]["ThePK"], result.InsertedIdTuples[0][0]);
+
+            var builder = Builders<Row>.TableFilter;
+
+            // read back and verify everything matches. 1: row with values
+            var filter1 = builder.Eq("ThePK", "row with values");
+            var readRow1 = await table.FindOneAsync(filter1);
+            Assert.NotNull(readRow1);
+            Assert.Equal(row1["ThePK"], readRow1["ThePK"]);
+            Assert.Equal(row1["TheAscii"], readRow1["TheAscii"]);
+            Assert.Equal(row1["TheBigInt"], readRow1["TheBigInt"]);
+            Assert.Equal(row1["TheDateOnly"], readRow1["TheDateOnly"]);
+            Assert.Equal(row1["TheBoolean"], readRow1["TheBoolean"]);
+            Assert.Equal(row1["TheBlob"], readRow1["TheBlob"]);
+            Assert.Equal(row1["TheDecimal"], readRow1["TheDecimal"]);
+            Assert.Equal(row1["TheDouble"], readRow1["TheDouble"]);
+            Assert.Equal(row1["TheFloat"], readRow1["TheFloat"]);
+            Assert.Equal(row1["TheInet"], readRow1["TheInet"]);
+            Assert.Equal(row1["TheInt"], readRow1["TheInt"]);
+            Assert.Equal(row1["TheSmallint"], readRow1["TheSmallint"]);
+            Assert.Equal(row1["TheText"], readRow1["TheText"]);
+            Assert.Equal(row1["TheTime"], readRow1["TheTime"]);
+            Assert.Equal(row1["TheTimestamp"], readRow1["TheTimestamp"]);
+            Assert.Equal(row1["TheTinyint"], readRow1["TheTinyint"]);
+            Assert.Equal(row1["TheUuid"], readRow1["TheUuid"]);
+            Assert.Equal(row1["TheVarint"], readRow1["TheVarint"]);
+            // Must tolerate float-precision rounding for "TheVector":
+            float[] row1Vec = (float [])row1["TheVector"];
+            float[] readRow1Vec = ((System.Text.Json.JsonElement)readRow1["TheVector"])
+                .EnumerateArray()
+                .Select(e => e.GetSingle())
+                .ToArray();
+            Assert.True(Math.Abs(row1Vec[0] - readRow1Vec[0]) < 1e-6);
+            Assert.True(Math.Abs(row1Vec[1] - readRow1Vec[1]) < 1e-6);
+
+            // read back and verify everything matches. 2: row with nulls
+            var filterN = builder.Eq("ThePK", "row with nulls");
+            var readRowN = await table.FindOneAsync(filterN);
+            Assert.NotNull(readRowN);
+            Assert.Equal(rowN["ThePK"], readRowN["ThePK"]);
+            Assert.Equal(rowN["TheAscii"], readRowN["TheAscii"]);
+            Assert.Equal(rowN["TheBigInt"], readRowN["TheBigInt"]);
+            Assert.Equal(rowN["TheDateOnly"], readRowN["TheDateOnly"]);
+            Assert.Equal(rowN["TheBoolean"], readRowN["TheBoolean"]);
+            Assert.Equal(rowN["TheBlob"], readRowN["TheBlob"]);
+            Assert.Equal(rowN["TheDecimal"], readRowN["TheDecimal"]);
+            Assert.Equal(rowN["TheDouble"], readRowN["TheDouble"]);
+            Assert.Equal(rowN["TheFloat"], readRowN["TheFloat"]);
+            Assert.Equal(rowN["TheInet"], readRowN["TheInet"]);
+            Assert.Equal(rowN["TheInt"], readRowN["TheInt"]);
+            Assert.Equal(rowN["TheSmallint"], readRowN["TheSmallint"]);
+            Assert.Equal(rowN["TheText"], readRowN["TheText"]);
+            Assert.Equal(rowN["TheTime"], readRowN["TheTime"]);
+            Assert.Equal(rowN["TheTimestamp"], readRowN["TheTimestamp"]);
+            Assert.Equal(rowN["TheTinyint"], readRowN["TheTinyint"]);
+            Assert.Equal(rowN["TheUuid"], readRowN["TheUuid"]);
+            Assert.Equal(rowN["TheVarint"], readRowN["TheVarint"]);
+            Assert.Equal(rowN["TheVector"], readRowN["TheVector"]);
+        }
+        finally
+        {
+            await fixture.Database.DropTableAsync("insertAllTypesOutsidePKRowsUntypedTest");
+        }
+    }
+
     /* IMPORTANT: run these two tests after CQL manual setup (and cleanup afterwards)
         -- Manual test setup:
         CREATE TABLE table_with_timeuuid (id TEXT PRIMARY KEY, the_tuid TIMEUUID);
@@ -376,8 +543,7 @@ public class TableTests
         Assert.Equal(new TimeUuid(new Guid("183f8300-8458-11f1-8202-41b65ed1b8e7")), readRow.the_tuid);
     }
 
-    // [Fact(Skip="Requires manual CQL setup, this test to be launched manually.")]
-    [Fact]
+    [Fact(Skip="Requires manual CQL setup, this test to be launched manually.")]
     public async Task ReadTimeUUIDUntyped()
     {
         var table = fixture.Database.GetTable("table_with_timeuuid");

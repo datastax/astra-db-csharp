@@ -292,11 +292,11 @@ public class RowWithAllTypesInPK
     [ColumnPrimaryKey(14)]
     public DateTime TheTimestamp { get; set; }
     [ColumnPrimaryKey(15)]
-    public byte TheTinyint { get; set; }
+    public sbyte TheTinyint { get; set; }
     [ColumnPrimaryKey(16)]
     public Guid TheUuid { get; set; }
     [ColumnPrimaryKey(17)]
-    public long TheVarint { get; set; }
+    public decimal TheVarint { get; set; }
     [ColumnPrimaryKey(18)]
     public float[] TheVector { get; set; }
     //
@@ -323,9 +323,9 @@ public class RowWithAllTypesOutsidePK
     public string? TheText { get; set; }
     public TimeOnly? TheTime { get; set; }
     public DateTime? TheTimestamp { get; set; }
-    public byte? TheTinyint { get; set; }
+    public sbyte? TheTinyint { get; set; }
     public Guid? TheUuid { get; set; }
-    public long? TheVarint { get; set; }
+    public decimal? TheVarint { get; set; }
     public float[]? TheVector { get; set; }
 }
 

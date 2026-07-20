@@ -118,7 +118,6 @@ internal class TableInsertManyResultConverter : JsonConverter<TableInsertManyRes
                 case "text":
                     return element.GetString()!;
                 case "bigint":
-                case "varint":
                     return element.GetInt64();
                 case "blob":
                     return Convert.FromBase64String(element.GetString()!);
@@ -131,6 +130,7 @@ internal class TableInsertManyResultConverter : JsonConverter<TableInsertManyRes
                     return DateTime.Parse(element.GetString()!).Date;
 #endif
                 case "decimal":
+                case "varint":
                     return element.GetDecimal();
                 case "double":
                     if (element.ValueKind == JsonValueKind.String) // ugly but TableInsertManyResultConverter won't exist in the future anyway
@@ -171,7 +171,7 @@ internal class TableInsertManyResultConverter : JsonConverter<TableInsertManyRes
                 case "timestamp":
                     return DateTime.Parse(element.GetString()!, null, DateTimeStyles.RoundtripKind);
                 case "tinyint":
-                    return (byte)(element.GetInt16());
+                    return element.GetSByte();
                 case "uuid":
                     return Guid.Parse(element.GetString()!);
                 case "vector":
