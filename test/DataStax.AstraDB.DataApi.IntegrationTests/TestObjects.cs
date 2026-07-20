@@ -329,6 +329,13 @@ public class RowWithAllTypesOutsidePK
     public float[]? TheVector { get; set; }
 }
 
+public class RowWithTimeUUID
+{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public TimeUuid the_tuid { get; set; }
+}
+
 [TableName("bookTestTableVectorize")]
 public class RowBookVectorize
 {

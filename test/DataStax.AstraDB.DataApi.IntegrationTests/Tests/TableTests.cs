@@ -355,6 +355,38 @@ public class TableTests
         }
     }
 
+    /* IMPORTANT: run these two tests after CQL manual setup (and cleanup afterwards)
+        -- Manual test setup:
+        CREATE TABLE table_with_timeuuid (id TEXT PRIMARY KEY, the_tuid TIMEUUID);
+        INSERT INTO table_with_timeuuid (id , the_tuid ) VALUES ('0', 183f8300-8458-11f1-8202-41b65ed1b8e7);
+
+        -- Verify with:
+        -- SELECT * FROM table_with_timeuuid;
+
+        -- Finally execute this:
+        -- DROP TABLE table_with_timeuuid;
+    */
+    [Fact(Skip="Requires manual CQL setup, this test to be launched manually.")]
+    public async Task ReadTimeUUIDTyped()
+    {
+        var table = fixture.Database.GetTable<RowWithTimeUUID>("table_with_timeuuid");
+        var readRow = await table.FindOneAsync();
+        Assert.NotNull(readRow);
+        Assert.Equal("0", readRow.id);
+        Assert.Equal(new TimeUuid(new Guid("183f8300-8458-11f1-8202-41b65ed1b8e7")), readRow.the_tuid);
+    }
+
+    // [Fact(Skip="Requires manual CQL setup, this test to be launched manually.")]
+    [Fact]
+    public async Task ReadTimeUUIDUntyped()
+    {
+        var table = fixture.Database.GetTable("table_with_timeuuid");
+        var readRow = await table.FindOneAsync();
+        Assert.NotNull(readRow);
+        Assert.Equal("0", readRow["id"]);
+        Assert.Equal(new TimeUuid(new Guid("183f8300-8458-11f1-8202-41b65ed1b8e7")), readRow["the_tuid"]);
+    }
+
     [Fact]
     [SkipWhenNotAstra] // TODO why is this not throwing on HCD in CI? It throws just fine when running on HCD locally
     public async Task InsertManyCommandOptions()
