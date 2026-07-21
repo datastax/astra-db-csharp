@@ -293,17 +293,22 @@ public class DataAPIType
     public static DataAPIType Inet() => new DataAPIType("inet");
     /// <summary>Creates an int column type.</summary>
     public static DataAPIType Int() => new DataAPIType("int");
-
+    /// <summary>Creates a smallint column type.</summary>
+    public static DataAPIType SmallInt() => new DataAPIType("smallint");
     /// <summary>Creates a text column type.</summary>
     public static DataAPIType Text() => new DataAPIType("text");
     /// <summary>Creates a time column type.</summary>
     public static DataAPIType Time() => new DataAPIType("time");
-    /// <summary>Creates a time uuid column type.</summary>
-    public static DataAPIType TimeUuid() => new DataAPIType("timeuuid");
     /// <summary>Creates a timestamp column type.</summary>
     public static DataAPIType Timestamp() => new DataAPIType("timestamp");
+    /// <summary>Creates a time uuid column type.</summary>
+    public static DataAPIType TimeUuid() => new DataAPIType("timeuuid");
+    /// <summary>Creates a tinyint column type.</summary>
+    public static DataAPIType TinyInt() => new DataAPIType("tinyint");
     /// <summary>Creates a uuid column type.</summary>
     public static DataAPIType Uuid() => new DataAPIType("uuid");
+    /// <summary>Creates a varint column type.</summary>
+    public static DataAPIType VarInt() => new DataAPIType("varint");
 
     /// <summary>Creates a list column type with the specified element type.</summary>
     public static DataAPIType List(DataAPIType valueType) => new ListDataAPIType(valueType);

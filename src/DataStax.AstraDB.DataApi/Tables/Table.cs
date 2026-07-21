@@ -772,6 +772,15 @@ public class Table<T> where T : class
                 if (element.ValueKind == JsonValueKind.String && TimeOnly.TryParse(element.GetString(), CultureInfo.InvariantCulture, out var to))
                     return to;
                 break;
+#else
+            case "date":
+                if (element.ValueKind == JsonValueKind.String && DateTime.TryParse(element.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out var d))
+                    return d.Date;   // strip time component; returns a DateTime at midnight
+                break;
+            case "time":
+                if (element.ValueKind == JsonValueKind.String && TimeSpan.TryParse(element.GetString(), CultureInfo.InvariantCulture, out var to))
+                    return to;       // TimeSpan is the standard pre-net6 substitute for time-of-day
+                break;
 #endif
             case "timestamp":
                 if (element.ValueKind == JsonValueKind.String && DateTime.TryParse(element.GetString(), null, DateTimeStyles.RoundtripKind, out var dt))

@@ -17,6 +17,7 @@
 using DataStax.AstraDB.DataApi.Tables;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -113,17 +114,23 @@ internal class TableInsertManyResultConverter : JsonConverter<TableInsertManyRes
         {
             switch (schema.Type)
             {
-                case "text":
                 case "ascii":
+                case "text":
                     return element.GetString()!;
-                case "vector":
-                    var floatList = element.Deserialize<List<float>>(options)!;
-                    return floatList.ToArray();
-                case "int":
-                    return element.GetInt32();
                 case "bigint":
                     return element.GetInt64();
+                case "blob":
+                    return Convert.FromBase64String(element.GetString()!);
+                case "boolean":
+                    return element.GetBoolean();
+                case "date":
+#if NET6_0_OR_GREATER
+                    return DateOnly.Parse(element.GetString()!);
+#else
+                    return DateTime.Parse(element.GetString()!).Date;
+#endif
                 case "decimal":
+                case "varint":
                     return element.GetDecimal();
                 case "double":
                     if (element.ValueKind == JsonValueKind.String) // ugly but TableInsertManyResultConverter won't exist in the future anyway
@@ -149,12 +156,27 @@ internal class TableInsertManyResultConverter : JsonConverter<TableInsertManyRes
                         };
                     }
                     return element.GetSingle();
-                case "boolean":
-                    return element.GetBoolean();
+                case "inet":
+                    return System.Net.IPAddress.Parse(element.GetString()!);
+                case "int":
+                    return element.GetInt32();
+                case "smallint":
+                    return (short)(element.GetInt16());
+                case "time":
+#if NET6_0_OR_GREATER
+                    return TimeOnly.Parse(element.GetString()!);
+#else
+                    return DateTime.Parse(element.GetString()!).TimeOfDay;
+#endif
                 case "timestamp":
-                    return DateTime.Parse(element.GetString()!);
+                    return DateTime.Parse(element.GetString()!, null, DateTimeStyles.RoundtripKind);
+                case "tinyint":
+                    return element.GetSByte();
                 case "uuid":
                     return Guid.Parse(element.GetString()!);
+                case "vector":
+                    var floatList = element.Deserialize<List<float>>(options)!;
+                    return floatList.ToArray();
                 default:
                     throw new JsonException($"Unsupported schema type: {schema.Type}");
             }

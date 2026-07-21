@@ -260,6 +260,82 @@ public class RowBook
     public float Rating { get; set; }
 }
 
+[TableName("insertAllTypesInPKRowsTest")]
+public class RowWithAllTypesInPK
+{
+    [ColumnPrimaryKey(1)]
+    public string TheAscii { get; set; }
+    [ColumnPrimaryKey(2)]
+    public long TheBigInt { get; set; }
+    [ColumnPrimaryKey(3)]
+    public DateOnly TheDateOnly { get; set; }
+    [ColumnPrimaryKey(4)]
+    public bool TheBoolean { get; set; }
+    [ColumnPrimaryKey(5)]
+    public byte[] TheBlob { get; set; }
+    [ColumnPrimaryKey(6)]
+    public decimal TheDecimal { get; set; }
+    [ColumnPrimaryKey(7)]
+    public double TheDouble { get; set; }
+    [ColumnPrimaryKey(8)]
+    public float TheFloat { get; set; }
+    [ColumnPrimaryKey(9)]
+    public System.Net.IPAddress TheInet { get; set; }
+    [ColumnPrimaryKey(10)]
+    public int TheInt { get; set; }
+    [ColumnPrimaryKey(11)]
+    public short TheSmallint { get; set; }
+    [ColumnPrimaryKey(12)]
+    public string TheText { get; set; }
+    [ColumnPrimaryKey(13)]
+    public TimeOnly TheTime { get; set; }
+    [ColumnPrimaryKey(14)]
+    public DateTime TheTimestamp { get; set; }
+    [ColumnPrimaryKey(15)]
+    public sbyte TheTinyint { get; set; }
+    [ColumnPrimaryKey(16)]
+    public Guid TheUuid { get; set; }
+    [ColumnPrimaryKey(17)]
+    public decimal TheVarint { get; set; }
+    [ColumnPrimaryKey(18)]
+    public float[] TheVector { get; set; }
+    //
+    public string TheNonPKValue { get; set; }
+}
+
+[TableName("insertAllTypesOutsidePKRowsTest")]
+public class RowWithAllTypesOutsidePK
+{
+    [ColumnPrimaryKey]
+    public string ThePK { get; set; }
+    // non-PK values
+    public string? TheAscii { get; set; }
+    public long? TheBigInt { get; set; }
+    public DateOnly? TheDateOnly { get; set; }
+    public bool? TheBoolean { get; set; }
+    public byte[]? TheBlob { get; set; }
+    public decimal? TheDecimal { get; set; }
+    public double? TheDouble { get; set; }
+    public float? TheFloat { get; set; }
+    public System.Net.IPAddress? TheInet { get; set; }
+    public int? TheInt { get; set; }
+    public short? TheSmallint { get; set; }
+    public string? TheText { get; set; }
+    public TimeOnly? TheTime { get; set; }
+    public DateTime? TheTimestamp { get; set; }
+    public sbyte? TheTinyint { get; set; }
+    public Guid? TheUuid { get; set; }
+    public decimal? TheVarint { get; set; }
+    public float[]? TheVector { get; set; }
+}
+
+public class RowWithTimeUUID
+{
+    [ColumnPrimaryKey]
+    public string id { get; set; }
+    public TimeUuid the_tuid { get; set; }
+}
+
 [TableName("bookTestTableVectorize")]
 public class RowBookVectorize
 {
