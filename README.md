@@ -20,7 +20,7 @@ A database is needed for the client to connect to.
 The database can be either an Astra DB instance or a Hyper-Converged Database (HCD) instance:
 follow the appropriate documentation links to get the connection parameters for your database.
 
-## Documentation 
+## Documentation
 
 For Astra DB Serverless:
 
@@ -30,9 +30,9 @@ For Astra DB Serverless:
 
 For Hyper-Converged Database (HCD):
 
-- [Quickstart for collections](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/quickstart.html)
-- [Quickstart for tables](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/quickstart-tables.html)
-- [Get started with the Data API](https://docs.datastax.com/en/hyper-converged-database/1.2/api-reference/dataapiclient.html)
+- [Quickstart for collections](https://docs.datastax.com/en/hyper-converged-database/2.0/api-reference/quickstart.html)
+- [Quickstart for tables](https://docs.datastax.com/en/hyper-converged-database/2.0/api-reference/quickstart-tables.html)
+- [Get started with the Data API](https://docs.datastax.com/en/hyper-converged-database/2.0/api-reference/dataapiclient.html)
 
 ## At a glance
 
