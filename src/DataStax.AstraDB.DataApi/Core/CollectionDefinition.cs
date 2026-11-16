@@ -126,6 +126,13 @@ public class CollectionDefinition
             }
             if (vectorAttribute.Metric.HasValue)
             {
+                if (definition.Vector.Metric.HasValue && definition.Vector.Metric.Value != vectorAttribute.Metric.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Metric mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition specifies metric {definition.Vector.Metric.Value}, " +
+                        $"but the [{nameof(CollectionVectorAttribute)}] on the type specifies metric {vectorAttribute.Metric.Value}.");
+                }
                 definition.Vector.Metric = vectorAttribute.Metric.Value;
             }
             if (!string.IsNullOrEmpty(vectorAttribute.SourceModel))
@@ -154,6 +161,13 @@ public class CollectionDefinition
             }
             if (vectorizeAttribute.Metric.HasValue)
             {
+                if (definition.Vector.Metric.HasValue && definition.Vector.Metric.Value != vectorizeAttribute.Metric.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Metric mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition (or [{nameof(CollectionVectorAttribute)}]) specifies metric {definition.Vector.Metric.Value}, " +
+                        $"but the [{nameof(CollectionVectorizeAttribute)}] on the type specifies metric {vectorizeAttribute.Metric.Value}.");
+                }
                 definition.Vector.Metric = vectorizeAttribute.Metric.Value;
             }
             if (!string.IsNullOrEmpty(vectorizeAttribute.Provider))

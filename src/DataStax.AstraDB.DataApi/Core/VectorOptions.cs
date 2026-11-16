@@ -30,10 +30,12 @@ public class VectorOptions
     public int? Dimension { get; set; }
 
     /// <summary>
-    /// The similarity metric to use
+    /// The similarity metric to use. If not provided (null), it is omitted from
+    /// the request and the server default applies.
     /// </summary>
     [JsonPropertyName("metric")]
-    public SimilarityMetric Metric { get; set; } = SimilarityMetric.Cosine;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SimilarityMetric? Metric { get; set; }
 
     /// <summary>
     /// Options for the service providing the vectorization
