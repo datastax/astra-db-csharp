@@ -24,10 +24,16 @@ namespace DataStax.AstraDB.DataApi.Core.Results;
 public class DocumentCountExceedsMaxException : Exception
 {
     /// <summary>
+    /// Indicates whether the limit exceeded was the internal Data API (server) maximum count, rather than the caller-specified limit.
+    /// </summary>
+    public bool ServerMaxCountExceeded { get; }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="DocumentCountExceedsMaxException"/>.
     /// </summary>
-    public DocumentCountExceedsMaxException()
+    /// <param name="serverMaxCountExceeded">True if the internal Data API maximum count was exceeded.</param>
+    public DocumentCountExceedsMaxException(bool serverMaxCountExceeded)
     {
-
+        ServerMaxCountExceeded = serverMaxCountExceeded;
     }
 }
