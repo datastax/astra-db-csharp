@@ -115,6 +115,13 @@ public class CollectionDefinition
             }
             if (vectorAttribute.Dimension.HasValue && vectorAttribute.Dimension.Value != -1)
             {
+                if (definition.Vector.Dimension > 0 && definition.Vector.Dimension != vectorAttribute.Dimension.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Dimension mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition specifies dimension {definition.Vector.Dimension}, " +
+                        $"but the [{nameof(CollectionVectorAttribute)}] on the type specifies dimension {vectorAttribute.Dimension.Value}.");
+                }
                 definition.Vector.Dimension = vectorAttribute.Dimension.Value;
             }
             if (vectorAttribute.Metric.HasValue)
@@ -136,6 +143,13 @@ public class CollectionDefinition
             }
             if (vectorizeAttribute.Dimension.HasValue && vectorizeAttribute.Dimension.Value != -1)
             {
+                if (definition.Vector.Dimension > 0 && definition.Vector.Dimension != vectorizeAttribute.Dimension.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Dimension mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition specifies dimension {definition.Vector.Dimension}, " +
+                        $"but the [{nameof(CollectionVectorizeAttribute)}] on the type specifies dimension {vectorizeAttribute.Dimension.Value}.");
+                }
                 definition.Vector.Dimension = vectorizeAttribute.Dimension.Value;
             }
             if (vectorizeAttribute.Metric.HasValue)
