@@ -174,20 +174,20 @@ public class CollectionCursorTests
 
         var cur = filledCollection.Find();
         await cur.MoveNextAsync();
-        // now: 19 in buffer, one consumed:
+        // now: CollectionCursorFixture.PAGE_SIZE - 1 in buffer, one consumed:
         Assert.Equal(1, cur.Consumed);
-        Assert.Equal(19, cur.Buffered());
+        Assert.Equal(CollectionCursorFixture.PAGE_SIZE-1, cur.Buffered());
         Assert.Equal(3, cur.ConsumeBuffer(3).Count);
-        // 16 in buffer, 4 consumed:
+        // PS-4 in buffer, 4 consumed:
         Assert.Equal(4, cur.Consumed);
-        Assert.Equal(16, cur.Buffered());
+        Assert.Equal(CollectionCursorFixture.PAGE_SIZE - 4, cur.Buffered());
         // from time to time the buffer is empty:
-        for(int i=0; i<16; i++){
+        for(int i=0; i<CollectionCursorFixture.PAGE_SIZE - 4; i++){
             await cur.MoveNextAsync();
         }
         Assert.Equal(0, cur.Buffered());
         Assert.Equal(0, cur.ConsumeBuffer(3).Count);
-        Assert.Equal(20, cur.Consumed);
+        Assert.Equal(CollectionCursorFixture.PAGE_SIZE, cur.Consumed);
         Assert.Equal(0, cur.Buffered());
 
         // Started cursors can't receive fluent-API edits:
@@ -240,13 +240,13 @@ public class CollectionCursorTests
         Assert.True(await curMf.HasNextAsync());
         Assert.Equal(2, curMf.Consumed);
         Assert.Equal(CursorState.Started, curMf.State);
-        for(int i=0; i<18; i++){
+        for(int i=0; i<CollectionCursorFixture.PAGE_SIZE-2; i++){
             await curMf.MoveNextAsync();
         }
         Assert.True(await curMf.HasNextAsync());
-        Assert.Equal(20, curMf.Consumed);
+        Assert.Equal(CollectionCursorFixture.PAGE_SIZE, curMf.Consumed);
         Assert.Equal(CursorState.Started, curMf.State);
-        Assert.Equal(_fixture.FilledCollectionCount - 20, curMf.Buffered());
+        Assert.Equal(_fixture.FilledCollectionCount - CollectionCursorFixture.PAGE_SIZE, curMf.Buffered());
 
         var cur0 = filledCollection.Find();
         cur0.Dispose();
