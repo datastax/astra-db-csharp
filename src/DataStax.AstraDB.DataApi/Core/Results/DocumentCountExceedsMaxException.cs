@@ -31,7 +31,7 @@ public class DocumentCountExceedsMaxException : Exception
     /// <summary>
     /// Initializes a new instance of <see cref="DocumentCountExceedsMaxException"/>.
     /// </summary>
-    /// <param name="serverMaxCountExceeded">True if the internal Data API maximum count was exceeded.</param>
+    /// <param name="serverMaxCountExceeded">True if the internal Data API max count was exceeded.</param>
     public DocumentCountExceedsMaxException(bool serverMaxCountExceeded)
     {
         ServerMaxCountExceeded = serverMaxCountExceeded;
