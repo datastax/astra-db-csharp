@@ -115,10 +115,24 @@ public class CollectionDefinition
             }
             if (vectorAttribute.Dimension.HasValue && vectorAttribute.Dimension.Value != -1)
             {
+                if (definition.Vector.Dimension > 0 && definition.Vector.Dimension != vectorAttribute.Dimension.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Dimension mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition specifies dimension {definition.Vector.Dimension}, " +
+                        $"but the [{nameof(CollectionVectorAttribute)}] on the type specifies dimension {vectorAttribute.Dimension.Value}.");
+                }
                 definition.Vector.Dimension = vectorAttribute.Dimension.Value;
             }
             if (vectorAttribute.Metric.HasValue)
             {
+                if (definition.Vector.Metric.HasValue && definition.Vector.Metric.Value != vectorAttribute.Metric.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Metric mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition specifies metric {definition.Vector.Metric.Value}, " +
+                        $"but the [{nameof(CollectionVectorAttribute)}] on the type specifies metric {vectorAttribute.Metric.Value}.");
+                }
                 definition.Vector.Metric = vectorAttribute.Metric.Value;
             }
             if (!string.IsNullOrEmpty(vectorAttribute.SourceModel))
@@ -136,10 +150,24 @@ public class CollectionDefinition
             }
             if (vectorizeAttribute.Dimension.HasValue && vectorizeAttribute.Dimension.Value != -1)
             {
+                if (definition.Vector.Dimension > 0 && definition.Vector.Dimension != vectorizeAttribute.Dimension.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Dimension mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition specifies dimension {definition.Vector.Dimension}, " +
+                        $"but the [{nameof(CollectionVectorizeAttribute)}] on the type specifies dimension {vectorizeAttribute.Dimension.Value}.");
+                }
                 definition.Vector.Dimension = vectorizeAttribute.Dimension.Value;
             }
             if (vectorizeAttribute.Metric.HasValue)
             {
+                if (definition.Vector.Metric.HasValue && definition.Vector.Metric.Value != vectorizeAttribute.Metric.Value)
+                {
+                    throw new InvalidOperationException(
+                        $"Metric mismatch for collection type {type.Name}: " +
+                        $"the provided CollectionDefinition (or [{nameof(CollectionVectorAttribute)}]) specifies metric {definition.Vector.Metric.Value}, " +
+                        $"but the [{nameof(CollectionVectorizeAttribute)}] on the type specifies metric {vectorizeAttribute.Metric.Value}.");
+                }
                 definition.Vector.Metric = vectorizeAttribute.Metric.Value;
             }
             if (!string.IsNullOrEmpty(vectorizeAttribute.Provider))

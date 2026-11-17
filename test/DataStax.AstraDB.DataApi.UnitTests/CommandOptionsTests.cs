@@ -16,7 +16,7 @@
 
 using DataStax.AstraDB.DataApi.Core;
 
-namespace DataStax.AstraDB.DataApi.Tests;
+namespace DataStax.AstraDB.DataApi.UnitTests;
 
 public class CommandOptionsTests
 {

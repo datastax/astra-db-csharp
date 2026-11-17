@@ -679,11 +679,28 @@ public class CollectionTests
                     _id = i,
                     Name = $"Test Object {i}"
                 });
-            }
-            ;
+            };
+            List<SimpleObject> items2 = new List<SimpleObject>();
+            for (var i = 0; i < 950; i++)
+            {
+                items2.Add(new SimpleObject()
+                {
+                    _id = 2000 + i + 100,
+                    Name = $"Test Object 2 {i}"
+                });
+            };
             var collection = await fixture.Database.CreateCollectionAsync<SimpleObject, int>(collectionName);
             await collection.InsertManyAsync(items, new CollectionInsertManyOptions() { Ordered = true });
-            await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(async () => await collection.CountDocumentsAsync(null, 50));
+            var exception = await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(
+                async () => await collection.CountDocumentsAsync(null, 50)
+            );
+            Assert.False(exception.ServerMaxCountExceeded);
+
+            await collection.InsertManyAsync(items2);
+            var exception2 = await Assert.ThrowsAsync<DocumentCountExceedsMaxException>(
+                async () => await collection.CountDocumentsAsync(null, 50)
+            );
+            Assert.True(exception2.ServerMaxCountExceeded);
 
         }
         finally

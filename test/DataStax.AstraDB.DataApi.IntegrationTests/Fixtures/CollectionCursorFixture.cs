@@ -49,10 +49,11 @@ public class CollectionCursorFixture : BaseFixture, IAsyncLifetime
         await Database.DropCollectionAsync(_paginationCollectionName);
     }
 
+    public const int PAGE_SIZE = 50;
     private const string _collectionName = "collectionTestCursorFilled";
     private const string _paginationCollectionName = "collectionPaginationTestCursorFilled";
-    private const int NUM_DOCS = 25;  // keep this between 21 and 39 (must be 1 full + 1 partial page in size)
-    private const int NUM_DOCS_PAGINATION = 90;  // keep this above 2 * (2 * 20) and below 2 * (3 * 20)
+    private const int NUM_DOCS = PAGE_SIZE + 5;
+    private const int NUM_DOCS_PAGINATION = 2 * ( 2 * PAGE_SIZE ) + 5;
 
     private async Task CreateFilledCollection()
     {

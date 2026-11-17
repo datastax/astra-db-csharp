@@ -1002,13 +1002,17 @@ public class Collection<T, TId> where T : class
             .RunAsyncReturnStatus<DocumentsCountResult>(runSynchronously)
             .ConfigureAwait(false);
         
-        if (response.Result.Count >= maxDocumentsToCount || response.Result.MoreData)
+        if ( response.Result.MoreData )
         {
-            throw new DocumentCountExceedsMaxException();
+            throw new DocumentCountExceedsMaxException(true);
         }
-
+        else if ( response.Result.Count > maxDocumentsToCount )
+        {
+            throw new DocumentCountExceedsMaxException(false);
+        }
         return response.Result.Count;
     }
+
     /// <summary>
     /// Synchronous version of <see cref="EstimateDocumentCountAsync(CollectionEstimateDocumentCountOptions)"/>
     /// </summary>
